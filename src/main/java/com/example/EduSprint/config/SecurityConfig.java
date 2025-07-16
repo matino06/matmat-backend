@@ -29,6 +29,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/turnstile/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/image/**").permitAll()  // Osigurajte da je /image/** izuzet
                         .anyRequest().authenticated()
                 )

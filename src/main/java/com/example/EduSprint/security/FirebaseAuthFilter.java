@@ -39,20 +39,10 @@ public class FirebaseAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String cfToken = request.getHeader("CF-Turnstile-Token");
-        if ((cfToken == null || cfToken.isEmpty()) && !request.getMethod().equals("GET")) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("{\"error\": \"CF-Turnstile-Token is missing\"}");
+        if (request.getRequestURI().equals("/api/turnstile/verify") && request.getMethod().equals("POST")) {
+            filterChain.doFilter(request, response);
             return;
         }
-
-        if (!request.getMethod().equals("GET") && !verifyTurnstileToken(cfToken)) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"CF-Turnstile-Token is invalid\", \"token\": \"" + cfToken + "\"}");
-            return;
-        }
-
 
         if (request.getRequestURI().startsWith("/api/image/") && request.getMethod().equals("GET")) {
             filterChain.doFilter(request, response);
