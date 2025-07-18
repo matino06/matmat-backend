@@ -5,11 +5,13 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.entity.SubfieldOfStudy;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
+import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.LearningObjectiveService;
 import com.example.EduSprint.service.SubfieldOfStudyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -45,12 +47,14 @@ public class LearningObjectiveController {
     }
 
     @GetMapping("/get-objectives-with-status")
-    public ResponseEntity<List<ObjectiveWithStatusDTO>> getLearningObjectivesWithStatus(@RequestParam String email) {
-        Account account = accountService.getAccount(email);
+    public ResponseEntity<List<ObjectiveWithStatusDTO>> getLearningObjectivesWithStatus(Authentication authentication) {
+        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+
+        Account account = accountService.getAccount(firebasePrincipal.getEmail());
 
         List<Object[]> objectivesWithUnlockStatus = learningObjectiveRepository.findObjectivesWithUnlockStatus(account.getAccountId());
         List<ObjectiveWithStatusDTO> results = objectivesWithUnlockStatus.stream()
-                .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (Long) arr[1], (String) arr[2], (Boolean) arr[3]))
+                .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (String) arr[1], (Long) arr[2], (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(results, HttpStatus.OK);

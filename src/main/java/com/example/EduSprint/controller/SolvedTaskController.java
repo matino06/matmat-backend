@@ -43,7 +43,7 @@ public class SolvedTaskController {
         try {
             FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
             Long taskId = ((Number) taskData.get("taskId")).longValue();
-            Short q = Short.parseShort((String) taskData.get("q"));
+            Short q = ((Number) taskData.get("q")).shortValue();
             String startTimeString = (String) taskData.get("startTime");
             String endTimeString = (String) taskData.get("endTime");
 
@@ -77,6 +77,7 @@ public class SolvedTaskController {
         } catch (DateTimeParseException e) {
             return new ResponseEntity<>("Invalid timestamp format (use ISO-8601)", HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.internalServerError()
                     .body("An unexpected error occurred on the server");
         }
