@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/turnstile/verify").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/image/**").permitAll()  // Osigurajte da je /image/** izuzet
+                        .requestMatchers(HttpMethod.GET, "/image/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(firebaseAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -41,13 +41,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://www.matmat.online/", "https://matmat.online/", "https://matmat1.netlify.app/")); // Dozvoljeni origin-i
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Dozvoljene metode
-        configuration.setAllowedHeaders(Arrays.asList("*")); // Dozvoljeni header-i
-        configuration.setAllowCredentials(true); // Dozvoli kolačiće (credentials)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000", "https://www.matmat.online/", "https://matmat.online/"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Primjeni na sve endpointove
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }

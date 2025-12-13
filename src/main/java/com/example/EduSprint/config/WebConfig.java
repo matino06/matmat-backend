@@ -13,11 +13,11 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")  // Dozvoljava CORS za sve endpointove
-                        .allowedOrigins("http://localhost:5173", "https://www.matmat.online/", "https://matmat.online/", "https://matmat1.netlify.app/")  // Dozvoljeni origin-i
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Dozvoljeni HTTP metodi
-                        .allowedHeaders("*")  // Dozvoljeni header-i
-                        .allowCredentials(true);  // Dozvoljava kolačiće (credentials)
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:5173", "http://localhost:3000", "https://www.matmat.online/", "https://matmat.online/", "https://matmat1.netlify.app/")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }
