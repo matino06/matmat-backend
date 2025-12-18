@@ -35,7 +35,30 @@ The system is designed so that consistent usage leads users toward **100% master
 * **Database:** PostgreSQL
 * **Authentication:** Firebase
 * **Hosting:** AWS Elastic Beanstalk
+* **Cloud Storage:** AWS S3 (images & static assets)
+* **Bot Protection:** Cloudflare Turnstile
 * **Build Tool:** Maven
+
+---
+
+## ☁️ Storage & Security
+
+### AWS S3 Integration
+MatMat backend uses **Amazon AWS S3** for storing and serving static assets:
+
+* Task-related images
+
+The backend handles:
+* Secure upload of images to S3
+* Generation of public or signed URLs
+* Retrieval of image metadata for frontend consumption
+
+### Cloudflare Turnstile Verification
+To protect the platform from bots and abuse, **Cloudflare Turnstile** is verified on the backend:
+
+* Turnstile tokens are validated server-side
+
+This ensures security without degrading user experience.
 
 ---
 
@@ -60,6 +83,15 @@ The system is designed so that consistent usage leads users toward **100% master
 
   * Chapter unlocking logic
   * Learning statistics per user
+
+* **Media Storage**
+
+  * Image upload and retrieval via AWS S3
+
+* **Security & Abuse Protection**
+
+  * Server-side Cloudflare Turnstile validation
+  * Protection against automated abuse
 
 ---
 
