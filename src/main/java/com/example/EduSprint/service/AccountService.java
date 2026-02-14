@@ -1,6 +1,7 @@
 package com.example.EduSprint.service;
 
 import com.example.EduSprint.entity.Account;
+import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,16 +14,20 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountObjectiveService accountObjectiveService;
     private final TaskService taskService;
+    private final CourseService courseService;
 
-    public AccountService(AccountRepository accountRepository, AccountObjectiveService accountObjectiveService, TaskService taskService) {
+    public AccountService(AccountRepository accountRepository, AccountObjectiveService accountObjectiveService, TaskService taskService, CourseService courseService) {
         this.accountRepository = accountRepository;
         this.accountObjectiveService = accountObjectiveService;
         this.taskService = taskService;
+        this.courseService = courseService;
     }
 
     @Transactional
     public boolean createAccount(String email, String name) {
-        Account account = new Account(email, name);
+        Course defaultCourse = courseService.getCourseById(1L);
+        System.out.println(defaultCourse);
+        Account account = new Account(email, name, defaultCourse);
         account.setCurrentTask(taskService.getTaskById(56L));
         try {
             accountRepository.save(account);

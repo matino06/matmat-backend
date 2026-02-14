@@ -25,14 +25,19 @@ public class Account {
     @JoinColumn(name="current_task_id")
     private Task currentTask;
 
+    @ManyToOne
+    @JoinColumn(name = "current_course_id")
+    private Course currentCourse;
+
     @OneToMany
     @JoinTable(name = "weak_objectives", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "objective_id"))
     private List<LearningObjective> weakObjectives;
 
-    public Account(String email, String name) {
+    public Account(String email, String name, Course currentCourse) {
         this.email = email;
         this.name = name;
         this.countWeakObjectives = 0;
+        this.currentCourse = currentCourse;
     }
 
     public Account() {
@@ -80,6 +85,14 @@ public class Account {
 
     public void setCountWeakObjectives(Short countWeakObjectives) {
         this.countWeakObjectives = countWeakObjectives;
+    }
+
+    public Course getCurrentCourse() {
+        return currentCourse;
+    }
+
+    public void setCurrentCourse(Course currentCourse) {
+        this.currentCourse = currentCourse;
     }
 
     @Override

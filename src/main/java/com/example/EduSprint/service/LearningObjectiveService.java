@@ -25,14 +25,20 @@ public class LearningObjectiveService {
         return learningObjectiveRepository.findById(id).orElse(null);
     }
 
-    public final LearningObjective findNextLearningObjective(Long accountId) {
-
-        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId);
+    public final LearningObjective findNextLearningObjective(Long accountId, Long courseId) {
+        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId, courseId);
 
         if (learningObjective == null) {
             return null;
         }
 
         return learningObjective;
+    }
+
+    public List<LearningObjective> getWeakObjectivesForAccountAndCurrentCourse(Account account) {
+        return learningObjectiveRepository.findWeakObjectivesByAccountAndCourse(
+                account.getAccountId(),
+                account.getCurrentCourse().getCourseId()
+        );
     }
 }

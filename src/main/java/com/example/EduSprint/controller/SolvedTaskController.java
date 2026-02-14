@@ -1,6 +1,7 @@
 package com.example.EduSprint.controller;
 
 import com.example.EduSprint.entity.Account;
+import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.SolvedTask;
 import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.SolvedTaskRepository;
@@ -54,10 +55,11 @@ public class SolvedTaskController {
 
             // Craeting new Solved Task and Saving it
             Account account = accountService.getAccount(firebasePrincipal.getEmail());
+            Course course = account.getCurrentCourse();
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);
             Instant endTime = Instant.parse(endTimeString);
-            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime);
+            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course);
             solvedTaskRepository.save(solvedTask);
 
             accountObjectiveService.updateAccountObjective(solvedTask);
@@ -65,11 +67,6 @@ public class SolvedTaskController {
             account.setCurrentTask(null);
 
             if (accountService.saveAccount(account)) {
-                short countWeakObjectives = (short) account.getWeakObjectives().size();
-                if (countWeakObjectives < account.getCountWeakObjectives() || countWeakObjectives == 5) {
-                    account.setCountWeakObjectives(countWeakObjectives);
-                    accountService.saveAccount(account);
-                }
                 return new ResponseEntity<>("New Solved Task Successfully Saved!", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);

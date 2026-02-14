@@ -6,6 +6,7 @@ import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -30,24 +31,17 @@ public class TaskService {
     }
 
     public Task getNewTask(Account account) {
-        LearningObjective nextLearningObjective;
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId);
 
-        if (account.getCountWeakObjectives() > 0) {
-            Random random = new Random();
-            int index = random.nextInt(account.getWeakObjectives().size());
-            nextLearningObjective = account.getWeakObjectives().get(index);
-
-            return taskRepository.findRandomTaskFromObjective(nextLearningObjective.getObjectiveId());
-        }
-
-        nextLearningObjective = learningObjectiveService.findNextLearningObjective(account.getAccountId());
-
-        if (nextLearningObjective == null && account.getWeakObjectives().isEmpty()) {
+        List<LearningObjective> weakObjectives = learningObjectiveService.getWeakObjectivesForAccountAndCurrentCourse(account);
+        if (nextLearningObjective == null && weakObjectives.isEmpty()) {
             return null;
-        } else if (nextLearningObjective == null && !account.getWeakObjectives().isEmpty()) {
+        } else if (nextLearningObjective == null) {
             Random random = new Random();
-            int index = random.nextInt(account.getWeakObjectives().size());
-            nextLearningObjective = account.getWeakObjectives().get(index);
+            int index = random.nextInt(weakObjectives.size());
+            nextLearningObjective = weakObjectives.get(index);
         }
         return taskRepository.findRandomTaskFromObjective(nextLearningObjective.getObjectiveId());
     }

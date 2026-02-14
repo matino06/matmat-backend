@@ -27,26 +27,27 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         COUNT(op.prerequisite_id) = SUM(CASE WHEN ao_p.n >= 2 THEN 1 ELSE 0 END)) AS is_unlocked,
                        COALESCE(ao_o.last_q > 3, false) AS is_sufficient
                 FROM learning_objective lo
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
                 NATURAL JOIN field_of_study fo
                 LEFT JOIN objective_prerequisite op ON op.objective_id = lo.objective_id
-                LEFT JOIN account_objective ao_p ON ao_p.objective_id = op.prerequisite_id\s
-                     AND ao_p.account_id = :accountId\s
-                LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id\s
-                     AND ao_o.account_id = :accountId\s
+                LEFT JOIN account_objective ao_p ON ao_p.objective_id = op.prerequisite_id
+                     AND ao_p.account_id = :accountId
+                LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
+                     AND ao_o.account_id = :accountId
                 WHERE EXISTS (
                     SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
                 )
                 GROUP BY s.subfield_id, fo.field_name, s.subfield_name, lo.objective_id, lo.objective_name, ao_o.last_q
                 ORDER BY s.subfield_id, is_unlocked DESC, COUNT(op.prerequisite_id), lo.objective_id
-            
             """, nativeQuery = true)
-    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId);
+    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = """
                 SELECT lo.* 
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 WHERE ao.account_id = :accountId
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
@@ -65,5 +66,11 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
-    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId);
+    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = "SELECT lo.* FROM learning_objective lo " +
+                   "INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId " +
+                   "WHERE lo.objective_id IN (SELECT wo.objective_id FROM weak_objectives wo WHERE wo.account_id = :accountId)",
+            nativeQuery = true)
+    List<LearningObjective> findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 }

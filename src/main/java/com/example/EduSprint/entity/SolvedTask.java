@@ -33,12 +33,17 @@ public class SolvedTask {
     @Column(name = "end_time", nullable = false)
     private Instant endTime;
 
-    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime) {
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course) {
         this.account = account;
         this.task = task;
         this.q = q;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.course = course;
     }
 
     public SolvedTask() {
@@ -86,6 +91,14 @@ public class SolvedTask {
 
     public void setEndTime(Instant endTime) {
         this.endTime = endTime;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
     }
 
     @Override
