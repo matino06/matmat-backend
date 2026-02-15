@@ -8,6 +8,7 @@ import com.example.EduSprint.repository.SolvedTaskRepository;
 import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountObjectiveService;
 import com.example.EduSprint.service.AccountService;
+import com.example.EduSprint.service.LearningObjectiveService;
 import com.example.EduSprint.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +31,14 @@ public class SolvedTaskController {
     public final AccountService accountService;
     public final TaskService taskService;
     public final AccountObjectiveService accountObjectiveService;
+    public final LearningObjectiveService learningObjectiveService;
 
-    public SolvedTaskController(SolvedTaskRepository solvedTaskRepository, AccountService accountService, TaskService taskService, AccountObjectiveService accountObjectiveService) {
+    public SolvedTaskController(SolvedTaskRepository solvedTaskRepository, AccountService accountService, TaskService taskService, AccountObjectiveService accountObjectiveService, LearningObjectiveService learningObjectiveService) {
         this.solvedTaskRepository = solvedTaskRepository;
         this.accountService = accountService;
         this.taskService = taskService;
         this.accountObjectiveService = accountObjectiveService;
+        this.learningObjectiveService = learningObjectiveService;
     }
 
     @Transactional
@@ -47,6 +50,7 @@ public class SolvedTaskController {
             Short q = ((Number) taskData.get("q")).shortValue();
             String startTimeString = (String) taskData.get("startTime");
             String endTimeString = (String) taskData.get("endTime");
+            String device = (String) taskData.get("device");
 
             if (q < 0 || q > 5) {
                 return ResponseEntity.badRequest()
@@ -59,7 +63,9 @@ public class SolvedTaskController {
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);
             Instant endTime = Instant.parse(endTimeString);
-            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course);
+            Short currentProgress = learningObjectiveService.calculateExamProgress(account);
+
+            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course, currentProgress, device);
             solvedTaskRepository.save(solvedTask);
 
             accountObjectiveService.updateAccountObjective(solvedTask);

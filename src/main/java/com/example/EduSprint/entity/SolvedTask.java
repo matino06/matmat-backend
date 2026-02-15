@@ -33,16 +33,24 @@ public class SolvedTask {
     @Column(name = "end_time", nullable = false)
     private Instant endTime;
 
+    @Column(name="progress")
+    private Short progress;
+
+    @Column(name="device")
+    private String device;
+
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
 
-    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course) {
+    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course, Short progress, String device) {
         this.account = account;
         this.task = task;
         this.q = q;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.progress = progress;
+        this.device = device;
         this.course = course;
     }
 
@@ -93,6 +101,22 @@ public class SolvedTask {
         this.endTime = endTime;
     }
 
+    public Short getProgress() {
+        return progress;
+    }
+
+    public void setProgress(Short progress) {
+        this.progress = progress;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
+    }
+
     public Course getCourse() {
         return course;
     }
@@ -110,6 +134,9 @@ public class SolvedTask {
                 ", q=" + q +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
+                ", progress=" + progress +
+                ", device='" + device + '\'' +
+                ", course=" + course +
                 '}';
     }
 }
