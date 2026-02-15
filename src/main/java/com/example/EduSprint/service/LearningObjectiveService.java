@@ -116,7 +116,7 @@ public class LearningObjectiveService {
         );
     }
 
-    public Short calculateExamProgress(Account account) {
+    public Short calculateExamProgress(Account account, LearningObjective objective, short lastQ) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
 
@@ -130,6 +130,11 @@ public class LearningObjectiveService {
                 findObjectivesWithUnlockStatus(accountId, courseId).stream()
                 .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (String) arr[1], (Long) arr[2], (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
                 .toList();
+
+        objectivesWithStatus.stream()
+                .filter(dto -> dto.getObjectiveId().equals(objective.getObjectiveId())) // assuming DTO has a getObjectiveId() method
+                .findFirst()
+                .ifPresent(dto -> dto.setIsMastered(lastQ >= 4));
 
         Map<String, FieldGroup> grouped = objectivesWithStatus.stream()
                 .collect(java.util.stream.Collectors.groupingBy(

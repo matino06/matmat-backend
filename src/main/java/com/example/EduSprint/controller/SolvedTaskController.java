@@ -63,7 +63,7 @@ public class SolvedTaskController {
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);
             Instant endTime = Instant.parse(endTimeString);
-            Short currentProgress = learningObjectiveService.calculateExamProgress(account);
+            Short currentProgress = learningObjectiveService.calculateExamProgress(account, task.getObjective(), q);
 
             SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course, currentProgress, device);
             solvedTaskRepository.save(solvedTask);
