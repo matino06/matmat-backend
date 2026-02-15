@@ -1,5 +1,6 @@
 package com.example.EduSprint.repository;
 
+import com.example.EduSprint.dto.ObjectiveDTO;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.entity.SubfieldOfStudy;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -68,9 +69,80 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
             """, nativeQuery = true)
     LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
+    @Query(value = """
+                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
+                FROM account_objective ao
+                JOIN learning_objective lo ON ao.objective_id = lo.objective_id
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
+                WHERE ao.account_id = :accountId
+                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
+                AND NOT EXISTS (
+                    SELECT 1 
+                    FROM objective_prerequisite op
+                    WHERE op.objective_id = lo.objective_id
+                    AND NOT EXISTS (
+                        SELECT 1 
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= 2
+                    )
+                )
+                ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
+            """, nativeQuery = true)
+    List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
+                FROM account_objective ao
+                JOIN learning_objective lo ON ao.objective_id = lo.objective_id
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
+                WHERE ao.account_id = :accountId
+                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) > (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
+                AND NOT EXISTS (
+                    SELECT 1 
+                    FROM objective_prerequisite op
+                    WHERE op.objective_id = lo.objective_id
+                    AND NOT EXISTS (
+                        SELECT 1 
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= 2
+                    )
+                )
+                AND NOT EXISTS(
+                    SELECT 1
+                    FROM weak_objectives wo
+                    WHERE wo.objective_id = lo.objective_id
+                        AND wo.account_id = :accountId
+                )
+                ORDER BY (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE ASC, lo.subfield_id ASC, ao.objective_id ASC
+            """, nativeQuery = true)
+    List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
     @Query(value = "SELECT lo.* FROM learning_objective lo " +
                    "INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId " +
                    "WHERE lo.objective_id IN (SELECT wo.objective_id FROM weak_objectives wo WHERE wo.account_id = :accountId)",
             nativeQuery = true)
     List<LearningObjective> findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+                    SELECT lo.objective_name, ao.last_q
+                    FROM learning_objective lo
+                    INNER JOIN course_objective co 
+                        ON lo.objective_id = co.objective_id 
+                        AND co.course_id = :courseId
+                    JOIN account_objective ao 
+                        ON ao.objective_id = lo.objective_id
+                            AND ao.account_id = :accountId
+                    WHERE lo.objective_id IN (
+                        SELECT wo.objective_id 
+                        FROM weak_objectives wo 
+                        WHERE wo.account_id = :accountId
+                    )
+                """, nativeQuery = true)
+    List<Object[]> findWeakObjectivesWithLastQ(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 }

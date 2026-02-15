@@ -1,14 +1,14 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.dto.ObjectiveDTO;
 import com.example.EduSprint.dto.ObjectiveWithStatusDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,6 +57,56 @@ public class LearningObjectiveService {
         }
 
         return learningObjective;
+    }
+
+    public final List<ObjectiveDTO> findObjectivesForToday(Account account) {
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+
+        LocalDate today = LocalDate.now();
+        List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId);
+        List<ObjectiveDTO> objectiveDTOS = results.stream()
+                .map(r -> new ObjectiveDTO(
+                        (String) r[0],
+                        ((java.sql.Date) r[1]).toLocalDate(),
+                        (Short) r[2]
+                ))
+                .collect(Collectors.toList());
+
+        Set<String> existingNames = objectiveDTOS.stream()
+                .map(ObjectiveDTO::getTitle)
+                .collect(Collectors.toSet());
+
+        List<Object[]> weakObjectives = learningObjectiveRepository.findWeakObjectivesWithLastQ(accountId, courseId);
+        List<ObjectiveDTO> weakObjectiveDTOS = weakObjectives.stream()
+                .map(r -> new ObjectiveDTO(
+                        (String) r[0],
+                        today,
+                        (Short) r[1]
+                ))
+                .collect(Collectors.toList());
+
+        weakObjectiveDTOS.stream()
+                .filter(dto -> !existingNames.contains(dto.getTitle()))
+                .forEach(objectiveDTOS::add);
+
+        return objectiveDTOS;
+    }
+
+    public List<ObjectiveDTO> findScheduledObjectives(Account account) {
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+
+        List<Object[]> results = learningObjectiveRepository.findScheduledObjectives(accountId, courseId);
+        List<ObjectiveDTO> objectiveDTOS = results.stream()
+                .map(r -> new ObjectiveDTO(
+                        (String) r[0],
+                        ((java.sql.Date) r[1]).toLocalDate(),
+                        (Short) r[2]
+                ))
+                .collect(Collectors.toList());
+
+        return objectiveDTOS;
     }
 
     public List<LearningObjective> getWeakObjectivesForAccountAndCurrentCourse(Account account) {
