@@ -3,6 +3,7 @@ package com.example.EduSprint.service;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.AccountRepository;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,5 +58,21 @@ public class AccountService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void updateNotificationSettings(String email, boolean learningReminders, boolean featureAnnouncements) {
+        Account account = getAccount(email);
+        if (account != null) {
+            account.setLearningRemindersEnabled(learningReminders);
+            account.setFeatureAnnouncementsEnabled(featureAnnouncements);
+            accountRepository.save(account);
+        }
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Zagreb")
+    public void resetNonDefaultTasks() {
+        int updatedCount = accountRepository.resetCurrentTaskForAllExceptDefault(56L);
+        System.out.println("Resetiranje zadataka: " + updatedCount + " korisnika ažurirano.");
     }
 }

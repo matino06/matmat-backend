@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -38,8 +39,32 @@ public class AccountController {
             System.out.println("Ne postoji");
             return new ResponseEntity<>("Account does not exist", HttpStatus.OK);
         }
-        System.out.println("Hello");
         return new ResponseEntity<>("Account exists", HttpStatus.OK);
+    }
+
+    @GetMapping("/notification-settings")
+    public ResponseEntity<Map<String, Boolean>> getNotificationSettings(Authentication authentication) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Map<String, Boolean> settings = new HashMap<>();
+        settings.put("learningRemindersEnabled", account.isLearningRemindersEnabled());
+        settings.put("featureAnnouncementsEnabled", account.isFeatureAnnouncementsEnabled());
+        return ResponseEntity.ok(settings);
+    }
+
+    @PostMapping("/notification-settings")
+    public ResponseEntity<Void> updateNotificationSettings(Authentication authentication, @RequestBody Map<String, Boolean> settings) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Boolean learningReminders = settings.get("learningRemindersEnabled");
+        Boolean featureAnnouncements = settings.get("featureAnnouncementsEnabled");
+        if (learningReminders == null || featureAnnouncements == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        accountService.updateNotificationSettings(principal.getEmail(), learningReminders, featureAnnouncements);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/create")

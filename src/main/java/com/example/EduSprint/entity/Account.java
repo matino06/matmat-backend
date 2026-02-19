@@ -29,6 +29,12 @@ public class Account {
     @JoinColumn(name = "current_course_id")
     private Course currentCourse;
 
+    @JoinColumn(name = "learning_reminders_enabled", nullable = false)
+    private Boolean learningRemindersEnabled;
+
+    @JoinColumn(name = "feature_announcements_enabled", nullable = false)
+    private Boolean featureAnnouncementsEnabled;
+
     @OneToMany
     @JoinTable(name = "weak_objectives", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "objective_id"))
     private List<LearningObjective> weakObjectives;
@@ -93,6 +99,22 @@ public class Account {
 
     public void setCurrentCourse(Course currentCourse) {
         this.currentCourse = currentCourse;
+    }
+
+    public Boolean isLearningRemindersEnabled() {
+        return learningRemindersEnabled;
+    }
+
+    public void setLearningRemindersEnabled(Boolean learningRemindersEnabled) {
+        this.learningRemindersEnabled = learningRemindersEnabled;
+    }
+
+    public Boolean isFeatureAnnouncementsEnabled() {
+        return featureAnnouncementsEnabled;
+    }
+
+    public void setFeatureAnnouncementsEnabled(Boolean featureAnnouncementsEnabled) {
+        this.featureAnnouncementsEnabled = featureAnnouncementsEnabled;
     }
 
     @Override
