@@ -1,26 +1,17 @@
 package com.example.EduSprint.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class UserGoalDTO {
 
     private int dailyGoal;
-    private int todayCompleted;
-    private int currentStreak;
-    private int longestStreak;
-    private int totalDaysActive;
+    private LocalDate registrationDate;
     private List<DailyGoalDTO> calendarDays;
 
-    public UserGoalDTO(int dailyGoal, int todayCompleted, int currentStreak, int longestStreak, int totalDaysActive, List<DailyGoalDTO> calendarDays) {
+    public UserGoalDTO(int dailyGoal, LocalDate registrationDate, List<DailyGoalDTO> calendarDays) {
         this.dailyGoal = dailyGoal;
-        this.todayCompleted = todayCompleted;
-        this.currentStreak = currentStreak;
-        this.longestStreak = longestStreak;
-        this.totalDaysActive = totalDaysActive;
-        this.calendarDays = calendarDays;
-    }
-
-    public UserGoalDTO(List<DailyGoalDTO> calendarDays) {
+        this.registrationDate = registrationDate;
         this.calendarDays = calendarDays;
     }
 
@@ -32,36 +23,12 @@ public class UserGoalDTO {
         this.dailyGoal = dailyGoal;
     }
 
-    public int getTodayCompleted() {
-        return todayCompleted;
+    public LocalDate getRegistrationDate() {
+        return registrationDate;
     }
 
-    public void setTodayCompleted(int todayCompleted) {
-        this.todayCompleted = todayCompleted;
-    }
-
-    public int getCurrentStreak() {
-        return currentStreak;
-    }
-
-    public void setCurrentStreak(int currentStreak) {
-        this.currentStreak = currentStreak;
-    }
-
-    public int getLongestStreak() {
-        return longestStreak;
-    }
-
-    public void setLongestStreak(int longestStreak) {
-        this.longestStreak = longestStreak;
-    }
-
-    public int getTotalDaysActive() {
-        return totalDaysActive;
-    }
-
-    public void setTotalDaysActive(int totalDaysActive) {
-        this.totalDaysActive = totalDaysActive;
+    public void setRegistrationDate(LocalDate registrationDate) {
+        this.registrationDate = registrationDate;
     }
 
     public List<DailyGoalDTO> getCalendarDays() {

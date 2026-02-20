@@ -2,6 +2,8 @@ package com.example.EduSprint.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -17,6 +19,9 @@ public class Account {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "registration_date", nullable = false)
+    private LocalDate registrationDate;
 
     @Column(name = "count_weak_objectives", nullable = false)
     private Short countWeakObjectives;
@@ -34,6 +39,9 @@ public class Account {
 
     @JoinColumn(name = "feature_announcements_enabled", nullable = false)
     private Boolean featureAnnouncementsEnabled;
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserCourseGoal> courseGoals;
 
     @OneToMany
     @JoinTable(name = "weak_objectives", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "objective_id"))
@@ -67,6 +75,14 @@ public class Account {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public LocalDate getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(LocalDate registrationDate) {
+        this.registrationDate = registrationDate;
     }
 
     public List<LearningObjective> getWeakObjectives() {
@@ -115,6 +131,14 @@ public class Account {
 
     public void setFeatureAnnouncementsEnabled(Boolean featureAnnouncementsEnabled) {
         this.featureAnnouncementsEnabled = featureAnnouncementsEnabled;
+    }
+
+    public List<UserCourseGoal> getCourseGoals() {
+        return courseGoals;
+    }
+
+    public void setCourseGoals(List<UserCourseGoal> courseGoals) {
+        this.courseGoals = courseGoals;
     }
 
     @Override

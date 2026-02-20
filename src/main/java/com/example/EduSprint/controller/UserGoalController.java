@@ -3,9 +3,9 @@ package com.example.EduSprint.controller;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.dto.UserGoalDTO;
 import com.example.EduSprint.entity.Account;
+import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountService;
-import com.example.EduSprint.service.DailyTaskCountService;
 import com.example.EduSprint.service.SolvedTaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -33,11 +34,18 @@ public class UserGoalController {
 
         Account account = accountService.getAccount(firebasePrincipal.getEmail());
         Long accountId = account.getAccountId();
-        Long courseId = account.getCurrentCourse().getCourseId();
+        Course course = account.getCurrentCourse();
 
-        List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, courseId);
+        LocalDate accountRegistrationDate = account.getRegistrationDate();
+        List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, course.getCourseId());
 
-        UserGoalDTO userGoalDTO = new UserGoalDTO(calendar);
+        int dailyGoal = account.getCourseGoals().stream()
+                .filter(goal -> goal.getCourse().equals(course))
+                .findFirst()
+                .get()
+                .getDailyGoal();
+
+        UserGoalDTO userGoalDTO = new UserGoalDTO(dailyGoal, accountRegistrationDate, calendar);
         return ResponseEntity.ok(userGoalDTO);
     }
 }
