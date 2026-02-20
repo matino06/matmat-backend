@@ -22,17 +22,15 @@ public class DailyTaskCountService {
     @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Zagreb")
     public void updateDailyTaskCounts() {
         String sql = """
-            INSERT INTO user_daily_tasks (account_id, date, task_count)
+            INSERT INTO user_daily_tasks (account_id, course_id, date, task_count)
             SELECT 
-                ao.account_id, 
-                CURRENT_DATE, 
+                ao.account_id,
+                co.course_id,
+                CURRENT_DATE,
                 COUNT(*) as task_count
             FROM account_objective ao
             JOIN learning_objective lo ON ao.objective_id = lo.objective_id
-            JOIN account acc ON ao.account_id = acc.account_id
-            INNER JOIN course_objective co 
-                ON lo.objective_id = co.objective_id 
-                AND co.course_id = acc.current_course_id
+            JOIN course_objective co ON lo.objective_id = co.objective_id
             WHERE EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
             AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) 
                 <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
@@ -48,7 +46,7 @@ public class DailyTaskCountService {
                     AND ao_prereq.n >= 2
                 )
             )
-            GROUP BY ao.account_id
+            GROUP BY ao.account_id, co.course_id
             HAVING COUNT(*) < 10;
             """;
 
