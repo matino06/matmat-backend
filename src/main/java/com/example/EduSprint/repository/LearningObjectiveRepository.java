@@ -25,7 +25,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                        lo.objective_id,
                        lo.objective_name,
                        (COUNT(op.prerequisite_id) = 0 OR
-                        COUNT(op.prerequisite_id) = SUM(CASE WHEN ao_p.n >= 2 THEN 1 ELSE 0 END)) AS is_unlocked,
+                        COUNT(op.prerequisite_id) = SUM(CASE WHEN ao_p.n >= :tempo THEN 1 ELSE 0 END)) AS is_unlocked,
                        COALESCE(ao_o.last_q > 3, false) AS is_sufficient
                 FROM learning_objective lo
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
@@ -42,7 +42,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 GROUP BY s.subfield_id, fo.field_name, s.subfield_name, lo.objective_id, lo.objective_name, ao_o.last_q
                 ORDER BY s.subfield_id, is_unlocked DESC, COUNT(op.prerequisite_id), lo.objective_id
             """, nativeQuery = true)
-    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
                 SELECT lo.* 
@@ -61,13 +61,13 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= 2
+                        AND ao_prereq.n >= :tempo
                     )
                 )
                 ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
-    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
                 SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
@@ -86,12 +86,12 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= 2
+                        AND ao_prereq.n >= :tempo
                     )
                 )
                 ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
-    List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
                 SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
@@ -110,7 +110,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= 2
+                        AND ao_prereq.n >= :tempo
                     )
                 )
                 AND NOT EXISTS(
@@ -121,7 +121,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 )
                 ORDER BY (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE ASC, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
-    List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = "SELECT lo.* FROM learning_objective lo " +
                    "INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId " +

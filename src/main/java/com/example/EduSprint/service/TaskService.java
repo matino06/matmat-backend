@@ -33,7 +33,9 @@ public class TaskService {
     public Task getNewTask(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId);
+        Short tempo = account.getTempo();
+
+        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId, tempo);
 
         List<LearningObjective> weakObjectives = learningObjectiveService.getWeakObjectivesForAccountAndCurrentCourse(account);
         if (nextLearningObjective == null && weakObjectives.isEmpty()) {

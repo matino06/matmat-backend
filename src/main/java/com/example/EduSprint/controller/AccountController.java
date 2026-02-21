@@ -7,6 +7,8 @@ import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountObjectiveService;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.CourseService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -40,6 +42,31 @@ public class AccountController {
             return new ResponseEntity<>("Account does not exist", HttpStatus.OK);
         }
         return new ResponseEntity<>("Account exists", HttpStatus.OK);
+    }
+
+    @GetMapping("/tempo")
+    public ResponseEntity<Short> getTempo(Authentication authentication) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+
+        return new ResponseEntity<>(account.getTempo(), HttpStatus.OK);
+    }
+
+    @PostMapping("/tempo")
+    public ResponseEntity<?> setTempo(Authentication authentication, @RequestBody Short tempo) {
+        try {
+            FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+            Account account = accountService.getAccount(principal.getEmail());
+            account.setTempo(tempo);
+            accountRepository.save(account);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>("Account not found", HttpStatus.NOT_FOUND);
+        } catch (DataAccessException e) {
+            return new ResponseEntity<>("Database error", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/notification-settings")

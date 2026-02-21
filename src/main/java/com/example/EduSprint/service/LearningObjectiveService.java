@@ -49,8 +49,8 @@ public class LearningObjectiveService {
         return learningObjectiveRepository.findById(id).orElse(null);
     }
 
-    public final LearningObjective findNextLearningObjective(Long accountId, Long courseId) {
-        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId, courseId);
+    public final LearningObjective findNextLearningObjective(Long accountId, Long courseId, Short tempo) {
+        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId, courseId, tempo);
 
         if (learningObjective == null) {
             return null;
@@ -62,9 +62,10 @@ public class LearningObjectiveService {
     public final List<ObjectiveDTO> findObjectivesForToday(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
+        Short tempo = account.getTempo();
 
         LocalDate today = LocalDate.now();
-        List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId);
+        List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId, tempo);
         List<ObjectiveDTO> objectiveDTOS = results.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
@@ -96,8 +97,9 @@ public class LearningObjectiveService {
     public List<ObjectiveDTO> findScheduledObjectives(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
+        Short tempo = account.getTempo();
 
-        List<Object[]> results = learningObjectiveRepository.findScheduledObjectives(accountId, courseId);
+        List<Object[]> results = learningObjectiveRepository.findScheduledObjectives(accountId, courseId, tempo);
         List<ObjectiveDTO> objectiveDTOS = results.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
@@ -119,6 +121,7 @@ public class LearningObjectiveService {
     public Short calculateExamProgress(Account account, LearningObjective objective, short lastQ) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
+        Short tempo = account.getTempo();
 
         // Get the appropriate distribution for the course
         Map<String, Integer> distribution = COURSE_POINTS_DISTRIBUTION.get(courseId);
@@ -127,7 +130,7 @@ public class LearningObjectiveService {
         }
 
         List<ObjectiveWithStatusDTO> objectivesWithStatus = learningObjectiveRepository.
-                findObjectivesWithUnlockStatus(accountId, courseId).stream()
+                findObjectivesWithUnlockStatus(accountId, courseId, tempo).stream()
                 .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (String) arr[1], (Long) arr[2], (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
                 .toList();
 

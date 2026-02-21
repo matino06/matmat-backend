@@ -40,6 +40,9 @@ public class Account {
     @JoinColumn(name = "feature_announcements_enabled", nullable = false)
     private Boolean featureAnnouncementsEnabled;
 
+    @JoinColumn(name = "tempo", nullable = false)
+    private Short tempo;
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserCourseGoal> courseGoals;
 
@@ -52,6 +55,7 @@ public class Account {
         this.name = name;
         this.countWeakObjectives = 0;
         this.currentCourse = currentCourse;
+        this.tempo = 2;
     }
 
     public Account() {
@@ -139,6 +143,14 @@ public class Account {
 
     public void setCourseGoals(List<UserCourseGoal> courseGoals) {
         this.courseGoals = courseGoals;
+    }
+
+    public Short getTempo() {
+        return tempo;
+    }
+
+    public void setTempo(Short tempo) {
+        this.tempo = tempo;
     }
 
     @Override
