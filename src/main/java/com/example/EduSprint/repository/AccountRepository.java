@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
-import jakarta.transaction.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,7 +17,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     boolean existsByEmail(String email);
 
     @Modifying
-    @Transactional
     @Query(value = "UPDATE account SET current_task_id = NULL WHERE current_task_id IS NOT NULL AND current_task_id != :defaultTaskId", nativeQuery = true)
     int resetCurrentTaskForAllExceptDefault(@Param("defaultTaskId") Long defaultTaskId);
 }

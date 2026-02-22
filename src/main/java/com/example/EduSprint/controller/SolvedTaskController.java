@@ -51,6 +51,7 @@ public class SolvedTaskController {
             String startTimeString = (String) taskData.get("startTime");
             String endTimeString = (String) taskData.get("endTime");
             String device = (String) taskData.get("device");
+            Short tempo = ((Number) taskData.get("tempo")).shortValue();
 
             if (q < 0 || q > 5) {
                 return ResponseEntity.badRequest()
@@ -65,7 +66,7 @@ public class SolvedTaskController {
             Instant endTime = Instant.parse(endTimeString);
             Short currentProgress = learningObjectiveService.calculateExamProgress(account, task.getObjective(), q);
 
-            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course, currentProgress, device);
+            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course, currentProgress, device, tempo);
             solvedTaskRepository.save(solvedTask);
 
             accountObjectiveService.updateAccountObjective(solvedTask);

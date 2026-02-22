@@ -39,11 +39,14 @@ public class SolvedTask {
     @Column(name="device")
     private String device;
 
+    @Column(name="tempo")
+    private Short tempo;
+
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
 
-    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course, Short progress, String device) {
+    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course, Short progress, String device, Short tempo) {
         this.account = account;
         this.task = task;
         this.q = q;
@@ -52,6 +55,7 @@ public class SolvedTask {
         this.progress = progress;
         this.device = device;
         this.course = course;
+        this.tempo = tempo;
     }
 
     public SolvedTask() {
@@ -123,6 +127,14 @@ public class SolvedTask {
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public Short getTempo() {
+        return tempo;
+    }
+
+    public void setTempo(Short tempo) {
+        this.tempo = tempo;
     }
 
     @Override
