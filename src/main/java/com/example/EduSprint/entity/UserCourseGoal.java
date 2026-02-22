@@ -1,12 +1,15 @@
 package com.example.EduSprint.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
+@IdClass(UserCourseGoalId.class)
 public class UserCourseGoal {
     @Id
     @ManyToOne
     @JoinColumn(name = "account_id")
+    @JsonIgnore
     private Account account;
 
     @Id
@@ -47,5 +50,14 @@ public class UserCourseGoal {
 
     public void setDailyGoal(Integer dailyGoal) {
         this.dailyGoal = dailyGoal;
+    }
+
+    @Override
+    public String toString() {
+        return "UserCourseGoal{" +
+                "account=" + account +
+                ", course=" + course +
+                ", dailyGoal=" + dailyGoal +
+                '}';
     }
 }

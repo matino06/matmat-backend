@@ -2,19 +2,23 @@ package com.example.EduSprint.controller;
 
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
+import com.example.EduSprint.entity.UserCourseGoal;
 import com.example.EduSprint.repository.AccountRepository;
 import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountObjectiveService;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.CourseService;
+import com.example.EduSprint.service.UserCourseGoalService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,12 +29,14 @@ public class AccountController {
     public final AccountObjectiveService accountObjectiveService;
     public final AccountService accountService;
     public final CourseService courseService;
+    public final UserCourseGoalService userCourseGoalService;
 
-    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService) {
+    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService) {
         this.accountRepository = accountRepository;
         this.accountService = accountService;
         this.accountObjectiveService = accountObjectiveService;
         this.courseService = courseService;
+        this.userCourseGoalService = userCourseGoalService;
     }
 
     @GetMapping("/exists")
@@ -67,6 +73,45 @@ public class AccountController {
         } catch (Exception e) {
             return new ResponseEntity<>("Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/goals")
+    public ResponseEntity<List<UserCourseGoal>> getGoals(Authentication authentication) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+
+        return new ResponseEntity<>(account.getCourseGoals(), HttpStatus.OK);
+    }
+
+    @PostMapping("/goals")
+    public ResponseEntity<Void> updateUserCourseGoal(Authentication authentication, @RequestBody Map<String, Object> userCourseGoalsNew) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+
+        List<UserCourseGoal> userCourseGoals = account.getCourseGoals();
+
+        List<Map<String, Object>> courseGoals =
+                (List<Map<String, Object>>) userCourseGoalsNew.get("userCourseGoalsNew");
+
+        for (Map<String, Object> goal : courseGoals) {
+
+            Map<String, Object> course = (Map<String, Object>) goal.get("course");
+            Integer courseIdInt = (Integer) course.get("courseId");
+            Long courseId = courseIdInt.longValue();
+            Integer dailyGoal = (Integer) goal.get("dailyGoal");
+
+
+            userCourseGoals.stream()
+                    .filter(cg -> cg.getCourse().getCourseId().equals(courseId))
+                    .findFirst()
+                    .ifPresent(cg -> {
+                        cg.setDailyGoal(dailyGoal);
+                        userCourseGoalService.saveUserCourseGoal(cg);
+                    });
+        }
+
+        return ResponseEntity.ok().build();
+
     }
 
     @GetMapping("/notification-settings")
