@@ -34,10 +34,10 @@ public class Account {
     @JoinColumn(name = "current_course_id")
     private Course currentCourse;
 
-    @JoinColumn(name = "learning_reminders_enabled", nullable = false)
+    @JoinColumn(name = "learning_reminders_enabled", nullable = true)
     private Boolean learningRemindersEnabled;
 
-    @JoinColumn(name = "feature_announcements_enabled", nullable = false)
+    @JoinColumn(name = "feature_announcements_enabled", nullable = true)
     private Boolean featureAnnouncementsEnabled;
 
     @JoinColumn(name = "tempo", nullable = false)
@@ -53,8 +53,11 @@ public class Account {
     public Account(String email, String name, Course currentCourse) {
         this.email = email;
         this.name = name;
+        this.registrationDate = LocalDate.now();
         this.countWeakObjectives = 0;
         this.currentCourse = currentCourse;
+        this.learningRemindersEnabled = null;
+        this.featureAnnouncementsEnabled = null;
         this.tempo = 2;
     }
 
