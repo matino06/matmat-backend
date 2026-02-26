@@ -7,12 +7,14 @@ public class DailyGoalDTO {
     private boolean goalMet;
     private boolean partial;
     private int completed;
+    private int goal;
 
-    public DailyGoalDTO(LocalDate date, boolean goalMet, boolean partial, int completed) {
+    public DailyGoalDTO(LocalDate date, boolean goalMet, boolean partial, int completed, int goal) {
         this.date = date;
         this.goalMet = goalMet;
         this.partial = partial;
         this.completed = completed;
+        this.goal = goal;
     }
 
     public LocalDate getDate() {
@@ -45,5 +47,13 @@ public class DailyGoalDTO {
 
     public void setCompleted(int completed) {
         this.completed = completed;
+    }
+
+    public int getGoal() {
+        return goal;
+    }
+
+    public void setGoal(int goal) {
+        this.goal = goal;
     }
 }

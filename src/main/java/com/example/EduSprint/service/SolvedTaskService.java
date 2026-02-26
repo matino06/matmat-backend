@@ -22,7 +22,8 @@ public class SolvedTaskService {
                         ((java.sql.Date) r[0]).toLocalDate(),
                         (boolean) r[2],
                         (boolean) r[3],
-                        ((Number) r[1]).intValue()
+                        ((Number) r[1]).intValue(),
+                        ((Number) r[4]).intValue()
                 ))
                 .collect(Collectors.toList());
 

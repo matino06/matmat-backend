@@ -17,7 +17,8 @@ public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
                        (COUNT(*) >= ucg.daily_goal OR (udt.task_count IS NOT NULL AND COUNT(*) >= udt.task_count)) AS goalMet,
                        (COUNT(*) > 0
                         AND COUNT(*) < ucg.daily_goal
-                        AND (udt.task_count IS NULL OR COUNT(*) < udt.task_count)) AS partial
+                        AND (udt.task_count IS NULL OR COUNT(*) < udt.task_count)) AS partial,
+                        LEAST(ucg.daily_goal, COALESCE(udt.task_count, ucg.daily_goal)) AS target_goal
                     FROM solved_task st
                         JOIN user_course_goal ucg
                             ON ucg.account_id = st.account_id
