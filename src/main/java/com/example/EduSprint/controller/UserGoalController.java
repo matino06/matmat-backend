@@ -7,6 +7,7 @@ import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.security.FirebasePrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.SolvedTaskService;
+import com.example.EduSprint.service.UserDailyTasksService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +23,12 @@ public class UserGoalController {
 
     public final SolvedTaskService solvedTaskService;
     public final AccountService accountService;
+    public final UserDailyTasksService userDailyTasksService;
 
-    public UserGoalController(SolvedTaskService solvedTaskService, AccountService accountService) {
+    public UserGoalController(SolvedTaskService solvedTaskService, AccountService accountService, UserDailyTasksService userDailyTasksService) {
         this.solvedTaskService = solvedTaskService;
         this.accountService = accountService;
+        this.userDailyTasksService = userDailyTasksService;
     }
 
     @GetMapping
@@ -44,6 +47,12 @@ public class UserGoalController {
                 .findFirst()
                 .get()
                 .getDailyGoal();
+
+        int dailyTasksForToday = userDailyTasksService.getDailyTasksForToday(accountId, course.getCourseId());
+
+        if (dailyTasksForToday > -1 && dailyTasksForToday < dailyGoal) {
+            dailyGoal = dailyTasksForToday;
+        }
 
         UserGoalDTO userGoalDTO = new UserGoalDTO(dailyGoal, accountRegistrationDate, calendar);
         return ResponseEntity.ok(userGoalDTO);
