@@ -5,10 +5,7 @@ import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.UserCourseGoal;
 import com.example.EduSprint.repository.AccountRepository;
 import com.example.EduSprint.security.FirebasePrincipal;
-import com.example.EduSprint.service.AccountObjectiveService;
-import com.example.EduSprint.service.AccountService;
-import com.example.EduSprint.service.CourseService;
-import com.example.EduSprint.service.UserCourseGoalService;
+import com.example.EduSprint.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -30,13 +27,15 @@ public class AccountController {
     public final AccountService accountService;
     public final CourseService courseService;
     public final UserCourseGoalService userCourseGoalService;
+    public final EmailService emailService;
 
-    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService) {
+    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService) {
         this.accountRepository = accountRepository;
         this.accountService = accountService;
         this.accountObjectiveService = accountObjectiveService;
         this.courseService = courseService;
         this.userCourseGoalService = userCourseGoalService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/exists")
@@ -145,6 +144,7 @@ public class AccountController {
         boolean accountCreated = accountService.createAccount(principal.getEmail(), principal.getName());
 
         if (accountCreated) {
+            emailService.sendWelcomeEmail(principal.getEmail());
             return new ResponseEntity<>("Account created", HttpStatus.CREATED);
         }
         return new ResponseEntity<>("Account creation failed", HttpStatus.BAD_REQUEST);
