@@ -123,27 +123,31 @@ public class LearningObjectiveService {
         Long courseId = account.getCurrentCourse().getCourseId();
         Short tempo = account.getTempo();
 
-        // Get the appropriate distribution for the course
         Map<String, Integer> distribution = COURSE_POINTS_DISTRIBUTION.get(courseId);
         if (distribution == null) {
             throw new IllegalArgumentException("No points distribution defined for course ID: " + courseId);
         }
 
-        List<ObjectiveWithStatusDTO> objectivesWithStatus = learningObjectiveRepository.
-                findObjectivesWithUnlockStatus(accountId, courseId, tempo).stream()
-                .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (String) arr[1], (Long) arr[2], (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
+        List<ObjectiveWithStatusDTO> objectivesWithStatus = learningObjectiveRepository
+                .findObjectivesWithUnlockStatus(accountId, courseId, tempo)
+                .stream()
+                .map(arr -> new ObjectiveWithStatusDTO(
+                        (String) arr[0], (String) arr[1], (Long) arr[2],
+                        (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
                 .toList();
 
-        objectivesWithStatus.stream()
-                .filter(dto -> dto.getObjectiveId().equals(objective.getObjectiveId())) // assuming DTO has a getObjectiveId() method
-                .findFirst()
-                .ifPresent(dto -> dto.setIsMastered(lastQ >= 4));
+        if (objective != null) {
+            objectivesWithStatus.stream()
+                    .filter(dto -> dto.getObjectiveId().equals(objective.getObjectiveId()))
+                    .findFirst()
+                    .ifPresent(dto -> dto.setIsMastered(lastQ >= 4));
+        }
 
         Map<String, FieldGroup> grouped = objectivesWithStatus.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
+                .collect(Collectors.groupingBy(
                         ObjectiveWithStatusDTO::getFieldName,
-                        java.util.stream.Collectors.collectingAndThen(
-                                java.util.stream.Collectors.toList(),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
                                 list -> {
                                     int total = list.size();
                                     long mastered = list.stream()
@@ -158,7 +162,7 @@ public class LearningObjectiveService {
                 .mapToDouble(entry -> {
                     String fieldName = entry.getKey();
                     FieldGroup group = entry.getValue();
-                    Integer points = distribution.get(fieldName); // use the course‑specific map
+                    Integer points = distribution.get(fieldName);
 
                     if (points == null || group.total == 0) {
                         return 0.0;
@@ -169,6 +173,10 @@ public class LearningObjectiveService {
                 .sum();
 
         return (short) Math.ceil(totalProgress);
+    }
+
+    public Short calculateExamProgress(Account account) {
+        return calculateExamProgress(account, null, (short) 0);
     }
 
     private record FieldGroup(int total, long mastered) {}
