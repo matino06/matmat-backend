@@ -14,6 +14,9 @@ public class EmailService {
     private String RESEND_API_KEY;
 
     public void sendWelcomeEmail(String to) {
+        if (to.equals("milicevic.matino@gmail.com")) {
+            return;
+        }
 
         Resend resend = new Resend(RESEND_API_KEY);
 
