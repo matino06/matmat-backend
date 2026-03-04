@@ -77,7 +77,11 @@ public class AccountObjectiveService {
                 newI = (short) Math.round(oldI * oldEF);
             }
             accountObjective.setI(newI);
-            accountObjective.setN(++oldN);
+            if (lastQ == null && q.equals((short)5)) {
+                accountObjective.setN((short)2);
+            } else {
+                accountObjective.setN(++oldN);
+            }
         } else {
             accountObjective.setN((short) 0);
             accountObjective.setI((short) 1);
