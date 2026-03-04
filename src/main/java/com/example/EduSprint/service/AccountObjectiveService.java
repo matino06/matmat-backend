@@ -62,11 +62,14 @@ public class AccountObjectiveService {
         Short oldI = accountObjective.getI();
         Short oldN = accountObjective.getN();
         Short q = newSolvedTask.getQ();
+        Short lastQ = accountObjective.getLastQ();
         Instant newSolvedTaskEndTime = newSolvedTask.getEndTime();
 
         if (q >= 3) {
             Short newI;
-            if (oldN == 0) {
+            if (lastQ == null && q.equals((short)5)) {
+                newI = 6;
+            } else if (oldN == 0) {
                 newI = 1;
             } else if (oldN == 1) {
                 newI = 6;
