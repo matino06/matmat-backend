@@ -19,6 +19,9 @@ public class Task {
     @JoinColumn(name = "objective_id", nullable = false)
     private LearningObjective objective;
 
+    @Column(name = "task_text")
+    private String taskText;
+
     @Column(name = "task_text_1", nullable = false)
     private String taskText1;
 
@@ -30,6 +33,9 @@ public class Task {
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ExplanationStep> explanationSteps;
+
+    @Column(name = "explanation")
+    private String explanation;
 
     @Column(name = "solution", nullable = false)
     private String solution;
@@ -47,6 +53,14 @@ public class Task {
 
     public void setObjective(LearningObjective objective) {
         this.objective = objective;
+    }
+
+    public String getTaskText() {
+        return taskText;
+    }
+
+    public void setTaskText(String taskText) {
+        this.taskText = taskText;
     }
 
     public String getTaskText1() {
@@ -81,6 +95,14 @@ public class Task {
         this.explanationSteps = explanationSteps;
     }
 
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
+    }
+
     public String getSolution() {
         return solution;
     }
@@ -97,6 +119,7 @@ public class Task {
                 ", taskText1='" + taskText1 + '\'' +
                 ", imageName='" + imageName + '\'' +
                 ", taskText2='" + taskText2 + '\'' +
+                ", explanation='" + explanation + '\'' +
                 ", solution='" + solution + '\'' +
                 '}';
     }
