@@ -45,6 +45,8 @@ public class TaskService {
             int index = random.nextInt(weakObjectives.size());
             nextLearningObjective = weakObjectives.get(index);
         }
-        return taskRepository.findRandomTaskFromObjective(nextLearningObjective.getObjectiveId());
+
+        Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;
+        return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
     }
 }

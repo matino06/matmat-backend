@@ -1,5 +1,6 @@
 package com.example.EduSprint.repository;
 
+import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,9 +27,19 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
                 SELECT t.*
                 FROM task t
                 WHERE t.objective_id = :objectiveId
-                AND t.task_id != :taskId
-                ORDER BY RANDOM()
+                    AND t.task_id NOT IN (
+                        SELECT t2.task_id
+                            FROM solved_task st JOIN task t2
+                                ON st.task_id = t2.task_id
+                                WHERE t2.objective_id = :objectiveId
+                                    AND st.account_id = :accountId
+                        ORDER BY end_time DESC
+                        LIMIT :taskLimit
+                    )
+                ORDER BY t.task_id
                 LIMIT 1
             """, nativeQuery = true)
-    Task findRandomTaskFromObjective(@Param("objectiveId") Long objectiveId, @Param("taskId") Integer taskId);
+    Task findTaskFromObjective(@Param("objectiveId") Long objectiveId, @Param("taskLimit") Long taskLimit, @Param("accountId") Long accountId);
+
+    long countByObjective(LearningObjective objective);
 }
