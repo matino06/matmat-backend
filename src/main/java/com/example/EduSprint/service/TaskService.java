@@ -37,13 +37,11 @@ public class TaskService {
 
         LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId, tempo);
 
-        List<LearningObjective> weakObjectives = learningObjectiveService.getWeakObjectivesForAccountAndCurrentCourse(account);
-        if (nextLearningObjective == null && weakObjectives.isEmpty()) {
+        LearningObjective weakObjective = learningObjectiveService.getWeakObjectivesForAccountAndCurrentCourse(account);
+        if (nextLearningObjective == null && weakObjective == null) {
             return null;
         } else if (nextLearningObjective == null) {
-            Random random = new Random();
-            int index = random.nextInt(weakObjectives.size());
-            nextLearningObjective = weakObjectives.get(index);
+            nextLearningObjective = weakObjective;
         }
 
         Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;

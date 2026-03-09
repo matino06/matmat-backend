@@ -123,11 +123,11 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
             """, nativeQuery = true)
     List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
-    @Query(value = "SELECT lo.* FROM learning_objective lo " +
+    @Query(value = "SELECT COUNT(lo.*) FROM learning_objective lo " +
                    "INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId " +
                    "WHERE lo.objective_id IN (SELECT wo.objective_id FROM weak_objectives wo WHERE wo.account_id = :accountId)",
             nativeQuery = true)
-    List<LearningObjective> findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    short findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = """
                     SELECT lo.objective_name, ao.last_q
@@ -145,4 +145,44 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     )
                 """, nativeQuery = true)
     List<Object[]> findWeakObjectivesWithLastQ(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+                    SELECT lo.*
+                    FROM learning_objective lo
+                    INNER JOIN course_objective co 
+                        ON lo.objective_id = co.objective_id 
+                        AND co.course_id = :courseId
+                    JOIN account_objective ao 
+                        ON ao.objective_id = lo.objective_id
+                            AND ao.account_id = :accountId
+                            AND ao.last_q != 0
+                    WHERE lo.objective_id IN (
+                        SELECT wo.objective_id 
+                        FROM weak_objectives wo 
+                        WHERE wo.account_id = :accountId
+                    )
+                    ORDER BY ao.last_q ASC, ao.last_solved_date ASC
+                    LIMIT 1
+                """, nativeQuery = true)
+    LearningObjective findWeakObjectivesWithLastQNotZero(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    @Query(value = """
+                    SELECT lo.*
+                    FROM learning_objective lo
+                    INNER JOIN course_objective co 
+                        ON lo.objective_id = co.objective_id 
+                        AND co.course_id = :courseId
+                    JOIN account_objective ao 
+                        ON ao.objective_id = lo.objective_id
+                            AND ao.account_id = :accountId
+                            AND ao.last_q = 0
+                    WHERE lo.objective_id IN (
+                        SELECT wo.objective_id 
+                        FROM weak_objectives wo 
+                        WHERE wo.account_id = :accountId
+                    )
+                    ORDER BY ao.last_solved_date ASC
+                    LIMIT 1
+                """, nativeQuery = true)
+    LearningObjective findWeakObjectivesWithLastQEqualZero(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 }

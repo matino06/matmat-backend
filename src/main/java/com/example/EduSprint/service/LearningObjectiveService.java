@@ -111,11 +111,17 @@ public class LearningObjectiveService {
         return objectiveDTOS;
     }
 
-    public List<LearningObjective> getWeakObjectivesForAccountAndCurrentCourse(Account account) {
-        return learningObjectiveRepository.findWeakObjectivesByAccountAndCourse(
-                account.getAccountId(),
-                account.getCurrentCourse().getCourseId()
-        );
+    public LearningObjective getWeakObjectivesForAccountAndCurrentCourse(Account account) {
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+
+        LearningObjective weakObjective = learningObjectiveRepository.findWeakObjectivesWithLastQNotZero(accountId, courseId);
+
+        if (weakObjective != null) {
+            return weakObjective;
+        }
+
+        return learningObjectiveRepository.findWeakObjectivesWithLastQEqualZero(accountId, courseId);
     }
 
     public Short calculateExamProgress(Account account, LearningObjective objective, short lastQ) {
