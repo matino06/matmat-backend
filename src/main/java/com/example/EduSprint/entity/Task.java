@@ -22,23 +22,8 @@ public class Task {
     @Column(name = "task_text")
     private String taskText;
 
-    @Column(name = "task_text_1", nullable = false)
-    private String taskText1;
-
-    @Column(name = "image_path")
-    private String imageName;
-
-    @Column(name = "task_text_2")
-    private String taskText2;
-
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<ExplanationStep> explanationSteps;
-
     @Column(name = "explanation")
     private String explanation;
-
-    @Column(name = "solution", nullable = false)
-    private String solution;
 
     public Task() {
     }
@@ -63,38 +48,6 @@ public class Task {
         this.taskText = taskText;
     }
 
-    public String getTaskText1() {
-        return taskText1;
-    }
-
-    public void setTaskText1(String taskText1) {
-        this.taskText1 = taskText1;
-    }
-
-    public String getImageName() {
-        return imageName;
-    }
-
-    public void setImageName(String imageName) {
-        this.imageName = imageName;
-    }
-
-    public String getTaskText2() {
-        return taskText2;
-    }
-
-    public void setTaskText2(String taskText2) {
-        this.taskText2 = taskText2;
-    }
-
-    public List<ExplanationStep> getExplanationSteps() {
-        return explanationSteps;
-    }
-
-    public void setExplanationSteps(List<ExplanationStep> explanationSteps) {
-        this.explanationSteps = explanationSteps;
-    }
-
     public String getExplanation() {
         return explanation;
     }
@@ -103,24 +56,13 @@ public class Task {
         this.explanation = explanation;
     }
 
-    public String getSolution() {
-        return solution;
-    }
-
-    public void setSolution(String solution) {
-        this.solution = solution;
-    }
 
     @Override
     public String toString() {
         return "Task{" +
                 "taskId=" + taskId +
                 ", objective=" + objective +
-                ", taskText1='" + taskText1 + '\'' +
-                ", imageName='" + imageName + '\'' +
-                ", taskText2='" + taskText2 + '\'' +
                 ", explanation='" + explanation + '\'' +
-                ", solution='" + solution + '\'' +
                 '}';
     }
 }

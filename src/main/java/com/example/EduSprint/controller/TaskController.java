@@ -87,12 +87,10 @@ public class TaskController {
     @PostMapping("/create-new")
     public ResponseEntity<String> createNewTask(
             Authentication authentication,
-            @RequestParam("taskText1") String taskText1,
+            @RequestParam("taskText") String taskText,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "taskText2", required = false) String taskText2,
-            @RequestParam("solution") String solution,
             @RequestParam("learningObjectiveId") String learningObjectiveId,
-            @RequestParam(value = "explanationSteps", required = false) String explanationSteps,
+            @RequestParam(value = "explanation", required = true) String explanation,
             @RequestParam(value = "stepsImages", required = false) MultipartFile[] stepsImages
     ) {
         FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
@@ -106,13 +104,11 @@ public class TaskController {
 
             Task task = new Task();
 
-            task.setTaskText1(taskText1);
-            task.setTaskText2(taskText2);
-            task.setSolution(solution);
+            task.setTaskText(taskText);
             task.setObjective(learningObjective);
+            task.setExplanation(explanation);
 
             if (image != null && !image.isEmpty()) {
-                task.setImageName(image.getOriginalFilename());
                 storageService.store(image);
             }
 
@@ -123,8 +119,6 @@ public class TaskController {
                     storageService.store(stepImage);
                 }
             }
-
-            explanationStepService.saveSteps(explanationSteps, task);
 
             return new ResponseEntity<>("Task created", HttpStatus.CREATED);
         } catch (Exception e) {
