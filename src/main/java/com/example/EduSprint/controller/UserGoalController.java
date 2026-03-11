@@ -50,11 +50,12 @@ public class UserGoalController {
 
         int dailyTasksForToday = userDailyTasksService.getDailyTasksForToday(accountId, course.getCourseId());
 
+        int todayGoal = dailyGoal;
         if (dailyTasksForToday > -1 && dailyTasksForToday < dailyGoal) {
-            dailyGoal = dailyTasksForToday;
+            todayGoal = dailyTasksForToday;
         }
 
-        UserGoalDTO userGoalDTO = new UserGoalDTO(dailyGoal, accountRegistrationDate, calendar);
+        UserGoalDTO userGoalDTO = new UserGoalDTO(dailyGoal, todayGoal, accountRegistrationDate, calendar);
         return ResponseEntity.ok(userGoalDTO);
     }
 }
