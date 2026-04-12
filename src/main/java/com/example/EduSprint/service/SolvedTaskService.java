@@ -33,6 +33,10 @@ public class SolvedTaskService {
         return dailyGoalDTOS;
     }
 
+    public java.sql.Timestamp getMaxEndTime(Long accountId) {
+        return solvedTaskRepository.findMaxEndTimeByAccountId(accountId);
+    }
+
     public int[] calculateStreaks(Long accountId, Long courseId) {
         List<DailyGoalDTO> calendar = this.getDailyGoalDTOs(accountId, courseId);
 

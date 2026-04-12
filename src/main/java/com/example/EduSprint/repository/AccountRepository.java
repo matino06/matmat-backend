@@ -32,4 +32,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             @Param("yesterdayEnd") Instant yesterdayEnd,
             @Param("todayStart") Instant todayStart,
             @Param("todayEnd") Instant todayEnd);
+
+    @Query("SELECT a FROM Account a WHERE a.learningRemindersEnabled = true")
+    List<Account> findAllWithLearningRemindersEnabled();
 }

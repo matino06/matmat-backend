@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
 
+    @Query(value = "SELECT MAX(end_time) FROM solved_task WHERE account_id = :accountId", nativeQuery = true)
+    java.sql.Timestamp findMaxEndTimeByAccountId(@Param("accountId") Long accountId);
+
     @Query(value = """
                 SELECT st.end_time::date AS date,
                        COUNT(*) AS solvedTaskCount,

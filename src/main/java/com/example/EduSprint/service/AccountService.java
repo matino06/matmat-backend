@@ -75,6 +75,10 @@ public class AccountService {
         return accountRepository.findAccountsToRemind(yesterdayStart, yesterdayEnd, start, end);
     }
 
+    public List<Account> getAllAccountsWithRemindersEnabled() {
+        return accountRepository.findAllWithLearningRemindersEnabled();
+    }
+
     @Transactional
     @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Zagreb")
     public void resetNonDefaultTasks() {
