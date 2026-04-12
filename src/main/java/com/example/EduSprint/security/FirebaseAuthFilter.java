@@ -49,6 +49,12 @@ public class FirebaseAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (request.getRequestURI().startsWith("/api/health") && request.getMethod().equals("GET")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
