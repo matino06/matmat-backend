@@ -42,7 +42,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://matmat-frontend-production.up.railway.app/", "https://www.matmat.online/", "http://192.168.0.3:5173", "https://matmat.online/", "https://matmat-react-frontend.netlify.app/"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://matmat-frontend-production.up.railway.app", "https://www.matmat.online", "http://192.168.0.3:5173", "https://matmat.online", "https://matmat-react-frontend.netlify.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
