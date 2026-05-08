@@ -43,6 +43,9 @@ public class Account {
     @JoinColumn(name = "tempo", nullable = false)
     private Short tempo;
 
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin;
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserCourseGoal> courseGoals;
 
@@ -59,6 +62,7 @@ public class Account {
         this.learningRemindersEnabled = null;
         this.featureAnnouncementsEnabled = null;
         this.tempo = 2;
+        this.isAdmin = false;
     }
 
     public Account() {
@@ -154,6 +158,14 @@ public class Account {
 
     public void setTempo(Short tempo) {
         this.tempo = tempo;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
     @Override

@@ -49,6 +49,18 @@ public class AccountController {
         return new ResponseEntity<>("Account exists", HttpStatus.OK);
     }
 
+    @GetMapping("/is-admin")
+    public ResponseEntity<Boolean> isAdmin(Authentication authentication) {
+        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return new ResponseEntity<>(account.getIsAdmin(), HttpStatus.OK);
+    }
+
     @GetMapping("/tempo")
     public ResponseEntity<Short> getTempo(Authentication authentication) {
         FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
