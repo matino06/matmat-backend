@@ -19,8 +19,12 @@ public class ImageController {
         this.storageService = storageService;
     }
 
-    @GetMapping("/{imageName}")
+    @GetMapping("/{*imageName}")
     public ResponseEntity<Resource> loadImage(@PathVariable String imageName) {
+        if (imageName.startsWith("/")) {
+            imageName = imageName.substring(1);
+        }
+
         Resource resource = storageService.loadAsResource(imageName);
 
         if (resource == null) {
