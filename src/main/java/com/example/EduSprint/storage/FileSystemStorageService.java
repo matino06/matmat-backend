@@ -59,6 +59,24 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
+    public String store(MultipartFile file, String key) {
+        try {
+            if (file.isEmpty()) {
+                throw new StorageException("Failed to store empty file.");
+            }
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(file.getSize());
+            if (file.getContentType() != null) {
+                metadata.setContentType(file.getContentType());
+            }
+            amazonS3.putObject(new PutObjectRequest(bucketName, key, file.getInputStream(), metadata));
+            return key;
+        } catch (IOException e) {
+            throw new StorageException("Failed to store file at key " + key, e);
+        }
+    }
+
+    @Override
     public Stream<String> loadAll() {
         ListObjectsRequest listObjectsRequest = new ListObjectsRequest().withBucketName(bucketName);
         ObjectListing objectListing = amazonS3.listObjects(listObjectsRequest);

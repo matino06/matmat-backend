@@ -60,6 +60,9 @@ public class MockExamQuestion {
     @Column(name = "answer_notes", columnDefinition = "TEXT")
     private String answerNotes;
 
+    @Column(name = "solution_explanation", columnDefinition = "TEXT")
+    private String solutionExplanation;
+
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     private List<MockExamQuestion> subQuestions;
 
@@ -183,6 +186,14 @@ public class MockExamQuestion {
 
     public void setAnswerNotes(String answerNotes) {
         this.answerNotes = answerNotes;
+    }
+
+    public String getSolutionExplanation() {
+        return solutionExplanation;
+    }
+
+    public void setSolutionExplanation(String solutionExplanation) {
+        this.solutionExplanation = solutionExplanation;
     }
 
     public List<MockExamQuestion> getSubQuestions() {
