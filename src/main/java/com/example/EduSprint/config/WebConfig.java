@@ -14,7 +14,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173", "https://matmat-frontend-production.up.railway.app", "https://www.matmat.online", "http://192.168.0.3:5173", "https://matmat.online", "https://matmat-react-frontend.netlify.app")
+                        .allowedOrigins("http://localhost:5173", "https://matmat-frontend-production.up.railway.app", "https://www.matmat.online", "http://192.168.0.4:5173", "https://matmat.online", "https://matmat-react-frontend.netlify.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
