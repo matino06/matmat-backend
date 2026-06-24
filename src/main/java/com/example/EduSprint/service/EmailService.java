@@ -98,7 +98,7 @@ public class EmailService {
         }
     }
 
-    @Scheduled(cron = "0 0 19 * * 4", zone = "Europe/Zagreb")
+//    @Scheduled(cron = "0 0 19 * * 4", zone = "Europe/Zagreb")
     public void sendWeeklyReEngagementEmails() {
         ZoneId zone = ZoneId.of("Europe/Zagreb");
         LocalDate today = LocalDate.now(zone);
