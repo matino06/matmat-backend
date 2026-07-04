@@ -185,4 +185,31 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     LIMIT 1
                 """, nativeQuery = true)
     LearningObjective findWeakObjectivesWithLastQEqualZero(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+
+    // Admin dependency graph: all objectives belonging to a course, with field/subfield and task count.
+    @Query(value = """
+                SELECT lo.objective_id,
+                       lo.objective_name,
+                       s.subfield_id,
+                       s.subfield_name,
+                       f.field_id,
+                       f.field_name,
+                       (SELECT COUNT(*) FROM task t WHERE t.objective_id = lo.objective_id) AS task_count
+                FROM learning_objective lo
+                INNER JOIN course_objective co ON co.objective_id = lo.objective_id AND co.course_id = :courseId
+                LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
+                LEFT JOIN field_of_study f ON s.field_id = f.field_id
+                ORDER BY f.field_id, s.subfield_id, lo.objective_id
+            """, nativeQuery = true)
+    List<Object[]> findCourseObjectiveNodes(@Param("courseId") Long courseId);
+
+    // Admin dependency graph: prerequisite edges where both endpoints belong to the course.
+    // A row (objective_id, prerequisite_id) means prerequisite_id must be learned before objective_id.
+    @Query(value = """
+                SELECT op.objective_id, op.prerequisite_id
+                FROM objective_prerequisite op
+                INNER JOIN course_objective co  ON co.objective_id  = op.objective_id    AND co.course_id  = :courseId
+                INNER JOIN course_objective co2 ON co2.objective_id = op.prerequisite_id AND co2.course_id = :courseId
+            """, nativeQuery = true)
+    List<Object[]> findCoursePrerequisiteEdges(@Param("courseId") Long courseId);
 }
