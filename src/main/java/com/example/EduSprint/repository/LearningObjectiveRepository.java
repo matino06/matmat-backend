@@ -20,56 +20,87 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
     List<LearningObjective> findObjectivesBySubfieldWithTasks(@Param("subfieldId") Long subfieldId);
 
     @Query(value = """
+                WITH RECURSIVE blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= :tempo
+                    )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                )
                 SELECT fo.field_name,
                        s.subfield_name,
                        lo.objective_id,
                        lo.objective_name,
-                       (COUNT(op.prerequisite_id) = 0 OR
-                        COUNT(op.prerequisite_id) = SUM(CASE WHEN ao_p.n >= :tempo THEN 1 ELSE 0 END)) AS is_unlocked,
+                       NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id) AS is_unlocked,
                        COALESCE(ao_o.last_q > 3, false) AS is_sufficient
                 FROM learning_objective lo
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
                 NATURAL JOIN field_of_study fo
-                LEFT JOIN objective_prerequisite op ON op.objective_id = lo.objective_id
-                LEFT JOIN account_objective ao_p ON ao_p.objective_id = op.prerequisite_id
-                     AND ao_p.account_id = :accountId
                 LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
                      AND ao_o.account_id = :accountId
                 WHERE EXISTS (
                     SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
                 )
-                GROUP BY s.subfield_id, fo.field_name, s.subfield_name, lo.objective_id, lo.objective_name, ao_o.last_q
-                ORDER BY s.subfield_id, is_unlocked DESC, COUNT(op.prerequisite_id), lo.objective_id
+                ORDER BY s.subfield_id, is_unlocked DESC,
+                         (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
+                         lo.objective_id
             """, nativeQuery = true)
     List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
-                SELECT lo.* 
+                WITH RECURSIVE blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= :tempo
+                    )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                )
+                SELECT lo.*
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 WHERE ao.account_id = :accountId
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM objective_prerequisite op
-                    WHERE op.objective_id = lo.objective_id
-                    AND NOT EXISTS (
-                        SELECT 1 
-                        FROM account_objective ao_prereq
-                        WHERE ao_prereq.account_id = :accountId
-                        AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
-                    )
-                )
+                AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
     LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
+                WITH RECURSIVE blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= :tempo
+                    )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                )
                 SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
@@ -77,23 +108,27 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 WHERE ao.account_id = :accountId
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM objective_prerequisite op
-                    WHERE op.objective_id = lo.objective_id
-                    AND NOT EXISTS (
-                        SELECT 1 
-                        FROM account_objective ao_prereq
-                        WHERE ao_prereq.account_id = :accountId
-                        AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
-                    )
-                )
+                AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
     List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     @Query(value = """
+                WITH RECURSIVE blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= :tempo
+                    )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                )
                 SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
@@ -101,18 +136,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 WHERE ao.account_id = :accountId
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) > (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
-                AND NOT EXISTS (
-                    SELECT 1 
-                    FROM objective_prerequisite op
-                    WHERE op.objective_id = lo.objective_id
-                    AND NOT EXISTS (
-                        SELECT 1 
-                        FROM account_objective ao_prereq
-                        WHERE ao_prereq.account_id = :accountId
-                        AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
-                    )
-                )
+                AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 AND NOT EXISTS(
                     SELECT 1
                     FROM weak_objectives wo
