@@ -56,6 +56,47 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
             """, nativeQuery = true)
     List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
+    // Study map: same unlock logic as findObjectivesWithUnlockStatus, but returns field_id
+    // and keeps a stable curriculum order (field -> subfield -> prerequisite depth) for grouping into blocks.
+    @Query(value = """
+                WITH RECURSIVE blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM account_objective ao_prereq
+                        WHERE ao_prereq.account_id = :accountId
+                        AND ao_prereq.objective_id = op.prerequisite_id
+                        AND ao_prereq.n >= :tempo
+                    )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                )
+                SELECT fo.field_id,
+                       fo.field_name,
+                       s.subfield_id,
+                       s.subfield_name,
+                       lo.objective_id,
+                       lo.objective_name,
+                       NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id) AS is_unlocked,
+                       COALESCE(ao_o.last_q > 3, false) AS is_mastered
+                FROM learning_objective lo
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
+                LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
+                NATURAL JOIN field_of_study fo
+                LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
+                     AND ao_o.account_id = :accountId
+                WHERE EXISTS (
+                    SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
+                )
+                ORDER BY fo.field_id, s.subfield_id,
+                         (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
+                         lo.objective_id
+            """, nativeQuery = true)
+    List<Object[]> findStudyMapObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+
     @Query(value = """
                 WITH RECURSIVE blocked AS (
                     SELECT op.objective_id

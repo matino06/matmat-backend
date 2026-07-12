@@ -2,6 +2,8 @@ package com.example.EduSprint.service;
 
 import com.example.EduSprint.dto.ObjectiveDTO;
 import com.example.EduSprint.dto.ObjectiveWithStatusDTO;
+import com.example.EduSprint.dto.StudyMapFieldDTO;
+import com.example.EduSprint.dto.StudyMapObjectiveDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
@@ -109,6 +111,42 @@ public class LearningObjectiveService {
                 .collect(Collectors.toList());
 
         return objectiveDTOS;
+    }
+
+    public List<StudyMapFieldDTO> getStudyMap(Account account) {
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+        Short tempo = account.getTempo();
+
+        List<Object[]> rows = learningObjectiveRepository.findStudyMapObjectives(accountId, courseId, tempo);
+
+        List<StudyMapFieldDTO> fields = new ArrayList<>();
+        StudyMapFieldDTO currentField = null;
+
+        for (Object[] row : rows) {
+            Long fieldId = ((Number) row[0]).longValue();
+            String fieldName = (String) row[1];
+            Long subfieldId = row[2] == null ? null : ((Number) row[2]).longValue();
+            String subfieldName = (String) row[3];
+            Long objectiveId = ((Number) row[4]).longValue();
+            String objectiveName = (String) row[5];
+            boolean unlocked = Boolean.TRUE.equals(row[6]);
+            boolean mastered = Boolean.TRUE.equals(row[7]);
+
+            if (currentField == null || !currentField.getFieldId().equals(fieldId)) {
+                currentField = new StudyMapFieldDTO(fieldId, fieldName, false, new ArrayList<>());
+                fields.add(currentField);
+            }
+
+            currentField.getObjectives().add(
+                    new StudyMapObjectiveDTO(objectiveId, objectiveName, subfieldId, subfieldName, unlocked, mastered));
+
+            if (unlocked) {
+                currentField.setUnlocked(true);
+            }
+        }
+
+        return fields;
     }
 
     public LearningObjective getWeakObjectivesForAccountAndCurrentCourse(Account account) {
