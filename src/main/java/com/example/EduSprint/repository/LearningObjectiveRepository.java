@@ -57,7 +57,8 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
     List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
     // Study map: same unlock logic as findObjectivesWithUnlockStatus, but returns field_id
-    // and keeps a stable curriculum order (field -> subfield -> prerequisite depth) for grouping into blocks.
+    // and keeps a stable curriculum order (field -> subfield -> topological prerequisite depth) for grouping into blocks.
+    // objective_depth computes the longest path from a prerequisite-free root, so within a subfield a prerequisite always precedes its dependents.
     @Query(value = """
                 WITH RECURSIVE blocked AS (
                     SELECT op.objective_id
@@ -73,6 +74,19 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     SELECT op.objective_id
                     FROM objective_prerequisite op
                     JOIN blocked b ON op.prerequisite_id = b.objective_id
+                ),
+                objective_depth AS (
+                    -- roots: objectives with no prerequisite -> depth 0
+                    SELECT lo.objective_id, 0 AS depth
+                    FROM learning_objective lo
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id
+                    )
+                    UNION ALL
+                    -- dependent depth = prerequisite depth + 1 (longest path)
+                    SELECT op.objective_id, d.depth + 1
+                    FROM objective_prerequisite op
+                    JOIN objective_depth d ON op.prerequisite_id = d.objective_id
                 )
                 SELECT fo.field_id,
                        fo.field_name,
@@ -92,7 +106,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
                 )
                 ORDER BY fo.field_id, s.subfield_id,
-                         (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
+                         COALESCE((SELECT MAX(depth) FROM objective_depth od WHERE od.objective_id = lo.objective_id), 0),
                          lo.objective_id
             """, nativeQuery = true)
     List<Object[]> findStudyMapObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
