@@ -95,7 +95,8 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                        lo.objective_id,
                        lo.objective_name,
                        NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id) AS is_unlocked,
-                       COALESCE(ao_o.last_q > 3, false) AS is_mastered
+                       COALESCE(ao_o.last_q > 3, false) AS is_mastered,
+                       ao_o.last_q AS last_q
                 FROM learning_objective lo
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id

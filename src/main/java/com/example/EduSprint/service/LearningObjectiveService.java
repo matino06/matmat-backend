@@ -132,6 +132,7 @@ public class LearningObjectiveService {
             String objectiveName = (String) row[5];
             boolean unlocked = Boolean.TRUE.equals(row[6]);
             boolean mastered = Boolean.TRUE.equals(row[7]);
+            Short lastQ = row[8] == null ? null : ((Number) row[8]).shortValue();
 
             if (currentField == null || !currentField.getFieldId().equals(fieldId)) {
                 currentField = new StudyMapFieldDTO(fieldId, fieldName, false, new ArrayList<>());
@@ -139,7 +140,7 @@ public class LearningObjectiveService {
             }
 
             currentField.getObjectives().add(
-                    new StudyMapObjectiveDTO(objectiveId, objectiveName, subfieldId, subfieldName, unlocked, mastered));
+                    new StudyMapObjectiveDTO(objectiveId, objectiveName, subfieldId, subfieldName, unlocked, mastered, lastQ));
 
             if (unlocked) {
                 currentField.setUnlocked(true);

@@ -7,15 +7,17 @@ public class StudyMapObjectiveDTO {
     private String subfieldName;
     private boolean unlocked;
     private boolean isMastered;
+    private Short lastQ;
 
     public StudyMapObjectiveDTO(Long objectiveId, String objectiveName, Long subfieldId, String subfieldName,
-                                boolean unlocked, boolean isMastered) {
+                                boolean unlocked, boolean isMastered, Short lastQ) {
         this.objectiveId = objectiveId;
         this.objectiveName = objectiveName;
         this.subfieldId = subfieldId;
         this.subfieldName = subfieldName;
         this.unlocked = unlocked;
         this.isMastered = isMastered;
+        this.lastQ = lastQ;
     }
 
     public Long getObjectiveId() {
@@ -64,5 +66,13 @@ public class StudyMapObjectiveDTO {
 
     public void setIsMastered(boolean isMastered) {
         this.isMastered = isMastered;
+    }
+
+    public Short getLastQ() {
+        return lastQ;
+    }
+
+    public void setLastQ(Short lastQ) {
+        this.lastQ = lastQ;
     }
 }
