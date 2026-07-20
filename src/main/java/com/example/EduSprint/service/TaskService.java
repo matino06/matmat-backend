@@ -47,4 +47,18 @@ public class TaskService {
         Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;
         return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
     }
+
+    public Task getTaskFromObjective(Account account, Long objectiveId) {
+        LearningObjective objective = learningObjectiveService.findById(objectiveId);
+        if (objective == null) {
+            return null;
+        }
+
+        long taskCount = taskRepository.countByObjective(objective);
+        if (taskCount == 0) {
+            return null;
+        }
+
+        return taskRepository.findTaskFromObjective(objectiveId, taskCount - 1, account.getAccountId());
+    }
 }

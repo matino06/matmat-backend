@@ -77,6 +77,29 @@ public class TaskController {
         }
     }
 
+    @GetMapping("/get-from-objective/{objectiveId}")
+    public ResponseEntity getTaskFromObjective(Authentication authentication, @PathVariable Long objectiveId) {
+        try {
+            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+            String email = firebasePrincipal.getEmail();
+            Account account = accountService.getAccount(email);
+
+            if (account == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Task task = taskService.getTaskFromObjective(account, objectiveId);
+
+            if (task == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(task);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     // Get All Tasks with given ObjectiveId
     @GetMapping("/get-all-tasks")
     public ResponseEntity<List<Task>> getAllTasks(@RequestParam Long objectiveId) {
