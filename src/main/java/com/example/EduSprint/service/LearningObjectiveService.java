@@ -61,6 +61,10 @@ public class LearningObjectiveService {
         return learningObjective;
     }
 
+    public final LearningObjective findNextLearningObjectiveInField(Long accountId, Long courseId, Short tempo, Long fieldId) {
+        return learningObjectiveRepository.findNextLearningObjectiveInField(accountId, courseId, tempo, fieldId);
+    }
+
     public final List<ObjectiveDTO> findObjectivesForToday(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();

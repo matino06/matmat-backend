@@ -141,6 +141,49 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
             """, nativeQuery = true)
     LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
+    // Field-study variant of findNextLearningObjective: restricts selection to objectives inside :fieldId
+    // and treats cross-field prerequisites as mastered. The prerequisite graph is restricted to edges
+    // whose BOTH endpoints are in the field, so only in-field prerequisites gate unlocking.
+    @Query(value = """
+                WITH RECURSIVE field_objectives AS (
+                    SELECT lo.objective_id
+                    FROM learning_objective lo
+                    JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
+                    WHERE s.field_id = :fieldId
+                ),
+                blocked AS (
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    WHERE op.objective_id    IN (SELECT objective_id FROM field_objectives)
+                      AND op.prerequisite_id IN (SELECT objective_id FROM field_objectives)
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM account_objective ao_prereq
+                          WHERE ao_prereq.account_id = :accountId
+                          AND ao_prereq.objective_id = op.prerequisite_id
+                          AND ao_prereq.n >= :tempo
+                      )
+                    UNION
+                    SELECT op.objective_id
+                    FROM objective_prerequisite op
+                    JOIN blocked b ON op.prerequisite_id = b.objective_id
+                    WHERE op.objective_id IN (SELECT objective_id FROM field_objectives)
+                )
+                SELECT lo.*
+                FROM account_objective ao
+                JOIN learning_objective lo ON ao.objective_id = lo.objective_id
+                INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
+                JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
+                WHERE ao.account_id = :accountId
+                AND s.field_id = :fieldId
+                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
+                AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
+                ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
+                LIMIT 1
+            """, nativeQuery = true)
+    LearningObjective findNextLearningObjectiveInField(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo, @Param("fieldId") Long fieldId);
+
     @Query(value = """
                 WITH RECURSIVE blocked AS (
                     SELECT op.objective_id

@@ -48,6 +48,20 @@ public class TaskService {
         return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
     }
 
+    public Task getNewTaskFromField(Account account, Long fieldId) {
+        Long accountId = account.getAccountId();
+        Long courseId = account.getCurrentCourse().getCourseId();
+        Short tempo = account.getTempo();
+
+        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjectiveInField(accountId, courseId, tempo, fieldId);
+        if (nextLearningObjective == null) {
+            return null;
+        }
+
+        Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;
+        return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
+    }
+
     public Task getTaskFromObjective(Account account, Long objectiveId) {
         LearningObjective objective = learningObjectiveService.findById(objectiveId);
         if (objective == null) {

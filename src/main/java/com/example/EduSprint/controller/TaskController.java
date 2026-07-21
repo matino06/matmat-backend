@@ -77,6 +77,29 @@ public class TaskController {
         }
     }
 
+    @GetMapping("/get-new-from-field/{fieldId}")
+    public ResponseEntity getNewTaskFromField(Authentication authentication, @PathVariable Long fieldId) {
+        try {
+            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+            String email = firebasePrincipal.getEmail();
+            Account account = accountService.getAccount(email);
+
+            if (account == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Task task = taskService.getNewTaskFromField(account, fieldId);
+
+            if (task == null) {
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(task);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/get-from-objective/{objectiveId}")
     public ResponseEntity getTaskFromObjective(Authentication authentication, @PathVariable Long objectiveId) {
         try {
