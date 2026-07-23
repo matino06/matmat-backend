@@ -6,19 +6,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class FirebasePrincipal implements UserDetails {
-    private final String uid;
+public class AuthPrincipal implements UserDetails {
+    private final String subject;
     private final String email;
     private final String name;
 
-    public FirebasePrincipal(String uid, String email, String name) {
-        this.uid = uid;
+    public AuthPrincipal(String subject, String email, String name) {
+        this.subject = subject;
         this.email = email;
         this.name = name;
     }
 
-    public String getUid() {
-        return uid;
+    public String getSubject() {
+        return subject;
     }
 
     public String getEmail() {

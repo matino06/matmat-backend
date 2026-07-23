@@ -4,7 +4,7 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.TaskRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.*;
 import com.example.EduSprint.storage.StorageService;
 import org.springframework.http.HttpStatus;
@@ -40,8 +40,8 @@ public class TaskController {
     @GetMapping("/get-new")
     public ResponseEntity getNewTask(Authentication authentication) {
         try {
-            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
-            String email = firebasePrincipal.getEmail();
+            AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+            String email = authPrincipal.getEmail();
             Account account = accountService.getAccount(email);
 
             if (account == null) {
@@ -80,8 +80,8 @@ public class TaskController {
     @GetMapping("/get-new-from-field/{fieldId}")
     public ResponseEntity getNewTaskFromField(Authentication authentication, @PathVariable Long fieldId) {
         try {
-            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
-            String email = firebasePrincipal.getEmail();
+            AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+            String email = authPrincipal.getEmail();
             Account account = accountService.getAccount(email);
 
             if (account == null) {
@@ -103,8 +103,8 @@ public class TaskController {
     @GetMapping("/get-from-objective/{objectiveId}")
     public ResponseEntity getTaskFromObjective(Authentication authentication, @PathVariable Long objectiveId) {
         try {
-            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
-            String email = firebasePrincipal.getEmail();
+            AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+            String email = authPrincipal.getEmail();
             Account account = accountService.getAccount(email);
 
             if (account == null) {
@@ -139,7 +139,7 @@ public class TaskController {
             @RequestParam(value = "explanation", required = true) String explanation,
             @RequestParam(value = "stepsImages", required = false) MultipartFile[] stepsImages
     ) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         System.out.println(principal.getEmail());
         if (!principal.getEmail().equals("matino0546@gmail.com")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

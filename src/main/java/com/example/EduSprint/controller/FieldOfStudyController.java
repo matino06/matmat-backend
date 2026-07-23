@@ -4,7 +4,7 @@ import com.example.EduSprint.dto.StudyMapFieldDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.FieldOfStudy;
 import com.example.EduSprint.repository.FieldOfStudyRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.LearningObjectiveService;
 import org.springframework.http.HttpStatus;
@@ -36,9 +36,9 @@ public class FieldOfStudyController {
 
     @GetMapping("/map")
     public ResponseEntity<List<StudyMapFieldDTO>> getStudyMap(Authentication authentication) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
 
-        Account account = accountService.getAccount(firebasePrincipal.getEmail());
+        Account account = accountService.getAccount(authPrincipal.getEmail());
         List<StudyMapFieldDTO> studyMap = learningObjectiveService.getStudyMap(account);
 
         return new ResponseEntity<>(studyMap, HttpStatus.OK);

@@ -5,7 +5,7 @@ import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.SolvedTask;
 import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.SolvedTaskRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountObjectiveService;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.LearningObjectiveService;
@@ -45,7 +45,7 @@ public class SolvedTaskController {
     @PostMapping("/set-new")
     public ResponseEntity<String> saveNewSolvedTask(Authentication authentication, @RequestBody Map<String, Object> taskData) {
         try {
-            FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+            AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
             Long taskId = ((Number) taskData.get("taskId")).longValue();
             Short q = ((Number) taskData.get("q")).shortValue();
             String startTimeString = (String) taskData.get("startTime");
@@ -59,7 +59,7 @@ public class SolvedTaskController {
             }
 
             // Craeting new Solved Task and Saving it
-            Account account = accountService.getAccount(firebasePrincipal.getEmail());
+            Account account = accountService.getAccount(authPrincipal.getEmail());
             Course course = account.getCurrentCourse();
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);

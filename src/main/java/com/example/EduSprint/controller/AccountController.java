@@ -4,7 +4,7 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.UserCourseGoal;
 import com.example.EduSprint.repository.AccountRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataAccessException;
@@ -40,7 +40,7 @@ public class AccountController {
 
     @GetMapping("/exists")
     public ResponseEntity<String> accountExists(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
 
         if (!accountRepository.existsByEmail(principal.getEmail())) {
             System.out.println("Ne postoji");
@@ -51,7 +51,7 @@ public class AccountController {
 
     @GetMapping("/is-admin")
     public ResponseEntity<Boolean> isAdmin(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
 
         if (account == null) {
@@ -63,7 +63,7 @@ public class AccountController {
 
     @GetMapping("/tempo")
     public ResponseEntity<Short> getTempo(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
 
         return new ResponseEntity<>(account.getTempo(), HttpStatus.OK);
@@ -72,7 +72,7 @@ public class AccountController {
     @PostMapping("/tempo")
     public ResponseEntity<?> setTempo(Authentication authentication, @RequestBody Short tempo) {
         try {
-            FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+            AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
             Account account = accountService.getAccount(principal.getEmail());
             account.setTempo(tempo);
             accountRepository.save(account);
@@ -88,7 +88,7 @@ public class AccountController {
 
     @GetMapping("/goals")
     public ResponseEntity<List<UserCourseGoal>> getGoals(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
 
         return new ResponseEntity<>(account.getCourseGoals(), HttpStatus.OK);
@@ -96,7 +96,7 @@ public class AccountController {
 
     @PostMapping("/goals")
     public ResponseEntity<Void> updateUserCourseGoal(Authentication authentication, @RequestBody Map<String, Object> userCourseGoalsNew) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
 
         List<UserCourseGoal> userCourseGoals = account.getCourseGoals();
@@ -127,7 +127,7 @@ public class AccountController {
 
     @GetMapping("/notification-settings")
     public ResponseEntity<Map<String, Boolean>> getNotificationSettings(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         if (account == null) {
             return ResponseEntity.notFound().build();
@@ -140,7 +140,7 @@ public class AccountController {
 
     @PostMapping("/notification-settings")
     public ResponseEntity<Void> updateNotificationSettings(Authentication authentication, @RequestBody Map<String, Boolean> settings) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Boolean learningReminders = settings.get("learningRemindersEnabled");
         Boolean featureAnnouncements = settings.get("featureAnnouncementsEnabled");
         if (learningReminders == null || featureAnnouncements == null) {
@@ -152,7 +152,7 @@ public class AccountController {
 
     @PostMapping("/create")
     public ResponseEntity<String> createAccount(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         boolean accountCreated = accountService.createAccount(principal.getEmail(), principal.getName());
 
         if (accountCreated) {
@@ -164,8 +164,8 @@ public class AccountController {
 
     @GetMapping("/current-course")
     public ResponseEntity<Course> getCurrentCourse(Authentication authentication) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
-        String email = firebasePrincipal.getEmail();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+        String email = authPrincipal.getEmail();
         Account account = accountService.getAccount(email);
 
         if (account == null) {
@@ -178,8 +178,8 @@ public class AccountController {
 
     @PostMapping("/current-course")
     public ResponseEntity<?> updateCourse(Authentication authentication, @RequestBody Map<String, Object> courseData) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
-        String email = firebasePrincipal.getEmail();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+        String email = authPrincipal.getEmail();
         Account account = accountService.getAccount(email);
 
         if (account == null) {

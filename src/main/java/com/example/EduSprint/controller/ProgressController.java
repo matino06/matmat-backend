@@ -3,7 +3,7 @@ package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.ProgressSummaryDTO;
 import com.example.EduSprint.entity.Account;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.ProgressService;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +25,9 @@ public class ProgressController {
 
     @GetMapping
     public ResponseEntity<ProgressSummaryDTO> getSummary(Authentication authentication) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
 
-        Account account = accountService.getAccount(firebasePrincipal.getEmail());
+        Account account = accountService.getAccount(authPrincipal.getEmail());
 
         ProgressSummaryDTO summary = progressService.getProgressSummary(account);
         return ResponseEntity.ok(summary);

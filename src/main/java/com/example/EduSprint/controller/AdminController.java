@@ -8,7 +8,7 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.CourseRepository;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.CourseService;
 import org.springframework.http.HttpStatus;
@@ -39,7 +39,7 @@ public class AdminController {
     // Returns true only for accounts flagged as admin. Any lookup failure counts as "not admin".
     private boolean isAdmin(Authentication authentication) {
         try {
-            FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+            AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
             Account account = accountService.getAccount(principal.getEmail());
             return account != null && Boolean.TRUE.equals(account.getIsAdmin());
         } catch (RuntimeException e) {

@@ -4,7 +4,7 @@ import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.dto.UserGoalDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.SolvedTaskService;
 import com.example.EduSprint.service.UserDailyTasksService;
@@ -33,9 +33,9 @@ public class UserGoalController {
 
     @GetMapping
     public ResponseEntity<UserGoalDTO> getUserGoalData(Authentication authentication) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
 
-        Account account = accountService.getAccount(firebasePrincipal.getEmail());
+        Account account = accountService.getAccount(authPrincipal.getEmail());
         Long accountId = account.getAccountId();
         Course course = account.getCurrentCourse();
 

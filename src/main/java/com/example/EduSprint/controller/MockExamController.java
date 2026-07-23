@@ -7,7 +7,7 @@ import com.example.EduSprint.dto.MockExamSubmitRequestDTO;
 import com.example.EduSprint.dto.MockExamSubmitResponseDTO;
 import com.example.EduSprint.dto.MockExamSummaryDTO;
 import com.example.EduSprint.entity.Account;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.MockExamGradingService;
 import com.example.EduSprint.service.MockExamService;
@@ -51,7 +51,7 @@ public class MockExamController {
 
     @GetMapping("/available")
     public ResponseEntity<List<MockExamSummaryDTO>> getAvailableExams(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         return ResponseEntity.ok(mockExamService.getAvailableExamsForAccount(account));
     }
@@ -71,7 +71,7 @@ public class MockExamController {
             @RequestPart("data") String dataJson,
             MultipartHttpServletRequest request,
             Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
 
         MockExamSubmitRequestDTO body;
@@ -96,7 +96,7 @@ public class MockExamController {
 
     @GetMapping("/attempts")
     public ResponseEntity<List<MockExamAttemptSummaryDTO>> getMyAttempts(Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         return ResponseEntity.ok(mockExamGradingService.getAttemptsForAccount(account));
     }
@@ -106,7 +106,7 @@ public class MockExamController {
     public ResponseEntity<Void> retryFailedAnswers(
             @PathVariable Long attemptId,
             Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         try {
             mockExamGradingService.retryFailedAnswers(attemptId, account);
@@ -121,7 +121,7 @@ public class MockExamController {
     public ResponseEntity<MockExamAttemptDetailDTO> getAttemptDetail(
             @PathVariable Long attemptId,
             Authentication authentication) {
-        FirebasePrincipal principal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         try {
             return ResponseEntity.ok(mockExamGradingService.getAttemptDetail(attemptId, account));

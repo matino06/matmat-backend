@@ -6,7 +6,7 @@ import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.LearningObjective;
 import com.example.EduSprint.entity.SubfieldOfStudy;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
-import com.example.EduSprint.security.FirebasePrincipal;
+import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.LearningObjectiveService;
 import com.example.EduSprint.service.SubfieldOfStudyService;
@@ -49,9 +49,9 @@ public class LearningObjectiveController {
 
     @GetMapping("/get-objectives-with-status")
     public ResponseEntity<List<ObjectiveWithStatusDTO>> getLearningObjectivesWithStatus(Authentication authentication) {
-        FirebasePrincipal firebasePrincipal = (FirebasePrincipal) authentication.getPrincipal();
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
 
-        Account account = accountService.getAccount(firebasePrincipal.getEmail());
+        Account account = accountService.getAccount(authPrincipal.getEmail());
         Course currentCourse = account.getCurrentCourse();
 
         List<Object[]> objectivesWithUnlockStatus = learningObjectiveRepository.findObjectivesWithUnlockStatus(account.getAccountId(), currentCourse.getCourseId(), account.getTempo());
