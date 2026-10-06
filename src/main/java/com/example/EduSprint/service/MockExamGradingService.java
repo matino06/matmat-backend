@@ -201,8 +201,18 @@ public class MockExamGradingService {
         }
         MockExamQuestion question = answer.getQuestion();
         String parentText = question.getParent() != null ? question.getParent().getQuestionText() : null;
+        String type = question.getQuestionType();
+        boolean imageType = TYPE_SHORT_ANSWER_GRAPH.equals(type) || TYPE_EXTENDED_ANSWER.equals(type);
+        if (imageType && answer.getAnswerImageFilename() == null) {
+            answer.setScoreAwarded((short) 0);
+            answer.setAiFeedback("Nije priloženo rješenje.");
+            answer.setIsCorrect(false);
+            answer.setAiGradingStatus(STATUS_DONE);
+            mockExamAnswerRepository.save(answer);
+            recalculateAttemptTotal(answer.getAttempt().getAttemptId());
+            return;
+        }
         try {
-            String type = question.getQuestionType();
             switch (type) {
                 case TYPE_SHORT_ANSWER -> {
                     AiGradingService.AiGradeResult r = callWithRetry(() ->
@@ -214,9 +224,9 @@ public class MockExamGradingService {
                 }
                 case TYPE_SHORT_ANSWER_GRAPH -> {
                     byte[] bytes = readAnswerImage(answer);
-                    String mime = guessMime(answer.getAnswerImageFilename());
                     AiGradingService.AiGradeResult r = callWithRetry(() ->
-                            aiGradingService.gradeImageAnswer(question, bytes, mime, parentText));
+                            aiGradingService.gradeImageAnswer(question, bytes, parentText));
+                    failIfImageUnreadable(r.feedback());
                     answer.setScoreAwarded(clamp(r.score(), question.getPoints()));
                     answer.setAiFeedback(r.feedback());
                     answer.setIsCorrect(r.isCorrect());
@@ -226,9 +236,9 @@ public class MockExamGradingService {
                     List<MockExamScoringCriterion> criteria = mockExamScoringCriterionRepository
                             .findByQuestion_QuestionIdOrderByCriterionOrderAsc(question.getQuestionId());
                     byte[] bytes = readAnswerImage(answer);
-                    String mime = guessMime(answer.getAnswerImageFilename());
                     AiGradingService.ExtendedAiGradeResult r = callWithRetry(() ->
-                            aiGradingService.gradeExtendedAnswer(question, criteria, bytes, mime, parentText));
+                            aiGradingService.gradeExtendedAnswer(question, criteria, bytes, parentText));
+                    failIfImageUnreadable(r.overallFeedback());
 
                     int total = 0;
                     Map<Long, MockExamScoringCriterion> byId = new HashMap<>();
@@ -496,6 +506,12 @@ public class MockExamGradingService {
         return false;
     }
 
+    private static void failIfImageUnreadable(String feedback) {
+        if (feedback != null && feedback.strip().startsWith(AiGradingService.UNREADABLE_IMAGE_MARKER)) {
+            throw new AiGradingService.ImageUnreadableException(null);
+        }
+    }
+
     private byte[] readAnswerImage(MockExamAnswer answer) throws Exception {
         Resource res = storageService.loadAsResource(answer.getAnswerImageFilename());
         try (InputStream in = res.getInputStream()) {
@@ -517,15 +533,6 @@ public class MockExamGradingService {
             }
         }
         return ".png";
-    }
-
-    private static String guessMime(String filename) {
-        if (filename == null) return "image/png";
-        String f = filename.toLowerCase();
-        if (f.endsWith(".jpg") || f.endsWith(".jpeg")) return "image/jpeg";
-        if (f.endsWith(".webp")) return "image/webp";
-        if (f.endsWith(".gif")) return "image/gif";
-        return "image/png";
     }
 
     private static Short clamp(Short value, Short max) {

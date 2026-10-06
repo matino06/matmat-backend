@@ -6,12 +6,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -22,7 +37,17 @@ public class AiGradingService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient;
+    private static final Logger log = LoggerFactory.getLogger(AiGradingService.class);
     private static final int MAX_TOKENS = 4096;
+    private static final int MAX_IMAGE_SIDE = 1568;
+    private static final float JPEG_QUALITY = 0.85f;
+    public static final String UNREADABLE_IMAGE_MARKER = "SLIKA_NECITLJIVA";
+    private static final String LATEX_RULE =
+            "Matematičke izraze u feedbacku piši isključivo kao inline LaTeX unutar $...$ (npr. $[0, 2\\pi]$). " +
+            "Ne koristi \\(, \\[ ni $$. Svaki otvoreni $ mora biti zatvoren.";
+    private static final String UNREADABLE_IMAGE_RULE =
+            "Ako je slika prazna, potpuno crna, mutna ili nečitljiva, NE ocjenjuj sadržaj — postavi score 0 " +
+            "i u feedback napiši točno '" + UNREADABLE_IMAGE_MARKER + "'.";
 
     private final String modelText;
     private final String modelVision;
@@ -44,14 +69,14 @@ public class AiGradingService {
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
         String prompt = buildShortAnswerPrompt(question, userAnswer, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelText, prompt, null, null);
+        ObjectNode body = baseRequestBody(modelText, prompt, null);
         body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
         return parseScalar(callModel(body));
     }
 
-    public AiGradeResult gradeImageAnswer(MockExamQuestion question, byte[] imageBytes, String mimeType, String parentQuestionText) {
+    public AiGradeResult gradeImageAnswer(MockExamQuestion question, byte[] imageBytes, String parentQuestionText) {
         String prompt = buildImageAnswerPrompt(question, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes, mimeType);
+        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes);
         body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
         return parseScalar(callModel(body));
     }
@@ -59,15 +84,14 @@ public class AiGradingService {
     public ExtendedAiGradeResult gradeExtendedAnswer(MockExamQuestion question,
                                                      List<MockExamScoringCriterion> criteria,
                                                      byte[] imageBytes,
-                                                     String mimeType,
                                                      String parentQuestionText) {
         String prompt = buildExtendedAnswerPrompt(question, criteria, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes, mimeType);
+        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes);
         body.set("response_format", jsonSchemaFormat("extended_grade", extendedGradeSchema()));
         return parseExtended(callModel(body), criteria);
     }
 
-    private ObjectNode baseRequestBody(String model, String prompt, byte[] imageBytes, String mimeType) {
+    private ObjectNode baseRequestBody(String model, String prompt, byte[] imageBytes) {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("model", model);
         root.put("max_tokens", MAX_TOKENS);
@@ -77,13 +101,67 @@ public class AiGradingService {
         ArrayNode content = message.putArray("content");
         content.addObject().put("type", "text").put("text", prompt);
         if (imageBytes != null) {
-            String mime = mimeType != null ? mimeType : "image/png";
+            byte[] jpeg = normalizeImage(imageBytes);
             ObjectNode imagePart = content.addObject();
             imagePart.put("type", "image_url");
             imagePart.putObject("image_url")
-                    .put("url", "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(imageBytes));
+                    .put("url", "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(jpeg));
         }
         return root;
+    }
+
+    /**
+     * Dekodira sliku po sadržaju (ne po ekstenziji), stavlja je na bijelu podlogu, smanjuje na
+     * MAX_IMAGE_SIDE i ponovno kodira kao JPEG, tako da se MIME i sadržaj uvijek slažu.
+     */
+    static byte[] normalizeImage(byte[] bytes) {
+        BufferedImage src;
+        try {
+            src = ImageIO.read(new ByteArrayInputStream(bytes));
+        } catch (IOException e) {
+            throw new ImageUnreadableException(e);
+        }
+        if (src == null) {
+            throw new ImageUnreadableException(null);
+        }
+
+        int w = src.getWidth();
+        int h = src.getHeight();
+        double scale = Math.min(1.0, (double) MAX_IMAGE_SIDE / Math.max(w, h));
+        int tw = Math.max(1, (int) Math.round(w * scale));
+        int th = Math.max(1, (int) Math.round(h * scale));
+
+        BufferedImage out = new BufferedImage(tw, th, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = out.createGraphics();
+        try {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, tw, th);
+            g.drawImage(src, 0, 0, tw, th, null);
+        } finally {
+            g.dispose();
+        }
+
+        byte[] jpeg = encodeJpeg(out);
+        log.info("AI grading image: original {} B {}x{} -> sent {} B {}x{}", bytes.length, w, h, jpeg.length, tw, th);
+        return jpeg;
+    }
+
+    private static byte[] encodeJpeg(BufferedImage image) {
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
+            writer.setOutput(ios);
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(JPEG_QUALITY);
+            writer.write(null, new IIOImage(image, null, null), param);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to encode image as JPEG", e);
+        } finally {
+            writer.dispose();
+        }
+        return baos.toByteArray();
     }
 
     private ObjectNode jsonSchemaFormat(String name, ObjectNode schema) {
@@ -158,7 +236,8 @@ public class AiGradingService {
         sb.append("Ako je matematička vrijednost odgovora točna, daj pun broj bodova bez obzira na format ");
         sb.append("(npr. '1/2', '0,5', '0.5', '50%', LaTeX zapis — sve su ekvivalentne). ");
         sb.append("Samo ako uočiš problem s formatom, možeš ga kratko napomenuti u feedbacku, ali to NE smije utjecati na score. ");
-        sb.append("Vrati JSON: score (0..").append(q.getPoints()).append("), feedback (kratko obrazloženje na hrvatskom), isCorrect (true ako je matematička vrijednost točna).");
+        sb.append("Vrati JSON: score (0..").append(q.getPoints()).append("), feedback (kratko obrazloženje na hrvatskom), isCorrect (true ako je matematička vrijednost točna). ");
+        sb.append(LATEX_RULE);
         return sb.toString();
     }
 
@@ -175,7 +254,9 @@ public class AiGradingService {
         }
         sb.append("Maksimalan broj bodova: ").append(q.getPoints()).append("\n\n");
         sb.append("Pažljivo pročitaj sliku, prepoznaj što je učenik nacrtao/napisao i ocijeni striktno prema točnom odgovoru. ");
-        sb.append("Vrati JSON: score (0..").append(q.getPoints()).append("), feedback (kratko obrazloženje na hrvatskom), isCorrect.");
+        sb.append(UNREADABLE_IMAGE_RULE).append(" ");
+        sb.append("Vrati JSON: score (0..").append(q.getPoints()).append("), feedback (kratko obrazloženje na hrvatskom), isCorrect. ");
+        sb.append(LATEX_RULE);
         return sb.toString();
     }
 
@@ -215,7 +296,10 @@ public class AiGradingService {
         }
         sb.append("\nZa svaki kriterij dodijeli bodove 0..maxPoints i kratko obrazloženje primijenjenih pravila. ");
         sb.append("Vrati JSON s nizom criterionScores (svaki s criterionId, points, feedback) i ");
-        sb.append("overallFeedback (sažetak za učenika s objašnjenjem oduzimanja bodova ako je primijenjeno, na hrvatskom).");
+        sb.append("overallFeedback (sažetak za učenika s objašnjenjem oduzimanja bodova ako je primijenjeno, na hrvatskom). ");
+        sb.append("Ako je slika prazna, potpuno crna, mutna ili nečitljiva, NE ocjenjuj sadržaj — svim kriterijima daj 0 bodova " +
+                "i u overallFeedback napiši točno '" + UNREADABLE_IMAGE_MARKER + "'. ");
+        sb.append(LATEX_RULE);
         return sb.toString();
     }
 
@@ -225,13 +309,15 @@ public class AiGradingService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body.toString())
                 .retrieve()
-                .onStatus(HttpStatusCode::isError, r -> r.bodyToMono(String.class)
-                        .defaultIfEmpty("")
-                        .map(err -> new RuntimeException("OpenRouter " + r.statusCode().value() + ": " + err)))
+                .onStatus(HttpStatusCode::isError, r -> r.createException()
+                        .map(ex -> new RuntimeException("OpenRouter " + ex.getStatusCode().value() + ": "
+                                + ex.getResponseBodyAsString(), ex)))
                 .bodyToMono(String.class)
                 .block();
         try {
             JsonNode root = objectMapper.readTree(response);
+            log.info("AI grading response: model={}, provider={}",
+                    root.path("model").asText(""), root.path("provider").asText(""));
             JsonNode text = root.path("choices").path(0).path("message").path("content");
             if (text.isMissingNode() || text.isNull()) {
                 throw new RuntimeException("AI response missing message content: " + response);
@@ -284,6 +370,12 @@ public class AiGradingService {
 
     private static String nullSafe(String s) {
         return s == null ? "" : s;
+    }
+
+    public static class ImageUnreadableException extends RuntimeException {
+        public ImageUnreadableException(Throwable cause) {
+            super("Slika se ne može pročitati (podržani formati: PNG, JPG).", cause);
+        }
     }
 
     public record AiGradeResult(Short score, String feedback, boolean isCorrect) {
