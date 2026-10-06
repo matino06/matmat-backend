@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,6 +22,8 @@ public class AiGradingService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient;
+    private static final int MAX_TOKENS = 4096;
+
     private final String modelText;
     private final String modelVision;
 
@@ -67,6 +70,7 @@ public class AiGradingService {
     private ObjectNode baseRequestBody(String model, String prompt, byte[] imageBytes, String mimeType) {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("model", model);
+        root.put("max_tokens", MAX_TOKENS);
         ArrayNode messages = root.putArray("messages");
         ObjectNode message = messages.addObject();
         message.put("role", "user");
@@ -221,6 +225,9 @@ public class AiGradingService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body.toString())
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, r -> r.bodyToMono(String.class)
+                        .defaultIfEmpty("")
+                        .map(err -> new RuntimeException("OpenRouter " + r.statusCode().value() + ": " + err)))
                 .bodyToMono(String.class)
                 .block();
         try {
