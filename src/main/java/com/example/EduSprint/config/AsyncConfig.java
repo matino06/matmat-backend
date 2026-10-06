@@ -21,4 +21,16 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    // Spring MVC async (SSE stream AI chata). Boot ga ne konfigurira sam jer postoji aiTaskExecutor.
+    @Bean(name = "mvcAsyncExecutor")
+    public ThreadPoolTaskExecutor mvcAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(4);
+        executor.setMaxPoolSize(16);
+        executor.setQueueCapacity(200);
+        executor.setThreadNamePrefix("mvc-async-");
+        executor.initialize();
+        return executor;
+    }
 }

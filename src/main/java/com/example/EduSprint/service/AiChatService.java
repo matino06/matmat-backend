@@ -38,6 +38,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -60,6 +61,10 @@ public class AiChatService {
     private static final int MAX_QUOTE_CHARS = 6000;
     private static final int MAX_QUESTION_CHARS = 4000;
     private static final Duration RATE_LIMIT_WINDOW = Duration.ofHours(24);
+    // ~8 MB dekodirano; base64 je 4/3 veći
+    private static final int MAX_DATA_URI_BASE64_CHARS = 8 * 1024 * 1024 * 4 / 3 + 4;
+    private static final Pattern IMAGE_DATA_URI = Pattern.compile("^data:image/[A-Za-z0-9.+-]+;base64,(.+)$",
+            Pattern.DOTALL);
     private static final Pattern IMG_SRC = Pattern.compile("<img[^>]*?\\bsrc\\s*=\\s*[\"']([^\"']+)[\"']",
             Pattern.CASE_INSENSITIVE);
     private static final String GENERIC_ERROR = "Došlo je do pogreške. Pokušaj ponovo.";
@@ -180,10 +185,17 @@ public class AiChatService {
         List<ExplanationStep> steps = task == null ? List.of() : explanationStepRepository.findByTaskOrderByStepNumberAsc(task);
         String systemPrompt = buildSystemPrompt(basePrompt, subjectPrompt, task, steps, quote);
 
-        // Slike: one iz zadatka + one koje je učenik označio
+        // Slike: one koje je učenik označio + one iz zadatka.
+        // Iz citata su dopušteni i data: URI-ji (npr. fotografija rukom pisanog odgovora s probne mature).
         Set<String> imageKeys = new LinkedHashSet<>();
         if (quote != null && quote.imageUrls() != null) {
-            quote.imageUrls().forEach(url -> addImageKey(imageKeys, url));
+            for (String url : quote.imageUrls()) {
+                if (url != null && url.startsWith("data:image/")) {
+                    imageKeys.add(url);
+                } else {
+                    addImageKey(imageKeys, url);
+                }
+            }
         }
         if (task != null) {
             extractImageSources(task.getTaskText()).forEach(url -> addImageKey(imageKeys, url));
@@ -294,20 +306,51 @@ public class AiChatService {
         return sb.toString();
     }
 
-    private static String buildUserContent(String question, AiChatRequestDTO.Quote quote, String quoteText) {
-        if (quoteText.isEmpty()) {
+    static String buildUserContent(String question, AiChatRequestDTO.Quote quote, String quoteText) {
+        List<String> imageLabels = quotedImageLabels(quote);
+        if (quoteText.isEmpty() && imageLabels.isEmpty()) {
             return question;
         }
-        String label = switch (quote.source() == null ? "" : quote.source()) {
-            case "solution" -> "Označio sam ovaj dio rješenja:";
-            case "exam" -> "Pitanje s probne mature (s mojim odgovorom, rješenjem i komentarom ocjenjivača):";
-            default -> "Označio sam ovaj dio zadatka:";
+        String source = quote.source() == null ? "" : quote.source();
+        StringBuilder sb = new StringBuilder();
+        if (!quoteText.isEmpty()) {
+            String label = switch (source) {
+                case "solution" -> "Označio sam ovaj dio rješenja:";
+                case "exam" -> "Pitanje s probne mature (s mojim odgovorom, rješenjem i komentarom ocjenjivača):";
+                default -> "Označio sam ovaj dio zadatka:";
+            };
+            sb.append(label).append("\n");
+            for (String line : quoteText.split("\n", -1)) {
+                sb.append("> ").append(line).append("\n");
+            }
+        }
+        // Naziv označene slike ostaje u spremljenoj poruci, pa model u sljedećim pitanjima zna o kojoj je slici riječ.
+        String where = switch (source) {
+            case "solution" -> "rješenja";
+            case "exam" -> "pitanja s mature";
+            default -> "zadatka";
         };
-        StringBuilder sb = new StringBuilder(label).append("\n");
-        for (String line : quoteText.split("\n", -1)) {
-            sb.append("> ").append(line).append("\n");
+        for (String image : imageLabels) {
+            sb.append("Označio sam sliku iz ").append(where).append(": ").append(image).append("\n");
         }
         return sb.append("\n").append(question).toString();
+    }
+
+    private static List<String> quotedImageLabels(AiChatRequestDTO.Quote quote) {
+        List<String> labels = new ArrayList<>();
+        if (quote == null || quote.imageUrls() == null) return labels;
+        for (String url : quote.imageUrls()) {
+            if (url == null || url.isBlank()) continue;
+            if (url.startsWith("data:")) {
+                labels.add("exam".equals(quote.source()) ? "fotografija mog rukom pisanog odgovora" : "priložena fotografija");
+                continue;
+            }
+            String key = toStorageKey(url);
+            if (key != null) {
+                labels.add(key.substring(key.lastIndexOf('/') + 1));
+            }
+        }
+        return labels;
     }
 
     private static String imageNote(int count, AiChatRequestDTO.Quote quote) {
@@ -363,14 +406,41 @@ public class AiChatService {
         if (key != null) keys.add(key);
     }
 
-    private List<String> loadImages(Set<String> keys) {
+    /** Vraća bajtove slike iz data:image/...;base64 URI-ja, ili null ako nije ispravan ili je prevelik. */
+    static byte[] decodeImageDataUri(String uri) {
+        if (uri == null || uri.length() > MAX_DATA_URI_BASE64_CHARS + 100) return null;
+        Matcher m = IMAGE_DATA_URI.matcher(uri);
+        if (!m.matches()) return null;
+        try {
+            // strogi dekoder; samo prijelomi redaka/razmaci se uklanjaju
+            byte[] bytes = Base64.getDecoder().decode(m.group(1).replaceAll("\\s", ""));
+            return bytes.length == 0 ? null : bytes;
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private List<String> loadImages(Set<String> sources) {
         List<String> uris = new ArrayList<>();
-        for (String key : keys) {
+        for (String source : sources) {
             if (uris.size() >= MAX_IMAGES) break;
-            try (InputStream in = storageService.loadAsResource(key).getInputStream()) {
-                uris.add(ImageNormalizer.toJpegDataUri(in.readAllBytes()));
+            boolean dataUri = source.startsWith("data:");
+            String label = dataUri ? source.substring(0, Math.min(source.indexOf(',') + 1, 40)) + "… (" + source.length() + " chars)" : source;
+            try {
+                byte[] bytes;
+                if (dataUri) {
+                    bytes = decodeImageDataUri(source);
+                    if (bytes == null) {
+                        throw new IllegalArgumentException("invalid or too large data URI");
+                    }
+                } else {
+                    try (InputStream in = storageService.loadAsResource(source).getInputStream()) {
+                        bytes = in.readAllBytes();
+                    }
+                }
+                uris.add(ImageNormalizer.toJpegDataUri(bytes));
             } catch (Exception e) {
-                log.warn("AI chat: image '{}' could not be attached: {}", key, e.getMessage());
+                log.warn("AI chat: image '{}' could not be attached: {}", label, e.getMessage());
             }
         }
         return uris;

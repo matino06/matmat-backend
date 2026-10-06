@@ -1,7 +1,10 @@
 package com.example.EduSprint.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -18,6 +21,17 @@ public class WebConfig {
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
+            }
+        };
+    }
+
+    @Bean
+    public WebMvcConfigurer asyncSupportConfigurer(@Qualifier("mvcAsyncExecutor") ThreadPoolTaskExecutor mvcAsyncExecutor) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+                // timeout ostaje iz spring.mvc.async.request-timeout
+                configurer.setTaskExecutor(mvcAsyncExecutor);
             }
         };
     }
