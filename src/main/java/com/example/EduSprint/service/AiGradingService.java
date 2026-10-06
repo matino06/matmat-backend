@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,39 +17,40 @@ import java.util.Base64;
 import java.util.List;
 
 @Service
-public class GeminiGradingService {
+public class AiGradingService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient;
-    private final String apiKey;
     private final String modelText;
     private final String modelVision;
 
-    public GeminiGradingService(@Value("${gemini.api-key}") String apiKey,
-                                @Value("${gemini.model-text}") String modelText,
-                                @Value("${gemini.model-vision}") String modelVision,
-                                @Value("${gemini.api-base-url}") String baseUrl) {
-        this.apiKey = apiKey;
+    public AiGradingService(@Value("${openrouter.api-key}") String apiKey,
+                            @Value("${openrouter.model-text}") String modelText,
+                            @Value("${openrouter.model-vision}") String modelVision,
+                            @Value("${openrouter.api-base-url}") String baseUrl) {
         this.modelText = modelText;
         this.modelVision = modelVision;
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .defaultHeader("HTTP-Referer", "https://matmat.online")
+                .defaultHeader("X-Title", "MatMat")
                 .codecs(c -> c.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
                 .build();
     }
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
         String prompt = buildShortAnswerPrompt(question, userAnswer, parentQuestionText);
-        ObjectNode body = baseRequestBody(prompt, null, null);
-        body.set("generationConfig", scalarGradeSchemaConfig(question.getPoints()));
-        return parseScalar(callGemini(body, modelText));
+        ObjectNode body = baseRequestBody(modelText, prompt, null, null);
+        body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
+        return parseScalar(callModel(body));
     }
 
     public AiGradeResult gradeImageAnswer(MockExamQuestion question, byte[] imageBytes, String mimeType, String parentQuestionText) {
         String prompt = buildImageAnswerPrompt(question, parentQuestionText);
-        ObjectNode body = baseRequestBody(prompt, imageBytes, mimeType);
-        body.set("generationConfig", scalarGradeSchemaConfig(question.getPoints()));
-        return parseScalar(callGemini(body, modelVision));
+        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes, mimeType);
+        body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
+        return parseScalar(callModel(body));
     }
 
     public ExtendedAiGradeResult gradeExtendedAnswer(MockExamQuestion question,
@@ -57,73 +59,82 @@ public class GeminiGradingService {
                                                      String mimeType,
                                                      String parentQuestionText) {
         String prompt = buildExtendedAnswerPrompt(question, criteria, parentQuestionText);
-        ObjectNode body = baseRequestBody(prompt, imageBytes, mimeType);
-        body.set("generationConfig", extendedGradeSchemaConfig());
-        return parseExtended(callGemini(body, modelVision), criteria);
+        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes, mimeType);
+        body.set("response_format", jsonSchemaFormat("extended_grade", extendedGradeSchema()));
+        return parseExtended(callModel(body), criteria);
     }
 
-    private ObjectNode baseRequestBody(String prompt, byte[] imageBytes, String mimeType) {
+    private ObjectNode baseRequestBody(String model, String prompt, byte[] imageBytes, String mimeType) {
         ObjectNode root = objectMapper.createObjectNode();
-        ArrayNode contents = root.putArray("contents");
-        ObjectNode content = contents.addObject();
-        ArrayNode parts = content.putArray("parts");
-        parts.addObject().put("text", prompt);
+        root.put("model", model);
+        ArrayNode messages = root.putArray("messages");
+        ObjectNode message = messages.addObject();
+        message.put("role", "user");
+        ArrayNode content = message.putArray("content");
+        content.addObject().put("type", "text").put("text", prompt);
         if (imageBytes != null) {
-            ObjectNode inlinePart = parts.addObject();
-            ObjectNode inline = inlinePart.putObject("inline_data");
-            inline.put("mime_type", mimeType != null ? mimeType : "image/png");
-            inline.put("data", Base64.getEncoder().encodeToString(imageBytes));
+            String mime = mimeType != null ? mimeType : "image/png";
+            ObjectNode imagePart = content.addObject();
+            imagePart.put("type", "image_url");
+            imagePart.putObject("image_url")
+                    .put("url", "data:" + mime + ";base64," + Base64.getEncoder().encodeToString(imageBytes));
         }
         return root;
     }
 
-    private ObjectNode scalarGradeSchemaConfig(Short maxPoints) {
-        ObjectNode config = objectMapper.createObjectNode();
-        config.put("responseMimeType", "application/json");
-        ObjectNode schema = config.putObject("responseSchema");
-        schema.put("type", "OBJECT");
+    private ObjectNode jsonSchemaFormat(String name, ObjectNode schema) {
+        ObjectNode format = objectMapper.createObjectNode();
+        format.put("type", "json_schema");
+        ObjectNode jsonSchema = format.putObject("json_schema");
+        jsonSchema.put("name", name);
+        jsonSchema.put("strict", true);
+        jsonSchema.set("schema", schema);
+        return format;
+    }
+
+    private ObjectNode scalarGradeSchema(Short maxPoints) {
+        ObjectNode schema = objectMapper.createObjectNode();
+        schema.put("type", "object");
         ObjectNode props = schema.putObject("properties");
         ObjectNode score = props.putObject("score");
-        score.put("type", "INTEGER");
+        score.put("type", "integer");
         score.put("description", "Bodovi od 0 do " + maxPoints);
-        ObjectNode feedback = props.putObject("feedback");
-        feedback.put("type", "STRING");
-        ObjectNode isCorrect = props.putObject("isCorrect");
-        isCorrect.put("type", "BOOLEAN");
+        props.putObject("feedback").put("type", "string");
+        props.putObject("isCorrect").put("type", "boolean");
         ArrayNode required = schema.putArray("required");
         required.add("score");
         required.add("feedback");
         required.add("isCorrect");
-        return config;
+        schema.put("additionalProperties", false);
+        return schema;
     }
 
-    private ObjectNode extendedGradeSchemaConfig() {
-        ObjectNode config = objectMapper.createObjectNode();
-        config.put("responseMimeType", "application/json");
-        ObjectNode schema = config.putObject("responseSchema");
-        schema.put("type", "OBJECT");
+    private ObjectNode extendedGradeSchema() {
+        ObjectNode schema = objectMapper.createObjectNode();
+        schema.put("type", "object");
         ObjectNode props = schema.putObject("properties");
 
         ObjectNode criterionScores = props.putObject("criterionScores");
-        criterionScores.put("type", "ARRAY");
+        criterionScores.put("type", "array");
         ObjectNode item = criterionScores.putObject("items");
-        item.put("type", "OBJECT");
+        item.put("type", "object");
         ObjectNode itemProps = item.putObject("properties");
-        itemProps.putObject("criterionId").put("type", "INTEGER");
-        itemProps.putObject("points").put("type", "INTEGER");
-        itemProps.putObject("feedback").put("type", "STRING");
+        itemProps.putObject("criterionId").put("type", "integer");
+        itemProps.putObject("points").put("type", "integer");
+        itemProps.putObject("feedback").put("type", "string");
         ArrayNode itemReq = item.putArray("required");
         itemReq.add("criterionId");
         itemReq.add("points");
         itemReq.add("feedback");
+        item.put("additionalProperties", false);
 
-        ObjectNode overall = props.putObject("overallFeedback");
-        overall.put("type", "STRING");
+        props.putObject("overallFeedback").put("type", "string");
 
         ArrayNode required = schema.putArray("required");
         required.add("criterionScores");
         required.add("overallFeedback");
-        return config;
+        schema.put("additionalProperties", false);
+        return schema;
     }
 
     private String buildShortAnswerPrompt(MockExamQuestion q, String userAnswer, String parentQuestionText) {
@@ -204,10 +215,9 @@ public class GeminiGradingService {
         return sb.toString();
     }
 
-    private JsonNode callGemini(ObjectNode body, String model) {
-        String path = "/models/" + model + ":generateContent";
+    private JsonNode callModel(ObjectNode body) {
         String response = webClient.post()
-                .uri(uriBuilder -> uriBuilder.path(path).queryParam("key", apiKey).build())
+                .uri("/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(body.toString())
                 .retrieve()
@@ -215,14 +225,26 @@ public class GeminiGradingService {
                 .block();
         try {
             JsonNode root = objectMapper.readTree(response);
-            JsonNode text = root.path("candidates").path(0).path("content").path("parts").path(0).path("text");
+            JsonNode text = root.path("choices").path(0).path("message").path("content");
             if (text.isMissingNode() || text.isNull()) {
-                throw new RuntimeException("Gemini response missing text part: " + response);
+                throw new RuntimeException("AI response missing message content: " + response);
             }
-            return objectMapper.readTree(text.asText());
+            return objectMapper.readTree(stripCodeFence(text.asText()));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse Gemini response: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to parse AI response: " + e.getMessage(), e);
         }
+    }
+
+    private static String stripCodeFence(String s) {
+        String t = s.strip();
+        if (t.startsWith("```")) {
+            int firstNewline = t.indexOf('\n');
+            int lastFence = t.lastIndexOf("```");
+            if (firstNewline >= 0 && lastFence > firstNewline) {
+                t = t.substring(firstNewline + 1, lastFence).strip();
+            }
+        }
+        return t;
     }
 
     private AiGradeResult parseScalar(JsonNode node) {

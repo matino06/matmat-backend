@@ -11,13 +11,13 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfig {
 
-    @Bean(name = "geminiTaskExecutor")
-    public Executor geminiTaskExecutor() {
+    @Bean(name = "aiTaskExecutor")
+    public Executor aiTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("gemini-grader-");
+        executor.setThreadNamePrefix("ai-grader-");
         executor.initialize();
         return executor;
     }

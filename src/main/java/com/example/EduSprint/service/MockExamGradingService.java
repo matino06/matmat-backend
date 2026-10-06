@@ -66,7 +66,7 @@ public class MockExamGradingService {
     private final MockExamScoringCriterionRepository mockExamScoringCriterionRepository;
     private final MockExamCriterionScoreRepository mockExamCriterionScoreRepository;
     private final StorageService storageService;
-    private final GeminiGradingService geminiGradingService;
+    private final AiGradingService aiGradingService;
     private final MockExamGradingService self;
 
     public MockExamGradingService(MockExamRepository mockExamRepository,
@@ -76,7 +76,7 @@ public class MockExamGradingService {
                                   MockExamScoringCriterionRepository mockExamScoringCriterionRepository,
                                   MockExamCriterionScoreRepository mockExamCriterionScoreRepository,
                                   StorageService storageService,
-                                  GeminiGradingService geminiGradingService,
+                                  AiGradingService aiGradingService,
                                   @Lazy MockExamGradingService self) {
         this.mockExamRepository = mockExamRepository;
         this.mockExamQuestionRepository = mockExamQuestionRepository;
@@ -85,7 +85,7 @@ public class MockExamGradingService {
         this.mockExamScoringCriterionRepository = mockExamScoringCriterionRepository;
         this.mockExamCriterionScoreRepository = mockExamCriterionScoreRepository;
         this.storageService = storageService;
-        this.geminiGradingService = geminiGradingService;
+        this.aiGradingService = aiGradingService;
         this.self = self;
     }
 
@@ -192,7 +192,7 @@ public class MockExamGradingService {
         }
     }
 
-    @Async("geminiTaskExecutor")
+    @Async("aiTaskExecutor")
     @Transactional
     public void gradeAnswerAsync(Long answerId) {
         MockExamAnswer answer = mockExamAnswerRepository.findById(answerId).orElse(null);
@@ -205,8 +205,8 @@ public class MockExamGradingService {
             String type = question.getQuestionType();
             switch (type) {
                 case TYPE_SHORT_ANSWER -> {
-                    GeminiGradingService.AiGradeResult r = callWithRetry(() ->
-                            geminiGradingService.gradeShortAnswer(question, answer.getAnswerText(), parentText));
+                    AiGradingService.AiGradeResult r = callWithRetry(() ->
+                            aiGradingService.gradeShortAnswer(question, answer.getAnswerText(), parentText));
                     answer.setScoreAwarded(clamp(r.score(), question.getPoints()));
                     answer.setAiFeedback(r.feedback());
                     answer.setIsCorrect(r.isCorrect());
@@ -215,8 +215,8 @@ public class MockExamGradingService {
                 case TYPE_SHORT_ANSWER_GRAPH -> {
                     byte[] bytes = readAnswerImage(answer);
                     String mime = guessMime(answer.getAnswerImageFilename());
-                    GeminiGradingService.AiGradeResult r = callWithRetry(() ->
-                            geminiGradingService.gradeImageAnswer(question, bytes, mime, parentText));
+                    AiGradingService.AiGradeResult r = callWithRetry(() ->
+                            aiGradingService.gradeImageAnswer(question, bytes, mime, parentText));
                     answer.setScoreAwarded(clamp(r.score(), question.getPoints()));
                     answer.setAiFeedback(r.feedback());
                     answer.setIsCorrect(r.isCorrect());
@@ -227,13 +227,13 @@ public class MockExamGradingService {
                             .findByQuestion_QuestionIdOrderByCriterionOrderAsc(question.getQuestionId());
                     byte[] bytes = readAnswerImage(answer);
                     String mime = guessMime(answer.getAnswerImageFilename());
-                    GeminiGradingService.ExtendedAiGradeResult r = callWithRetry(() ->
-                            geminiGradingService.gradeExtendedAnswer(question, criteria, bytes, mime, parentText));
+                    AiGradingService.ExtendedAiGradeResult r = callWithRetry(() ->
+                            aiGradingService.gradeExtendedAnswer(question, criteria, bytes, mime, parentText));
 
                     int total = 0;
                     Map<Long, MockExamScoringCriterion> byId = new HashMap<>();
                     criteria.forEach(c -> byId.put(c.getCriterionId(), c));
-                    for (GeminiGradingService.CriterionGrade cg : r.criterionScores()) {
+                    for (AiGradingService.CriterionGrade cg : r.criterionScores()) {
                         MockExamScoringCriterion crit = byId.get(cg.criterionId());
                         if (crit == null) continue;
                         MockExamCriterionScore cs = new MockExamCriterionScore();
