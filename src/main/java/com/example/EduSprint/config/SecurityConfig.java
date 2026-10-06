@@ -1,5 +1,6 @@
 package com.example.EduSprint.config;
 
+import jakarta.servlet.DispatcherType;
 import com.example.EduSprint.security.AudienceValidator;
 import com.example.EduSprint.security.JwtAuthConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
+                        // SSE (AI chat) radi async dispatch; zahtjev je već autoriziran na REQUEST dispatchu
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/turnstile/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/image/**").permitAll()

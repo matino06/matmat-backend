@@ -508,7 +508,7 @@ public class MockExamGradingService {
 
     private static void failIfImageUnreadable(String feedback) {
         if (feedback != null && feedback.strip().startsWith(AiGradingService.UNREADABLE_IMAGE_MARKER)) {
-            throw new AiGradingService.ImageUnreadableException(null);
+            throw new ImageNormalizer.ImageUnreadableException(null);
         }
     }
 

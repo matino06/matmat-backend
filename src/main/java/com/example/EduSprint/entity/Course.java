@@ -17,6 +17,9 @@ public class Course {
     @Column(name = "course_description")
     private String courseDescription;
 
+    @Column(name = "subject", length = 30)
+    private String subject;
+
     public Course(String courseName, String courseDescription) {
         this.courseName = courseName;
         this.courseDescription = courseDescription;
@@ -47,5 +50,13 @@ public class Course {
 
     public void setCourseDescription(String courseDescription) {
         this.courseDescription = courseDescription;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 }

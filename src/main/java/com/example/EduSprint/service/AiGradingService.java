@@ -9,38 +9,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Service
 public class AiGradingService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final WebClient webClient;
+    private final OpenRouterClient openRouterClient;
     private static final Logger log = LoggerFactory.getLogger(AiGradingService.class);
     private static final int MAX_TOKENS = 4096;
-    private static final int MAX_IMAGE_SIDE = 1568;
-    private static final float JPEG_QUALITY = 0.85f;
     public static final String UNREADABLE_IMAGE_MARKER = "SLIKA_NECITLJIVA";
     private static final String LATEX_RULE =
             "Matematičke izraze u feedbacku piši isključivo kao inline LaTeX unutar $...$ (npr. $[0, 2\\pi]$). " +
@@ -52,19 +32,12 @@ public class AiGradingService {
     private final String modelText;
     private final String modelVision;
 
-    public AiGradingService(@Value("${openrouter.api-key}") String apiKey,
+    public AiGradingService(OpenRouterClient openRouterClient,
                             @Value("${openrouter.model-text}") String modelText,
-                            @Value("${openrouter.model-vision}") String modelVision,
-                            @Value("${openrouter.api-base-url}") String baseUrl) {
+                            @Value("${openrouter.model-vision}") String modelVision) {
+        this.openRouterClient = openRouterClient;
         this.modelText = modelText;
         this.modelVision = modelVision;
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-                .defaultHeader("HTTP-Referer", "https://matmat.online")
-                .defaultHeader("X-Title", "MatMat")
-                .codecs(c -> c.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
-                .build();
     }
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
@@ -101,67 +74,11 @@ public class AiGradingService {
         ArrayNode content = message.putArray("content");
         content.addObject().put("type", "text").put("text", prompt);
         if (imageBytes != null) {
-            byte[] jpeg = normalizeImage(imageBytes);
             ObjectNode imagePart = content.addObject();
             imagePart.put("type", "image_url");
-            imagePart.putObject("image_url")
-                    .put("url", "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(jpeg));
+            imagePart.putObject("image_url").put("url", ImageNormalizer.toJpegDataUri(imageBytes));
         }
         return root;
-    }
-
-    /**
-     * Dekodira sliku po sadržaju (ne po ekstenziji), stavlja je na bijelu podlogu, smanjuje na
-     * MAX_IMAGE_SIDE i ponovno kodira kao JPEG, tako da se MIME i sadržaj uvijek slažu.
-     */
-    static byte[] normalizeImage(byte[] bytes) {
-        BufferedImage src;
-        try {
-            src = ImageIO.read(new ByteArrayInputStream(bytes));
-        } catch (IOException e) {
-            throw new ImageUnreadableException(e);
-        }
-        if (src == null) {
-            throw new ImageUnreadableException(null);
-        }
-
-        int w = src.getWidth();
-        int h = src.getHeight();
-        double scale = Math.min(1.0, (double) MAX_IMAGE_SIDE / Math.max(w, h));
-        int tw = Math.max(1, (int) Math.round(w * scale));
-        int th = Math.max(1, (int) Math.round(h * scale));
-
-        BufferedImage out = new BufferedImage(tw, th, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = out.createGraphics();
-        try {
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, tw, th);
-            g.drawImage(src, 0, 0, tw, th, null);
-        } finally {
-            g.dispose();
-        }
-
-        byte[] jpeg = encodeJpeg(out);
-        log.info("AI grading image: original {} B {}x{} -> sent {} B {}x{}", bytes.length, w, h, jpeg.length, tw, th);
-        return jpeg;
-    }
-
-    private static byte[] encodeJpeg(BufferedImage image) {
-        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ImageOutputStream ios = ImageIO.createImageOutputStream(baos)) {
-            writer.setOutput(ios);
-            ImageWriteParam param = writer.getDefaultWriteParam();
-            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            param.setCompressionQuality(JPEG_QUALITY);
-            writer.write(null, new IIOImage(image, null, null), param);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to encode image as JPEG", e);
-        } finally {
-            writer.dispose();
-        }
-        return baos.toByteArray();
     }
 
     private ObjectNode jsonSchemaFormat(String name, ObjectNode schema) {
@@ -304,24 +221,14 @@ public class AiGradingService {
     }
 
     private JsonNode callModel(ObjectNode body) {
-        String response = webClient.post()
-                .uri("/chat/completions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body.toString())
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, r -> r.createException()
-                        .map(ex -> new RuntimeException("OpenRouter " + ex.getStatusCode().value() + ": "
-                                + ex.getResponseBodyAsString(), ex)))
-                .bodyToMono(String.class)
-                .block();
+        JsonNode root = openRouterClient.complete(body);
+        log.info("AI grading response: model={}, provider={}",
+                root.path("model").asText(""), root.path("provider").asText(""));
+        JsonNode text = root.path("choices").path(0).path("message").path("content");
+        if (text.isMissingNode() || text.isNull()) {
+            throw new RuntimeException("AI response missing message content: " + root);
+        }
         try {
-            JsonNode root = objectMapper.readTree(response);
-            log.info("AI grading response: model={}, provider={}",
-                    root.path("model").asText(""), root.path("provider").asText(""));
-            JsonNode text = root.path("choices").path(0).path("message").path("content");
-            if (text.isMissingNode() || text.isNull()) {
-                throw new RuntimeException("AI response missing message content: " + response);
-            }
             return objectMapper.readTree(stripCodeFence(text.asText()));
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse AI response: " + e.getMessage(), e);
@@ -370,12 +277,6 @@ public class AiGradingService {
 
     private static String nullSafe(String s) {
         return s == null ? "" : s;
-    }
-
-    public static class ImageUnreadableException extends RuntimeException {
-        public ImageUnreadableException(Throwable cause) {
-            super("Slika se ne može pročitati (podržani formati: PNG, JPG).", cause);
-        }
     }
 
     public record AiGradeResult(Short score, String feedback, boolean isCorrect) {
