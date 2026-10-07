@@ -3,20 +3,18 @@ package com.example.EduSprint.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 /**
  * Tanki klijent za OpenRouter Chat Completions API (OpenAI-kompatibilan).
+ * Instance (s različitim API ključevima) se kreiraju u OpenRouterConfig.
  */
-@Component
 public class OpenRouterClient {
 
     private static final ParameterizedTypeReference<ServerSentEvent<String>> SSE_TYPE =
@@ -25,8 +23,7 @@ public class OpenRouterClient {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient;
 
-    public OpenRouterClient(@Value("${openrouter.api-key}") String apiKey,
-                            @Value("${openrouter.api-base-url}") String baseUrl) {
+    public OpenRouterClient(String apiKey, String baseUrl) {
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class AiGradingService {
     private final String modelText;
     private final String modelVision;
 
-    public AiGradingService(OpenRouterClient openRouterClient,
+    public AiGradingService(@Qualifier("gradingOpenRouterClient") OpenRouterClient openRouterClient,
                             @Value("${openrouter.model-text}") String modelText,
                             @Value("${openrouter.model-vision}") String modelVision) {
         this.openRouterClient = openRouterClient;

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
@@ -112,7 +113,7 @@ public class AiChatService {
     // Razgovori koji se ne spremaju (ispit / općenito) i dalje ulaze u dnevni limit.
     private final Map<Long, Deque<Instant>> unsavedQuestions = new ConcurrentHashMap<>();
 
-    public AiChatService(OpenRouterClient openRouterClient,
+    public AiChatService(@Qualifier("chatOpenRouterClient") OpenRouterClient openRouterClient,
                          AiPromptRepository aiPromptRepository,
                          AiConversationRepository aiConversationRepository,
                          AiMessageRepository aiMessageRepository,
