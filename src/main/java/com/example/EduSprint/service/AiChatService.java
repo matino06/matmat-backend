@@ -78,6 +78,24 @@ public class AiChatService {
             Matematičke izraze piši u LaTeX-u: inline izraze unutar \\( i \\), a izdvojene jednadžbe unutar $$ $$.
             Ne koristi jednostruke znakove $ za matematičke izraze.""";
 
+    // Frontend prepoznaje ovaj oblik i crta skicu kao sliku, pa se dodaje uvijek,
+    // i kad osnovni prompt dolazi iz baze.
+    static final String SKETCH_INSTRUCTIONS = """
+        Ako skica pomaže objasniti (ili je učenik traži), nacrtaj je kao SVG:
+        - cijeli SVG napiši u jednom bloku koda koji počinje s ```svg i završava s ```;
+        - korijenski element je <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 W H"> (W do 480, H do 320), bez width i height; bijela pozadina;
+        - osnovno crtaj tamno (#222), a 2–3 najvažnija elementa istakni bojom (#e74c3c, #2980b9, #27ae60);
+          oznaka je iste boje kao njezin element; strelica u boji ima svoj <marker> te boje;
+        - zajedničke atribute stavi jednom na <g> (npr. <g font-family="sans-serif" font-size="14">);
+          ponavljajuće crtice (šrafura tla, oznake na osima) crtaj jednim <path> s više M…l naredbi;
+        - koordinate izračunaj, ne procjenjuj: točke leže na krivulji, vektori su tangente gdje trebaju biti, kutovi odgovaraju nacrtanom;
+        - oznake ne smiju prekrivati linije ni jedna drugu;
+        - bez <script>, <foreignObject>, <image>, poveznica i animacija;
+        - neka bude jednostavna: osi, krivulja i nekoliko istaknutih točaka i oznaka, bez guste mreže, najviše oko 40 elemenata;
+        - tekst u SVG-u piši običnim tekstom (npr. f(n) = 1/n, n → +∞, v₀), ne LaTeX-om;
+        - nikad ne prekidaj SVG na pola; ako učenik traži doradu, pošalji cijeli novi SVG;
+        - objašnjenje skice piši ispod bloka, ne opisuj SVG kod.""";
+
     private final OpenRouterClient openRouterClient;
     private final AiPromptRepository aiPromptRepository;
     private final AiConversationRepository aiConversationRepository;
@@ -281,6 +299,7 @@ public class AiChatService {
         if (subjectPrompt != null) {
             sb.append("\n\n").append(subjectPrompt.getContent());
         }
+        sb.append("\n\n").append(SKETCH_INSTRUCTIONS);
         sb.append("\n\nTekst zadatka i rješenja zapisan je u LaTeX-u (MathJax) i može sadržavati HTML oznake.");
         if (task != null) {
             if (task.getObjective() != null) {
@@ -454,6 +473,8 @@ public class AiChatService {
         AtomicReference<JsonNode> usage = new AtomicReference<>();
         AtomicReference<String> respondedModel = new AtomicReference<>(model);
         AtomicBoolean finished = new AtomicBoolean(false);
+        // finish_reason "length": odgovor je udario u max_tokens i prekinut je.
+        AtomicBoolean truncated = new AtomicBoolean(false);
 
         ObjectNode meta = objectMapper.createObjectNode();
         meta.putPOJO("conversationId", prepared.conversationId());
@@ -467,6 +488,9 @@ public class AiChatService {
                     JsonNode u = chunk.path("usage");
                     if (u.isObject()) usage.set(u);
                     if (chunk.hasNonNull("model")) respondedModel.set(chunk.get("model").asText());
+                    if ("length".equals(chunk.path("choices").path(0).path("finish_reason").asText(null))) {
+                        truncated.set(true);
+                    }
                 })
                 .map(chunk -> chunk.path("choices").path(0).path("delta").path("content").asText(""))
                 .filter(text -> !text.isEmpty())
@@ -478,6 +502,7 @@ public class AiChatService {
                     Long messageId = saveAssistant(prepared, full.toString(), AiMessage.STATUS_OK, usage.get(), respondedModel.get(), startNanos);
                     ObjectNode payload = objectMapper.createObjectNode();
                     payload.putPOJO("messageId", messageId);
+                    payload.put("truncated", truncated.get());
                     return event("done", payload);
                 })
                 .subscribeOn(Schedulers.boundedElastic());
