@@ -112,6 +112,7 @@ public class AiChatService {
     private final String model;
     private final int dailyLimit;
     private final int maxTokens;
+    private final String reasoningEffort;
 
     // Razgovori koji se ne spremaju (ispit / općenito) i dalje ulaze u dnevni limit.
     private final Map<Long, Deque<Instant>> unsavedQuestions = new ConcurrentHashMap<>();
@@ -126,7 +127,8 @@ public class AiChatService {
                          TransactionTemplate transactionTemplate,
                          @Value("${ai.chat.model}") String model,
                          @Value("${ai.chat.daily-limit}") int dailyLimit,
-                         @Value("${ai.chat.max-tokens}") int maxTokens) {
+                         @Value("${ai.chat.max-tokens}") int maxTokens,
+                         @Value("${ai.chat.reasoning-effort}") String reasoningEffort) {
         this.openRouterClient = openRouterClient;
         this.aiPromptRepository = aiPromptRepository;
         this.aiConversationRepository = aiConversationRepository;
@@ -138,6 +140,7 @@ public class AiChatService {
         this.model = model;
         this.dailyLimit = dailyLimit;
         this.maxTokens = maxTokens;
+        this.reasoningEffort = OpenRouterClient.reasoningEffort(reasoningEffort);
     }
 
     /**
@@ -236,7 +239,8 @@ public class AiChatService {
         body.put("stream", true);
         body.put("max_tokens", maxTokens);
         body.putObject("usage").put("include", true);
-        body.putObject("reasoning").put("exclude", true);
+        ObjectNode reasoning = body.putObject("reasoning").put("exclude", true);
+        if (reasoningEffort != null) reasoning.put("effort", reasoningEffort);
         ArrayNode messages = body.putArray("messages");
         messages.addObject().put("role", "system").put("content", systemPrompt);
 

@@ -32,13 +32,16 @@ public class AiGradingService {
 
     private final String modelText;
     private final String modelVision;
+    private final String reasoningEffort;
 
     public AiGradingService(@Qualifier("gradingOpenRouterClient") OpenRouterClient openRouterClient,
                             @Value("${openrouter.model-text}") String modelText,
-                            @Value("${openrouter.model-vision}") String modelVision) {
+                            @Value("${openrouter.model-vision}") String modelVision,
+                            @Value("${openrouter.reasoning-effort}") String reasoningEffort) {
         this.openRouterClient = openRouterClient;
         this.modelText = modelText;
         this.modelVision = modelVision;
+        this.reasoningEffort = OpenRouterClient.reasoningEffort(reasoningEffort);
     }
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
@@ -69,6 +72,7 @@ public class AiGradingService {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("model", model);
         root.put("max_tokens", MAX_TOKENS);
+        if (reasoningEffort != null) root.putObject("reasoning").put("effort", reasoningEffort);
         ArrayNode messages = root.putArray("messages");
         ObjectNode message = messages.addObject();
         message.put("role", "user");
