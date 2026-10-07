@@ -69,6 +69,9 @@ public class AiChatService {
     private static final Pattern IMG_SRC = Pattern.compile("<img[^>]*?\\bsrc\\s*=\\s*[\"']([^\"']+)[\"']",
             Pattern.CASE_INSENSITIVE);
     private static final String GENERIC_ERROR = "Došlo je do pogreške. Pokušaj ponovo.";
+    // Model koji razmišlja može potrošiti cijeli max_tokens na razmišljanje i ne napisati ni riječ.
+    private static final String NO_ANSWER_ERROR =
+            "AI je predugo razmišljao i nije stigao odgovoriti. Pokušaj ponovo ili postavi jednostavnije pitanje.";
 
     static final String DEFAULT_BASE_PROMPT = """
             Ti si MatMat AI asistent, tutor koji pomaže učenicima u pripremi za državnu maturu.
@@ -241,6 +244,8 @@ public class AiChatService {
             List<AiMessage> previous = aiMessageRepository.findByConversation_ConversationIdAndStatusOrderByCreatedAtAsc(
                     conversation.getConversationId(), AiMessage.STATUS_OK);
             for (AiMessage m : lastN(previous, MAX_HISTORY_MESSAGES)) {
+                // Starije prazne poruke asistenta spremljene su kao "ok"; provideri prazan sadržaj mogu odbiti.
+                if (m.getContent() == null || m.getContent().isBlank()) continue;
                 messages.addObject().put("role", m.getRole()).put("content", m.getContent());
             }
         } else if (req.history() != null) {
@@ -500,6 +505,12 @@ public class AiChatService {
 
         Mono<ServerSentEvent<String>> done = Mono.fromCallable(() -> {
                     finished.set(true);
+                    if (full.toString().isBlank()) {
+                        // Nijedna riječ odgovora: greška, ne "ok", da prazna poruka ne uđe u povijest razgovora.
+                        saveAssistant(prepared, full.toString(), AiMessage.STATUS_ERROR, usage.get(), respondedModel.get(), startNanos);
+                        return event("error", objectMapper.createObjectNode()
+                                .put("message", truncated.get() ? NO_ANSWER_ERROR : GENERIC_ERROR));
+                    }
                     Long messageId = saveAssistant(prepared, full.toString(), AiMessage.STATUS_OK, usage.get(), respondedModel.get(), startNanos);
                     ObjectNode payload = objectMapper.createObjectNode();
                     payload.putPOJO("messageId", messageId);
