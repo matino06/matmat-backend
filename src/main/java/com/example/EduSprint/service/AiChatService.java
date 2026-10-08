@@ -1,6 +1,7 @@
 package com.example.EduSprint.service;
 
 import com.example.EduSprint.dto.AiChatRequestDTO;
+import com.example.EduSprint.dto.AiSettingsDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.AiConversation;
 import com.example.EduSprint.entity.AiMessage;
@@ -20,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
@@ -108,11 +108,8 @@ public class AiChatService {
     private final ExplanationStepRepository explanationStepRepository;
     private final StorageService storageService;
     private final TransactionTemplate transactionTemplate;
+    private final AiSettingsService aiSettingsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String model;
-    private final int dailyLimit;
-    private final int maxTokens;
-    private final String reasoningEffort;
 
     // Razgovori koji se ne spremaju (ispit / općenito) i dalje ulaze u dnevni limit.
     private final Map<Long, Deque<Instant>> unsavedQuestions = new ConcurrentHashMap<>();
@@ -125,10 +122,7 @@ public class AiChatService {
                          ExplanationStepRepository explanationStepRepository,
                          StorageService storageService,
                          TransactionTemplate transactionTemplate,
-                         @Value("${ai.chat.model}") String model,
-                         @Value("${ai.chat.daily-limit}") int dailyLimit,
-                         @Value("${ai.chat.max-tokens}") int maxTokens,
-                         @Value("${ai.chat.reasoning-effort}") String reasoningEffort) {
+                         AiSettingsService aiSettingsService) {
         this.openRouterClient = openRouterClient;
         this.aiPromptRepository = aiPromptRepository;
         this.aiConversationRepository = aiConversationRepository;
@@ -137,10 +131,7 @@ public class AiChatService {
         this.explanationStepRepository = explanationStepRepository;
         this.storageService = storageService;
         this.transactionTemplate = transactionTemplate;
-        this.model = model;
-        this.dailyLimit = dailyLimit;
-        this.maxTokens = maxTokens;
-        this.reasoningEffort = OpenRouterClient.reasoningEffort(reasoningEffort);
+        this.aiSettingsService = aiSettingsService;
     }
 
     /**
@@ -180,8 +171,9 @@ public class AiChatService {
             question = "Objasni mi ovaj dio.";
         }
 
+        AiSettingsDTO settings = aiSettingsService.current();
         boolean persisted = req.taskId() != null;
-        checkRateLimit(account.getAccountId(), persisted);
+        checkRateLimit(account.getAccountId(), persisted, settings.chatDailyLimit());
 
         Task task = null;
         AiConversation conversation = null;
@@ -235,12 +227,12 @@ public class AiChatService {
         String userContent = buildUserContent(question, quote, quoteText);
 
         ObjectNode body = objectMapper.createObjectNode();
-        body.put("model", model);
+        body.put("model", settings.chatModel());
         body.put("stream", true);
-        body.put("max_tokens", maxTokens);
+        body.put("max_tokens", settings.chatMaxTokens());
         body.putObject("usage").put("include", true);
         ObjectNode reasoning = body.putObject("reasoning").put("exclude", true);
-        if (reasoningEffort != null) reasoning.put("effort", reasoningEffort);
+        if (settings.chatReasoningEffort() != null) reasoning.put("effort", settings.chatReasoningEffort());
         ArrayNode messages = body.putArray("messages");
         messages.addObject().put("role", "system").put("content", systemPrompt);
 
@@ -278,13 +270,14 @@ public class AiChatService {
 
         return new PreparedChat(
                 body,
+                settings.chatModel(),
                 conversation != null ? conversation.getConversationId() : null,
                 basePrompt != null ? basePrompt.getPromptId() : null,
                 subjectPrompt != null ? subjectPrompt.getPromptId() : null,
                 imageDataUris.size());
     }
 
-    private void checkRateLimit(Long accountId, boolean persisted) {
+    private void checkRateLimit(Long accountId, boolean persisted, int dailyLimit) {
         Instant since = Instant.now().minus(RATE_LIMIT_WINDOW);
         Deque<Instant> unsaved = unsavedQuestions.computeIfAbsent(accountId, id -> new ArrayDeque<>());
         synchronized (unsaved) {
@@ -481,7 +474,7 @@ public class AiChatService {
         long startNanos = System.nanoTime();
         StringBuilder full = new StringBuilder();
         AtomicReference<JsonNode> usage = new AtomicReference<>();
-        AtomicReference<String> respondedModel = new AtomicReference<>(model);
+        AtomicReference<String> respondedModel = new AtomicReference<>(prepared.model());
         AtomicBoolean finished = new AtomicBoolean(false);
         // finish_reason "length": odgovor je udario u max_tokens i prekinut je.
         AtomicBoolean truncated = new AtomicBoolean(false);
@@ -595,7 +588,7 @@ public class AiChatService {
         return s == null ? "" : s;
     }
 
-    private record PreparedChat(ObjectNode body, Long conversationId, Long basePromptId, Long subjectPromptId,
+    private record PreparedChat(ObjectNode body, String model, Long conversationId, Long basePromptId, Long subjectPromptId,
                                 int imagesAttached) {
     }
 }

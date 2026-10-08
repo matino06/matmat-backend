@@ -4,12 +4,15 @@ import com.example.EduSprint.dto.AdminCourseDTO;
 import com.example.EduSprint.dto.AdminCourseGraphDTO;
 import com.example.EduSprint.dto.AdminObjectiveNodeDTO;
 import com.example.EduSprint.dto.AdminPrerequisiteEdgeDTO;
+import com.example.EduSprint.dto.AiSettingsDTO;
+import com.example.EduSprint.dto.AiSettingsUpdateDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.CourseRepository;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
+import com.example.EduSprint.service.AiSettingsService;
 import com.example.EduSprint.service.CourseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,24 +30,52 @@ public class AdminController {
     private final CourseService courseService;
     private final CourseRepository courseRepository;
     private final LearningObjectiveRepository learningObjectiveRepository;
+    private final AiSettingsService aiSettingsService;
 
     public AdminController(AccountService accountService, CourseService courseService,
-                          CourseRepository courseRepository, LearningObjectiveRepository learningObjectiveRepository) {
+                          CourseRepository courseRepository, LearningObjectiveRepository learningObjectiveRepository,
+                          AiSettingsService aiSettingsService) {
         this.accountService = accountService;
         this.courseService = courseService;
         this.courseRepository = courseRepository;
         this.learningObjectiveRepository = learningObjectiveRepository;
+        this.aiSettingsService = aiSettingsService;
     }
 
     // Returns true only for accounts flagged as admin. Any lookup failure counts as "not admin".
     private boolean isAdmin(Authentication authentication) {
+        return adminAccount(authentication) != null;
+    }
+
+    // The caller's account if it is flagged as admin, otherwise null.
+    private Account adminAccount(Authentication authentication) {
         try {
             AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
             Account account = accountService.getAccount(principal.getEmail());
-            return account != null && Boolean.TRUE.equals(account.getIsAdmin());
+            return account != null && Boolean.TRUE.equals(account.getIsAdmin()) ? account : null;
         } catch (RuntimeException e) {
-            return false;
+            return null;
         }
+    }
+
+    // Current AI settings (models, daily chat limit, max tokens, reasoning effort). API keys are not exposed.
+    @GetMapping("/ai-settings")
+    public ResponseEntity<AiSettingsDTO> getAiSettings(Authentication authentication) {
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(aiSettingsService.current());
+    }
+
+    // Replaces all AI settings at once; takes effect on the next AI request.
+    @PutMapping("/ai-settings")
+    public ResponseEntity<AiSettingsDTO> updateAiSettings(Authentication authentication,
+                                                          @RequestBody AiSettingsUpdateDTO request) {
+        Account admin = adminAccount(authentication);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(aiSettingsService.update(admin, request));
     }
 
     // All courses with objective/task counts, for the dashboard course list.

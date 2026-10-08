@@ -28,8 +28,8 @@ public class OpenRouterClient {
 
     /**
      * Razina razmišljanja iz postavki: prazno → null (model razmišlja po svom zadanom),
-     * inače jedna od REASONING_EFFORTS. Krivu vrijednost odbija pri pokretanju umjesto da
-     * je OpenRouter tiho ignorira.
+     * inače jedna od REASONING_EFFORTS. Krivu vrijednost odbija pri spremanju postavki umjesto
+     * da je OpenRouter tiho ignorira.
      */
     public static String reasoningEffort(String value) {
         if (value == null || value.isBlank()) return null;

@@ -1,5 +1,6 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.dto.AiSettingsDTO;
 import com.example.EduSprint.entity.MockExamQuestion;
 import com.example.EduSprint.entity.MockExamScoringCriterion;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,7 +10,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,7 +21,6 @@ public class AiGradingService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final OpenRouterClient openRouterClient;
     private static final Logger log = LoggerFactory.getLogger(AiGradingService.class);
-    private static final int MAX_TOKENS = 4096;
     public static final String UNREADABLE_IMAGE_MARKER = "SLIKA_NECITLJIVA";
     private static final String LATEX_RULE =
             "Matematičke izraze u feedbacku piši isključivo kao inline LaTeX unutar $...$ (npr. $[0, 2\\pi]$). " +
@@ -30,30 +29,24 @@ public class AiGradingService {
             "Ako je slika prazna, potpuno crna, mutna ili nečitljiva, NE ocjenjuj sadržaj — postavi score 0 " +
             "i u feedback napiši točno '" + UNREADABLE_IMAGE_MARKER + "'.";
 
-    private final String modelText;
-    private final String modelVision;
-    private final String reasoningEffort;
+    private final AiSettingsService aiSettingsService;
 
     public AiGradingService(@Qualifier("gradingOpenRouterClient") OpenRouterClient openRouterClient,
-                            @Value("${openrouter.model-text}") String modelText,
-                            @Value("${openrouter.model-vision}") String modelVision,
-                            @Value("${openrouter.reasoning-effort}") String reasoningEffort) {
+                            AiSettingsService aiSettingsService) {
         this.openRouterClient = openRouterClient;
-        this.modelText = modelText;
-        this.modelVision = modelVision;
-        this.reasoningEffort = OpenRouterClient.reasoningEffort(reasoningEffort);
+        this.aiSettingsService = aiSettingsService;
     }
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
         String prompt = buildShortAnswerPrompt(question, userAnswer, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelText, prompt, null);
+        ObjectNode body = baseRequestBody(false, prompt, null);
         body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
         return parseScalar(callModel(body));
     }
 
     public AiGradeResult gradeImageAnswer(MockExamQuestion question, byte[] imageBytes, String parentQuestionText) {
         String prompt = buildImageAnswerPrompt(question, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes);
+        ObjectNode body = baseRequestBody(true, prompt, imageBytes);
         body.set("response_format", jsonSchemaFormat("grade", scalarGradeSchema(question.getPoints())));
         return parseScalar(callModel(body));
     }
@@ -63,16 +56,19 @@ public class AiGradingService {
                                                      byte[] imageBytes,
                                                      String parentQuestionText) {
         String prompt = buildExtendedAnswerPrompt(question, criteria, parentQuestionText);
-        ObjectNode body = baseRequestBody(modelVision, prompt, imageBytes);
+        ObjectNode body = baseRequestBody(true, prompt, imageBytes);
         body.set("response_format", jsonSchemaFormat("extended_grade", extendedGradeSchema()));
         return parseExtended(callModel(body), criteria);
     }
 
-    private ObjectNode baseRequestBody(String model, String prompt, byte[] imageBytes) {
+    private ObjectNode baseRequestBody(boolean vision, String prompt, byte[] imageBytes) {
+        AiSettingsDTO settings = aiSettingsService.current();
         ObjectNode root = objectMapper.createObjectNode();
-        root.put("model", model);
-        root.put("max_tokens", MAX_TOKENS);
-        if (reasoningEffort != null) root.putObject("reasoning").put("effort", reasoningEffort);
+        root.put("model", vision ? settings.gradingModelVision() : settings.gradingModelText());
+        root.put("max_tokens", settings.gradingMaxTokens());
+        if (settings.gradingReasoningEffort() != null) {
+            root.putObject("reasoning").put("effort", settings.gradingReasoningEffort());
+        }
         ArrayNode messages = root.putArray("messages");
         ObjectNode message = messages.addObject();
         message.put("role", "user");
