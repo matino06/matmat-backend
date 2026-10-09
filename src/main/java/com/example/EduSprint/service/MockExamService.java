@@ -54,23 +54,11 @@ public class MockExamService {
                 .filter(e -> Boolean.TRUE.equals(e.getIsPublished()))
                 .orElseThrow(() -> new EntityNotFoundException("Mock exam not found: " + examId));
 
-        List<MockExamQuestion> all = mockExamQuestionRepository
-                .findByExam_ExamIdOrderBySortOrderAsc(examId);
+        QuestionTree tree = QuestionTree.of(mockExamQuestionRepository
+                .findByExam_ExamIdOrderBySortOrderAsc(examId));
 
-        Map<Long, List<MockExamQuestion>> childrenByParent = new HashMap<>();
-        List<MockExamQuestion> roots = new ArrayList<>();
-        for (MockExamQuestion q : all) {
-            if (q.getParent() == null) {
-                roots.add(q);
-            } else {
-                childrenByParent
-                        .computeIfAbsent(q.getParent().getQuestionId(), k -> new ArrayList<>())
-                        .add(q);
-            }
-        }
-
-        List<MockExamQuestionDTO> questionDTOs = roots.stream()
-                .map(root -> toQuestionDTO(root, childrenByParent))
+        List<MockExamQuestionDTO> questionDTOs = tree.roots().stream()
+                .map(root -> toQuestionDTO(root, tree.childrenByParent()))
                 .toList();
 
         return new MockExamDetailDTO(
@@ -83,6 +71,25 @@ public class MockExamService {
                 exam.getTotalPoints(),
                 questionDTOs
         );
+    }
+
+    // A flat question list split into top-level questions and the sub-questions under each parent id.
+    record QuestionTree(List<MockExamQuestion> roots, Map<Long, List<MockExamQuestion>> childrenByParent) {
+
+        static QuestionTree of(List<MockExamQuestion> all) {
+            Map<Long, List<MockExamQuestion>> childrenByParent = new HashMap<>();
+            List<MockExamQuestion> roots = new ArrayList<>();
+            for (MockExamQuestion q : all) {
+                if (q.getParent() == null) {
+                    roots.add(q);
+                } else {
+                    childrenByParent
+                            .computeIfAbsent(q.getParent().getQuestionId(), k -> new ArrayList<>())
+                            .add(q);
+                }
+            }
+            return new QuestionTree(roots, childrenByParent);
+        }
     }
 
     private MockExamSummaryDTO toSummaryDTO(MockExam exam) {

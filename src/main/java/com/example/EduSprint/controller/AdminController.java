@@ -2,6 +2,10 @@ package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.AdminCourseDTO;
 import com.example.EduSprint.dto.AdminCourseGraphDTO;
+import com.example.EduSprint.dto.AdminMockExamDetailDTO;
+import com.example.EduSprint.dto.AdminMockExamQuestionDTO;
+import com.example.EduSprint.dto.AdminMockExamQuestionUpdateDTO;
+import com.example.EduSprint.dto.AdminMockExamSummaryDTO;
 import com.example.EduSprint.dto.AdminObjectiveNodeDTO;
 import com.example.EduSprint.dto.AdminPrerequisiteEdgeDTO;
 import com.example.EduSprint.dto.AiSettingsDTO;
@@ -12,6 +16,7 @@ import com.example.EduSprint.repository.CourseRepository;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
+import com.example.EduSprint.service.AdminMockExamService;
 import com.example.EduSprint.service.AiSettingsService;
 import com.example.EduSprint.service.CourseService;
 import org.springframework.http.HttpStatus;
@@ -31,15 +36,17 @@ public class AdminController {
     private final CourseRepository courseRepository;
     private final LearningObjectiveRepository learningObjectiveRepository;
     private final AiSettingsService aiSettingsService;
+    private final AdminMockExamService adminMockExamService;
 
     public AdminController(AccountService accountService, CourseService courseService,
                           CourseRepository courseRepository, LearningObjectiveRepository learningObjectiveRepository,
-                          AiSettingsService aiSettingsService) {
+                          AiSettingsService aiSettingsService, AdminMockExamService adminMockExamService) {
         this.accountService = accountService;
         this.courseService = courseService;
         this.courseRepository = courseRepository;
         this.learningObjectiveRepository = learningObjectiveRepository;
         this.aiSettingsService = aiSettingsService;
+        this.adminMockExamService = adminMockExamService;
     }
 
     // Returns true only for accounts flagged as admin. Any lookup failure counts as "not admin".
@@ -129,5 +136,35 @@ public class AdminController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new AdminCourseGraphDTO(course.getCourseId(), course.getCourseName(), nodes, edges));
+    }
+
+    // All mock exams of the admin's current course, unpublished ones included.
+    @GetMapping("/mock-exams")
+    public ResponseEntity<List<AdminMockExamSummaryDTO>> getMockExams(Authentication authentication) {
+        Account admin = adminAccount(authentication);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(adminMockExamService.listForCourse(admin.getCurrentCourse()));
+    }
+
+    // One mock exam with answers and solution explanations, published or not.
+    @GetMapping("/mock-exams/{examId}")
+    public ResponseEntity<AdminMockExamDetailDTO> getMockExam(Authentication authentication, @PathVariable Long examId) {
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(adminMockExamService.getExam(examId));
+    }
+
+    // Replaces the text fields of one question (text, options, answer, explanation, notes).
+    @PutMapping("/mock-exams/questions/{questionId}")
+    public ResponseEntity<AdminMockExamQuestionDTO> updateMockExamQuestion(Authentication authentication,
+                                                                           @PathVariable Long questionId,
+                                                                           @RequestBody AdminMockExamQuestionUpdateDTO request) {
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(adminMockExamService.updateQuestion(questionId, request));
     }
 }

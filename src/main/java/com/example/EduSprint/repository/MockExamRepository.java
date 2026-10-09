@@ -11,4 +11,6 @@ import java.util.List;
 public interface MockExamRepository extends JpaRepository<MockExam, Long> {
 
     List<MockExam> findAllByCourseAndIsPublishedTrueOrderByYearDescExamIdDesc(Course course);
+
+    List<MockExam> findAllByCourseOrderByYearDescExamIdDesc(Course course);
 }
