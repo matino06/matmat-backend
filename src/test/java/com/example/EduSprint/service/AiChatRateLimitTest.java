@@ -56,7 +56,7 @@ class AiChatRateLimitTest {
     }
 
     private static AiChatRequestDTO question() {
-        return new AiChatRequestDTO(null, null, "Što je derivacija?", null, List.of());
+        return new AiChatRequestDTO(null, null, null, "Što je derivacija?", null, List.of());
     }
 
     private List<ServerSentEvent<String>> ask() {

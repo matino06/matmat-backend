@@ -71,6 +71,8 @@ public class AiChatService {
     private static final int MAX_DATA_URI_BASE64_CHARS = 8 * 1024 * 1024 * 4 / 3 + 4;
     private static final Pattern IMAGE_DATA_URI = Pattern.compile("^data:image/[A-Za-z0-9.+-]+;base64,(.+)$",
             Pattern.DOTALL);
+    // "Matematika A razina" → A
+    private static final Pattern COURSE_LEVEL = Pattern.compile("\\b([AB]) razina\\b");
     private static final Pattern IMG_SRC = Pattern.compile("<img[^>]*?\\bsrc\\s*=\\s*[\"']([^\"']+)[\"']",
             Pattern.CASE_INSENSITIVE);
     private static final String GENERIC_ERROR = "Došlo je do pogreške. Pokušaj ponovo.";
@@ -82,7 +84,7 @@ public class AiChatService {
             Ti si MatMat AI asistent, tutor koji pomaže učenicima u pripremi za državnu maturu.
             Odgovaraj na hrvatskom jeziku, jasno i jednostavno, i što kraće osim ako učenik ne traži više detalja.
             Ne daj samo konačni rezultat — vodi učenika korak po korak i objasni zašto se nešto radi.
-            Drži se gradiva državne mature.
+            Drži se gradiva državne mature i oslanjaj se na službeno objašnjenje zadatka.
             Odgovor formatiraj u Markdownu: koristi **podebljano**, liste i naslove gdje ima smisla.
             Matematičke izraze piši u LaTeX-u: inline izraze unutar \\( i \\), a izdvojene jednadžbe unutar $$ $$.
             Ne koristi jednostruke znakove $ za matematičke izraze.""";
@@ -195,7 +197,13 @@ public class AiChatService {
                 : aiPromptRepository.findFirstBySubjectAndIsActiveTrue(subject).orElse(null);
 
         List<ExplanationStep> steps = task == null ? List.of() : explanationStepRepository.findByTaskOrderByStepNumberAsc(task);
-        String systemPrompt = buildSystemPrompt(basePrompt, subjectPrompt, task, steps, quote);
+        // Kod probne mature razina ovisi o ispitu, a ne o tečaju koji učenik trenutno ima.
+        boolean exam = quote != null && "exam".equals(quote.source());
+        String level = exam ? null : examLevel(account.getCurrentCourse() != null ? account.getCurrentCourse().getCourseName() : null);
+        String systemPrompt = buildSystemPrompt(
+                basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT,
+                subjectPrompt != null ? subjectPrompt.getContent() : null,
+                level, task, steps, quote, req.solutionRevealed());
 
         // Slike: one koje je učenik označio + one iz zadatka.
         // Iz citata su dopušteni i data: URI-ji (npr. fotografija rukom pisanog odgovora s probne mature).
@@ -327,29 +335,42 @@ public class AiChatService {
         }
     }
 
-    private String buildSystemPrompt(AiPrompt basePrompt, AiPrompt subjectPrompt, Task task,
-                                     List<ExplanationStep> steps, AiChatRequestDTO.Quote quote) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT);
+    /** Razina mature iz naziva tečaja ("Matematika B razina" → "osnovna (B)"); null ako je tečaj nema. */
+    static String examLevel(String courseName) {
+        if (courseName == null) return null;
+        Matcher m = COURSE_LEVEL.matcher(courseName);
+        if (!m.find()) return null;
+        return "A".equals(m.group(1)) ? "viša (A)" : "osnovna (B)";
+    }
+
+    /** Nazivi dijelova konteksta navedeni su u base promptu u bazi; mijenjaju se zajedno. */
+    static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
+                                    List<ExplanationStep> steps, AiChatRequestDTO.Quote quote, Boolean solutionRevealed) {
+        StringBuilder sb = new StringBuilder(basePrompt);
         if (subjectPrompt != null) {
-            sb.append("\n\n").append(subjectPrompt.getContent());
+            sb.append("\n\n").append(subjectPrompt);
         }
-        sb.append("\n\nTekst zadatka i rješenja zapisan je u LaTeX-u (MathJax) i može sadržavati HTML oznake.");
+        sb.append("\n\nTekst zadatka i objašnjenja zapisan je u LaTeX-u (MathJax) i može sadržavati HTML oznake.");
+        if (level != null) {
+            sb.append("\n\nRAZINA: ").append(level);
+        }
         if (task != null) {
             if (task.getObjective() != null) {
                 sb.append("\n\nCILJ UČENJA: ").append(task.getObjective().getObjectiveName());
             }
             sb.append("\n\nZADATAK:\n").append(nullSafe(task.getTaskText()));
             if (task.getExplanation() != null && !task.getExplanation().isBlank()) {
-                sb.append("\n\nSLUŽBENO RJEŠENJE:\n").append(task.getExplanation());
+                sb.append("\n\nOBJAŠNJENJE:\n").append(task.getExplanation());
             }
             if (!steps.isEmpty()) {
-                sb.append("\n\nKORACI RJEŠENJA:");
+                sb.append("\n\nKORACI OBJAŠNJENJA:");
                 for (ExplanationStep step : steps) {
                     sb.append("\n").append(step.getStepNumber()).append(". ").append(nullSafe(step.getExplanation()));
                 }
             }
-            sb.append("\n\nUčenik postavlja pitanje o ovom zadatku. Oslanjaj se na službeno rješenje.");
+            if (solutionRevealed != null) {
+                sb.append("\n\nUČENIK JE OTVORIO RJEŠENJE: ").append(solutionRevealed ? "da" : "ne");
+            }
         } else if (quote != null && "exam".equals(quote.source())) {
             sb.append("\n\nUčenik pita o pitanju s probne državne mature koju je već riješio i koja je ocijenjena. ")
               .append("U njegovoj poruci je pitanje, njegov odgovor, službeno rješenje i komentar ocjenjivača.");
