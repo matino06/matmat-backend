@@ -113,7 +113,8 @@ public class MockExamGradingService {
         attempt.setAccount(account);
         attempt.setExam(exam);
         Instant now = Instant.now();
-        attempt.setStartedAt(now);
+        Instant startedAt = request.getStartedAt();
+        attempt.setStartedAt(startedAt != null && startedAt.isBefore(now) ? startedAt : now);
         attempt.setSubmittedAt(now);
         attempt.setIsCompleted(true);
         attempt.setMaxScore(maxScore);
