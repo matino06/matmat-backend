@@ -13,12 +13,13 @@ import java.util.Optional;
 @Repository
 public interface AiMessageRepository extends JpaRepository<AiMessage, Long> {
 
-    List<AiMessage> findByConversation_ConversationIdAndStatusOrderByCreatedAtAsc(Long conversationId, String status);
+    List<AiMessage> findByConversation_ConversationIdAndStatusInOrderByCreatedAtAsc(Long conversationId, List<String> statuses);
 
-    @Query("SELECT count(m) FROM AiMessage m " +
+    // Pitanja na koja AI nije odgovorio zbog greške (status 'error') ne ulaze u dnevni limit.
+    @Query("SELECT m.createdAt FROM AiMessage m " +
             "WHERE m.conversation.account.accountId = :accountId " +
-            "AND m.role = 'user' AND m.createdAt > :since")
-    long countUserMessagesSince(@Param("accountId") Long accountId, @Param("since") Instant since);
+            "AND m.role = 'user' AND m.status <> 'error' AND m.createdAt > :since")
+    List<Instant> findQuestionTimesSince(@Param("accountId") Long accountId, @Param("since") Instant since);
 
     Optional<AiMessage> findByMessageIdAndConversation_Account_AccountId(Long messageId, Long accountId);
 }

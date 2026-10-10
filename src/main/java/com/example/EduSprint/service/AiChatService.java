@@ -2,6 +2,7 @@ package com.example.EduSprint.service;
 
 import com.example.EduSprint.dto.AiChatRequestDTO;
 import com.example.EduSprint.dto.AiSettingsDTO;
+import com.example.EduSprint.dto.AiUsageDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.AiConversation;
 import com.example.EduSprint.entity.AiMessage;
@@ -40,6 +41,7 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -62,6 +64,9 @@ public class AiChatService {
     private static final int MAX_QUOTE_CHARS = 6000;
     private static final int MAX_QUESTION_CHARS = 4000;
     private static final Duration RATE_LIMIT_WINDOW = Duration.ofHours(24);
+    // Dok model razmišlja nema delti; ping održava vezu i otkriva da je učenik zaustavio odgovor
+    // (prekinutu vezu Spring primijeti tek pri sljedećem pisanju), pa se poziv modela prekida.
+    private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
     // ~8 MB dekodirano; base64 je 4/3 veći
     private static final int MAX_DATA_URI_BASE64_CHARS = 8 * 1024 * 1024 * 4 / 3 + 4;
     private static final Pattern IMAGE_DATA_URI = Pattern.compile("^data:image/[A-Za-z0-9.+-]+;base64,(.+)$",
@@ -125,6 +130,14 @@ public class AiChatService {
         return stream(prepared);
     }
 
+    public AiUsageDTO usage(Account account) {
+        int limit = aiSettingsService.current().chatDailyLimit();
+        Deque<Instant> unsaved = unsavedQuestions.computeIfAbsent(account.getAccountId(), id -> new ArrayDeque<>());
+        synchronized (unsaved) {
+            return usage(account.getAccountId(), unsaved, limit);
+        }
+    }
+
     @Transactional
     public void rate(Account account, Long messageId, Short rating) {
         if (rating == null || (rating != 1 && rating != -1)) {
@@ -155,7 +168,7 @@ public class AiChatService {
 
         AiSettingsDTO settings = aiSettingsService.current();
         boolean persisted = req.taskId() != null;
-        checkRateLimit(account.getAccountId(), persisted, settings.chatDailyLimit());
+        Instant unsavedSlot = checkRateLimit(account.getAccountId(), persisted, settings.chatDailyLimit());
 
         Task task = null;
         AiConversation conversation = null;
@@ -219,9 +232,12 @@ public class AiChatService {
         messages.addObject().put("role", "system").put("content", systemPrompt);
 
         if (persisted) {
-            List<AiMessage> previous = aiMessageRepository.findByConversation_ConversationIdAndStatusOrderByCreatedAtAsc(
-                    conversation.getConversationId(), AiMessage.STATUS_OK);
+            // Zaustavljen odgovor ostaje u povijesti (učenik ga je vidio); pitanje koje je ostalo
+            // bez ijedne riječi odgovora ne ulazi, da model ne dobije dva pitanja zaredom.
+            List<AiMessage> previous = aiMessageRepository.findByConversation_ConversationIdAndStatusInOrderByCreatedAtAsc(
+                    conversation.getConversationId(), List.of(AiMessage.STATUS_OK, AiMessage.STATUS_ABORTED));
             for (AiMessage m : lastN(previous, MAX_HISTORY_MESSAGES)) {
+                if (AiMessage.ROLE_USER.equals(m.getRole()) && !AiMessage.STATUS_OK.equals(m.getStatus())) continue;
                 // Starije prazne poruke asistenta spremljene su kao "ok"; provideri prazan sadržaj mogu odbiti.
                 if (m.getContent() == null || m.getContent().isBlank()) continue;
                 messages.addObject().put("role", m.getRole()).put("content", m.getContent());
@@ -244,8 +260,10 @@ public class AiChatService {
             part.putObject("image_url").put("url", uri);
         }
 
+        Long userMessageId = null;
         if (persisted) {
-            aiMessageRepository.save(new AiMessage(conversation, AiMessage.ROLE_USER, userContent));
+            userMessageId = aiMessageRepository.save(new AiMessage(conversation, AiMessage.ROLE_USER, userContent))
+                    .getMessageId();
             conversation.setUpdatedAt(Instant.now());
             aiConversationRepository.save(conversation);
         }
@@ -256,24 +274,56 @@ public class AiChatService {
                 conversation != null ? conversation.getConversationId() : null,
                 basePrompt != null ? basePrompt.getPromptId() : null,
                 subjectPrompt != null ? subjectPrompt.getPromptId() : null,
-                imageDataUris.size());
+                imageDataUris.size(),
+                account.getAccountId(),
+                userMessageId,
+                unsavedSlot);
     }
 
-    private void checkRateLimit(Long accountId, boolean persisted, int dailyLimit) {
-        Instant since = Instant.now().minus(RATE_LIMIT_WINDOW);
+    /**
+     * Baci 429 ako je limit potrošen. Za razgovor koji se ne sprema zauzme mjesto u unsavedQuestions
+     * i vrati ga, da se može vratiti ako AI ne odgovori.
+     */
+    private Instant checkRateLimit(Long accountId, boolean persisted, int dailyLimit) {
         Deque<Instant> unsaved = unsavedQuestions.computeIfAbsent(accountId, id -> new ArrayDeque<>());
         synchronized (unsaved) {
-            while (!unsaved.isEmpty() && unsaved.peekFirst().isBefore(since)) {
-                unsaved.pollFirst();
-            }
-            long used = aiMessageRepository.countUserMessagesSince(accountId, since) + unsaved.size();
-            if (used >= dailyLimit) {
+            if (usage(accountId, unsaved, dailyLimit).remaining() == 0) {
                 throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                        "Dosegnut je dnevni limit od " + dailyLimit + " pitanja. Pokušaj ponovo sutra.");
+                        "Dosegnut je limit od " + dailyLimit + " pitanja u 24 sata.");
             }
-            if (!persisted) {
-                unsaved.addLast(Instant.now());
+            if (persisted) {
+                return null;
             }
+            Instant slot = Instant.now();
+            unsaved.addLast(slot);
+            return slot;
+        }
+    }
+
+    /** Poziva se unutar synchronized (unsaved). Limit je klizni: pitanje se oslobađa 24 h nakon postavljanja. */
+    private AiUsageDTO usage(Long accountId, Deque<Instant> unsaved, int limit) {
+        Instant since = Instant.now().minus(RATE_LIMIT_WINDOW);
+        while (!unsaved.isEmpty() && unsaved.peekFirst().isBefore(since)) {
+            unsaved.pollFirst();
+        }
+        List<Instant> asked = new ArrayList<>(aiMessageRepository.findQuestionTimesSince(accountId, since));
+        asked.addAll(unsaved);
+        int remaining = Math.max(0, limit - asked.size());
+        Instant resetAt = null;
+        if (remaining == 0 && limit > 0) {
+            Collections.sort(asked);
+            // Ako je limit u međuvremenu snižen, mora isteći više pitanja prije nego se jedno oslobodi.
+            resetAt = asked.get(asked.size() - limit).plus(RATE_LIMIT_WINDOW);
+        }
+        return new AiUsageDTO(limit, remaining, resetAt);
+    }
+
+    /** AI nije odgovorio: pitanje se vraća u limit. */
+    private void refundUnsaved(PreparedChat prepared) {
+        Deque<Instant> unsaved = unsavedQuestions.get(prepared.accountId());
+        if (unsaved == null) return;
+        synchronized (unsaved) {
+            unsaved.remove(prepared.unsavedSlot());
         }
     }
 
@@ -486,6 +536,7 @@ public class AiChatService {
                     if (full.toString().isBlank()) {
                         // Nijedna riječ odgovora: greška, ne "ok", da prazna poruka ne uđe u povijest razgovora.
                         saveAssistant(prepared, full.toString(), AiMessage.STATUS_ERROR, usage.get(), respondedModel.get(), startNanos);
+                        settleQuestion(prepared, AiMessage.STATUS_ERROR);
                         return event("error", objectMapper.createObjectNode()
                                 .put("message", truncated.get() ? NO_ANSWER_ERROR : GENERIC_ERROR));
                     }
@@ -497,23 +548,53 @@ public class AiChatService {
                 })
                 .subscribeOn(Schedulers.boundedElastic());
 
-        return Flux.just(event("meta", meta))
+        Flux<ServerSentEvent<String>> answer = Flux.just(event("meta", meta))
                 .concatWith(deltas)
                 .concatWith(done)
                 .onErrorResume(e -> Mono.fromCallable(() -> {
                             log.error("AI chat failed", e);
                             if (finished.compareAndSet(false, true)) {
                                 saveAssistant(prepared, full.toString(), AiMessage.STATUS_ERROR, usage.get(), respondedModel.get(), startNanos);
+                                settleQuestion(prepared, AiMessage.STATUS_ERROR);
                             }
                             return event("error", objectMapper.createObjectNode().put("message", GENERIC_ERROR));
                         })
                         .subscribeOn(Schedulers.boundedElastic()))
                 .doOnCancel(() -> {
                     if (finished.compareAndSet(false, true)) {
-                        Schedulers.boundedElastic().schedule(() ->
-                                saveAssistant(prepared, full.toString(), AiMessage.STATUS_ABORTED, usage.get(), respondedModel.get(), startNanos));
+                        Schedulers.boundedElastic().schedule(() -> {
+                            saveAssistant(prepared, full.toString(), AiMessage.STATUS_ABORTED, usage.get(), respondedModel.get(), startNanos);
+                            // Zaustavljeno prije ijedne riječi: pitanje ne ulazi u povijest, ali se broji u limit.
+                            if (full.toString().isBlank()) settleQuestion(prepared, AiMessage.STATUS_ABORTED);
+                        });
                     }
                 });
+
+        Flux<ServerSentEvent<String>> heartbeat = Flux.interval(HEARTBEAT_INTERVAL, HEARTBEAT_INTERVAL)
+                .map(i -> ServerSentEvent.<String>builder().comment("ping").build());
+        // done i error su uvijek zadnji događaj; finished je tada već postavljen, pa otkazivanje
+        // koje takeUntil pošalje odgovoru ne sprema ništa.
+        return Flux.merge(answer, heartbeat)
+                .takeUntil(e -> "done".equals(e.event()) || "error".equals(e.event()));
+    }
+
+    /**
+     * Pitanje na koje AI nije odgovorio: kod greške se ne broji u limit, a u oba slučaja
+     * ne ulazi u povijest razgovora (ona uzima samo "ok" pitanja).
+     */
+    private void settleQuestion(PreparedChat prepared, String status) {
+        if (AiMessage.STATUS_ERROR.equals(status) && prepared.unsavedSlot() != null) {
+            refundUnsaved(prepared);
+        }
+        if (prepared.userMessageId() == null) {
+            return;
+        }
+        try {
+            transactionTemplate.executeWithoutResult(tx -> aiMessageRepository.findById(prepared.userMessageId())
+                    .ifPresent(m -> m.setStatus(status)));
+        } catch (Exception e) {
+            log.error("AI chat: failed to mark question {} as {}", prepared.userMessageId(), status, e);
+        }
     }
 
     private Long saveAssistant(PreparedChat prepared, String content, String status, JsonNode usage,
@@ -570,6 +651,6 @@ public class AiChatService {
     }
 
     private record PreparedChat(ObjectNode body, String model, Long conversationId, Long basePromptId, Long subjectPromptId,
-                                int imagesAttached) {
+                                int imagesAttached, Long accountId, Long userMessageId, Instant unsavedSlot) {
     }
 }

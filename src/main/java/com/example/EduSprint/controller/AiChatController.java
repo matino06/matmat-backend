@@ -2,6 +2,7 @@ package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.AiChatRequestDTO;
 import com.example.EduSprint.dto.AiRatingRequestDTO;
+import com.example.EduSprint.dto.AiUsageDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
@@ -11,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +36,11 @@ public class AiChatController {
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> chat(@RequestBody AiChatRequestDTO request, Authentication authentication) {
         return aiChatService.chat(currentAccount(authentication), request);
+    }
+
+    @GetMapping("/usage")
+    public AiUsageDTO usage(Authentication authentication) {
+        return aiChatService.usage(currentAccount(authentication));
     }
 
     @PostMapping("/message/{messageId}/rating")
