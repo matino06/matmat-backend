@@ -80,7 +80,7 @@ class AiChatServiceTest {
         step.setStepNumber((short) 1);
         step.setExplanation("Zapiši uvjete.");
 
-        String prompt = AiChatService.buildSystemPrompt("BASE", "SUBJECT", "osnovna (B)", task, List.of(step), null, false);
+        String prompt = AiChatService.buildSystemPrompt("BASE", "SUBJECT", "osnovna (B)", task, List.of(step), false, false);
 
         assertTrue(prompt.startsWith("BASE\n\nSUBJECT"));
         assertTrue(prompt.contains("RAZINA: osnovna (B)"));
@@ -89,17 +89,16 @@ class AiChatServiceTest {
         assertTrue(prompt.contains("OBJAŠNJENJE:\nUvjeti"));
         assertTrue(prompt.contains("KORACI OBJAŠNJENJA:\n1. Zapiši uvjete."));
         assertTrue(prompt.contains("UČENIK JE OTVORIO RJEŠENJE: ne"));
-        assertTrue(AiChatService.buildSystemPrompt("BASE", null, null, task, List.of(), null, true)
+        assertTrue(AiChatService.buildSystemPrompt("BASE", null, null, task, List.of(), false, true)
                 .contains("UČENIK JE OTVORIO RJEŠENJE: da"));
         // Bez podatka (npr. stariji frontend) model odgovara kao prije.
-        assertFalse(AiChatService.buildSystemPrompt("BASE", null, null, task, List.of(), null, null)
+        assertFalse(AiChatService.buildSystemPrompt("BASE", null, null, task, List.of(), false, null)
                 .contains("OTVORIO RJEŠENJE"));
     }
 
     @Test
     void examContextHasNoTaskParts() {
-        AiChatRequestDTO.Quote quote = new AiChatRequestDTO.Quote("exam", "Pitanje 3…", List.of());
-        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, null, List.of(), quote, false);
+        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, null, List.of(), true, false);
         assertTrue(prompt.contains("probne državne mature"));
         assertFalse(prompt.contains("ZADATAK:"));
         assertFalse(prompt.contains("RAZINA:"));

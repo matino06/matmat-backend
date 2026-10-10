@@ -8,11 +8,15 @@ import com.example.EduSprint.entity.AiConversation;
 import com.example.EduSprint.entity.AiMessage;
 import com.example.EduSprint.entity.AiPrompt;
 import com.example.EduSprint.entity.ExplanationStep;
+import com.example.EduSprint.entity.MockExamAttempt;
+import com.example.EduSprint.entity.MockExamQuestion;
 import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.AiConversationRepository;
 import com.example.EduSprint.repository.AiMessageRepository;
 import com.example.EduSprint.repository.AiPromptRepository;
 import com.example.EduSprint.repository.ExplanationStepRepository;
+import com.example.EduSprint.repository.MockExamAttemptRepository;
+import com.example.EduSprint.repository.MockExamQuestionRepository;
 import com.example.EduSprint.repository.TaskRepository;
 import com.example.EduSprint.storage.StorageService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,16 +42,12 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -95,13 +95,12 @@ public class AiChatService {
     private final AiMessageRepository aiMessageRepository;
     private final TaskRepository taskRepository;
     private final ExplanationStepRepository explanationStepRepository;
+    private final MockExamAttemptRepository mockExamAttemptRepository;
+    private final MockExamQuestionRepository mockExamQuestionRepository;
     private final StorageService storageService;
     private final TransactionTemplate transactionTemplate;
     private final AiSettingsService aiSettingsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    // Razgovori koji se ne spremaju (ispit / općenito) i dalje ulaze u dnevni limit.
-    private final Map<Long, Deque<Instant>> unsavedQuestions = new ConcurrentHashMap<>();
 
     public AiChatService(@Qualifier("chatOpenRouterClient") OpenRouterClient openRouterClient,
                          AiPromptRepository aiPromptRepository,
@@ -109,6 +108,8 @@ public class AiChatService {
                          AiMessageRepository aiMessageRepository,
                          TaskRepository taskRepository,
                          ExplanationStepRepository explanationStepRepository,
+                         MockExamAttemptRepository mockExamAttemptRepository,
+                         MockExamQuestionRepository mockExamQuestionRepository,
                          StorageService storageService,
                          TransactionTemplate transactionTemplate,
                          AiSettingsService aiSettingsService) {
@@ -118,6 +119,8 @@ public class AiChatService {
         this.aiMessageRepository = aiMessageRepository;
         this.taskRepository = taskRepository;
         this.explanationStepRepository = explanationStepRepository;
+        this.mockExamAttemptRepository = mockExamAttemptRepository;
+        this.mockExamQuestionRepository = mockExamQuestionRepository;
         this.storageService = storageService;
         this.transactionTemplate = transactionTemplate;
         this.aiSettingsService = aiSettingsService;
@@ -133,11 +136,7 @@ public class AiChatService {
     }
 
     public AiUsageDTO usage(Account account) {
-        int limit = aiSettingsService.current().chatDailyLimit();
-        Deque<Instant> unsaved = unsavedQuestions.computeIfAbsent(account.getAccountId(), id -> new ArrayDeque<>());
-        synchronized (unsaved) {
-            return usage(account.getAccountId(), unsaved, limit);
-        }
+        return usage(account.getAccountId(), aiSettingsService.current().chatDailyLimit());
     }
 
     @Transactional
@@ -169,27 +168,30 @@ public class AiChatService {
         }
 
         AiSettingsDTO settings = aiSettingsService.current();
-        boolean persisted = req.taskId() != null;
-        Instant unsavedSlot = checkRateLimit(account.getAccountId(), persisted, settings.chatDailyLimit());
+        checkRateLimit(account.getAccountId(), settings.chatDailyLimit());
 
-        Task task = null;
-        AiConversation conversation = null;
-        if (persisted) {
-            if (req.conversationId() != null) {
-                conversation = aiConversationRepository
-                        .findByConversationIdAndAccount_AccountId(req.conversationId(), account.getAccountId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Razgovor ne postoji"));
-                if (!conversation.getTask().getId().equals(req.taskId().intValue())) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Razgovor ne pripada ovom zadatku");
-                }
-                task = conversation.getTask();
-            } else {
-                task = taskRepository.findById(req.taskId())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Zadatak ne postoji"));
-                conversation = aiConversationRepository.save(
-                        new AiConversation(account, task, account.getCurrentCourse()));
+        boolean newConversation = req.conversationId() == null;
+        AiConversation conversation;
+        if (!newConversation) {
+            conversation = aiConversationRepository
+                    .findByConversationIdAndAccount_AccountId(req.conversationId(), account.getAccountId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Razgovor ne postoji"));
+            Task own = conversation.getTask();
+            boolean matches = req.taskId() == null ? own == null
+                    : own != null && own.getId().equals(req.taskId().intValue());
+            if (!matches) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Razgovor ne pripada ovom zadatku");
             }
+        } else {
+            Task requested = req.taskId() == null ? null : taskRepository.findById(req.taskId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Zadatak ne postoji"));
+            conversation = new AiConversation(account, requested, account.getCurrentCourse());
         }
+        Task task = conversation.getTask();
+        if (task == null && quote != null && "exam".equals(quote.source())) {
+            attachExam(conversation, account, req);
+        }
+        conversation = aiConversationRepository.save(conversation);
 
         String subject = account.getCurrentCourse() != null ? account.getCurrentCourse().getSubject() : null;
         AiPrompt basePrompt = aiPromptRepository.findFirstBySubjectIsNullAndIsActiveTrue().orElse(null);
@@ -198,12 +200,13 @@ public class AiChatService {
 
         List<ExplanationStep> steps = task == null ? List.of() : explanationStepRepository.findByTaskOrderByStepNumberAsc(task);
         // Kod probne mature razina ovisi o ispitu, a ne o tečaju koji učenik trenutno ima.
-        boolean exam = quote != null && "exam".equals(quote.source());
+        // Vrsta razgovora vrijedi i za iduća pitanja, koja više nemaju citat s mature.
+        boolean exam = conversation.isExam();
         String level = exam ? null : examLevel(account.getCurrentCourse() != null ? account.getCurrentCourse().getCourseName() : null);
         String systemPrompt = buildSystemPrompt(
                 basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT,
                 subjectPrompt != null ? subjectPrompt.getContent() : null,
-                level, task, steps, quote, req.solutionRevealed());
+                level, task, steps, exam, req.solutionRevealed());
 
         // Slike: one koje je učenik označio + one iz zadatka.
         // Iz citata su dopušteni i data: URI-ji (npr. fotografija rukom pisanog odgovora s probne mature).
@@ -239,7 +242,14 @@ public class AiChatService {
         ArrayNode messages = body.putArray("messages");
         messages.addObject().put("role", "system").put("content", systemPrompt);
 
-        if (persisted) {
+        if (newConversation && req.history() != null) {
+            // Stari frontend za razgovore bez zadatka ne šalje conversationId, nego povijest.
+            for (AiChatRequestDTO.HistoryMessage h : lastN(req.history(), MAX_HISTORY_MESSAGES)) {
+                if (h == null || h.content() == null || h.content().isBlank()) continue;
+                String role = AiMessage.ROLE_ASSISTANT.equals(h.role()) ? AiMessage.ROLE_ASSISTANT : AiMessage.ROLE_USER;
+                messages.addObject().put("role", role).put("content", truncate(h.content(), MAX_HISTORY_MESSAGE_CHARS));
+            }
+        } else if (!newConversation) {
             // Zaustavljen odgovor ostaje u povijesti (učenik ga je vidio); pitanje koje je ostalo
             // bez ijedne riječi odgovora ne ulazi, da model ne dobije dva pitanja zaredom.
             List<AiMessage> previous = aiMessageRepository.findByConversation_ConversationIdAndStatusInOrderByCreatedAtAsc(
@@ -249,12 +259,6 @@ public class AiChatService {
                 // Starije prazne poruke asistenta spremljene su kao "ok"; provideri prazan sadržaj mogu odbiti.
                 if (m.getContent() == null || m.getContent().isBlank()) continue;
                 messages.addObject().put("role", m.getRole()).put("content", m.getContent());
-            }
-        } else if (req.history() != null) {
-            for (AiChatRequestDTO.HistoryMessage h : lastN(req.history(), MAX_HISTORY_MESSAGES)) {
-                if (h == null || h.content() == null || h.content().isBlank()) continue;
-                String role = AiMessage.ROLE_ASSISTANT.equals(h.role()) ? AiMessage.ROLE_ASSISTANT : AiMessage.ROLE_USER;
-                messages.addObject().put("role", role).put("content", truncate(h.content(), MAX_HISTORY_MESSAGE_CHARS));
             }
         }
 
@@ -268,54 +272,49 @@ public class AiChatService {
             part.putObject("image_url").put("url", uri);
         }
 
-        Long userMessageId = null;
-        if (persisted) {
-            userMessageId = aiMessageRepository.save(new AiMessage(conversation, AiMessage.ROLE_USER, userContent))
-                    .getMessageId();
-            conversation.setUpdatedAt(Instant.now());
-            aiConversationRepository.save(conversation);
-        }
+        Long userMessageId = aiMessageRepository.save(new AiMessage(conversation, AiMessage.ROLE_USER, userContent))
+                .getMessageId();
+        conversation.setUpdatedAt(Instant.now());
 
         return new PreparedChat(
                 body,
                 settings.chatModel(),
-                conversation != null ? conversation.getConversationId() : null,
+                conversation.getConversationId(),
                 basePrompt != null ? basePrompt.getPromptId() : null,
                 subjectPrompt != null ? subjectPrompt.getPromptId() : null,
                 imageDataUris.size(),
-                account.getAccountId(),
-                userMessageId,
-                unsavedSlot);
+                userMessageId);
     }
 
     /**
-     * Baci 429 ako je limit potrošen. Za razgovor koji se ne sprema zauzme mjesto u unsavedQuestions
-     * i vrati ga, da se može vratiti ako AI ne odgovori.
+     * Veže razgovor uz pokušaj i pitanje s mature o kojem učenik pita. Pokušaj mora biti njegov,
+     * a pitanje iz istog ispita.
      */
-    private Instant checkRateLimit(Long accountId, boolean persisted, int dailyLimit) {
-        Deque<Instant> unsaved = unsavedQuestions.computeIfAbsent(accountId, id -> new ArrayDeque<>());
-        synchronized (unsaved) {
-            if (usage(accountId, unsaved, dailyLimit).remaining() == 0) {
-                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                        "Dosegnut je limit od " + dailyLimit + " pitanja u 24 sata.");
-            }
-            if (persisted) {
-                return null;
-            }
-            Instant slot = Instant.now();
-            unsaved.addLast(slot);
-            return slot;
+    private void attachExam(AiConversation conversation, Account account, AiChatRequestDTO req) {
+        MockExamAttempt attempt = req.mockExamAttemptId() == null ? null : mockExamAttemptRepository
+                .findByAttemptIdAndAccount_AccountId(req.mockExamAttemptId(), account.getAccountId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pokušaj mature ne postoji"));
+        MockExamQuestion question = req.mockExamQuestionId() == null ? null : mockExamQuestionRepository
+                .findById(req.mockExamQuestionId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pitanje s mature ne postoji"));
+        if (attempt != null && question != null
+                && !question.getExam().getExamId().equals(attempt.getExam().getExamId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pitanje ne pripada ovom ispitu");
+        }
+        conversation.attachExam(attempt, question);
+    }
+
+    private void checkRateLimit(Long accountId, int dailyLimit) {
+        if (usage(accountId, dailyLimit).remaining() == 0) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Dosegnut je limit od " + dailyLimit + " pitanja u 24 sata.");
         }
     }
 
-    /** Poziva se unutar synchronized (unsaved). Limit je klizni: pitanje se oslobađa 24 h nakon postavljanja. */
-    private AiUsageDTO usage(Long accountId, Deque<Instant> unsaved, int limit) {
+    /** Limit je klizni: pitanje se oslobađa 24 h nakon postavljanja. */
+    private AiUsageDTO usage(Long accountId, int limit) {
         Instant since = Instant.now().minus(RATE_LIMIT_WINDOW);
-        while (!unsaved.isEmpty() && unsaved.peekFirst().isBefore(since)) {
-            unsaved.pollFirst();
-        }
         List<Instant> asked = new ArrayList<>(aiMessageRepository.findQuestionTimesSince(accountId, since));
-        asked.addAll(unsaved);
         int remaining = Math.max(0, limit - asked.size());
         Instant resetAt = null;
         if (remaining == 0 && limit > 0) {
@@ -324,15 +323,6 @@ public class AiChatService {
             resetAt = asked.get(asked.size() - limit).plus(RATE_LIMIT_WINDOW);
         }
         return new AiUsageDTO(limit, remaining, resetAt);
-    }
-
-    /** AI nije odgovorio: pitanje se vraća u limit. */
-    private void refundUnsaved(PreparedChat prepared) {
-        Deque<Instant> unsaved = unsavedQuestions.get(prepared.accountId());
-        if (unsaved == null) return;
-        synchronized (unsaved) {
-            unsaved.remove(prepared.unsavedSlot());
-        }
     }
 
     /** Razina mature iz naziva tečaja ("Matematika B razina" → "osnovna (B)"); null ako je tečaj nema. */
@@ -345,7 +335,7 @@ public class AiChatService {
 
     /** Nazivi dijelova konteksta navedeni su u base promptu u bazi; mijenjaju se zajedno. */
     static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
-                                    List<ExplanationStep> steps, AiChatRequestDTO.Quote quote, Boolean solutionRevealed) {
+                                    List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed) {
         StringBuilder sb = new StringBuilder(basePrompt);
         if (subjectPrompt != null) {
             sb.append("\n\n").append(subjectPrompt);
@@ -371,7 +361,7 @@ public class AiChatService {
             if (solutionRevealed != null) {
                 sb.append("\n\nUČENIK JE OTVORIO RJEŠENJE: ").append(solutionRevealed ? "da" : "ne");
             }
-        } else if (quote != null && "exam".equals(quote.source())) {
+        } else if (exam) {
             sb.append("\n\nUčenik pita o pitanju s probne državne mature koju je već riješio i koja je ocijenjena. ")
               .append("U njegovoj poruci je pitanje, njegov odgovor, službeno rješenje i komentar ocjenjivača.");
         } else {
@@ -604,12 +594,6 @@ public class AiChatService {
      * ne ulazi u povijest razgovora (ona uzima samo "ok" pitanja).
      */
     private void settleQuestion(PreparedChat prepared, String status) {
-        if (AiMessage.STATUS_ERROR.equals(status) && prepared.unsavedSlot() != null) {
-            refundUnsaved(prepared);
-        }
-        if (prepared.userMessageId() == null) {
-            return;
-        }
         try {
             transactionTemplate.executeWithoutResult(tx -> aiMessageRepository.findById(prepared.userMessageId())
                     .ifPresent(m -> m.setStatus(status)));
@@ -620,9 +604,6 @@ public class AiChatService {
 
     private Long saveAssistant(PreparedChat prepared, String content, String status, JsonNode usage,
                                String respondedModel, long startNanos) {
-        if (prepared.conversationId() == null) {
-            return null;
-        }
         try {
             return transactionTemplate.execute(tx -> {
                 AiConversation conversation = aiConversationRepository.getReferenceById(prepared.conversationId());
@@ -672,6 +653,6 @@ public class AiChatService {
     }
 
     private record PreparedChat(ObjectNode body, String model, Long conversationId, Long basePromptId, Long subjectPromptId,
-                                int imagesAttached, Long accountId, Long userMessageId, Instant unsavedSlot) {
+                                int imagesAttached, Long userMessageId) {
     }
 }
