@@ -1,6 +1,10 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.entity.AccountObjective;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,5 +43,51 @@ class AccountObjectiveServiceTest {
         short oldI = 20;
         short result = AccountObjectiveService.computeEarlyAwareInterval(oldI, 1.3f, 1);
         assertTrue(result >= oldI, "interval must never shrink below oldI, was " + result);
+    }
+
+    private static AccountObjective state(float ef, int i, int n, Short lastQ, Instant lastSolved) {
+        AccountObjective ao = new AccountObjective();
+        ao.setEf(ef);
+        ao.setI((short) i);
+        ao.setN((short) n);
+        ao.setLastQ(lastQ);
+        ao.setLastSolvedDate(lastSolved);
+        return ao;
+    }
+
+    @Test
+    void failedRatingsAlwaysComeBackTomorrow() {
+        Instant now = Instant.now();
+        AccountObjective ao = state(2.5f, 20, 4, (short) 5, now.minus(Duration.ofDays(20)));
+        for (short q = 0; q <= 2; q++) {
+            assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, q, now));
+        }
+    }
+
+    @Test
+    void newObjectiveRatedPerfectJumpsToSixDays() {
+        Instant now = Instant.now();
+        AccountObjective ao = state(2.5f, 0, 0, null, now);
+        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 5, now));
+        assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, (short) 4, now));
+        assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, (short) 3, now));
+    }
+
+    @Test
+    void secondSuccessfulReviewIsSixDays() {
+        Instant now = Instant.now();
+        AccountObjective ao = state(2.5f, 1, 1, (short) 4, now.minus(Duration.ofDays(1)));
+        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 3, now));
+        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 5, now));
+    }
+
+    @Test
+    void laterReviewsUseEaseFactorAndElapsedTime() {
+        Instant now = Instant.now();
+        AccountObjective onTime = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(6)));
+        assertEquals((short) 15, AccountObjectiveService.nextInterval(onTime, (short) 4, now));
+
+        AccountObjective early = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(3)));
+        assertEquals((short) 11, AccountObjectiveService.nextInterval(early, (short) 4, now));
     }
 }

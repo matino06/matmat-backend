@@ -60,25 +60,13 @@ public class AccountObjectiveService {
 
         AccountObjective accountObjective = accountObjectiveOptional.get();
         Float oldEF = accountObjective.getEf();
-        Short oldI = accountObjective.getI();
         Short oldN = accountObjective.getN();
         Short q = newSolvedTask.getQ();
         Short lastQ = accountObjective.getLastQ();
         Instant newSolvedTaskEndTime = newSolvedTask.getEndTime();
 
+        accountObjective.setI(nextInterval(accountObjective, q, newSolvedTaskEndTime));
         if (q >= 3) {
-            Short newI;
-            if (lastQ == null && q.equals((short)5)) {
-                newI = 6;
-            } else if (oldN == 0) {
-                newI = 1;
-            } else if (oldN == 1) {
-                newI = 6;
-            } else {
-                long elapsedDays = Math.max(0, Duration.between(accountObjective.getLastSolvedDate(), newSolvedTaskEndTime).toDays());
-                newI = computeEarlyAwareInterval(oldI, oldEF, elapsedDays);
-            }
-            accountObjective.setI(newI);
             if (lastQ == null && q.equals((short)5)) {
                 accountObjective.setN((short)2);
             } else {
@@ -86,7 +74,6 @@ public class AccountObjectiveService {
             }
         } else {
             accountObjective.setN((short) 0);
-            accountObjective.setI((short) 1);
         }
 
         Float newEF = (float) (oldEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
@@ -103,6 +90,44 @@ public class AccountObjectiveService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Days until the objective comes back for each possible rating q = 0..5 if the user rated it
+     * right now. Same computation as {@link #updateAccountObjective}, so the rating picker can show
+     * the real interval instead of a guess. Returns null if the account has no state for the objective.
+     */
+    public short[] previewIntervals(Account account, LearningObjective objective) {
+        Optional<AccountObjective> accountObjective = accountObjectiveRepository.findByAccountAndObjective(account, objective);
+        if (accountObjective.isEmpty()) {
+            return null;
+        }
+
+        Instant now = Instant.now();
+        short[] intervals = new short[6];
+        for (short q = 0; q <= 5; q++) {
+            intervals[q] = nextInterval(accountObjective.get(), q, now);
+        }
+        return intervals;
+    }
+
+    /** SM-2 interval (in days) the objective gets after being rated q at the given time. */
+    static short nextInterval(AccountObjective accountObjective, short q, Instant solvedAt) {
+        if (q < 3) {
+            return 1;
+        }
+
+        short oldN = accountObjective.getN();
+        if (accountObjective.getLastQ() == null && q == 5) {
+            return 6;
+        } else if (oldN == 0) {
+            return 1;
+        } else if (oldN == 1) {
+            return 6;
+        }
+
+        long elapsedDays = Math.max(0, Duration.between(accountObjective.getLastSolvedDate(), solvedAt).toDays());
+        return computeEarlyAwareInterval(accountObjective.getI(), accountObjective.getEf(), elapsedDays);
     }
 
     /**

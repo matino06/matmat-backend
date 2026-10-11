@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,5 +87,27 @@ public class SolvedTaskController {
             return ResponseEntity.internalServerError()
                     .body("An unexpected error occurred on the server");
         }
+    }
+
+    // Days until the task's objective comes back for each rating q = 0..5, so the rating picker
+    // can show the real SM-2 interval before the user commits to a rating.
+    @GetMapping("/next-intervals/{taskId}")
+    public ResponseEntity<short[]> getNextIntervals(Authentication authentication, @PathVariable Long taskId) {
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(authPrincipal.getEmail());
+        if (account == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Task task = taskService.getTaskById(taskId);
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        short[] intervals = accountObjectiveService.previewIntervals(account, task.getObjective());
+        if (intervals == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(intervals);
     }
 }
