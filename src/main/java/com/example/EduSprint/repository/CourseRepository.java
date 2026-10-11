@@ -4,6 +4,7 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,4 +28,13 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                 ORDER BY c.course_id
             """, nativeQuery = true)
     List<Object[]> findAllCoursesWithCounts();
+
+    // Share of exam points (in %) per field of study for a course, from the official exam catalogue.
+    @Query(value = """
+                SELECT f.field_name, w.weight_percent
+                FROM course_field_weight w
+                JOIN field_of_study f ON f.field_id = w.field_id
+                WHERE w.course_id = :courseId
+            """, nativeQuery = true)
+    List<Object[]> findFieldWeightsByCourseId(@Param("courseId") Long courseId);
 }

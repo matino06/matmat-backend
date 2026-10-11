@@ -6,6 +6,7 @@ import com.example.EduSprint.dto.StudyMapFieldDTO;
 import com.example.EduSprint.dto.StudyMapObjectiveDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
+import com.example.EduSprint.repository.CourseRepository;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,30 +18,11 @@ import java.util.stream.Collectors;
 public class LearningObjectiveService {
 
     public final LearningObjectiveRepository learningObjectiveRepository;
+    private final CourseRepository courseRepository;
 
-    private static final Map<String, Integer> POINTS_DISTRIBUTION_COURSE_1 = Map.of(
-            "Brojevi", 10,
-            "Algebra i funkcije", 50,
-            "Oblik i prostor", 15,
-            "Mjerenje", 20,
-            "Podatci, statistika i vjerojatnost", 5
-    );
-
-    private static final Map<String, Integer> POINTS_DISTRIBUTION_COURSE_2 = Map.of(
-            "Brojevi", 20,
-            "Algebra i funkcije", 40,
-            "Oblik i prostor", 15,
-            "Mjerenje", 15,
-            "Podatci, statistika i vjerojatnost", 10
-    );
-
-    private static final Map<Long, Map<String, Integer>> COURSE_POINTS_DISTRIBUTION = Map.of(
-            1L, POINTS_DISTRIBUTION_COURSE_1,
-            2L, POINTS_DISTRIBUTION_COURSE_2
-    );
-
-    public LearningObjectiveService(LearningObjectiveRepository learningObjectiveRepository) {
+    public LearningObjectiveService(LearningObjectiveRepository learningObjectiveRepository, CourseRepository courseRepository) {
         this.learningObjectiveRepository = learningObjectiveRepository;
+        this.courseRepository = courseRepository;
     }
 
     public final List<LearningObjective> findAll() {
@@ -172,9 +154,12 @@ public class LearningObjectiveService {
         Long courseId = account.getCurrentCourse().getCourseId();
         Short tempo = account.getTempo();
 
-        Map<String, Integer> distribution = COURSE_POINTS_DISTRIBUTION.get(courseId);
-        if (distribution == null) {
-            throw new IllegalArgumentException("No points distribution defined for course ID: " + courseId);
+        // Share of exam points per field, taken from the official exam catalogue.
+        // A course without a catalogue (e.g. EFZG) has nothing to score against, so it reports 0.
+        Map<String, Integer> distribution = courseRepository.findFieldWeightsByCourseId(courseId).stream()
+                .collect(Collectors.toMap(arr -> (String) arr[0], arr -> ((Number) arr[1]).intValue()));
+        if (distribution.isEmpty()) {
+            return (short) 0;
         }
 
         List<ObjectiveWithStatusDTO> objectivesWithStatus = learningObjectiveRepository
