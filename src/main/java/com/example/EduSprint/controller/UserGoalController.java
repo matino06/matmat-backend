@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,7 @@ public class UserGoalController {
         int dailyGoal = account.getDailyGoal();
 
         List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, dailyGoal);
-        int[] streaks = solvedTaskService.calculateStreaks(calendar);
+        SolvedTaskService.Streak streak = solvedTaskService.streak(calendar);
 
         LocalDate today = AppTime.today();
         int todayCompleted = calendar.stream()
@@ -51,9 +52,14 @@ public class UserGoalController {
                 dailyGoal,
                 solvedTaskService.getTodayGoal(accountId, dailyGoal),
                 todayCompleted,
-                streaks[0],
-                streaks[1],
+                streak.current(),
+                streak.longest(),
                 SolvedTaskService.STREAK_MIN_TASKS,
+                streak.freezes(),
+                SolvedTaskService.MAX_STREAK_FREEZES,
+                SolvedTaskService.FREEZE_EVERY_STREAK_DAYS,
+                streak.daysToNextFreeze(),
+                new ArrayList<>(streak.frozenDays()),
                 account.getRegistrationDate(),
                 calendar
         );

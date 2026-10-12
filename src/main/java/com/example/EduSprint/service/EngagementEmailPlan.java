@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 // Which engagement email an account gets on a given day. Follows the usual win-back pattern:
 // a few emails spread over the first month of inactivity, the last one saying it is the last,
@@ -31,9 +31,9 @@ public final class EngagementEmailPlan {
     static final int NEVER_STARTED_DAY = 2;
     static final int NEVER_STARTED_LAST_DAY = 7;
 
-    // Days since the last solved task
-    static final int DAILY_REMINDER_DAY = 1;
-    static final int STREAK_LOST_DAY = 2;
+    // Days since the last solved task. While the streak is alive (freezes can stretch that to a few
+    // days) the daily reminder goes out; the day after it breaks, the streak lost email.
+    static final int LAST_STREAK_DAY = SolvedTaskService.MAX_STREAK_FREEZES + 2;
     static final int FIRST_PAUSE_DAY = 7;
     static final int SECOND_PAUSE_DAY = 14;
     static final int LAST_CALL_DAY = 30;
@@ -50,9 +50,9 @@ public final class EngagementEmailPlan {
 
     private EngagementEmailPlan() {}
 
-    // lastActivityDate is null when the account never solved a task. lostStreak is only evaluated
-    // when needed: the length of the streak that ended on lastActivityDate.
-    public static Optional<Type> forDay(LocalDate today, LocalDate registrationDate, LocalDate lastActivityDate, IntSupplier lostStreak) {
+    // lastActivityDate is null when the account never solved a task. streak is only evaluated
+    // in the first days of inactivity, when it can still be alive or have just broken.
+    public static Optional<Type> forDay(LocalDate today, LocalDate registrationDate, LocalDate lastActivityDate, Supplier<SolvedTaskService.Streak> streak) {
         if (lastActivityDate == null) {
             long daysSinceRegistration = ChronoUnit.DAYS.between(registrationDate, today);
             if (daysSinceRegistration == NEVER_STARTED_DAY) return Optional.of(Type.NEVER_STARTED);
@@ -61,9 +61,12 @@ public final class EngagementEmailPlan {
         }
 
         long daysInactive = ChronoUnit.DAYS.between(lastActivityDate, today);
-        if (daysInactive == DAILY_REMINDER_DAY) return Optional.of(Type.DAILY_REMINDER);
-        if (daysInactive == STREAK_LOST_DAY) {
-            return lostStreak.getAsInt() >= STREAK_LOST_MIN_LENGTH ? Optional.of(Type.STREAK_LOST) : Optional.empty();
+        if (daysInactive < 1) return Optional.empty();
+        if (daysInactive <= LAST_STREAK_DAY) {
+            SolvedTaskService.Streak s = streak.get();
+            if (s.current() > 0) return Optional.of(Type.DAILY_REMINDER);
+            boolean lostYesterday = today.minusDays(1).equals(s.lostOn()) && s.lostLength() >= STREAK_LOST_MIN_LENGTH;
+            return lostYesterday ? Optional.of(Type.STREAK_LOST) : Optional.empty();
         }
         if (daysInactive == FIRST_PAUSE_DAY || daysInactive == SECOND_PAUSE_DAY) return Optional.of(Type.PAUSE);
         if (daysInactive == LAST_CALL_DAY) return Optional.of(Type.LAST_CALL);

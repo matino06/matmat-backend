@@ -1,7 +1,6 @@
 package com.example.EduSprint.service;
 
 import com.example.EduSprint.config.AppTime;
-import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +13,6 @@ import com.resend.core.exception.ResendException;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -107,7 +105,7 @@ public class EmailService {
                 today,
                 account.getRegistrationDate(),
                 lastActivity,
-                () -> solvedTaskService.streakEndingOn(calendarOf(account), lastActivity));
+                () -> solvedTaskService.streak(account));
         if (type.isEmpty()) {
             return;
         }
@@ -124,19 +122,15 @@ public class EmailService {
                 case NEVER_STARTED -> sendNeverStartedEmail(account, daysSinceRegistration, false);
                 case NEVER_STARTED_LAST -> sendNeverStartedEmail(account, daysSinceRegistration, true);
                 case DAILY_REMINDER -> sendReminderEmail(account, today);
-                case STREAK_LOST -> sendStreakLostEmail(account, lastActivity);
+                case STREAK_LOST -> sendStreakLostEmail(account);
                 case PAUSE -> sendShortPauseEmail(account, daysInactive, learningObjectiveService.calculateExamProgress(account));
                 case LAST_CALL -> sendLastCallEmail(account, daysInactive, learningObjectiveService.calculateExamProgress(account),
-                        solvedTaskService.calculateStreaks(calendarOf(account))[1]);
+                        solvedTaskService.streak(account).longest());
             }
         } catch (RuntimeException e) {
             emailLogService.release(account.getAccountId(), logType, today);
             throw e;
         }
-    }
-
-    private List<DailyGoalDTO> calendarOf(Account account) {
-        return solvedTaskService.getDailyGoalDTOs(account.getAccountId(), account.getDailyGoal());
     }
 
     // Sends a reminder with a working unsubscribe link in the footer and the one-click
@@ -431,13 +425,24 @@ REMINDER_FOOTER              </td>
     // One task keeps the streak, so that is the whole ask.
     private void sendReminderEmail(Account account, LocalDate today) {
         String firstName = account.getName().split(" ")[0];
-        int[] streaks = solvedTaskService.calculateStreaks(calendarOf(account));
-        int currentStreak = streaks[0];
-        int longestStreak = streaks[1];
+        SolvedTaskService.Streak streak = solvedTaskService.streak(account);
+        int currentStreak = streak.current();
+        int longestStreak = streak.longest();
         int progress = learningObjectiveService.calculateExamProgress(account);
         int remaining = 100 - progress;
 
-        String streakMessage = currentStreak >= EngagementEmailPlan.STREAK_LOST_MIN_LENGTH
+        boolean frozenYesterday = streak.frozenDays().contains(today.minusDays(1));
+        String streakMessage = frozenYesterday
+                ? (streak.freezes() > 0
+                        ? """
+                              <p style="margin: 0; font-size: 14px; font-weight: 700; color: #09090b;">🧊 Jučer ti je zaštita spasila niz.</p>
+                              <p style="margin: 8px 0 0; font-size: 13px; color: #71717b;">Ostala ti je još FREEZES_LEFT. Riješi 1 zadatak danas i sačuvaj je za neki drugi dan.</p>
+"""
+                        : """
+                              <p style="margin: 0; font-size: 14px; font-weight: 700; color: #09090b;">🧊 Jučer ti je zadnja zaštita spasila niz.</p>
+                              <p style="margin: 8px 0 0; font-size: 13px; color: #71717b;">Više ih nemaš — ako danas ne riješiš zadatak, niz pukne.</p>
+""")
+                : currentStreak >= EngagementEmailPlan.STREAK_LOST_MIN_LENGTH
                 ? """
                               <p style="margin: 0; font-size: 14px; font-weight: 700; color: #09090b;">🔥 STREAK_DAYS zaredom! U ritmu si — nemoj ga prekinuti.</p>
                               <p style="margin: 8px 0 0; font-size: 13px; color: #71717b;">Svaki novi dan čini zadatke lakšima i gradi sigurnost za maturu.</p>
@@ -561,6 +566,7 @@ REMINDER_FOOTER              </td>
 """
                 .replace("REMINDER_FOOTER", REMINDER_FOOTER)
                 .replace("STREAK_MESSAGE", streakMessage)
+                .replace("FREEZES_LEFT", streak.freezes() + " zaštita")
                 .replace("NEGLECTED_COURSE", neglectedCourse)
                 .replace("FIRSTNAME", firstName)
                 .replace("NEXT_STREAK_DAYS", days(currentStreak + 1))
@@ -570,19 +576,26 @@ REMINDER_FOOTER              </td>
                 .replace("PROGRESS", String.valueOf(progress))
                 .replace("REMAINING", String.valueOf(remaining));
 
-        String subject = currentStreak >= EngagementEmailPlan.STREAK_LOST_MIN_LENGTH
-                ? "Ne prekidaj niz od " + days(currentStreak) + "! Riješi 1 zadatak danas 🔥"
-                : "Riješi 1 zadatak i niz raste na " + days(currentStreak + 1) + " 🔥";
+        String subject;
+        if (frozenYesterday && streak.freezes() == 0) {
+            subject = "Danas ti pukne niz od " + days(currentStreak) + " — riješi 1 zadatak 🧊";
+        } else if (frozenYesterday) {
+            subject = "Zaštita ti je jučer spasila niz od " + days(currentStreak) + " 🧊";
+        } else if (currentStreak >= EngagementEmailPlan.STREAK_LOST_MIN_LENGTH) {
+            subject = "Ne prekidaj niz od " + days(currentStreak) + "! Riješi 1 zadatak danas 🔥";
+        } else {
+            subject = "Riješi 1 zadatak i niz raste na " + days(currentStreak + 1) + " 🔥";
+        }
         sendReminder(account, subject, html);
     }
 
     // Sent the day after a streak of at least STREAK_LOST_MIN_LENGTH days broke: the moment
     // it is easiest to come back, so the ask is a single task to start a new streak.
-    private void sendStreakLostEmail(Account account, LocalDate lastActivity) {
+    private void sendStreakLostEmail(Account account) {
         String firstName = account.getName().split(" ")[0];
-        List<DailyGoalDTO> calendar = calendarOf(account);
-        int lostStreak = solvedTaskService.streakEndingOn(calendar, lastActivity);
-        int longestStreak = solvedTaskService.calculateStreaks(calendar)[1];
+        SolvedTaskService.Streak streak = solvedTaskService.streak(account);
+        int lostStreak = streak.lostLength();
+        int longestStreak = streak.longest();
 
         String html = """
 <!doctype html>

@@ -10,11 +10,12 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +23,10 @@ public class SolvedTaskService {
     // Tasks (from any course) needed in a day to keep the streak going. Kept separate from the
     // daily goal so a high goal does not make the streak harder to keep.
     public static final int STREAK_MIN_TASKS = 1;
+
+    // Streak freezes: one is earned every FREEZE_EVERY_STREAK_DAYS streak days, at most MAX_STREAK_FREEZES are held.
+    public static final int FREEZE_EVERY_STREAK_DAYS = 7;
+    public static final int MAX_STREAK_FREEZES = 2;
 
     public SolvedTaskRepository solvedTaskRepository;
 
@@ -93,66 +98,62 @@ public class SolvedTaskService {
         ));
     }
 
-    public int[] calculateStreaks(Account account) {
-        return calculateStreaks(getDailyGoalDTOs(account.getAccountId(), account.getDailyGoal()));
+    // State of the streak as of today, replayed day by day from the first streak day.
+    //   current           - streak length (today counts once done; an unfinished today does not break it)
+    //   longest           - longest streak ever
+    //   freezes           - streak freezes available now
+    //   daysToNextFreeze  - streak days still needed to earn the next freeze
+    //   frozenDays        - missed days a freeze covered
+    //   lostOn/lostLength - last day a streak broke, and how long it was
+    public record Streak(int current, int longest, int freezes, int daysToNextFreeze,
+                         Set<LocalDate> frozenDays, LocalDate lostOn, int lostLength) {}
+
+    public Streak streak(Account account) {
+        return streak(getDailyGoalDTOs(account.getAccountId(), account.getDailyGoal()));
     }
 
-    public int[] calculateStreaks(List<DailyGoalDTO> calendar) {
-        if (calendar == null || calendar.isEmpty()) {
-            return new int[]{0, 0}; // [current, longest]
-        }
-
-        calendar = new ArrayList<>(calendar);
-        calendar.sort(Comparator.comparing(DailyGoalDTO::getDate));
-
-        Map<LocalDate, DailyGoalDTO> dayMap = calendar.stream()
-                .collect(Collectors.toMap(DailyGoalDTO::getDate, d -> d));
-
-        LocalDate startDate = calendar.get(0).getDate();
-        LocalDate today = AppTime.today();
-
-        int longest = 0;
-        int temp = 0;
-
-        LocalDate cursor = startDate;
-
-        while (!cursor.isAfter(today)) {
-
-            DailyGoalDTO day = dayMap.get(cursor);
-            boolean streakDay = day != null && day.isStreakDay();
-
-            if (streakDay) {
-                temp++;
-                longest = Math.max(longest, temp);
-            } else {
-                temp = 0;
-            }
-
-            cursor = cursor.plusDays(1);
-        }
-
-        // ===== CURRENT STREAK =====
-        // Today does not break the streak until it is over
-        int current = streakEndingOn(calendar, today);
-        if (current == 0) {
-            current = streakEndingOn(calendar, today.minusDays(1));
-        }
-
-        return new int[]{current, longest};
-    }
-
-    // Length of the streak that ends on the given day (0 if that day is not a streak day).
-    public int streakEndingOn(List<DailyGoalDTO> calendar, LocalDate day) {
+    // A freeze is earned every FREEZE_EVERY_STREAK_DAYS streak days (at most MAX_STREAK_FREEZES held).
+    // A missed day uses one up: the streak survives but does not grow, as nothing was solved that day.
+    public Streak streak(List<DailyGoalDTO> calendar) {
         Set<LocalDate> streakDays = calendar.stream()
                 .filter(DailyGoalDTO::isStreakDay)
                 .map(DailyGoalDTO::getDate)
                 .collect(Collectors.toSet());
-
-        int length = 0;
-        while (streakDays.contains(day)) {
-            length++;
-            day = day.minusDays(1);
+        if (streakDays.isEmpty()) {
+            return new Streak(0, 0, 0, FREEZE_EVERY_STREAK_DAYS, Set.of(), null, 0);
         }
-        return length;
+
+        LocalDate today = AppTime.today();
+        int current = 0;
+        int longest = 0;
+        int freezes = 0;
+        int daysSinceFreeze = 0;
+        Set<LocalDate> frozenDays = new TreeSet<>();
+        LocalDate lostOn = null;
+        int lostLength = 0;
+
+        for (LocalDate day = Collections.min(streakDays); !day.isAfter(today); day = day.plusDays(1)) {
+            if (streakDays.contains(day)) {
+                current++;
+                longest = Math.max(longest, current);
+                if (++daysSinceFreeze == FREEZE_EVERY_STREAK_DAYS) {
+                    freezes = Math.min(MAX_STREAK_FREEZES, freezes + 1);
+                    daysSinceFreeze = 0;
+                }
+            } else if (day.equals(today) || current == 0) {
+                // today is not over yet; with no streak there is nothing to protect
+            } else if (freezes > 0) {
+                freezes--;
+                frozenDays.add(day);
+            } else {
+                lostOn = day;
+                lostLength = current;
+                current = 0;
+                daysSinceFreeze = 0;
+            }
+        }
+
+        return new Streak(current, longest, freezes, FREEZE_EVERY_STREAK_DAYS - daysSinceFreeze,
+                frozenDays, lostOn, lostLength);
     }
 }

@@ -11,10 +11,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -93,7 +94,7 @@ class SolvedTaskServiceTest {
         solved(TODAY.minusDays(1), 2L, "Fizika", 1);
         solved(TODAY, 1L, "Matematika", 1);
 
-        assertArrayEquals(new int[]{3, 3}, service.calculateStreaks(calendar(5)));
+        assertStreak(3, 3, service.streak(calendar(5)));
     }
 
     @Test
@@ -102,7 +103,7 @@ class SolvedTaskServiceTest {
         solved(TODAY.minusDays(2), 1L, "Matematika", 1);
         solved(TODAY.minusDays(1), 2L, "Fizika", 1);
 
-        assertArrayEquals(new int[]{2, 2}, service.calculateStreaks(calendar(3)));
+        assertStreak(2, 2, service.streak(calendar(3)));
     }
 
     @Test
@@ -111,20 +112,87 @@ class SolvedTaskServiceTest {
         solved(TODAY.minusDays(3), 1L, "Matematika", 1);
         solved(TODAY.minusDays(2), 1L, "Matematika", 1);
 
-        assertArrayEquals(new int[]{0, 3}, service.calculateStreaks(calendar(3)));
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+        assertStreak(0, 3, streak);
+        assertEquals(TODAY.minusDays(1), streak.lostOn());
+        assertEquals(3, streak.lostLength());
+    }
+
+    // Solves one task on each of `days` consecutive days, ending `endDaysAgo` days before today.
+    private void solvedDays(int days, int endDaysAgo) {
+        for (int i = 0; i < days; i++) {
+            solved(TODAY.minusDays(endDaysAgo + i), 1L, "Matematika", 1);
+        }
+    }
+
+    private static void assertStreak(int current, int longest, SolvedTaskService.Streak streak) {
+        assertEquals(current, streak.current(), "current");
+        assertEquals(longest, streak.longest(), "longest");
     }
 
     @Test
-    void streakEndingOnADayCountsBackFromThatDay() {
-        solved(TODAY.minusDays(6), 1L, "Matematika", 1);
-        solved(TODAY.minusDays(4), 1L, "Matematika", 1);
-        solved(TODAY.minusDays(3), 2L, "Fizika", 1);
-        solved(TODAY.minusDays(2), 1L, "Matematika", 1);
+    void aFreezeIsEarnedEverySevenStreakDays() {
+        solvedDays(6, 0);
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+        assertEquals(0, streak.freezes());
+        assertEquals(1, streak.daysToNextFreeze());
 
-        List<DailyGoalDTO> days = calendar(3);
+        solvedRows.clear();
+        solvedDays(7, 0);
+        streak = service.streak(calendar(3));
+        assertEquals(1, streak.freezes());
+        assertEquals(7, streak.daysToNextFreeze());
+    }
 
-        assertEquals(3, service.streakEndingOn(days, TODAY.minusDays(2)));
-        assertEquals(0, service.streakEndingOn(days, TODAY.minusDays(1)));
+    @Test
+    void atMostTwoFreezesAreHeld() {
+        solvedDays(30, 0);
+        assertEquals(SolvedTaskService.MAX_STREAK_FREEZES, service.streak(calendar(3)).freezes());
+    }
+
+    @Test
+    void aMissedDayUsesAFreezeAndKeepsTheStreakWithoutGrowingIt() {
+        solvedDays(7, 3);  // days -9..-3: earns a freeze
+        // day -2 missed
+        solvedDays(2, 0);  // days -1, 0
+
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+
+        assertStreak(9, 9, streak);
+        assertEquals(0, streak.freezes());
+        assertEquals(Set.of(TODAY.minusDays(2)), streak.frozenDays());
+        assertNull(streak.lostOn());
+    }
+
+    @Test
+    void streakBreaksWhenFreezesRunOut() {
+        solvedDays(14, 4);  // two freezes
+        // days -3, -2, -1 missed: two frozen, the third breaks the streak
+
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+
+        assertStreak(0, 14, streak);
+        assertEquals(Set.of(TODAY.minusDays(3), TODAY.minusDays(2)), streak.frozenDays());
+        assertEquals(TODAY.minusDays(1), streak.lostOn());
+        assertEquals(14, streak.lostLength());
+    }
+
+    @Test
+    void streakSavedByAFreezeIsStillAliveToday() {
+        solvedDays(7, 2);  // days -8..-2
+        // day -1 missed, today not solved yet
+
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+
+        assertStreak(7, 7, streak);
+        assertEquals(Set.of(TODAY.minusDays(1)), streak.frozenDays());
+    }
+
+    @Test
+    void noStreakNoFreezes() {
+        SolvedTaskService.Streak streak = service.streak(calendar(3));
+        assertStreak(0, 0, streak);
+        assertEquals(0, streak.freezes());
     }
 
     @Test
