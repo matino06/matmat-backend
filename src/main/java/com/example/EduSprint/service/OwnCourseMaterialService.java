@@ -177,13 +177,22 @@ public class OwnCourseMaterialService {
                         pre.getOrDefault(rs.getLong(1), List.of())));
     }
 
+    public List<PlanWarningDTO> warnings(Account account, long courseId) {
+        own(account, courseId);
+        return jdbc.query("""
+                SELECT warning_id, kind, objective_id, text, detail, serious, ignored FROM plan_warning
+                WHERE course_id = :c ORDER BY serious DESC, warning_id""", new MapSqlParameterSource("c", courseId),
+                (rs, i) -> new PlanWarningDTO(rs.getLong(1), rs.getString(2), (Long) rs.getObject(3), rs.getString(4),
+                        rs.getString(5), rs.getBoolean(6), rs.getBoolean(7)));
+    }
+
     // Faze plana redom; svaka je skup vrsta koraka.
     static final List<List<String>> PLAN_STEPS = List.of(
             List.of(PlanScopeStep.KIND, PlanExamTasksStep.KIND),
             List.of(PlanPointsStep.KIND),
             List.of(PlanDedupeStep.KIND, PlanEdgesStep.KIND),
             List.of(PlanGroupStep.KIND),
-            List.of(PlanFinalizeStep.KIND));
+            List.of(PlanFinalizeStep.KIND, PlanZeroStep.KIND, PlanCoverageStep.KIND, PlanCheckRepairStep.KIND));
 
     public BuildProgressDTO progress(Account account, long courseId) {
         Course course = own(account, courseId);

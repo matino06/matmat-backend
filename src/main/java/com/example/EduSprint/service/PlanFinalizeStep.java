@@ -14,7 +14,7 @@ import java.util.*;
 // Završetak izrade plana: popravak kodom (PlanRepair), grupiranje cjelina u područja (jedan poziv modela)
 // i upis u postojeću hijerarhiju: područje = field_of_study, cjelina (ishod) = subfield_of_study,
 // lekcija = learning_objective, redoslijed u course_objective.position, preduvjeti u objective_prerequisite.
-// Predmet prelazi u „nacrt“ i kreator dobiva e-mail.
+// Zatim slijede provjere plana (PlanZeroStep, PlanCoverageStep) i popravak (PlanCheckRepairStep).
 @Component
 public class PlanFinalizeStep implements BuildStep {
 
@@ -31,15 +31,15 @@ public class PlanFinalizeStep implements BuildStep {
     private final OwnCourseLlm llm;
     private final PlanSupport plan;
     private final TransactionTemplate transactions;
-    private final OwnCourseMailer mailer;
+    private final PlanFlow flow;
 
     public PlanFinalizeStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan,
-                            TransactionTemplate transactions, OwnCourseMailer mailer) {
+                            TransactionTemplate transactions, PlanFlow flow) {
         this.jdbc = jdbc;
         this.llm = llm;
         this.plan = plan;
         this.transactions = transactions;
-        this.mailer = mailer;
+        this.flow = flow;
     }
 
     @Override
@@ -86,8 +86,7 @@ public class PlanFinalizeStep implements BuildStep {
 
         Map<Long, String> areaOf = areas(job, course, outcomes);
         transactions.executeWithoutResult(tx -> write(course, outcomes, areaOf, result));
-        mailer.planReady(courseId);
-        return result.lessons().size() + " lekcija, " + result.backwards().size() + " krugova preduvjeta";
+        return result.lessons().size() + " lekcija";
     }
 
     // Cjelina → naziv područja. Ako model ne uspije ili izostavi cjelinu, ide u zajedničko područje.
@@ -167,8 +166,12 @@ public class PlanFinalizeStep implements BuildStep {
             jdbc.update("INSERT INTO assumed_knowledge (course_id, text) VALUES (:c, :t)",
                     c.addValue("t", PlanSupport.defaultAssumedKnowledge(course.level())));
         }
-        jdbc.update("UPDATE course SET status = :s WHERE course_id = :c",
-                new MapSqlParameterSource("c", courseId).addValue("s", STATUS_DRAFT));
+    }
+
+    // Plan je upisan: slijede provjere (nulta pretpostavka, pokrivenost ispita) i popravak.
+    @Override
+    public void afterComplete(BuildJob job) {
+        flow.afterFinalize(job);
     }
 
     private static long num(Object o) {

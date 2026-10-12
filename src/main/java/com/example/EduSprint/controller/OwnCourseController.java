@@ -85,6 +85,11 @@ public class OwnCourseController {
         return materials.plan(account(authentication), courseId);
     }
 
+    @GetMapping("/{courseId}/warnings")
+    public java.util.List<PlanWarningDTO> warnings(Authentication authentication, @PathVariable Long courseId) {
+        return materials.warnings(account(authentication), courseId);
+    }
+
     @PostMapping("/{courseId}/cancel")
     public ResponseEntity<Void> cancel(Authentication authentication, @PathVariable Long courseId) {
         ownCourseService.cancelBuild(account(authentication), courseId);

@@ -148,6 +148,8 @@ public class OwnCourseService {
         jdbc.update("DELETE FROM user_course_goal WHERE course_id = :c", c);
         // Trošak (build_cost) ostaje: brisanje predmeta ne vraća potrošenu kvotu.
         jdbc.update("DELETE FROM build_job WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM plan_warning WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM zero_finding WHERE course_id = :c", c);
         jdbc.update("DELETE FROM knowledge_item WHERE course_id = :c", c);
         jdbc.update("DELETE FROM draft_lesson WHERE course_id = :c", c);
         jdbc.update("DELETE FROM exam_task WHERE course_id = :c", c);

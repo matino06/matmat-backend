@@ -41,29 +41,50 @@ public final class PlanRepair {
             pre.add(p);
         }
 
-        // stabilni topološki poredak: posjeti lekcije redom, a svakoj prvo njezine preduvjete
+        Order order = topoOrder(pre);
+        List<Lesson> ordered = new ArrayList<>();
+        for (int old : order.order()) ordered.add(lessons.get(old));
+        return new Result(ordered, order.prerequisites(), order.backwards());
+    }
+
+    // Poredak: order = stari indeksi novim redom; preduvjeti i krugovi su novi indeksi.
+    public record Order(List<Integer> order, List<List<Integer>> prerequisites, List<int[]> backwards) {
+    }
+
+    // Stabilni topološki poredak: posjeti lekcije redom, a svakoj prvo njezine preduvjete.
+    // Lekcija u krugu ostaje gdje je; brid koji tada pokazuje unaprijed vraća se kao „backwards“.
+    public static Order topoOrder(List<Set<Integer>> pre) {
+        int n = pre.size();
         List<Integer> order = new ArrayList<>();
         boolean[] done = new boolean[n];
         boolean[] onStack = new boolean[n];
         for (int i = 0; i < n; i++) visit(i, pre, done, onStack, order);
-
         int[] newIndex = new int[n];
         for (int k = 0; k < n; k++) newIndex[order.get(k)] = k;
-        List<Lesson> ordered = new ArrayList<>();
         List<List<Integer>> prerequisites = new ArrayList<>();
         List<int[]> backwards = new ArrayList<>();
         for (int k = 0; k < n; k++) {
-            int old = order.get(k);
-            ordered.add(lessons.get(old));
             List<Integer> p = new ArrayList<>();
-            for (int q : pre.get(old)) {
+            for (int q : pre.get(order.get(k))) {
                 p.add(newIndex[q]);
                 if (newIndex[q] > k) backwards.add(new int[]{k, newIndex[q]});
             }
             Collections.sort(p);
             prerequisites.add(p);
         }
-        return new Result(ordered, prerequisites, backwards);
+        return new Order(order, prerequisites, backwards);
+    }
+
+    // Dodaje li brid „lesson treba prerequisite“ krug: je li lesson (tranzitivno) preduvjet od prerequisite?
+    public static boolean createsCycle(List<Set<Integer>> pre, int lesson, int prerequisite) {
+        Deque<Integer> stack = new ArrayDeque<>(List.of(prerequisite));
+        Set<Integer> seen = new HashSet<>();
+        while (!stack.isEmpty()) {
+            int x = stack.pop();
+            if (x == lesson) return true;
+            if (seen.add(x)) stack.addAll(pre.get(x));
+        }
+        return false;
     }
 
     private static void visit(int i, List<Set<Integer>> pre, boolean[] done, boolean[] onStack, List<Integer> order) {

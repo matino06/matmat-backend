@@ -58,6 +58,32 @@ public class PlanFlow {
         add(job, PlanFinalizeStep.KIND, "plan", null);
     }
 
+    static final int ZERO_RUNS = 2;
+    static final int COVERAGE_BATCH = 25;
+
+    // Nulta pretpostavka po lekciji, dvaput (jedno pokretanje nađe samo dio prekršaja), i pokrivenost ispita.
+    void afterFinalize(BuildJob job) {
+        MapSqlParameterSource c = new MapSqlParameterSource("c", job.courseId());
+        List<Long> objectives = jdbc.queryForList("SELECT objective_id FROM course_objective WHERE course_id = :c ORDER BY position", c, Long.class);
+        if (objectives.isEmpty()) return; // plan nije upisan (npr. preopsežan)
+        for (int run = 1; run <= ZERO_RUNS; run++) {
+            for (Long o : objectives) {
+                add(job, PlanZeroStep.KIND, "nulta " + o + " " + run, "{\"objectiveId\":" + o + ",\"run\":" + run + "}");
+            }
+        }
+        List<Long> tasks = jdbc.queryForList("SELECT exam_task_id FROM exam_task WHERE course_id = :c ORDER BY exam_task_id", c, Long.class);
+        for (int i = 0; i < tasks.size(); i += COVERAGE_BATCH) {
+            add(job, PlanCoverageStep.KIND, "pokrivenost " + (i / COVERAGE_BATCH + 1),
+                    "{\"taskIds\":" + tasks.subList(i, Math.min(tasks.size(), i + COVERAGE_BATCH)) + "}");
+        }
+        afterChecks(job); // ako nema lekcija za provjeru, odmah na popravak
+    }
+
+    void afterChecks(BuildJob job) {
+        if (queue.notDone(job.courseId(), PlanZeroStep.KIND, PlanCoverageStep.KIND) > 0) return;
+        add(job, PlanCheckRepairStep.KIND, "provjera", null);
+    }
+
     private List<Long> outcomes(long courseId) {
         return jdbc.queryForList("SELECT outcome_id FROM plan_outcome WHERE course_id = :c ORDER BY position",
                 new MapSqlParameterSource("c", courseId), Long.class);
