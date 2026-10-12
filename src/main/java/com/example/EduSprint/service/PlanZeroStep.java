@@ -78,6 +78,7 @@ public class PlanZeroStep implements BuildStep {
         List<String> own = jdbc.queryForList("""
                 SELECT item_id || ' ' || text FROM knowledge_item WHERE objective_id = :o AND duplicate_of IS NULL ORDER BY position""",
                 new MapSqlParameterSource("o", objectiveId), String.class);
+        if (own.isEmpty()) return "lekcija bez stavki"; // lekcija primjene ili stavke još nisu izrađene
         String user = "LEKCIJA: " + name + "\nSTAVKE LEKCIJE:\n" + String.join("\n", own);
 
         JsonNode out = plan.json(llm.chat(job, plan.cheapModel, system, user, OwnCourseLlm.Options.of("low", 4000)).content());

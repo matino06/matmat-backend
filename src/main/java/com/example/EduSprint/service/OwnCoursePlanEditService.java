@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.*;
 
 // Izmjene plana vlastitog predmeta dok je „nacrt“ (ticket „Pregled i uređivanje plana“).
@@ -17,6 +18,8 @@ import java.util.*;
 // ponovna provjera koju frontend traži kad kreator napravi pauzu (recheck).
 @Service
 public class OwnCoursePlanEditService {
+
+    private static final java.time.ZoneId ZAGREB = java.time.ZoneId.of("Europe/Zagreb");
 
     static final int MAX_NAME = 200;
 
@@ -263,6 +266,60 @@ public class OwnCoursePlanEditService {
         }
     }
 
+    // --- način učenja ---
+
+    public static final String MODE_FULL = "ucenje_gradiva";
+    public static final String MODE_QUICK = "brza_priprema";
+    public static final int MAX_QUICK_LESSONS = 50;
+
+    public Map<String, Object> learningMode(Account account, long courseId) {
+        Course course = own(account, courseId);
+        Map<String, Object> out = new HashMap<>();
+        out.put("mode", course.getLearningMode());
+        out.put("examDate", course.getExamDate() == null ? null : course.getExamDate().toString());
+        out.put("conceptLessons", conceptLessons(courseId));
+        out.put("maxQuickLessons", MAX_QUICK_LESSONS);
+        List<Map<String, Object>> job = jdbc.queryForList(
+                "SELECT status FROM build_job WHERE course_id = :c AND kind = :k ORDER BY job_id DESC LIMIT 1",
+                new MapSqlParameterSource("c", courseId).addValue("k", PlanApplicationStep.KIND));
+        out.put("applications", job.isEmpty() ? null : job.get(0).get("status"));
+        return out;
+    }
+
+    // Način učenja bira se jednom, dok je plan nacrt i kad je poznat broj lekcija koncepata; poslije se ne mijenja.
+    @Transactional
+    public void chooseLearningMode(Account account, long courseId, String mode, LocalDate examDate) {
+        Course course = draft(account, courseId);
+        if (course.getLearningMode() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Način učenja je već odabran i ne može se promijeniti.");
+        }
+        if (!MODE_FULL.equals(mode) && !MODE_QUICK.equals(mode)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nepoznat način učenja.");
+        if (examDate != null && examDate.isBefore(LocalDate.now(ZAGREB))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datum ispita ne može biti u prošlosti.");
+        }
+        if (MODE_QUICK.equals(mode)) {
+            if (examDate == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Za brzu pripremu upiši datum testa.");
+            int n = conceptLessons(courseId);
+            if (n > MAX_QUICK_LESSONS) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gradivo ima " + n
+                    + " lekcija; brza priprema moguća je do " + MAX_QUICK_LESSONS
+                    + ". Podijeli materijal na manje dijelove ili odaberi učenje gradiva.");
+        }
+        course.setLearningMode(mode);
+        course.setExamDate(examDate);
+        courseRepository.save(course);
+        if (MODE_QUICK.equals(mode)) {
+            queue.enqueue(courseId, account.getAccountId(), PlanApplicationStep.KIND, "primjena", BuildJobQueue.PRIORITY_WAITED_ON, true, null);
+        }
+    }
+
+    private int conceptLessons(long courseId) {
+        Integer n = jdbc.queryForObject("""
+                SELECT count(*) FROM course_objective co JOIN learning_objective lo ON lo.objective_id = co.objective_id
+                WHERE co.course_id = :c AND lo.kind IS DISTINCT FROM :k""",
+                new MapSqlParameterSource("c", courseId).addValue("k", PlanApplicationStep.LESSON_KIND), Integer.class);
+        return n == null ? 0 : n;
+    }
+
     // --- pretpostavljeno predznanje ---
 
     public List<Map<String, Object>> assumedKnowledge(Account account, long courseId) {
@@ -322,7 +379,8 @@ public class OwnCoursePlanEditService {
     }
 
     public boolean checking(long courseId) {
-        return queue.notDone(courseId, PlanZeroStep.KIND, PlanCoverageStep.KIND, PlanCheckRepairStep.KIND, PlanNewLessonStep.KIND) > 0;
+        return queue.notDone(courseId, PlanZeroStep.KIND, PlanCoverageStep.KIND, PlanCheckRepairStep.KIND, PlanNewLessonStep.KIND,
+                PlanApplicationStep.KIND) > 0;
     }
 
     // --- pomoćno ---

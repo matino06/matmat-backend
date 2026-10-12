@@ -116,4 +116,29 @@ class OwnCoursePlanEditServiceTest {
         verify(jdbc, times(1)).update(contains("UPDATE learning_objective SET objective_name"), any(SqlParameterSource.class));
         verify(jdbc).update(contains("UPDATE build_job SET output"), any(SqlParameterSource.class));
     }
+
+    private void conceptLessons(int n) {
+        when(jdbc.queryForObject(contains("SELECT count(*)"), any(SqlParameterSource.class), eq(Integer.class))).thenReturn(n);
+    }
+
+    @Test
+    void quickPrepIsRefusedAboveFiftyConceptLessons() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        conceptLessons(51);
+        java.time.LocalDate tomorrow = java.time.LocalDate.now().plusDays(1);
+        assertEquals(HttpStatus.BAD_REQUEST, status(() -> service.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_QUICK, tomorrow)));
+        assertEquals(HttpStatus.BAD_REQUEST, status(() -> service.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_QUICK, null)));
+        assertDoesNotThrow(() -> service.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_FULL, null));
+    }
+
+    @Test
+    void quickPrepQueuesApplicationLessonsAndModeIsChosenOnce() {
+        BuildJobQueue queue = mock(BuildJobQueue.class);
+        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow);
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        conceptLessons(26);
+        s.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_QUICK, java.time.LocalDate.now().plusDays(2));
+        verify(queue).enqueue(eq(5L), eq(7L), eq(PlanApplicationStep.KIND), anyString(), anyInt(), eq(true), isNull());
+        assertEquals(HttpStatus.CONFLICT, status(() -> s.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_FULL, null)));
+    }
 }

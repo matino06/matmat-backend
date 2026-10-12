@@ -166,7 +166,8 @@ public class OwnCourseMaterialService {
                 JOIN course_objective co ON co.objective_id = op.objective_id AND co.course_id = :c""", c,
                 rs -> { pre.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getLong(2)); });
         return jdbc.query("""
-                SELECT lo.objective_id, co.position, lo.objective_name, lo.concept, lo.kind, f.field_name, s.subfield_name
+                SELECT lo.objective_id, co.position, lo.objective_name, lo.concept, lo.kind, f.field_name, s.subfield_name,
+                       lo.application_type, lo.example_situation
                 FROM course_objective co
                 JOIN learning_objective lo ON lo.objective_id = co.objective_id
                 JOIN subfield_of_study s ON s.subfield_id = lo.subfield_id
@@ -174,7 +175,7 @@ public class OwnCourseMaterialService {
                 WHERE co.course_id = :c ORDER BY co.position""", c,
                 (rs, i) -> new PlanLessonDTO(rs.getLong(1), rs.getInt(2), rs.getString(3), rs.getString(4), rs.getString(5),
                         rs.getString(6), rs.getString(7), items.getOrDefault(rs.getLong(1), List.of()),
-                        pre.getOrDefault(rs.getLong(1), List.of())));
+                        pre.getOrDefault(rs.getLong(1), List.of()), rs.getString(8), rs.getString(9)));
     }
 
     public List<PlanWarningDTO> warningList(Account account, long courseId) {

@@ -114,6 +114,25 @@ public class OwnCourseController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{courseId}/learning-mode")
+    public java.util.Map<String, Object> learningMode(Authentication a, @PathVariable Long courseId) {
+        return planEdit.learningMode(account(a), courseId);
+    }
+
+    @PostMapping("/{courseId}/learning-mode")
+    public java.util.Map<String, Object> chooseLearningMode(Authentication a, @PathVariable Long courseId,
+                                                            @RequestBody java.util.Map<String, String> body) {
+        String date = body.get("examDate");
+        java.time.LocalDate examDate;
+        try {
+            examDate = date == null || date.isBlank() ? null : java.time.LocalDate.parse(date);
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Neispravan datum.");
+        }
+        planEdit.chooseLearningMode(account(a), courseId, body.get("mode"), examDate);
+        return planEdit.learningMode(account(a), courseId);
+    }
+
     @PostMapping("/{courseId}/instructions")
     public java.util.Map<String, Object> instruct(Authentication a, @PathVariable Long courseId,
                                                   @RequestBody java.util.Map<String, String> body) {
