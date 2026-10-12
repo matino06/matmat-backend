@@ -118,8 +118,16 @@ class AiChatServiceTest {
         assertEquals("viša (A)", AiChatService.courseLevel(official));
         assertNull(AiChatService.courseLevel(null));
 
-        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, null, List.of(), false, null, "Kemija — kiseline");
+        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, null, List.of(), false, null, "Kemija — kiseline", List.of());
         assertTrue(prompt.contains("gradiva predmeta „Kemija — kiseline“"));
         assertFalse(prompt.contains("mature"));
+    }
+
+    @Test
+    void ownCourseTaskCarriesTheLessonsKnowledgeItems() {
+        com.example.EduSprint.entity.Task task = new com.example.EduSprint.entity.Task();
+        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, task, List.of(), false, null, "Fizika",
+                List.of("put i pomak: put je skalar, pomak vektor", "srednja brzina v = s/t"));
+        assertTrue(prompt.contains("ŠTO LEKCIJA UČI (stavke znanja):\n- put i pomak: put je skalar, pomak vektor\n- srednja brzina v = s/t"));
     }
 }

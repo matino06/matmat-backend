@@ -31,6 +31,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -101,6 +103,7 @@ public class AiChatService {
     private final StorageService storageService;
     private final TransactionTemplate transactionTemplate;
     private final AiSettingsService aiSettingsService;
+    private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiChatService(@Qualifier("chatOpenRouterClient") OpenRouterClient openRouterClient,
@@ -113,7 +116,8 @@ public class AiChatService {
                          MockExamQuestionRepository mockExamQuestionRepository,
                          StorageService storageService,
                          TransactionTemplate transactionTemplate,
-                         AiSettingsService aiSettingsService) {
+                         AiSettingsService aiSettingsService,
+                         NamedParameterJdbcTemplate jdbc) {
         this.openRouterClient = openRouterClient;
         this.aiPromptRepository = aiPromptRepository;
         this.aiConversationRepository = aiConversationRepository;
@@ -125,6 +129,7 @@ public class AiChatService {
         this.storageService = storageService;
         this.transactionTemplate = transactionTemplate;
         this.aiSettingsService = aiSettingsService;
+        this.jdbc = jdbc;
     }
 
     /**
@@ -210,7 +215,8 @@ public class AiChatService {
         String systemPrompt = buildSystemPrompt(
                 basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT,
                 subjectPrompt != null ? subjectPrompt.getContent() : null,
-                level, task, steps, exam, req.solutionRevealed(), ownCourseName);
+                level, task, steps, exam, req.solutionRevealed(), ownCourseName,
+                ownCourseName != null && task != null ? lessonItems(task) : List.of());
 
         // Slike: one koje je učenik označio + one iz zadatka.
         // Iz citata su dopušteni i data: URI-ji (npr. fotografija rukom pisanog odgovora s probne mature).
@@ -350,13 +356,21 @@ public class AiChatService {
 
     static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
                                     List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed) {
-        return buildSystemPrompt(basePrompt, subjectPrompt, level, task, steps, exam, solutionRevealed, null);
+        return buildSystemPrompt(basePrompt, subjectPrompt, level, task, steps, exam, solutionRevealed, null, List.of());
+    }
+
+    // Stavke znanja lekcije vlastitog predmeta: što zadatak treba naučiti učenika.
+    private List<String> lessonItems(Task task) {
+        if (task.getObjective() == null || jdbc == null) return List.of();
+        return jdbc.queryForList("""
+                SELECT text FROM knowledge_item WHERE objective_id = :o AND duplicate_of IS NULL ORDER BY position""",
+                new MapSqlParameterSource("o", task.getObjective().getObjectiveId()), String.class);
     }
 
     /** Nazivi dijelova konteksta navedeni su u base promptu u bazi; mijenjaju se zajedno. */
     static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
                                     List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed,
-                                    String ownCourseName) {
+                                    String ownCourseName, List<String> lessonItems) {
         StringBuilder sb = new StringBuilder(basePrompt);
         if (subjectPrompt != null) {
             sb.append("\n\n").append(subjectPrompt);
@@ -368,6 +382,10 @@ public class AiChatService {
         if (task != null) {
             if (task.getObjective() != null) {
                 sb.append("\n\nCILJ UČENJA: ").append(task.getObjective().getObjectiveName());
+            }
+            if (!lessonItems.isEmpty()) {
+                sb.append("\n\nŠTO LEKCIJA UČI (stavke znanja):");
+                for (String item : lessonItems) sb.append("\n- ").append(item);
             }
             sb.append("\n\nZADATAK:\n").append(nullSafe(task.getTaskText()));
             if (task.getExplanation() != null && !task.getExplanation().isBlank()) {

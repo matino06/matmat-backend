@@ -102,7 +102,7 @@ class AiChatConversationTest {
         questions = mock(MockExamQuestionRepository.class);
         service = new AiChatService(openRouter, mock(AiPromptRepository.class), conversations, messages,
                 mock(TaskRepository.class), mock(ExplanationStepRepository.class), attempts, questions,
-                mock(StorageService.class), tx, settings);
+                mock(StorageService.class), tx, settings, null);
         account = mock(Account.class);
         when(account.getAccountId()).thenReturn(ACCOUNT_ID);
     }
