@@ -33,11 +33,20 @@ class OwnCourseMaterialServiceTest {
     }
 
     @Test
-    void readingStatePrefersProblemsOverProgress() {
-        assertEquals("radi", OwnCourseMaterialService.readingState(Map.of("read_page/running", 2), 3, 10));
-        assertEquals("neuspjelo", OwnCourseMaterialService.readingState(Map.of("read_page/failed", 1, "read_page/waiting", 4), 3, 10));
-        assertEquals("ceka_kvotu", OwnCourseMaterialService.readingState(Map.of("read_page/waiting_quota", 5), 3, 10));
-        assertEquals("pauzirano", OwnCourseMaterialService.readingState(Map.of("read_page/paused", 5), 3, 10));
-        assertEquals("procitano", OwnCourseMaterialService.readingState(Map.of("read_page/done", 10), 10, 10));
+    void statePrefersProblemsOverProgress() {
+        assertEquals("radi", OwnCourseMaterialService.state(Map.of("read_page/running", 2)));
+        assertEquals("neuspjelo", OwnCourseMaterialService.state(Map.of("read_page/failed", 1, "read_page/waiting", 4)));
+        assertEquals("ceka_kvotu", OwnCourseMaterialService.state(Map.of("plan_points/waiting_quota", 5)));
+        assertEquals("pauzirano", OwnCourseMaterialService.state(Map.of("plan_edges/paused", 5)));
+    }
+
+    @Test
+    void planStepIsTheFirstPhaseWithUnfinishedSteps() {
+        assertEquals(-1, OwnCourseMaterialService.planStep(Map.of("read_page/running", 3)));
+        assertEquals(0, OwnCourseMaterialService.planStep(Map.of("read_page/done", 3, "plan_scope/running", 1)));
+        assertEquals(0, OwnCourseMaterialService.planStep(Map.of("plan_scope/done", 1, "plan_exam_tasks/waiting", 2)));
+        assertEquals(1, OwnCourseMaterialService.planStep(Map.of("plan_scope/done", 1, "plan_points/running", 4, "plan_points/done", 3)));
+        assertEquals(2, OwnCourseMaterialService.planStep(Map.of("plan_scope/done", 1, "plan_points/done", 7, "plan_dedupe/done", 1, "plan_edges/waiting", 2)));
+        assertEquals(5, OwnCourseMaterialService.planStep(Map.of("plan_finalize/done", 1)));
     }
 }

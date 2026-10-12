@@ -9,4 +9,8 @@ public interface BuildStep {
     String kind();
 
     String run(BuildJob job) throws Exception;
+
+    // Nakon što je posao označen gotovim: ovdje korak pokreće iduću fazu kad je cijela trenutna faza gotova.
+    default void afterComplete(BuildJob job) {
+    }
 }

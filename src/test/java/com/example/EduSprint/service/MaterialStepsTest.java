@@ -95,7 +95,7 @@ class MaterialStepsTest {
                 .thenReturn(new OwnCourseLlm.Result("```json\n{\"markdown\":\"Stranica 1: \\\\(F = ma\\\\)\",\"vrsta\":\"Skripta\"}\n```",
                         new BigDecimal("0.0004"), 0));
 
-        assertEquals("skripta", new ReadPageStep(jdbc, storage, llm).run(job));
+        assertEquals("skripta", new ReadPageStep(jdbc, storage, llm, queue).run(job));
         verify(jdbc).update(contains("UPDATE material_page"),
                 argThat((SqlParameterSource p) -> "Stranica 1: \\(F = ma\\)".equals(p.getValue("md")) && "skripta".equals(p.getValue("k"))));
     }

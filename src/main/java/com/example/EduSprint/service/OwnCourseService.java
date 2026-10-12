@@ -53,7 +53,7 @@ public class OwnCourseService {
     public void cancelBuild(Account account, Long courseId) {
         requireCreator(account);
         Course course = ownCourse(account, courseId);
-        if (!STATUS_NEW.equals(course.getStatus()) && !OwnCourseMaterialService.STATUS_BUILDING.equals(course.getStatus())) {
+        if (!java.util.Set.of(STATUS_NEW, OwnCourseMaterialService.STATUS_BUILDING, PlanFinalizeStep.STATUS_TOO_BIG).contains(course.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Izrada je gotova; predmet se briše prepisivanjem naziva.");
         }
         deleteEverything(course);
@@ -148,6 +148,11 @@ public class OwnCourseService {
         jdbc.update("DELETE FROM user_course_goal WHERE course_id = :c", c);
         // Trošak (build_cost) ostaje: brisanje predmeta ne vraća potrošenu kvotu.
         jdbc.update("DELETE FROM build_job WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM knowledge_item WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM draft_lesson WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM exam_task WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM plan_outcome WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM assumed_knowledge WHERE course_id = :c", c);
         jdbc.update("DELETE FROM material_page WHERE material_id IN (SELECT material_id FROM course_material WHERE course_id = :c)", c);
         jdbc.update("DELETE FROM course_material WHERE course_id = :c", c);
         jdbc.update("DELETE FROM course WHERE course_id = :c", c);

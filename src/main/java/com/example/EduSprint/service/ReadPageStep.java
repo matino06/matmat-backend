@@ -35,12 +35,14 @@ public class ReadPageStep implements BuildStep {
     private final NamedParameterJdbcTemplate jdbc;
     private final MaterialStorage storage;
     private final OwnCourseLlm llm;
+    private final BuildJobQueue queue;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public ReadPageStep(NamedParameterJdbcTemplate jdbc, MaterialStorage storage, OwnCourseLlm llm) {
+    public ReadPageStep(NamedParameterJdbcTemplate jdbc, MaterialStorage storage, OwnCourseLlm llm, BuildJobQueue queue) {
         this.jdbc = jdbc;
         this.storage = storage;
         this.llm = llm;
+        this.queue = queue;
     }
 
     @Override
@@ -65,6 +67,15 @@ public class ReadPageStep implements BuildStep {
         jdbc.update("UPDATE material_page SET markdown = :md, kind = :k WHERE page_id = :p",
                 new MapSqlParameterSource("p", pageId).addValue("md", markdown).addValue("k", kind));
         return kind;
+    }
+
+    // Kad je pročitana zadnja stranica predmeta, kreće izrada plana.
+    @Override
+    public void afterComplete(BuildJob job) {
+        if (queue.notDone(job.courseId(), SplitMaterialStep.KIND, KIND) == 0) {
+            queue.enqueue(job.courseId(), job.accountId(), PlanScopeStep.KIND, "opseg",
+                    BuildJobQueue.PRIORITY_BACKGROUND, true, null);
+        }
     }
 
     JsonNode parse(String content) throws Exception {

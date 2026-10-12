@@ -45,8 +45,9 @@ public class BuildJobRunner {
     public BuildJobRunner(BuildJobQueue queue, BuildQuotaService quota, ObjectProvider<BuildStep> steps,
                           NamedParameterJdbcTemplate jdbc,
                           @Value("${own-courses.build.concurrency:8}") int concurrency,
-                          @Value("${resend.api-key}") String resendApiKey) {
-        this(queue, quota, steps.orderedStream().toList(), jdbc, concurrency, resendApiKey);
+                          @Value("${resend.api-key}") String resendApiKey,
+                          @Value("${own-courses.build.enabled:true}") boolean enabled) {
+        this(queue, quota, enabled ? steps.orderedStream().toList() : List.of(), jdbc, concurrency, resendApiKey);
     }
 
     BuildJobRunner(BuildJobQueue queue, BuildQuotaService quota, List<BuildStep> steps,
@@ -66,7 +67,7 @@ public class BuildJobRunner {
 
     @Scheduled(fixedDelay = 2000, initialDelay = 10000)
     public void tick() {
-        if (steps.isEmpty()) return; // dok nema nijedne vrste koraka, nema što izvršavati
+        if (steps.isEmpty()) return; // izvršitelj je isključen (own-courses.build.enabled=false) ili nema koraka
         try {
             queue.recoverExpiredLeases();
             while (capacity.tryAcquire()) {
@@ -101,6 +102,7 @@ public class BuildJobRunner {
         }
         try {
             queue.complete(job, step.run(job));
+            step.afterComplete(job);
         } catch (OwnCourseLlm.GlobalLimitException e) {
             queue.markPaused(job);
             alertGlobalLimit(e.getMessage());

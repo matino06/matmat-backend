@@ -151,6 +151,14 @@ public class OwnCourseMaterialService {
         }
     }
 
+    // Faze plana redom; svaka je skup vrsta koraka.
+    static final List<List<String>> PLAN_STEPS = List.of(
+            List.of(PlanScopeStep.KIND, PlanExamTasksStep.KIND),
+            List.of(PlanPointsStep.KIND),
+            List.of(PlanDedupeStep.KIND, PlanEdgesStep.KIND),
+            List.of(PlanGroupStep.KIND),
+            List.of(PlanFinalizeStep.KIND));
+
     public BuildProgressDTO progress(Account account, long courseId) {
         Course course = own(account, courseId);
         Map<String, Integer> counts = new java.util.HashMap<>();
@@ -159,18 +167,42 @@ public class OwnCourseMaterialService {
                 rs -> { counts.put(rs.getString(1) + "/" + rs.getString(2), rs.getInt(3)); });
         int total = totalPages(courseId);
         int done = counts.getOrDefault(ReadPageStep.KIND + "/" + BuildJobQueue.DONE, 0);
-        String state = readingState(counts, done, total);
-        int percent = total == 0 ? 0 : (int) Math.floor(25.0 * done / total);
         int failed = counts.entrySet().stream().filter(e -> e.getKey().endsWith("/" + BuildJobQueue.FAILED))
                 .mapToInt(Map.Entry::getValue).sum();
-        return new BuildProgressDTO(course.getStatus(), "citanje", state, done, total, percent, failed);
+        if (PlanFinalizeStep.STATUS_DRAFT.equals(course.getStatus())) {
+            return new BuildProgressDTO(course.getStatus(), "pregled", "ceka_kreatora", done, total, 70, 0, 5);
+        }
+        if (PlanFinalizeStep.STATUS_TOO_BIG.equals(course.getStatus())) {
+            return new BuildProgressDTO(course.getStatus(), "plan", "prevelik", done, total, 70, 0, 5);
+        }
+        int planStep = planStep(counts);
+        String state = state(counts);
+        if (planStep < 0) {
+            int percent = total == 0 ? 0 : (int) Math.floor(25.0 * done / total);
+            return new BuildProgressDTO(course.getStatus(), "citanje", state, done, total, percent, failed, 0);
+        }
+        return new BuildProgressDTO(course.getStatus(), "plan", state, done, total, 25 + 9 * planStep, failed, planStep);
     }
 
-    static String readingState(Map<String, Integer> counts, int done, int total) {
+    // -1 dok plan nije počeo; inače prva faza plana koja još ima nedovršenih koraka.
+    static int planStep(Map<String, Integer> counts) {
+        int lastStarted = -1;
+        for (int i = 0; i < PLAN_STEPS.size(); i++) {
+            List<String> kinds = PLAN_STEPS.get(i);
+            boolean started = counts.keySet().stream().anyMatch(k -> kinds.contains(k.substring(0, k.indexOf('/'))));
+            if (!started) continue;
+            lastStarted = i;
+            boolean pending = counts.entrySet().stream().anyMatch(e -> kinds.contains(e.getKey().substring(0, e.getKey().indexOf('/')))
+                    && !e.getKey().endsWith("/" + BuildJobQueue.DONE) && e.getValue() > 0);
+            if (pending) return i;
+        }
+        return lastStarted < 0 ? -1 : lastStarted + 1;
+    }
+
+    static String state(Map<String, Integer> counts) {
         if (hasStatus(counts, BuildJobQueue.FAILED)) return "neuspjelo";
         if (hasStatus(counts, BuildJobQueue.WAITING_QUOTA)) return "ceka_kvotu";
         if (hasStatus(counts, BuildJobQueue.PAUSED)) return "pauzirano";
-        if (total > 0 && done >= total) return "procitano";
         return "radi";
     }
 

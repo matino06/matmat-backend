@@ -36,13 +36,24 @@ public class BuildJobQueue {
         this.jdbc = jdbc;
     }
 
-    public long enqueue(long courseId, long accountId, String kind, String ref, int priority,
+    // Dodaje korak ako isti (predmet, vrsta, ref) već ne postoji; vraća njegov id ili null ako je već dodan.
+    public Long enqueue(long courseId, long accountId, String kind, String ref, int priority,
                         boolean countsQuota, String input) {
-        return jdbc.queryForObject("""
+        List<Long> ids = jdbc.queryForList("""
                 INSERT INTO build_job (course_id, account_id, kind, ref, priority, counts_quota, input)
-                VALUES (:c, :a, :k, :r, :p, :q, :i) RETURNING job_id""",
+                VALUES (:c, :a, :k, :r, :p, :q, :i)
+                ON CONFLICT (course_id, kind, ref) DO NOTHING RETURNING job_id""",
                 new MapSqlParameterSource(Map.of("c", courseId, "a", accountId, "k", kind, "p", priority, "q", countsQuota))
                         .addValue("r", ref).addValue("i", input), Long.class);
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    // Koliko koraka zadanih vrsta predmeta još nije gotovo (i neuspjeli se broje: faza čeka ponovni pokušaj).
+    public int notDone(long courseId, String... kinds) {
+        Integer n = jdbc.queryForObject("""
+                SELECT count(*) FROM build_job WHERE course_id = :c AND kind IN (:k) AND status <> 'done'""",
+                new MapSqlParameterSource("c", courseId).addValue("k", List.of(kinds)), Integer.class);
+        return n == null ? 0 : n;
     }
 
     // Uzima sljedeći posao: prvo one koje netko čeka (prioritet 0), pa redom kako su nastali.
