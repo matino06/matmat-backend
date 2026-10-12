@@ -104,4 +104,22 @@ class AiChatServiceTest {
         assertFalse(prompt.contains("RAZINA:"));
         assertFalse(prompt.contains("OTVORIO RJEŠENJE"));
     }
+
+    @Test
+    void ownCourseUsesTheCreatorsLevelAndName() {
+        com.example.EduSprint.entity.Course own = new com.example.EduSprint.entity.Course("Kemija A razina test", null);
+        own.setOwnerAccountId(7L);
+        own.setLevel("os78");
+        assertEquals("7.–8. razred osnovne škole", AiChatService.courseLevel(own));
+        own.setLevel("ss");
+        assertEquals("srednja škola", AiChatService.courseLevel(own));
+
+        com.example.EduSprint.entity.Course official = new com.example.EduSprint.entity.Course("Matematika A razina", null);
+        assertEquals("viša (A)", AiChatService.courseLevel(official));
+        assertNull(AiChatService.courseLevel(null));
+
+        String prompt = AiChatService.buildSystemPrompt("BASE", null, null, null, List.of(), false, null, "Kemija — kiseline");
+        assertTrue(prompt.contains("gradiva predmeta „Kemija — kiseline“"));
+        assertFalse(prompt.contains("mature"));
+    }
 }

@@ -7,6 +7,7 @@ import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.AiConversation;
 import com.example.EduSprint.entity.AiMessage;
 import com.example.EduSprint.entity.AiPrompt;
+import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.ExplanationStep;
 import com.example.EduSprint.entity.MockExamAttempt;
 import com.example.EduSprint.entity.MockExamQuestion;
@@ -202,11 +203,14 @@ public class AiChatService {
         // Kod probne mature razina ovisi o ispitu, a ne o tečaju koji učenik trenutno ima.
         // Vrsta razgovora vrijedi i za iduća pitanja, koja više nemaju citat s mature.
         boolean exam = conversation.isExam();
-        String level = exam ? null : examLevel(account.getCurrentCourse() != null ? account.getCurrentCourse().getCourseName() : null);
+        Course course = account.getCurrentCourse();
+        String level = exam ? null : courseLevel(course);
+        // Vlastiti predmet nije matura, pa chat bez zadatka govori o gradivu tog predmeta.
+        String ownCourseName = course != null && course.getOwnerAccountId() != null ? course.getCourseName() : null;
         String systemPrompt = buildSystemPrompt(
                 basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT,
                 subjectPrompt != null ? subjectPrompt.getContent() : null,
-                level, task, steps, exam, req.solutionRevealed());
+                level, task, steps, exam, req.solutionRevealed(), ownCourseName);
 
         // Slike: one koje je učenik označio + one iz zadatka.
         // Iz citata su dopušteni i data: URI-ji (npr. fotografija rukom pisanog odgovora s probne mature).
@@ -333,9 +337,26 @@ public class AiChatService {
         return "A".equals(m.group(1)) ? "viša (A)" : "osnovna (B)";
     }
 
-    /** Nazivi dijelova konteksta navedeni su u base promptu u bazi; mijenjaju se zajedno. */
+    /** Razina za prompt: kod vlastitog predmeta ona koju je kreator odabrao, inače razina mature iz naziva. */
+    static String courseLevel(Course course) {
+        if (course == null) return null;
+        if (course.getOwnerAccountId() != null) {
+            if ("os78".equals(course.getLevel())) return "7.–8. razred osnovne škole";
+            if ("ss".equals(course.getLevel())) return "srednja škola";
+            return null;
+        }
+        return examLevel(course.getCourseName());
+    }
+
     static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
                                     List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed) {
+        return buildSystemPrompt(basePrompt, subjectPrompt, level, task, steps, exam, solutionRevealed, null);
+    }
+
+    /** Nazivi dijelova konteksta navedeni su u base promptu u bazi; mijenjaju se zajedno. */
+    static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
+                                    List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed,
+                                    String ownCourseName) {
         StringBuilder sb = new StringBuilder(basePrompt);
         if (subjectPrompt != null) {
             sb.append("\n\n").append(subjectPrompt);
@@ -364,6 +385,9 @@ public class AiChatService {
         } else if (exam) {
             sb.append("\n\nUčenik pita o pitanju s probne državne mature koju je već riješio i koja je ocijenjena. ")
               .append("U njegovoj poruci je pitanje, njegov odgovor, službeno rješenje i komentar ocjenjivača.");
+        } else if (ownCourseName != null) {
+            sb.append("\n\nUčenik trenutno ne rješava konkretan zadatak — odgovaraj na općenita pitanja iz gradiva predmeta „")
+              .append(ownCourseName).append("“.");
         } else {
             sb.append("\n\nUčenik trenutno ne rješava konkretan zadatak — odgovaraj na općenita pitanja iz gradiva mature.");
         }
