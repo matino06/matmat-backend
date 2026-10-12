@@ -2,6 +2,7 @@ package com.example.EduSprint.service;
 
 import com.example.EduSprint.dto.OwnCourseCreateDTO;
 import com.example.EduSprint.dto.OwnCourseDTO;
+import com.example.EduSprint.dto.QuotaUsageDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.CourseRepository;
@@ -28,10 +29,33 @@ public class OwnCourseService {
 
     private final CourseRepository courseRepository;
     private final NamedParameterJdbcTemplate jdbc;
+    private final BuildQuotaService quota;
+    private final BuildJobQueue queue;
 
-    public OwnCourseService(CourseRepository courseRepository, NamedParameterJdbcTemplate jdbc) {
+    public OwnCourseService(CourseRepository courseRepository, NamedParameterJdbcTemplate jdbc,
+                            BuildQuotaService quota, BuildJobQueue queue) {
         this.courseRepository = courseRepository;
         this.jdbc = jdbc;
+        this.quota = quota;
+        this.queue = queue;
+    }
+
+    public QuotaUsageDTO quota(Account account) {
+        requireCreator(account);
+        return quota.usage(account);
+    }
+
+    // „Pokušaj ponovno“: neuspjeli koraci izrade predmeta kreću ispočetka.
+    public void retryFailed(Account account, Long courseId) {
+        requireCreator(account);
+        ownCourse(account, courseId);
+        queue.retryFailed(courseId);
+    }
+
+    private Course ownCourse(Account account, Long courseId) {
+        return courseRepository.findCourseByCourseId(courseId)
+                .filter(c -> c.isOwnedBy(account.getAccountId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     public List<OwnCourseDTO> list(Account account) {
@@ -60,9 +84,7 @@ public class OwnCourseService {
     @Transactional
     public void delete(Account account, Long courseId, String confirmName) {
         requireCreator(account);
-        Course course = courseRepository.findCourseByCourseId(courseId)
-                .filter(c -> c.isOwnedBy(account.getAccountId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Course course = ownCourse(account, courseId);
         if (!confirmMatches(course.getCourseName(), confirmName)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Naziv predmeta nije točno prepisan.");
         }
@@ -99,6 +121,8 @@ public class OwnCourseService {
         jdbc.update("DELETE FROM course_field_weight WHERE course_id = :c", c);
         update("DELETE FROM field_of_study WHERE field_id IN (:ids)", fields);
         jdbc.update("DELETE FROM user_course_goal WHERE course_id = :c", c);
+        // Trošak (build_cost) ostaje: brisanje predmeta ne vraća potrošenu kvotu.
+        jdbc.update("DELETE FROM build_job WHERE course_id = :c", c);
         jdbc.update("DELETE FROM course WHERE course_id = :c", c);
     }
 

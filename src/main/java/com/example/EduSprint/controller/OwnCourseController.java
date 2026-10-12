@@ -3,6 +3,7 @@ package com.example.EduSprint.controller;
 import com.example.EduSprint.dto.OwnCourseCreateDTO;
 import com.example.EduSprint.dto.OwnCourseDTO;
 import com.example.EduSprint.dto.OwnCourseDeleteDTO;
+import com.example.EduSprint.dto.QuotaUsageDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
@@ -35,6 +36,17 @@ public class OwnCourseController {
     @GetMapping
     public List<OwnCourseDTO> list(Authentication authentication) {
         return ownCourseService.list(account(authentication));
+    }
+
+    @GetMapping("/quota")
+    public QuotaUsageDTO quota(Authentication authentication) {
+        return ownCourseService.quota(account(authentication));
+    }
+
+    @PostMapping("/{courseId}/retry")
+    public ResponseEntity<Void> retry(Authentication authentication, @PathVariable Long courseId) {
+        ownCourseService.retryFailed(account(authentication), courseId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping

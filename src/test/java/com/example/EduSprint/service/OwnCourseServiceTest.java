@@ -23,7 +23,8 @@ class OwnCourseServiceTest {
 
     private final CourseRepository courses = mock(CourseRepository.class);
     private final NamedParameterJdbcTemplate jdbc = mock(NamedParameterJdbcTemplate.class);
-    private final OwnCourseService service = new OwnCourseService(courses, jdbc);
+    private final OwnCourseService service = new OwnCourseService(courses, jdbc,
+            mock(BuildQuotaService.class), mock(BuildJobQueue.class));
 
     private static Account account(long id, boolean creator) {
         Account a = new Account("a" + id + "@x.hr", "A", null);

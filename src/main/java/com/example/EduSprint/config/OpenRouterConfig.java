@@ -20,4 +20,11 @@ public class OpenRouterConfig {
                                                  @Value("${openrouter.api-base-url}") String baseUrl) {
         return new OpenRouterClient(apiKey, baseUrl);
     }
+
+    // Zaseban ključ za izradu vlastitih predmeta, s mjesečnim limitom na OpenRouteru (globalna kočnica).
+    @Bean(name = "ownCoursesOpenRouterClient")
+    public OpenRouterClient ownCoursesOpenRouterClient(@Value("${own-courses.openrouter.api-key}") String apiKey,
+                                                       @Value("${openrouter.api-base-url}") String baseUrl) {
+        return new OpenRouterClient(apiKey, baseUrl);
+    }
 }
