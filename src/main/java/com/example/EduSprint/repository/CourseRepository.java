@@ -14,6 +14,13 @@ import java.util.Optional;
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Optional<Course> findCourseByCourseId(Long id);
 
+    List<Course> findByOwnerAccountIdOrderByCourseIdDesc(Long ownerAccountId);
+
+    boolean existsByOwnerAccountIdAndCourseNameIgnoreCase(Long ownerAccountId, String courseName);
+
+    // Službeni predmet na koji se vraća račun kojemu je obrisan trenutni vlastiti predmet.
+    Optional<Course> findFirstByOwnerAccountIdIsNullOrderByCourseIdAsc();
+
     // Admin overview: every course with how many objectives (and tasks within those objectives) it holds.
     @Query(value = """
                 SELECT c.course_id,

@@ -14,7 +14,7 @@ public class SubfieldOfStudy {
     @JoinColumn(name = "field_id", nullable = false)
     private FieldOfStudy field;
 
-    @Column(name = "subfield_name", unique = true, nullable = false)
+    @Column(name = "subfield_name", nullable = false)
     private String subfieldName;
 
     public SubfieldOfStudy() {

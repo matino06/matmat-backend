@@ -10,7 +10,7 @@ public class FieldOfStudy {
     @Column(name = "field_id", unique = true, nullable = false)
     private Long fieldId;
 
-    @Column(name = "field_name", unique = true, nullable = false)
+    @Column(name = "field_name", nullable = false)
     private String fieldName;
 
     public Long getId() {

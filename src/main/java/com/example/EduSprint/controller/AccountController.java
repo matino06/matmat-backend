@@ -64,6 +64,13 @@ public class AccountController {
         return new ResponseEntity<>(account.getIsAdmin(), HttpStatus.OK);
     }
 
+    @GetMapping("/is-creator")
+    public ResponseEntity<Boolean> isCreator(Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+        return ResponseEntity.ok(Boolean.TRUE.equals(account.getIsCreator()));
+    }
+
     @GetMapping("/tempo")
     public ResponseEntity<Short> getTempo(Authentication authentication) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
@@ -211,6 +218,10 @@ public class AccountController {
 
         Long courseId = Long.parseLong(courseData.get("courseId").toString());
         Course course = courseService.getCourseById(courseId);
+        // Vlastiti predmet smije otvoriti samo njegov vlasnik.
+        if (course.getOwnerAccountId() != null && !course.isOwnedBy(account.getAccountId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         account.setCurrentCourse(course);
         account.setCurrentTask(null);
         accountRepository.save(account);

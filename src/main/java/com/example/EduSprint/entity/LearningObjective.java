@@ -15,7 +15,7 @@ public class LearningObjective {
     @JoinColumn(name = "subfield_id", nullable = false)
     private SubfieldOfStudy subfield;
 
-    @Column(name = "objective_name", unique = true, nullable = false)
+    @Column(name = "objective_name", nullable = false)
     private String objectiveName;
 
     public LearningObjective() {

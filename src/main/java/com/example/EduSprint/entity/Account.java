@@ -3,6 +3,7 @@ package com.example.EduSprint.entity;
 import com.example.EduSprint.config.AppTime;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +49,14 @@ public class Account {
 
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin;
+
+    // Smije izrađivati vlastite predmete; postavlja se ručno, kao is_admin.
+    @Column(name = "is_creator", nullable = false)
+    private Boolean isCreator = false;
+
+    // Mjesečna kvota izrade vlastitih predmeta, u dolarima troška OpenRoutera.
+    @Column(name = "monthly_quota_usd", nullable = false, precision = 8, scale = 2)
+    private BigDecimal monthlyQuotaUsd = BigDecimal.TEN;
 
     // One goal across all courses: tasks solved in any course count towards it.
     @Column(name = "daily_goal", nullable = false)
@@ -170,6 +179,22 @@ public class Account {
 
     public Boolean getIsAdmin() {
         return isAdmin;
+    }
+
+    public Boolean getIsCreator() {
+        return isCreator;
+    }
+
+    public void setIsCreator(Boolean isCreator) {
+        this.isCreator = isCreator;
+    }
+
+    public BigDecimal getMonthlyQuotaUsd() {
+        return monthlyQuotaUsd;
+    }
+
+    public void setMonthlyQuotaUsd(BigDecimal monthlyQuotaUsd) {
+        this.monthlyQuotaUsd = monthlyQuotaUsd;
     }
 
     public void setIsAdmin(Boolean isAdmin) {
