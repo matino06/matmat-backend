@@ -121,7 +121,7 @@ public class EmailService {
                     int napredak = learningObjectiveService.calculateExamProgress(account);
 
                     if (daysSince >= 15) {
-                        int[] streaks = solvedTaskService.calculateStreaks(account.getAccountId(), account.getCurrentCourse().getCourseId());
+                        int[] streaks = solvedTaskService.calculateStreaks(account);
                         sendLongPauseEmail(account, (int) daysSince, napredak, streaks[1]);
                     } else {
                         sendShortPauseEmail(account, (int) daysSince, napredak);
@@ -425,7 +425,7 @@ public class EmailService {
     public void sendReminderEmail(Account account) {
         Resend resend = new Resend(RESEND_API_KEY);
 
-        int[] streaks = solvedTaskService.calculateStreaks(account.getAccountId(), account.getCurrentCourse().getCourseId());
+        int[] streaks = solvedTaskService.calculateStreaks(account);
 
         int currentStreak = streaks[0];
         int longestStreak = streaks[1];

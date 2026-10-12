@@ -3,11 +3,9 @@ package com.example.EduSprint.controller;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.dto.UserGoalDTO;
 import com.example.EduSprint.entity.Account;
-import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.SolvedTaskService;
-import com.example.EduSprint.service.UserDailyTasksService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,39 +21,41 @@ public class UserGoalController {
 
     public final SolvedTaskService solvedTaskService;
     public final AccountService accountService;
-    public final UserDailyTasksService userDailyTasksService;
 
-    public UserGoalController(SolvedTaskService solvedTaskService, AccountService accountService, UserDailyTasksService userDailyTasksService) {
+    public UserGoalController(SolvedTaskService solvedTaskService, AccountService accountService) {
         this.solvedTaskService = solvedTaskService;
         this.accountService = accountService;
-        this.userDailyTasksService = userDailyTasksService;
     }
 
+    // Goal, streak and calendar for the whole account; tasks from every course count.
     @GetMapping
     public ResponseEntity<UserGoalDTO> getUserGoalData(Authentication authentication) {
         AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
 
         Account account = accountService.getAccount(authPrincipal.getEmail());
         Long accountId = account.getAccountId();
-        Course course = account.getCurrentCourse();
+        int dailyGoal = account.getDailyGoal();
 
-        LocalDate accountRegistrationDate = account.getRegistrationDate();
-        List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, course.getCourseId());
+        List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, dailyGoal);
+        int[] streaks = solvedTaskService.calculateStreaks(calendar);
 
-        int dailyGoal = account.getCourseGoals().stream()
-                .filter(goal -> goal.getCourse().equals(course))
+        LocalDate today = LocalDate.now();
+        int todayCompleted = calendar.stream()
+                .filter(day -> day.getDate().equals(today))
                 .findFirst()
-                .get()
-                .getDailyGoal();
+                .map(DailyGoalDTO::getCompleted)
+                .orElse(0);
 
-        int dailyTasksForToday = userDailyTasksService.getDailyTasksForToday(accountId, course.getCourseId());
-
-        int todayGoal = dailyGoal;
-        if (dailyTasksForToday > -1 && dailyTasksForToday < dailyGoal) {
-            todayGoal = dailyTasksForToday;
-        }
-
-        UserGoalDTO userGoalDTO = new UserGoalDTO(dailyGoal, todayGoal, accountRegistrationDate, calendar);
+        UserGoalDTO userGoalDTO = new UserGoalDTO(
+                dailyGoal,
+                solvedTaskService.getTodayGoal(accountId, dailyGoal),
+                todayCompleted,
+                streaks[0],
+                streaks[1],
+                SolvedTaskService.STREAK_MIN_TASKS,
+                account.getRegistrationDate(),
+                calendar
+        );
         return ResponseEntity.ok(userGoalDTO);
     }
 }

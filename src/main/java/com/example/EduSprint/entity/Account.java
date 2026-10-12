@@ -9,6 +9,8 @@ import java.util.List;
 @Entity
 public class Account {
 
+    public static final int DEFAULT_DAILY_GOAL = 3;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "account_id", unique = true, nullable = false)
@@ -46,6 +48,10 @@ public class Account {
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin;
 
+    // One goal across all courses: tasks solved in any course count towards it.
+    @Column(name = "daily_goal", nullable = false)
+    private Integer dailyGoal;
+
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserCourseGoal> courseGoals;
 
@@ -63,6 +69,7 @@ public class Account {
         this.featureAnnouncementsEnabled = null;
         this.tempo = 2;
         this.isAdmin = false;
+        this.dailyGoal = DEFAULT_DAILY_GOAL;
     }
 
     public Account() {
@@ -166,6 +173,14 @@ public class Account {
 
     public void setIsAdmin(Boolean isAdmin) {
         this.isAdmin = isAdmin;
+    }
+
+    public Integer getDailyGoal() {
+        return dailyGoal;
+    }
+
+    public void setDailyGoal(Integer dailyGoal) {
+        this.dailyGoal = dailyGoal;
     }
 
     @Override

@@ -22,6 +22,9 @@ import java.util.Map;
 @RequestMapping("/account")
 public class AccountController {
 
+    private static final int MIN_DAILY_GOAL = 1;
+    private static final int MAX_DAILY_GOAL = 10;
+
     public final AccountRepository accountRepository;
     public final AccountObjectiveService accountObjectiveService;
     public final AccountService accountService;
@@ -84,6 +87,26 @@ public class AccountController {
         } catch (Exception e) {
             return new ResponseEntity<>("Unexpected error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/daily-goal")
+    public ResponseEntity<Integer> getDailyGoal(Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+
+        return new ResponseEntity<>(account.getDailyGoal(), HttpStatus.OK);
+    }
+
+    @PostMapping("/daily-goal")
+    public ResponseEntity<?> setDailyGoal(Authentication authentication, @RequestBody Integer dailyGoal) {
+        if (dailyGoal == null || dailyGoal < MIN_DAILY_GOAL || dailyGoal > MAX_DAILY_GOAL) {
+            return new ResponseEntity<>("Daily goal must be between " + MIN_DAILY_GOAL + " and " + MAX_DAILY_GOAL, HttpStatus.BAD_REQUEST);
+        }
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+        account.setDailyGoal(dailyGoal);
+        accountRepository.save(account);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/goals")
