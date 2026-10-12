@@ -56,6 +56,12 @@
 			<artifactId>aws-java-sdk-s3</artifactId>
 			<version>1.12.118</version> <!-- Provjeri najnoviju verziju na Maven Central -->
 		</dependency>
+		<!-- Vlastiti predmeti: render stranica PDF-a u sliku i tekstni sloj za čitanje materijala -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.5</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>

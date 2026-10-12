@@ -6,6 +6,7 @@ import com.example.EduSprint.dto.QuotaUsageDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.CourseRepository;
+import com.example.EduSprint.storage.MaterialStorage;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -31,13 +32,31 @@ public class OwnCourseService {
     private final NamedParameterJdbcTemplate jdbc;
     private final BuildQuotaService quota;
     private final BuildJobQueue queue;
+    private final MaterialStorage storage;
 
     public OwnCourseService(CourseRepository courseRepository, NamedParameterJdbcTemplate jdbc,
-                            BuildQuotaService quota, BuildJobQueue queue) {
+                            BuildQuotaService quota, BuildJobQueue queue, MaterialStorage storage) {
         this.courseRepository = courseRepository;
         this.jdbc = jdbc;
         this.quota = quota;
         this.queue = queue;
+        this.storage = storage;
+    }
+
+    public OwnCourseDTO get(Account account, Long courseId) {
+        requireCreator(account);
+        return OwnCourseDTO.of(ownCourse(account, courseId));
+    }
+
+    // „Odustani od izrade“: nedovršeni predmet (prije pregleda plana) briše se uz jednostavnu potvrdu.
+    @Transactional
+    public void cancelBuild(Account account, Long courseId) {
+        requireCreator(account);
+        Course course = ownCourse(account, courseId);
+        if (!STATUS_NEW.equals(course.getStatus()) && !OwnCourseMaterialService.STATUS_BUILDING.equals(course.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Izrada je gotova; predmet se briše prepisivanjem naziva.");
+        }
+        deleteEverything(course);
     }
 
     public QuotaUsageDTO quota(Account account) {
@@ -88,9 +107,15 @@ public class OwnCourseService {
         if (!confirmMatches(course.getCourseName(), confirmName)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Naziv predmeta nije točno prepisan.");
         }
+        deleteEverything(course);
+    }
+
+    private void deleteEverything(Course course) {
         Long fallback = courseRepository.findFirstByOwnerAccountIdIsNullOrderByCourseIdAsc()
                 .map(Course::getCourseId).orElse(null);
-        deleteCourseData(courseId, fallback);
+        deleteCourseData(course.getCourseId(), fallback);
+        // Datoteke na S3 brišu se zadnje: ako brisanje iz baze ne uspije, ništa se ne gubi.
+        storage.deletePrefix(MaterialStorage.coursePrefix(course.getOwnerAccountId(), course.getCourseId()));
     }
 
     private void deleteCourseData(Long courseId, Long fallbackCourseId) {
@@ -123,6 +148,8 @@ public class OwnCourseService {
         jdbc.update("DELETE FROM user_course_goal WHERE course_id = :c", c);
         // Trošak (build_cost) ostaje: brisanje predmeta ne vraća potrošenu kvotu.
         jdbc.update("DELETE FROM build_job WHERE course_id = :c", c);
+        jdbc.update("DELETE FROM material_page WHERE material_id IN (SELECT material_id FROM course_material WHERE course_id = :c)", c);
+        jdbc.update("DELETE FROM course_material WHERE course_id = :c", c);
         jdbc.update("DELETE FROM course WHERE course_id = :c", c);
     }
 

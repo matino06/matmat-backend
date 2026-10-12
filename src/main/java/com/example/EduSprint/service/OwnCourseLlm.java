@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Base64;
 
 // Pozivi OpenRoutera za izradu vlastitih predmeta, preko zasebnog ključa s mjesečnim limitom.
 // Svaki poziv sprema stvarni trošak (usage.cost) uz posao, pa se iz njega računa kvota kreatora.
@@ -44,9 +45,23 @@ public class OwnCourseLlm {
     }
 
     public Result chat(BuildJob job, String model, String system, String user, Options options) {
+        return call(job, model, body(model, system, mapper.getNodeFactory().textNode(user), options));
+    }
+
+    // Poziv sa slikom (stranica materijala): tekst + slika kao data URL.
+    public Result chatWithImage(BuildJob job, String model, String system, String user, byte[] image,
+                                String mimeType, Options options) {
+        ArrayNode content = mapper.createArrayNode();
+        content.addObject().put("type", "text").put("text", user);
+        content.addObject().put("type", "image_url").putObject("image_url")
+                .put("url", "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(image));
+        return call(job, model, body(model, system, content, options));
+    }
+
+    private Result call(BuildJob job, String model, ObjectNode body) {
         JsonNode response;
         try {
-            response = client.complete(body(model, system, user, options));
+            response = client.complete(body);
         } catch (RuntimeException e) {
             if (isGlobalLimit(e.getMessage())) throw new GlobalLimitException(e.getMessage(), e);
             throw e;
@@ -60,6 +75,10 @@ public class OwnCourseLlm {
     }
 
     ObjectNode body(String model, String system, String user, Options options) {
+        return body(model, system, mapper.getNodeFactory().textNode(user), options);
+    }
+
+    ObjectNode body(String model, String system, JsonNode userContent, Options options) {
         ObjectNode body = mapper.createObjectNode();
         body.put("model", model);
         body.put("max_tokens", options.maxTokens());
@@ -75,7 +94,7 @@ public class OwnCourseLlm {
         } else {
             sys.put("content", system);
         }
-        messages.addObject().put("role", "user").put("content", user);
+        messages.addObject().put("role", "user").set("content", userContent);
         return body;
     }
 
