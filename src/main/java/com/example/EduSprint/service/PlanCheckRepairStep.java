@@ -82,6 +82,7 @@ public class PlanCheckRepairStep implements BuildStep {
 
     @Override
     public String run(BuildJob job) {
+        boolean recheck = job.input() != null && plan.readJson(job.input()).path("recheck").asBoolean(false);
         long courseId = job.courseId();
         MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
         PlanSupport.CourseInfo course = plan.course(courseId);
@@ -135,7 +136,14 @@ public class PlanCheckRepairStep implements BuildStep {
                 case NOWHERE -> warnings.add(new Warning("rupa", ids.get(lesson), null,
                         "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“, a nijedna lekcija ga ne uči.", null, false));
                 case ADD_PREREQUISITE, LATER -> {
-                    if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
+                    if (recheck) {
+                        // nakon izmjena kreatora samo javljamo: preduvjet je možda namjerno maknut
+                        warnings.add(new Warning("nulta", ids.get(lesson), ids.get(j.teacher()),
+                                j.verdict() == Verdict.LATER
+                                        ? "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“, koji se uči tek u lekciji „" + names.get(j.teacher()) + "“."
+                                        : "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“ iz lekcije „" + names.get(j.teacher()) + "“, koja mu nije preduvjet.",
+                                null, j.verdict() == Verdict.LATER));
+                    } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
                     } else if (f.get("item_id") != null && rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)) {
@@ -149,12 +157,16 @@ public class PlanCheckRepairStep implements BuildStep {
             }
         }
 
-        PlanRepair.Order order = PlanRepair.topoOrder(pre);
+        // Pri izradi se lekcije slažu ispočetka; nakon izmjena kreatora redoslijed ostaje njegov i samo se javlja.
+        PlanRepair.Order order = recheck ? currentOrder(pre) : PlanRepair.topoOrder(pre);
         for (int[] b : order.backwards()) {
             int lesson = order.order().get(b[0]), prerequisite = order.order().get(b[1]);
             warnings.add(new Warning("redoslijed", ids.get(lesson), ids.get(prerequisite),
-                    "„" + names.get(lesson) + "“ dolazi prije svog preduvjeta „" + names.get(prerequisite) + "“ (krug preduvjeta).", null, true));
+                    "„" + names.get(lesson) + "“ dolazi prije svog preduvjeta „" + names.get(prerequisite) + "“.", null, true));
         }
+        Set<String> ignored = new HashSet<>(jdbc.queryForList("""
+                SELECT kind || '|' || COALESCE(objective_id, 0) || '|' || COALESCE(prerequisite_id, 0) || '|' || text
+                FROM plan_warning WHERE course_id = :c AND ignored""", c, String.class));
         for (int i = 0; i < ids.size(); i++) {
             int n = lessonItems.getOrDefault(ids.get(i), 0);
             if (n > PlanRepair.MAX_ITEMS) {
@@ -170,7 +182,7 @@ public class PlanCheckRepairStep implements BuildStep {
         }
 
         transactions.executeWithoutResult(tx -> {
-            for (int k = 0; k < order.order().size(); k++) {
+            for (int k = 0; !recheck && k < order.order().size(); k++) {
                 jdbc.update("UPDATE course_objective SET position = :p WHERE course_id = :c AND objective_id = :o",
                         new MapSqlParameterSource("c", courseId).addValue("p", k + 1).addValue("o", ids.get(order.order().get(k))));
             }
@@ -186,17 +198,36 @@ public class PlanCheckRepairStep implements BuildStep {
             jdbc.update("DELETE FROM plan_warning WHERE course_id = :c", new MapSqlParameterSource("c", courseId));
             for (Warning w : warnings) {
                 jdbc.update("""
-                        INSERT INTO plan_warning (course_id, kind, objective_id, prerequisite_id, text, detail, serious)
-                        VALUES (:c, :k, :o, :p, :t, :d, :s)""",
+                        INSERT INTO plan_warning (course_id, kind, objective_id, prerequisite_id, text, detail, serious, ignored)
+                        VALUES (:c, :k, :o, :p, :t, :d, :s, :i)""",
                         new MapSqlParameterSource("c", courseId).addValue("k", w.kind()).addValue("o", w.objectiveId())
                                 .addValue("p", w.prerequisiteId()).addValue("t", w.text()).addValue("d", w.detail())
-                                .addValue("s", w.serious()));
+                                .addValue("s", w.serious()).addValue("i", ignored.contains(w.kind() + "|"
+                                        + (w.objectiveId() == null ? 0 : w.objectiveId()) + "|"
+                                        + (w.prerequisiteId() == null ? 0 : w.prerequisiteId()) + "|" + w.text())));
             }
-            jdbc.update("UPDATE course SET status = :s WHERE course_id = :c",
-                    new MapSqlParameterSource("c", courseId).addValue("s", PlanFinalizeStep.STATUS_DRAFT));
+            if (!recheck) {
+                jdbc.update("UPDATE course SET status = :s WHERE course_id = :c",
+                        new MapSqlParameterSource("c", courseId).addValue("s", PlanFinalizeStep.STATUS_DRAFT));
+            }
         });
-        mailer.planReady(courseId);
+        if (!recheck) mailer.planReady(courseId);
         return added + " preduvjeta dodano, " + rewritten + " stavki prepravljeno, " + warnings.size() + " upozorenja";
+    }
+
+    // Trenutni poredak bez premještanja: brid prema kasnijoj lekciji je „backwards“.
+    static PlanRepair.Order currentOrder(List<Set<Integer>> pre) {
+        List<Integer> order = new ArrayList<>();
+        List<List<Integer>> prerequisites = new ArrayList<>();
+        List<int[]> backwards = new ArrayList<>();
+        for (int i = 0; i < pre.size(); i++) {
+            order.add(i);
+            List<Integer> p = new ArrayList<>(pre.get(i));
+            Collections.sort(p);
+            prerequisites.add(p);
+            for (int q : p) if (q > i) backwards.add(new int[]{i, q});
+        }
+        return new PlanRepair.Order(order, prerequisites, backwards);
     }
 
     // Težine spremnosti po području: udio zadataka s ispita koje područje pokriva. Bez ispita ostaje udio lekcija.

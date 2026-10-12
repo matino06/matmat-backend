@@ -177,7 +177,7 @@ public class OwnCourseMaterialService {
                         pre.getOrDefault(rs.getLong(1), List.of())));
     }
 
-    public List<PlanWarningDTO> warnings(Account account, long courseId) {
+    public List<PlanWarningDTO> warningList(Account account, long courseId) {
         own(account, courseId);
         return jdbc.query("""
                 SELECT warning_id, kind, objective_id, text, detail, serious, ignored FROM plan_warning

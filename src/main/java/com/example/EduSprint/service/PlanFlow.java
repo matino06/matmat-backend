@@ -81,7 +81,36 @@ public class PlanFlow {
 
     void afterChecks(BuildJob job) {
         if (queue.notDone(job.courseId(), PlanZeroStep.KIND, PlanCoverageStep.KIND) > 0) return;
-        add(job, PlanCheckRepairStep.KIND, "provjera", null);
+        long round = round(job);
+        if (round == 0) add(job, PlanCheckRepairStep.KIND, "provjera", null);
+        else add(job, PlanCheckRepairStep.KIND, "provjera " + round, "{\"recheck\":true}");
+    }
+
+    // Ponovna provjera nakon izmjena kreatora (runda > 0): nulta pretpostavka jednom, samo za zadane lekcije,
+    // i pokrivenost svih zadataka s ispita. Popravak tada samo javlja upozorenja, ništa ne mijenja sam.
+    void recheck(long courseId, long accountId, long round, java.util.Collection<Long> objectives) {
+        MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
+        for (Long o : objectives) {
+            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " r" + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"objectiveId\":" + o + ",\"run\":1,\"round\":" + round + "}");
+        }
+        List<Long> tasks = jdbc.queryForList("SELECT exam_task_id FROM exam_task WHERE course_id = :c ORDER BY exam_task_id", c, Long.class);
+        for (int i = 0; i < tasks.size(); i += COVERAGE_BATCH) {
+            queue.enqueue(courseId, accountId, PlanCoverageStep.KIND, "pokrivenost " + (i / COVERAGE_BATCH + 1) + " r" + round,
+                    BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"taskIds\":" + tasks.subList(i, Math.min(tasks.size(), i + COVERAGE_BATCH)) + ",\"round\":" + round + "}");
+        }
+        if (objectives.isEmpty() && tasks.isEmpty()) {
+            queue.enqueue(courseId, accountId, PlanCheckRepairStep.KIND, "provjera " + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"recheck\":true}");
+        }
+    }
+
+    static long round(BuildJob job) {
+        String in = job.input();
+        if (in == null) return 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"round\":(\\d+)").matcher(in);
+        return m.find() ? Long.parseLong(m.group(1)) : 0;
     }
 
     private List<Long> outcomes(long courseId) {
@@ -90,6 +119,6 @@ public class PlanFlow {
     }
 
     private void add(BuildJob job, String kind, String ref, String input) {
-        queue.enqueue(job.courseId(), job.accountId(), kind, ref, BuildJobQueue.PRIORITY_BACKGROUND, true, input);
+        queue.enqueue(job.courseId(), job.accountId(), kind, ref, job.priority(), true, input);
     }
 }
