@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -116,5 +117,12 @@ public class OwnCourseController {
                                        @RequestBody OwnCourseDeleteDTO body) {
         ownCourseService.delete(account(authentication), courseId, body == null ? null : body.confirmName());
         return ResponseEntity.noContent().build();
+    }
+
+    // Poruke iz servisa („Datoteka može imati najviše 100 MB.“) frontend prikazuje kreatoru.
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<java.util.Map<String, String>> error(ResponseStatusException e) {
+        String message = e.getReason() == null ? "" : e.getReason();
+        return ResponseEntity.status(e.getStatusCode()).body(java.util.Map.of("message", message));
     }
 }
