@@ -114,6 +114,27 @@ public class OwnCourseController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{courseId}/instructions")
+    public java.util.Map<String, Object> instruct(Authentication a, @PathVariable Long courseId,
+                                                  @RequestBody java.util.Map<String, String> body) {
+        return java.util.Map.of("jobId", planEdit.instruct(account(a), courseId, body.get("text")));
+    }
+
+    @GetMapping("/{courseId}/instructions/{jobId}")
+    public java.util.Map<String, Object> instruction(Authentication a, @PathVariable Long courseId, @PathVariable Long jobId) {
+        return planEdit.instruction(account(a), courseId, jobId);
+    }
+
+    @PostMapping("/{courseId}/instructions/{jobId}/accept")
+    public java.util.Map<String, Object> accept(Authentication a, @PathVariable Long courseId, @PathVariable Long jobId) {
+        return java.util.Map.of("changed", planEdit.accept(account(a), courseId, jobId));
+    }
+
+    @PostMapping("/{courseId}/warnings/{warningId}/add-lesson")
+    public java.util.Map<String, Object> addLessonForWarning(Authentication a, @PathVariable Long courseId, @PathVariable Long warningId) {
+        return java.util.Map.of("jobId", planEdit.instructForWarning(account(a), courseId, warningId));
+    }
+
     @PostMapping("/{courseId}/recheck")
     public ResponseEntity<Void> recheck(Authentication a, @PathVariable Long courseId,
                                         @RequestBody java.util.Map<String, java.util.List<Long>> body) {

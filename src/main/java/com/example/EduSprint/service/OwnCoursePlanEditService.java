@@ -62,6 +62,12 @@ public class OwnCoursePlanEditService {
         int p = lessonPosition(courseId, objectiveId);
         Long next = objectiveAt(courseId, p + 1);
         if (next == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nema sljedeće lekcije.");
+        merge(courseId, objectiveId, next);
+    }
+
+    // Lekcija b se spaja u lekciju a (bilo gdje u planu).
+    private void merge(long courseId, long objectiveId, long next) {
+        lessonPosition(courseId, next);
         MapSqlParameterSource m = new MapSqlParameterSource("a", objectiveId).addValue("b", next);
         jdbc.update("""
                 UPDATE learning_objective a SET objective_name = a.objective_name || ' + ' || b.objective_name,
@@ -126,6 +132,135 @@ public class OwnCoursePlanEditService {
         lessonPosition(courseId, objectiveId);
         jdbc.update("DELETE FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p",
                 new MapSqlParameterSource("o", objectiveId).addValue("p", prerequisiteId));
+    }
+
+    // Premješta lekciju iza zadane (ili na početak plana).
+    private void moveAfter(long courseId, long objectiveId, Long afterObjectiveId) {
+        int p = lessonPosition(courseId, objectiveId);
+        MapSqlParameterSource c = new MapSqlParameterSource("c", courseId).addValue("o", objectiveId).addValue("p", p);
+        jdbc.update("UPDATE course_objective SET position = 0 WHERE course_id = :c AND objective_id = :o", c);
+        jdbc.update("UPDATE course_objective SET position = position - 1 WHERE course_id = :c AND position > :p", c);
+        int target = afterObjectiveId == null ? 1 : lessonPosition(courseId, afterObjectiveId) + 1;
+        jdbc.update("UPDATE course_objective SET position = position + 1 WHERE course_id = :c AND position >= :t AND objective_id <> :o",
+                c.addValue("t", target));
+        setPosition(courseId, objectiveId, target);
+    }
+
+    // --- AI uputa ---
+
+    // Uputa ide u red poslova (model plana); kreator prijedlog dobiva pollanjem i tek ga prihvaćanjem primjenjuje.
+    public long instruct(Account account, long courseId, String text) {
+        draft(account, courseId);
+        String t = text == null ? "" : text.strip();
+        if (t.isEmpty() || t.length() > 1000) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uputa mora imati od 1 do 1000 znakova.");
+        Long id = queue.enqueue(courseId, account.getAccountId(), PlanInstructionStep.KIND, "uputa " + System.nanoTime(),
+                BuildJobQueue.PRIORITY_WAITED_ON, true, toJson(Map.of("text", t)));
+        if (id == null) throw new ResponseStatusException(HttpStatus.CONFLICT);
+        return id;
+    }
+
+    // „Dodaj lekciju“ uz nepokriven zadatak s ispita: uputa koju frontend nakon prijedloga odmah prihvati.
+    public long instructForWarning(Account account, long courseId, long warningId) {
+        own(account, courseId);
+        List<Map<String, Object>> w = jdbc.queryForList(
+                "SELECT text, detail FROM plan_warning WHERE warning_id = :w AND course_id = :c AND kind = 'ispit'",
+                new MapSqlParameterSource("w", warningId).addValue("c", courseId));
+        if (w.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return instruct(account, courseId, "Dodaj JEDNU lekciju koja uči ono što nedostaje za ovaj zadatak, na pravo mjesto u planu "
+                + "(iza lekcija koje koristi). Ništa drugo ne mijenjaj. " + w.get(0).get("text")
+                + (w.get(0).get("detail") == null ? "" : " Nedostaje: " + w.get(0).get("detail")));
+    }
+
+    public Map<String, Object> instruction(Account account, long courseId, long jobId) {
+        own(account, courseId);
+        Map<String, Object> job = instructionJob(courseId, jobId);
+        Map<String, Object> out = new HashMap<>();
+        out.put("status", job.get("status"));
+        out.put("error", job.get("error"));
+        out.put("proposal", job.get("output") == null ? null : fromJson((String) job.get("output")));
+        return out;
+    }
+
+    // Primjenjuje prijedlog (samo jednom); vraća lekcije koje treba ponovno provjeriti.
+    @Transactional
+    public List<Long> accept(Account account, long courseId, long jobId) {
+        draft(account, courseId);
+        Map<String, Object> job = instructionJob(courseId, jobId);
+        if (!BuildJobQueue.DONE.equals(job.get("status")) || job.get("output") == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Prijedlog još nije gotov.");
+        }
+        Map<String, Object> proposal = fromJson((String) job.get("output"));
+        if (Boolean.TRUE.equals(proposal.get("primijenjeno"))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Prijedlog je već primijenjen.");
+        }
+        List<Long> changed = new ArrayList<>();
+        Set<Long> present = new HashSet<>(jdbc.queryForList("SELECT objective_id FROM course_objective WHERE course_id = :c",
+                new MapSqlParameterSource("c", courseId), Long.class));
+        for (Object o : (List<?>) proposal.getOrDefault("operacije", List.of())) {
+            Map<?, ?> op = (Map<?, ?>) o;
+            Long a = num(op.get("a")), b = num(op.get("b")), id = num(op.get("id")), after = num(op.get("iza"));
+            switch (String.valueOf(op.get("op"))) {
+                case "spoji" -> { if (present.contains(a) && present.contains(b)) { merge(courseId, a, b); present.remove(b); changed.add(a); } }
+                case "preimenuj" -> { if (present.contains(id)) { jdbc.update("UPDATE learning_objective SET objective_name = :n WHERE objective_id = :o",
+                        new MapSqlParameterSource("o", id).addValue("n", validName(String.valueOf(op.get("naziv"))))); changed.add(id); } }
+                case "obrisi" -> { if (present.contains(id)) {
+                    changed.addAll(jdbc.queryForList("SELECT objective_id FROM objective_prerequisite WHERE prerequisite_id = :o",
+                            new MapSqlParameterSource("o", id), Long.class));
+                    jdbc.update("DELETE FROM knowledge_item WHERE objective_id = :o", new MapSqlParameterSource("o", id));
+                    removeLesson(courseId, id); present.remove(id); } }
+                case "dodaj" -> {
+                    int position = after != null && present.contains(after) ? lessonPosition(courseId, after) + 1 : 1;
+                    long subfield = after != null && present.contains(after)
+                            ? jdbc.queryForObject("SELECT subfield_id FROM learning_objective WHERE objective_id = :o",
+                                    new MapSqlParameterSource("o", after), Long.class)
+                            : prerequisiteUnit(courseId);
+                    present.add(insertLesson(account, courseId, subfield, position, validName(String.valueOf(op.get("naziv")))));
+                }
+                case "premjesti" -> { if (present.contains(id) && (after == null || present.contains(after))) { moveAfter(courseId, id, after); changed.add(id); } }
+                default -> { }
+            }
+        }
+        proposal.put("primijenjeno", true);
+        jdbc.update("UPDATE build_job SET output = :o WHERE job_id = :j",
+                new MapSqlParameterSource("j", jobId).addValue("o", toJson(proposal)));
+        changed.removeIf(x -> !present.contains(x));
+        return changed;
+    }
+
+    private Map<String, Object> instructionJob(long courseId, long jobId) {
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT status, output, error FROM build_job WHERE job_id = :j AND course_id = :c AND kind = :k",
+                new MapSqlParameterSource("j", jobId).addValue("c", courseId).addValue("k", PlanInstructionStep.KIND));
+        if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return rows.get(0);
+    }
+
+    private static Long num(Object o) {
+        if (o == null) return null;
+        try {
+            return Long.valueOf(o.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    private String toJson(Object o) {
+        try {
+            return mapper.writeValueAsString(o);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fromJson(String s) {
+        try {
+            return mapper.readValue(s, Map.class);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // --- pretpostavljeno predznanje ---

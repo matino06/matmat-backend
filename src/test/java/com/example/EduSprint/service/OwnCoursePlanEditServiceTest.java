@@ -88,4 +88,32 @@ class OwnCoursePlanEditServiceTest {
         assertEquals(1, order.backwards().size());
         assertArrayEquals(new int[]{0, 2}, order.backwards().get(0));
     }
+
+    private void instructionJob(String status, String output) {
+        Map<String, Object> job = new HashMap<>();
+        job.put("status", status);
+        job.put("output", output);
+        when(jdbc.queryForList(contains("FROM build_job WHERE job_id"), any(SqlParameterSource.class))).thenReturn(List.of(job));
+        when(jdbc.queryForList(contains("SELECT objective_id FROM course_objective"), any(SqlParameterSource.class), eq(Long.class)))
+                .thenReturn(List.of(11L, 12L, 13L));
+    }
+
+    @Test
+    void unfinishedOrAppliedProposalCannotBeAccepted() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        instructionJob(BuildJobQueue.RUNNING, null);
+        assertEquals(HttpStatus.CONFLICT, status(() -> service.accept(creator, 5, 70)));
+        instructionJob(BuildJobQueue.DONE, "{\"poruka\":\"\",\"operacije\":[],\"primijenjeno\":true}");
+        assertEquals(HttpStatus.CONFLICT, status(() -> service.accept(creator, 5, 70)));
+    }
+
+    @Test
+    void acceptedProposalSkipsOperationsOnLessonsItAlreadyDeleted() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        instructionJob(BuildJobQueue.DONE, """
+                {"poruka":"","operacije":[{"op":"obrisi","id":12},{"op":"preimenuj","id":12,"naziv":"X"},{"op":"preimenuj","id":11,"naziv":"Kosina"}]}""");
+        assertEquals(List.of(11L), service.accept(creator, 5, 70));
+        verify(jdbc, times(1)).update(contains("UPDATE learning_objective SET objective_name"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("UPDATE build_job SET output"), any(SqlParameterSource.class));
+    }
 }
