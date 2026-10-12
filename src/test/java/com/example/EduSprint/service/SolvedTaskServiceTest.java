@@ -115,6 +115,19 @@ class SolvedTaskServiceTest {
     }
 
     @Test
+    void streakEndingOnADayCountsBackFromThatDay() {
+        solved(TODAY.minusDays(6), 1L, "Matematika", 1);
+        solved(TODAY.minusDays(4), 1L, "Matematika", 1);
+        solved(TODAY.minusDays(3), 2L, "Fizika", 1);
+        solved(TODAY.minusDays(2), 1L, "Matematika", 1);
+
+        List<DailyGoalDTO> days = calendar(3);
+
+        assertEquals(3, service.streakEndingOn(days, TODAY.minusDays(2)));
+        assertEquals(0, service.streakEndingOn(days, TODAY.minusDays(1)));
+    }
+
+    @Test
     void goalIsLoweredWhenFewerTasksAreDue() {
         solved(TODAY, 1L, "Matematika", 2);
         available(TODAY, 2);

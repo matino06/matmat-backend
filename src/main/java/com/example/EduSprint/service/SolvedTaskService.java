@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -74,8 +75,22 @@ public class SolvedTaskService {
                 ));
     }
 
-    public java.sql.Timestamp getMaxEndTime(Long accountId) {
-        return solvedTaskRepository.findMaxEndTimeByAccountId(accountId);
+    // Day of the last solved task (Zagreb time) per account; accounts that never solved one are missing.
+    public Map<Long, LocalDate> getLastActivityDatePerAccount() {
+        return toDatePerKey(solvedTaskRepository.findLastEndTimePerAccount());
+    }
+
+    // Day of the last solved task (Zagreb time) per course name of one account.
+    public Map<String, LocalDate> getLastActivityDatePerCourse(Long accountId) {
+        return toDatePerKey(solvedTaskRepository.findLastEndTimePerCourse(accountId));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K> Map<K, LocalDate> toDatePerKey(List<Object[]> rows) {
+        return rows.stream().collect(Collectors.toMap(
+                r -> (K) r[0],
+                r -> AppTime.dateOf((Instant) r[1])
+        ));
     }
 
     public int[] calculateStreaks(Account account) {
@@ -117,27 +132,27 @@ public class SolvedTaskService {
         }
 
         // ===== CURRENT STREAK =====
-        int current = 0;
-        cursor = today;
-
-        DailyGoalDTO todayDTO = dayMap.get(today);
-        if (todayDTO == null || !todayDTO.isStreakDay()) {
-            cursor = cursor.minusDays(1);
-        }
-
-        while (!cursor.isBefore(startDate)) {
-
-            DailyGoalDTO day = dayMap.get(cursor);
-
-            if (day != null && day.isStreakDay()) {
-                current++;
-            } else {
-                break;
-            }
-
-            cursor = cursor.minusDays(1);
+        // Today does not break the streak until it is over
+        int current = streakEndingOn(calendar, today);
+        if (current == 0) {
+            current = streakEndingOn(calendar, today.minusDays(1));
         }
 
         return new int[]{current, longest};
+    }
+
+    // Length of the streak that ends on the given day (0 if that day is not a streak day).
+    public int streakEndingOn(List<DailyGoalDTO> calendar, LocalDate day) {
+        Set<LocalDate> streakDays = calendar.stream()
+                .filter(DailyGoalDTO::isStreakDay)
+                .map(DailyGoalDTO::getDate)
+                .collect(Collectors.toSet());
+
+        int length = 0;
+        while (streakDays.contains(day)) {
+            length++;
+            day = day.minusDays(1);
+        }
+        return length;
     }
 }

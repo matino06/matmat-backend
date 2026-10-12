@@ -8,8 +8,6 @@ import java.util.Map;
 
 @Service
 public class EmailLogService {
-    public static final String DAILY_REMINDER = "daily_reminder";
-
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public EmailLogService(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {

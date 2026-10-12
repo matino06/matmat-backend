@@ -11,8 +11,13 @@ import java.util.List;
 @Repository
 public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
 
-    @Query(value = "SELECT MAX(end_time) FROM solved_task WHERE account_id = :accountId", nativeQuery = true)
-    java.sql.Timestamp findMaxEndTimeByAccountId(@Param("accountId") Long accountId);
+    // Last solved task per account: [accountId, endTime]
+    @Query("SELECT s.account.accountId, MAX(s.endTime) FROM SolvedTask s GROUP BY s.account.accountId")
+    List<Object[]> findLastEndTimePerAccount();
+
+    // Last solved task per course of one account: [courseName, endTime]
+    @Query("SELECT c.courseName, MAX(s.endTime) FROM SolvedTask s JOIN s.course c WHERE s.account.accountId = :accountId GROUP BY c.courseId, c.courseName")
+    List<Object[]> findLastEndTimePerCourse(@Param("accountId") Long accountId);
 
     // End time and course of every solved task. Grouped into days in Java (AppTime.ZONE) so the day
     // boundary does not depend on the database time zone.

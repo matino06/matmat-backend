@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/turnstile/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/image/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
+                        // Unsubscribe link from reminder emails, signed per account
+                        .requestMatchers("/email/unsubscribe/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
