@@ -98,6 +98,67 @@ public class OwnCourseLlm {
         return body;
     }
 
+    // Embeddingi tekstova (za predfilter „preblizu zadatku s ispita“), istim redom kao ulaz.
+    public java.util.List<double[]> embed(BuildJob job, String model, java.util.List<String> texts) {
+        ObjectNode body = mapper.createObjectNode().put("model", model);
+        ArrayNode input = body.putArray("input");
+        texts.forEach(input::add);
+        JsonNode response = guarded(() -> client.post("/embeddings", body));
+        record(job, model, response);
+        java.util.List<double[]> out = new java.util.ArrayList<>();
+        for (JsonNode d : response.path("data")) {
+            double[] v = new double[d.path("embedding").size()];
+            for (int i = 0; i < v.length; i++) v[i] = d.path("embedding").get(i).asDouble();
+            out.add(v);
+        }
+        if (out.size() != texts.size()) throw new IllegalStateException("Embeddings: " + out.size() + " od " + texts.size());
+        return out;
+    }
+
+    // Model odluke (OpenRouter decisions): vjerojatnost (noul) da je odgovor na pitanje „da“.
+    public double decide(BuildJob job, String model, ObjectNode state, String question, String instructions) {
+        ObjectNode body = mapper.createObjectNode().put("model", model);
+        body.set("state", state);
+        body.putObject("questions").putObject(question).put("type", "noul").put("instructions", instructions);
+        JsonNode response = guarded(() -> client.post(client.apiUrl("alpha/decisions"), body));
+        record(job, model, response);
+        JsonNode noul = response.path("answers").path(question).path("noul");
+        if (!noul.isNumber()) throw new IllegalStateException("Odluka bez noul: " + response);
+        return noul.asDouble();
+    }
+
+    // Batch (pola cijene, do 24 h): zahtjevi su tijela chat poziva bez modela; vraća id batcha.
+    public String createBatch(String model, java.util.Map<String, ObjectNode> requests) {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("endpoint", "/v1/chat/completions");
+        body.put("model", model);
+        body.put("completion_window", "24h");
+        ArrayNode list = body.putArray("requests"); // „requests“ mora biti zadnje polje
+        requests.forEach((id, request) -> {
+            request.remove("model");
+            list.addObject().put("custom_id", id).set("body", request);
+        });
+        return guarded(() -> client.post("/batches", body)).path("id").asText();
+    }
+
+    public JsonNode getBatch(String batchId) {
+        return guarded(() -> client.get("/batches/" + batchId));
+    }
+
+    private JsonNode guarded(java.util.function.Supplier<JsonNode> call) {
+        try {
+            return call.get();
+        } catch (RuntimeException e) {
+            if (isGlobalLimit(e.getMessage())) throw new GlobalLimitException(e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    private void record(BuildJob job, String model, JsonNode response) {
+        JsonNode cost = response.path("usage").path("cost");
+        queue.recordCost(job, model, cost.isNumber() ? cost.decimalValue() : BigDecimal.ZERO);
+    }
+
     // OpenRouter vraća 403 kad je potrošen limit ključa, a 402 kad na računu nema kredita.
     static boolean isGlobalLimit(String message) {
         if (message == null) return false;

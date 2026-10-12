@@ -208,6 +208,9 @@ public class OwnCourseMaterialService {
         if (PlanFinalizeStep.STATUS_DRAFT.equals(course.getStatus())) {
             return new BuildProgressDTO(course.getStatus(), "pregled", "ceka_kreatora", done, total, 70, 0, 5);
         }
+        if (TaskVariationStep.STATUS_CONFIRMED.equals(course.getStatus()) || TaskVariationStep.STATUS_READY.equals(course.getStatus())) {
+            return tasksProgress(course, counts);
+        }
         if (PlanFinalizeStep.STATUS_TOO_BIG.equals(course.getStatus())) {
             return new BuildProgressDTO(course.getStatus(), "plan", "prevelik", done, total, 70, 0, 5);
         }
@@ -218,6 +221,30 @@ public class OwnCourseMaterialService {
             return new BuildProgressDTO(course.getStatus(), "citanje", state, done, total, percent, failed, 0);
         }
         return new BuildProgressDTO(course.getStatus(), "plan", state, done, total, 25 + 9 * planStep, failed, planStep);
+    }
+
+    // Izrada 1. varijacija: done/total su lekcije sa zadatkom; „batch“ dok OpenRouter radi ostale lekcije.
+    private BuildProgressDTO tasksProgress(Course course, Map<String, Integer> counts) {
+        MapSqlParameterSource c = new MapSqlParameterSource("c", course.getCourseId());
+        Map<String, Object> n = jdbc.queryForMap("""
+                SELECT count(*) AS total,
+                       count(*) FILTER (WHERE EXISTS (SELECT 1 FROM task t WHERE t.objective_id = co.objective_id AND t.variation = 1)) AS done
+                FROM course_objective co WHERE co.course_id = :c""", c);
+        int total = ((Number) n.get("total")).intValue();
+        int done = ((Number) n.get("done")).intValue();
+        int failed = counts.getOrDefault(TaskVariationStep.KIND + "/" + BuildJobQueue.FAILED, 0)
+                + counts.getOrDefault(VariationBatchStep.KIND + "/" + BuildJobQueue.FAILED, 0);
+        Integer openBatches = jdbc.queryForObject(
+                "SELECT count(*) FROM variation_batch WHERE course_id = :c AND status IN ('u_tijeku', 'obrada')", c, Integer.class);
+        boolean batchPending = (openBatches != null && openBatches > 0)
+                || counts.entrySet().stream().anyMatch(e -> e.getKey().startsWith(VariationBatchStep.KIND + "/")
+                && !e.getKey().endsWith("/" + BuildJobQueue.DONE) && e.getValue() > 0);
+        String state = TaskVariationStep.STATUS_READY.equals(course.getStatus()) || (total > 0 && done == total) ? "spremno"
+                : failed > 0 ? "neuspjelo"
+                : hasStatus(counts, BuildJobQueue.PAUSED) ? "pauzirano"
+                : batchPending ? "batch" : "radi";
+        int percent = total == 0 ? 100 : 70 + (int) Math.floor(30.0 * done / total);
+        return new BuildProgressDTO(course.getStatus(), "zadaci", state, done, total, percent, failed, 5);
     }
 
     // -1 dok plan nije počeo; inače prva faza plana koja još ima nedovršenih koraka.

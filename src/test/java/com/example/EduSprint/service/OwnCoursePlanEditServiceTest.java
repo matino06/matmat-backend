@@ -141,4 +141,46 @@ class OwnCoursePlanEditServiceTest {
         verify(queue).enqueue(eq(5L), eq(7L), eq(PlanApplicationStep.KIND), anyString(), anyInt(), eq(true), isNull());
         assertEquals(HttpStatus.CONFLICT, status(() -> s.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_FULL, null)));
     }
+
+    private BuildJobQueue confirmable(int lessons, int serious) {
+        Course c = new Course("Fizika", null);
+        c.setCourseId(5L);
+        c.setOwnerAccountId(7L);
+        c.setStatus(PlanFinalizeStep.STATUS_DRAFT);
+        c.setLearningMode(OwnCoursePlanEditService.MODE_FULL);
+        when(courses.findCourseByCourseId(5L)).thenReturn(Optional.of(c));
+        when(jdbc.queryForObject(contains("serious AND NOT ignored"), any(SqlParameterSource.class), eq(Integer.class))).thenReturn(serious);
+        List<Long> ids = new ArrayList<>();
+        for (long i = 1; i <= lessons; i++) ids.add(100 + i);
+        when(jdbc.queryForList(contains("SELECT objective_id FROM course_objective"), any(SqlParameterSource.class), eq(Long.class))).thenReturn(ids);
+        return mock(BuildJobQueue.class);
+    }
+
+    @Test
+    void seriousWarningsMustBeAcceptedBeforeConfirming() {
+        BuildJobQueue queue = confirmable(10, 2);
+        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow);
+        assertEquals(HttpStatus.BAD_REQUEST, status(() -> s.confirm(creator, 5, false)));
+        verify(queue, never()).enqueue(anyLong(), anyLong(), anyString(), anyString(), anyInt(), anyBoolean(), any());
+        verify(courses, never()).save(any());
+    }
+
+    @Test
+    void smallPlanQueuesFirstVariationForEveryLessonFirstFiveWaitedOn() {
+        BuildJobQueue queue = confirmable(12, 0);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        verify(queue, times(5)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), eq(BuildJobQueue.PRIORITY_WAITED_ON), eq(false), anyString());
+        verify(queue, times(7)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), eq(BuildJobQueue.PRIORITY_BACKGROUND), eq(false), anyString());
+        verify(queue, never()).enqueue(anyLong(), anyLong(), eq(VariationBatchStep.KIND), anyString(), anyInt(), anyBoolean(), any());
+        verify(courses).save(argThat(c -> TaskVariationStep.STATUS_CONFIRMED.equals(c.getStatus())));
+    }
+
+    @Test
+    void bigPlanQueuesFirstFiveAndSendsTheRestAsBatch() {
+        BuildJobQueue queue = confirmable(60, 0);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        verify(queue, times(5)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), anyInt(), eq(false), anyString());
+        verify(queue).enqueue(eq(5L), eq(7L), eq(VariationBatchStep.KIND), eq("v1"), anyInt(), eq(false),
+                argThat(in -> in.startsWith("{\"objectiveIds\":[106,") && in.endsWith("160]}")));
+    }
 }

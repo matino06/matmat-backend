@@ -266,6 +266,41 @@ public class OwnCoursePlanEditService {
         }
     }
 
+    // --- potvrda plana ---
+
+    public static final int FIRST_LESSONS_NOW = 5;
+    public static final int MAX_LESSONS_WITHOUT_BATCH = 50;
+
+    // Potvrda zaključava plan i pokreće izradu 1. varijacija (ne troše kvotu). Do 50 lekcija sve idu odmah,
+    // prvih 5 s prioritetom; iznad 50 prvih 5 odmah, a ostale kao batch.
+    @Transactional
+    public void confirm(Account account, long courseId, boolean seriousAccepted) {
+        Course course = draft(account, courseId);
+        if (course.getLearningMode() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Prvo odaberi način učenja.");
+        if (checking(courseId)) throw new ResponseStatusException(HttpStatus.CONFLICT, "Provjera plana još traje; pričekaj da završi.");
+        MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
+        Integer serious = jdbc.queryForObject(
+                "SELECT count(*) FROM plan_warning WHERE course_id = :c AND serious AND NOT ignored", c, Integer.class);
+        if (serious != null && serious > 0 && !seriousAccepted) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Označi da si pregledao ozbiljna upozorenja.");
+        }
+        List<Long> lessons = jdbc.queryForList("SELECT objective_id FROM course_objective WHERE course_id = :c ORDER BY position", c, Long.class);
+        if (lessons.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plan nema lekcija.");
+        course.setStatus(TaskVariationStep.STATUS_CONFIRMED);
+        courseRepository.save(course);
+        boolean batch = lessons.size() > MAX_LESSONS_WITHOUT_BATCH;
+        for (int i = 0; i < lessons.size(); i++) {
+            if (batch && i >= FIRST_LESSONS_NOW) break;
+            queue.enqueue(courseId, account.getAccountId(), TaskVariationStep.KIND, "v1 " + lessons.get(i),
+                    i < FIRST_LESSONS_NOW ? BuildJobQueue.PRIORITY_WAITED_ON : BuildJobQueue.PRIORITY_BACKGROUND, false,
+                    TaskVariationStep.input(lessons.get(i), 1));
+        }
+        if (batch) {
+            queue.enqueue(courseId, account.getAccountId(), VariationBatchStep.KIND, "v1", BuildJobQueue.PRIORITY_BACKGROUND, false,
+                    "{\"objectiveIds\":" + lessons.subList(FIRST_LESSONS_NOW, lessons.size()) + "}");
+        }
+    }
+
     // --- način učenja ---
 
     public static final String MODE_FULL = "ucenje_gradiva";

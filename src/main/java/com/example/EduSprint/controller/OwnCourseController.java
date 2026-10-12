@@ -114,6 +114,11 @@ public class OwnCourseController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{courseId}/confirm")
+    public void confirm(Authentication a, @PathVariable Long courseId, @RequestBody(required = false) java.util.Map<String, Boolean> body) {
+        planEdit.confirm(account(a), courseId, body != null && Boolean.TRUE.equals(body.get("seriousAccepted")));
+    }
+
     @GetMapping("/{courseId}/learning-mode")
     public java.util.Map<String, Object> learningMode(Authentication a, @PathVariable Long courseId) {
         return planEdit.learningMode(account(a), courseId);

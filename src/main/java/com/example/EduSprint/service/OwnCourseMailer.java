@@ -30,6 +30,12 @@ public class OwnCourseMailer {
                         + "pa krećemo s izradom zadataka.<br><br><a href=\"https://matmat.online/moji-predmeti/%d\">Otvori plan</a>");
     }
 
+    public void tasksReady(long courseId) {
+        send(courseId, "Zadaci za „%s“ su spremni",
+                "Svi zadaci za tvoj predmet <b>%s</b> su izrađeni. Možeš učiti cijeli plan.<br><br>"
+                        + "<a href=\"https://matmat.online/moji-predmeti/%d\">Otvori predmet</a>");
+    }
+
     private void send(long courseId, String subject, String html) {
         try {
             var row = jdbc.queryForMap("""

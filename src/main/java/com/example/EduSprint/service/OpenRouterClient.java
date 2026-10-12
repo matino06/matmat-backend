@@ -43,8 +43,10 @@ public class OpenRouterClient {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient;
+    private final String baseUrl;
 
     public OpenRouterClient(String apiKey, String baseUrl) {
+        this.baseUrl = baseUrl;
         this.webClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
@@ -63,6 +65,39 @@ public class OpenRouterClient {
             return objectMapper.readTree(response);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse AI response: " + e.getMessage(), e);
+        }
+    }
+
+    /** POST na drugi OpenRouter endpoint; path je relativan na baseUrl (npr. „/embeddings“) ili apsolutan URL. */
+    public JsonNode post(String path, ObjectNode body) {
+        return parse(webClient.post().uri(uri(path)).contentType(MediaType.APPLICATION_JSON).bodyValue(body.toString())
+                .retrieve().onStatus(HttpStatusCode::isError, this::error).bodyToMono(String.class).block());
+    }
+
+    public JsonNode get(String path) {
+        return parse(webClient.get().uri(uri(path))
+                .retrieve().onStatus(HttpStatusCode::isError, this::error).bodyToMono(String.class).block());
+    }
+
+    /** Apsolutni URL za endpoint izvan /api/v1 (npr. „alpha/decisions“ → https://openrouter.ai/api/alpha/decisions). */
+    public String apiUrl(String pathUnderApi) {
+        return baseUrl.replaceFirst("/v1/?$", "/") + pathUnderApi;
+    }
+
+    private java.net.URI uri(String path) {
+        return java.net.URI.create(path.startsWith("http") ? path : baseUrl + path);
+    }
+
+    private reactor.core.publisher.Mono<? extends Throwable> error(org.springframework.web.reactive.function.client.ClientResponse r) {
+        return r.createException().map(ex -> new RuntimeException("OpenRouter " + ex.getStatusCode().value() + ": "
+                + ex.getResponseBodyAsString(), ex));
+    }
+
+    private JsonNode parse(String response) {
+        try {
+            return objectMapper.readTree(response);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse OpenRouter response: " + e.getMessage(), e);
         }
     }
 
