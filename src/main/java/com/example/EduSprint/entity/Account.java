@@ -1,5 +1,6 @@
 package com.example.EduSprint.entity;
 
+import com.example.EduSprint.config.AppTime;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -62,7 +63,7 @@ public class Account {
     public Account(String email, String name, Course currentCourse) {
         this.email = email;
         this.name = name;
-        this.registrationDate = LocalDate.now();
+        this.registrationDate = AppTime.today();
         this.countWeakObjectives = 0;
         this.currentCourse = currentCourse;
         this.learningRemindersEnabled = null;

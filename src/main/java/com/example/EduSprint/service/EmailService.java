@@ -1,5 +1,6 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.LearningObjective;
@@ -26,11 +27,13 @@ public class EmailService {
     private final AccountService accountService;
     private final LearningObjectiveService learningObjectiveService;
     private final SolvedTaskService solvedTaskService;
+    private final EmailLogService emailLogService;
 
-    public EmailService(AccountService accountService, LearningObjectiveService learningObjectiveService, SolvedTaskService solvedTaskService) {
+    public EmailService(AccountService accountService, LearningObjectiveService learningObjectiveService, SolvedTaskService solvedTaskService, EmailLogService emailLogService) {
         this.accountService = accountService;
         this.learningObjectiveService = learningObjectiveService;
         this.solvedTaskService = solvedTaskService;
+        this.emailLogService = emailLogService;
     }
 
     public void sendWelcomeEmail(String to) {
@@ -75,8 +78,8 @@ public class EmailService {
 
     @Scheduled(cron = "0 0 18 * * *", zone = "Europe/Zagreb")
     public void sendDailyReminders() {
-        ZoneId zone = ZoneId.of("Europe/Zagreb");
-        LocalDate today = LocalDate.now(zone);
+        ZoneId zone = AppTime.ZONE;
+        LocalDate today = AppTime.today();
         LocalDate yesterday = today.minusDays(1);
 
         // Start of day (00:00) and end of day (23:59:59.999999999) in the same zone
@@ -90,9 +93,14 @@ public class EmailService {
         List<Account> accountsToRemind = accountService.getAccountForReminders(yesterdayStart, yesterdayEnd, startOfDay, endOfDay);
 
         for (Account account : accountsToRemind) {
+            // At most one reminder per account per day, even if this job runs more than once
+            if (!emailLogService.claim(account.getAccountId(), EmailLogService.DAILY_REMINDER, today)) {
+                continue;
+            }
             try {
                 sendReminderEmail(account);
             } catch (Exception e) {
+                emailLogService.release(account.getAccountId(), EmailLogService.DAILY_REMINDER, today);
                 System.err.println("Failed to send reminder to " + account.getEmail() + ": " + e.getMessage());
             }
         }
@@ -100,8 +108,8 @@ public class EmailService {
 
 //    @Scheduled(cron = "0 0 19 * * 4", zone = "Europe/Zagreb")
     public void sendWeeklyReEngagementEmails() {
-        ZoneId zone = ZoneId.of("Europe/Zagreb");
-        LocalDate today = LocalDate.now(zone);
+        ZoneId zone = AppTime.ZONE;
+        LocalDate today = AppTime.today();
 
         List<Account> accounts = accountService.getAllAccountsWithRemindersEnabled();
 

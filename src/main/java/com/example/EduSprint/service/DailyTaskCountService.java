@@ -1,10 +1,13 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.config.AppTime;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 public class DailyTaskCountService {
@@ -13,50 +16,66 @@ public class DailyTaskCountService {
     private EntityManager entityManager;
 
     /**
-     * Runs every day at 3:00 AM (server time).
-     * Counts how many tasks are due for each user (considering prerequisites and current course)
-     * and stores the count in user_daily_tasks if it is less than 10.
-     * Uses PostgreSQL's ON CONFLICT to upsert.
+     * Runs every day at 3:00 AM (Zagreb time).
+     * Counts how many objectives are due today for each account and course, with the same rules
+     * findNextLearningObjective uses to serve them (has a task, due, not blocked by a prerequisite
+     * below the account's tempo), and stores the count in user_daily_tasks when it is below 10.
+     * Courses with nothing due get a row with 0. Today's rows are replaced, so a rerun is safe.
      */
     @Transactional
     @Scheduled(cron = "0 0 3 * * *", zone = "Europe/Zagreb")
     public void updateDailyTaskCounts() {
+        LocalDate today = AppTime.today();
+
+        entityManager.createNativeQuery("DELETE FROM user_daily_tasks WHERE date = :today")
+                .setParameter("today", today)
+                .executeUpdate();
+
+        // The due check uses CURRENT_DATE like findNextLearningObjective; at 3 AM Zagreb it is the same day as :today.
         String sql = """
-            INSERT INTO user_daily_tasks (account_id, course_id, date, task_count)
-            SELECT
-                ao.account_id,
-                co.course_id,
-                CURRENT_DATE,
-                COUNT(lo.objective_id) as task_count
-                            FROM
-                account_objective ao
-            JOIN course_objective co ON ao.objective_id = co.
-                objective_id
-                   LEFT JOIN learning_objective lo
-                            ON lo.objective_id = ao.objective_id
-                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.
-                objective
+            WITH RECURSIVE blocked AS (
+                SELECT a.account_id, op.objective_id
+                FROM account a
+                CROSS JOIN objective_prerequisite op
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM account_objective ao_prereq
+                    WHERE ao_prereq.account_id = a.account_id
+                    AND ao_prereq.objective_id = op.prerequisite_id
+                    AND ao_prereq.n >= a.tempo
+                )
+                UNION
+                SELECT b.account_id, op.objective_id
+                FROM objective_prerequisite op
+                JOIN blocked b ON op.prerequisite_id = b.objective_id
+            ),
+            counts AS (
+                SELECT
+                    ao.account_id,
+                    co.course_id,
+                    COUNT(*) FILTER (
+                        WHERE EXISTS (SELECT 1 FROM task t WHERE t.objective_id = ao.objective_id)
+                        AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i))
+                            <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                         AND NOT EXISTS (
-                    SELECT 1\s
-                    FROM objective_prerequ
-                                WHERE op.objective_id = lo.objective_id
-                    AND NOT EXISTS (
-                       
-                                       FROM account_objective ao_prere
-                             WHERE ao_prereq.account_id = ao.account_id
-                        AND ao_prereq.objective_id = op.
-                            prerequisit
-                                AND ao_prereq.n >= 2
-                    
-                     )
-            WHERE (ao.last_solved_date + (INTERVAL '1 day'
-                               <= (CURRENT_DATE + INTERVAL
-                '23 hours 59 minutes 59 seconds')
-            GROUP BY ao.account_id, co.course_id
-            HAVING COUNT(lo.objective_id) < 10;
+                            SELECT 1 FROM blocked b
+                            WHERE b.account_id = ao.account_id
+                            AND b.objective_id = ao.objective_id
+                        )
+                    ) AS task_count
+                FROM account_objective ao
+                JOIN course_objective co ON co.objective_id = ao.objective_id
+                GROUP BY ao.account_id, co.course_id
+            )
+            INSERT INTO user_daily_tasks (account_id, course_id, date, task_count)
+            SELECT account_id, course_id, :today, task_count
+            FROM counts
+            WHERE task_count < 10;
             """;
 
-        int updatedRows = entityManager.createNativeQuery(sql).executeUpdate();
-        System.out.println("Daily task counts updated for " + updatedRows + " users (with <10 tasks).");
+        int updatedRows = entityManager.createNativeQuery(sql)
+                .setParameter("today", today)
+                .executeUpdate();
+        System.out.println("Daily task counts updated for " + updatedRows + " account courses (with <10 tasks).");
     }
 }

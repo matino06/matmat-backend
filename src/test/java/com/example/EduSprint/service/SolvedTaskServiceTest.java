@@ -1,11 +1,14 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Date;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +22,7 @@ import static org.mockito.Mockito.when;
 class SolvedTaskServiceTest {
 
     private static final long ACCOUNT_ID = 1L;
-    private static final LocalDate TODAY = LocalDate.now();
+    private static final LocalDate TODAY = AppTime.today();
 
     private final SolvedTaskRepository repository = mock(SolvedTaskRepository.class);
     private final SolvedTaskService service = new SolvedTaskService(repository);
@@ -28,7 +31,13 @@ class SolvedTaskServiceTest {
     private final List<Object[]> availableRows = new ArrayList<>();
 
     private void solved(LocalDate date, long courseId, String courseName, int count) {
-        solvedRows.add(new Object[]{Date.valueOf(date), courseId, courseName, (long) count});
+        for (int i = 0; i < count; i++) {
+            solvedAt(date.atTime(12, 0).atZone(AppTime.ZONE).toInstant(), courseId, courseName);
+        }
+    }
+
+    private void solvedAt(Instant endTime, long courseId, String courseName) {
+        solvedRows.add(new Object[]{endTime, courseId, courseName});
     }
 
     private void available(LocalDate date, int count) {
@@ -36,7 +45,7 @@ class SolvedTaskServiceTest {
     }
 
     private List<DailyGoalDTO> calendar(int dailyGoal) {
-        when(repository.findSolvedTaskCountPerDayAndCourse(ACCOUNT_ID)).thenReturn(solvedRows);
+        when(repository.findEndTimesWithCourse(ACCOUNT_ID)).thenReturn(solvedRows);
         when(repository.findAvailableTaskCountPerDay(ACCOUNT_ID)).thenReturn(availableRows);
         return service.getDailyGoalDTOs(ACCOUNT_ID, dailyGoal);
     }
@@ -54,6 +63,17 @@ class SolvedTaskServiceTest {
         assertTrue(today.isGoalMet());
         assertFalse(today.isPartial());
         assertEquals(2, today.getCourses().size());
+    }
+
+    @Test
+    void taskSolvedJustAfterMidnightCountsForTheZagrebDay() {
+        // 00:30 in Zagreb is still the previous day in UTC
+        solvedAt(TODAY.atTime(LocalTime.of(0, 30)).atZone(AppTime.ZONE).toInstant(), 1L, "Matematika");
+
+        List<DailyGoalDTO> days = calendar(3);
+
+        assertEquals(1, days.size());
+        assertEquals(TODAY, days.get(0).getDate());
     }
 
     @Test

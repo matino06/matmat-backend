@@ -24,9 +24,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     @Query("SELECT a FROM Account a WHERE a.learningRemindersEnabled = true " +
             "AND EXISTS (SELECT s FROM SolvedTask s WHERE s.account = a " +
-            "           AND s.startTime BETWEEN :yesterdayStart AND :yesterdayEnd) " +
+            "           AND s.endTime BETWEEN :yesterdayStart AND :yesterdayEnd) " +
             "AND NOT EXISTS (SELECT s FROM SolvedTask s WHERE s.account = a " +
-            "               AND s.startTime BETWEEN :todayStart AND :todayEnd)")
+            "               AND s.endTime BETWEEN :todayStart AND :todayEnd)")
     List<Account> findAccountsToRemind(
             @Param("yesterdayStart") Instant yesterdayStart,
             @Param("yesterdayEnd") Instant yesterdayEnd,

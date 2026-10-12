@@ -1,5 +1,6 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.dto.UserGoalDTO;
 import com.example.EduSprint.entity.Account;
@@ -39,7 +40,7 @@ public class UserGoalController {
         List<DailyGoalDTO> calendar = solvedTaskService.getDailyGoalDTOs(accountId, dailyGoal);
         int[] streaks = solvedTaskService.calculateStreaks(calendar);
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = AppTime.today();
         int todayCompleted = calendar.stream()
                 .filter(day -> day.getDate().equals(today))
                 .findFirst()

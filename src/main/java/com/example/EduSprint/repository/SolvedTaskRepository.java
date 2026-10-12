@@ -14,20 +14,12 @@ public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
     @Query(value = "SELECT MAX(end_time) FROM solved_task WHERE account_id = :accountId", nativeQuery = true)
     java.sql.Timestamp findMaxEndTimeByAccountId(@Param("accountId") Long accountId);
 
-    @Query(value = """
-                SELECT st.end_time::date AS date,
-                       c.course_id,
-                       c.course_name,
-                       COUNT(*) AS solvedTaskCount
-                    FROM solved_task st
-                        JOIN course c ON c.course_id = st.course_id
-                    WHERE st.account_id = :accountId
-                    GROUP BY st.end_time::date, c.course_id, c.course_name
-                    ORDER BY date, c.course_id
-            """, nativeQuery = true)
-    List<Object[]> findSolvedTaskCountPerDayAndCourse(@Param("accountId") Long accountId);
+    // End time and course of every solved task. Grouped into days in Java (AppTime.ZONE) so the day
+    // boundary does not depend on the database time zone.
+    @Query("SELECT s.endTime, c.courseId, c.courseName FROM SolvedTask s JOIN s.course c WHERE s.account.accountId = :accountId")
+    List<Object[]> findEndTimesWithCourse(@Param("accountId") Long accountId);
 
-    // Days on which every course of the account had fewer tasks due than usual (a user_daily_tasks
+    // Days on which every course the account learns had fewer tasks due than usual (a user_daily_tasks
     // row exists for each of them), with the total due across courses. On other days the goal is not capped.
     @Query(value = """
                 SELECT udt.date,
@@ -35,9 +27,10 @@ public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
                     FROM user_daily_tasks udt
                     WHERE udt.account_id = :accountId
                     GROUP BY udt.date
-                    HAVING COUNT(DISTINCT udt.course_id) >= (SELECT COUNT(*)
-                                                              FROM user_course_goal ucg
-                                                              WHERE ucg.account_id = :accountId)
+                    HAVING COUNT(DISTINCT udt.course_id) >= (SELECT COUNT(DISTINCT co.course_id)
+                                                              FROM account_objective ao
+                                                                  JOIN course_objective co ON co.objective_id = ao.objective_id
+                                                              WHERE ao.account_id = :accountId)
             """, nativeQuery = true)
     List<Object[]> findAvailableTaskCountPerDay(@Param("accountId") Long accountId);
 }

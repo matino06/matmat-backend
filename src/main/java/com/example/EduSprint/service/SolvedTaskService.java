@@ -1,11 +1,13 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.dto.CourseDayCountDTO;
 import com.example.EduSprint.dto.DailyGoalDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,15 +32,20 @@ public class SolvedTaskService {
     public List<DailyGoalDTO> getDailyGoalDTOs(Long accountId, int dailyGoal) {
         Map<LocalDate, Integer> availablePerDay = getAvailableTasksPerDay(accountId);
 
-        Map<LocalDate, List<CourseDayCountDTO>> coursesPerDay = new TreeMap<>();
-        for (Object[] r : solvedTaskRepository.findSolvedTaskCountPerDayAndCourse(accountId)) {
-            coursesPerDay.computeIfAbsent(((java.sql.Date) r[0]).toLocalDate(), d -> new ArrayList<>())
-                    .add(new CourseDayCountDTO(((Number) r[1]).longValue(), (String) r[2], ((Number) r[3]).intValue()));
+        // day -> courseId -> count, both sorted
+        Map<LocalDate, Map<Long, CourseDayCountDTO>> coursesPerDay = new TreeMap<>();
+        for (Object[] r : solvedTaskRepository.findEndTimesWithCourse(accountId)) {
+            Long courseId = ((Number) r[1]).longValue();
+            CourseDayCountDTO course = coursesPerDay
+                    .computeIfAbsent(AppTime.dateOf((Instant) r[0]), d -> new TreeMap<>())
+                    .computeIfAbsent(courseId, id -> new CourseDayCountDTO(id, (String) r[2], 0));
+            course.setCompleted(course.getCompleted() + 1);
         }
 
         return coursesPerDay.entrySet().stream()
                 .map(e -> {
-                    int completed = e.getValue().stream().mapToInt(CourseDayCountDTO::getCompleted).sum();
+                    List<CourseDayCountDTO> courses = new ArrayList<>(e.getValue().values());
+                    int completed = courses.stream().mapToInt(CourseDayCountDTO::getCompleted).sum();
                     int goal = Math.min(dailyGoal, availablePerDay.getOrDefault(e.getKey(), dailyGoal));
                     boolean goalMet = completed >= goal;
                     return new DailyGoalDTO(
@@ -48,7 +55,7 @@ public class SolvedTaskService {
                             completed,
                             goal,
                             completed >= STREAK_MIN_TASKS,
-                            e.getValue()
+                            courses
                     );
                 })
                 .collect(Collectors.toList());
@@ -56,7 +63,7 @@ public class SolvedTaskService {
 
     // Today's target: the daily goal, lowered when fewer tasks than that are due across all courses.
     public int getTodayGoal(Long accountId, int dailyGoal) {
-        return Math.min(dailyGoal, getAvailableTasksPerDay(accountId).getOrDefault(LocalDate.now(), dailyGoal));
+        return Math.min(dailyGoal, getAvailableTasksPerDay(accountId).getOrDefault(AppTime.today(), dailyGoal));
     }
 
     private Map<LocalDate, Integer> getAvailableTasksPerDay(Long accountId) {
@@ -87,7 +94,7 @@ public class SolvedTaskService {
                 .collect(Collectors.toMap(DailyGoalDTO::getDate, d -> d));
 
         LocalDate startDate = calendar.get(0).getDate();
-        LocalDate today = LocalDate.now();
+        LocalDate today = AppTime.today();
 
         int longest = 0;
         int temp = 0;
