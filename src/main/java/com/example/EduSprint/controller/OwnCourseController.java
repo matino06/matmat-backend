@@ -80,6 +80,11 @@ public class OwnCourseController {
         return materials.progress(account(authentication), courseId);
     }
 
+    @GetMapping("/{courseId}/plan")
+    public java.util.List<PlanLessonDTO> plan(Authentication authentication, @PathVariable Long courseId) {
+        return materials.plan(account(authentication), courseId);
+    }
+
     @PostMapping("/{courseId}/cancel")
     public ResponseEntity<Void> cancel(Authentication authentication, @PathVariable Long courseId) {
         ownCourseService.cancelBuild(account(authentication), courseId);

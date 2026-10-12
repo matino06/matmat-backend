@@ -151,6 +151,32 @@ public class OwnCourseMaterialService {
         }
     }
 
+    // Plan redom učenja: lekcije s područjem, cjelinom, stavkama znanja i preduvjetima.
+    public List<PlanLessonDTO> plan(Account account, long courseId) {
+        own(account, courseId);
+        MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
+        Map<Long, List<String>> items = new java.util.HashMap<>();
+        jdbc.query("""
+                SELECT objective_id, text FROM knowledge_item
+                WHERE course_id = :c AND objective_id IS NOT NULL AND duplicate_of IS NULL ORDER BY position""", c,
+                rs -> { items.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getString(2)); });
+        Map<Long, List<Long>> pre = new java.util.HashMap<>();
+        jdbc.query("""
+                SELECT op.objective_id, op.prerequisite_id FROM objective_prerequisite op
+                JOIN course_objective co ON co.objective_id = op.objective_id AND co.course_id = :c""", c,
+                rs -> { pre.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getLong(2)); });
+        return jdbc.query("""
+                SELECT lo.objective_id, co.position, lo.objective_name, lo.concept, lo.kind, f.field_name, s.subfield_name
+                FROM course_objective co
+                JOIN learning_objective lo ON lo.objective_id = co.objective_id
+                JOIN subfield_of_study s ON s.subfield_id = lo.subfield_id
+                JOIN field_of_study f ON f.field_id = s.field_id
+                WHERE co.course_id = :c ORDER BY co.position""", c,
+                (rs, i) -> new PlanLessonDTO(rs.getLong(1), rs.getInt(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                        rs.getString(6), rs.getString(7), items.getOrDefault(rs.getLong(1), List.of()),
+                        pre.getOrDefault(rs.getLong(1), List.of())));
+    }
+
     // Faze plana redom; svaka je skup vrsta koraka.
     static final List<List<String>> PLAN_STEPS = List.of(
             List.of(PlanScopeStep.KIND, PlanExamTasksStep.KIND),
