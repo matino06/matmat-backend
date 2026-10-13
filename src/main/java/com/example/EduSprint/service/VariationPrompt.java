@@ -18,11 +18,18 @@ public class VariationPrompt {
 
             KAKO NAPRAVITI ZADATAK KOJI UČI:
             - Zadatak uči gradivo lekcije; učenik ga ne zna unaprijed i uči ga iz objašnjenja. Nema uvodnog teksta.
-            - Jedna realna situacija kroz NAJVIŠE TRI podzadatka a), b), c), nikad d): podzadaci se nastavljaju jedan na drugi.
-            - Podzadaci zajedno pokrivaju sve stavke lekcije. Barem jedan traži razumijevanje (koliko puta se nešto
-              promijeni, što ako, zašto) i ugrađen je prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
+            - Jedna kratka realna situacija kroz NAJVIŠE TRI podzadatka a), b), c), nikad d): podzadaci se nastavljaju jedan na drugi.
+            - Zadatak i objašnjenje zajedno pokrivaju sve stavke lekcije. Stavka s postupkom ili razumijevanjem dobiva pitanje;
+              stavku koja je samo činjenica (npr. „postoje različite vrste vaga“) smiješ naučiti samo u objašnjenju.
+            - Barem jedan podzadatak traži razumijevanje (koliko puta se nešto promijeni, što ako, zašto) i ugrađen je
+              prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
+            - Kratko: učenik mora pročitati sve, a dug tekst ga odbija i ne uči ništa više. Svaki podzadatak ima jedno glavno
+              pitanje, najviše uz jedno kratko „zašto“. Situaciju opiši jednom rečenicom i samo podacima koji trebaju za
+              rješavanje: bez imena, priče i ukrasnih detalja koji ništa ne uče. Isti postupak ne traži dvaput (dvije
+              površine, sedam jedinica: dovoljna je jedna površina i dvije jedinice). Ne dodaj ograde za slučajeve na koje
+              učenik ne bi ni pomislio („ništa se ne gubi“, „pri istom tlaku“).
             - Ne otkrivaj formulu u tekstu zadatka. Ne prepisuj zadatke s ispita.
-            - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s
+            - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s%s
             - Koristi samo stavke ove lekcije, ono što učenik već zna i predznanje: %s.
             - Ako je uz lekciju priloženo GRADIVO IZ MATERIJALA, učenik se iz njega sprema za test. Računski podzadatak smije
               tražiti samo postupak koji materijal objašnjava ili uvježbava (objašnjenjem, riješenim primjerom ili pitanjima i
@@ -33,18 +40,19 @@ public class VariationPrompt {
 
             KAKO OBJAŠNJAVATI:
             - Jedan korak po podzadatku: `## <emoji> Kratak naslov`, pa odmah **podebljano ponovljeno pitanje
-              podzadatka**, pa jednom rečenicom što je zadano.
-            - Novi pojam uvedi tek kad ga podzadatak treba: prvo što on JEST svakodnevnim jezikom, s usporedbom iz
-              života, i zašto se tako zove. Tek onda formula.
+              podzadatka**. Ne prepričavaj što je zadano: učenik je to upravo pročitao.
+            - Novi pojam uvedi tek kad ga podzadatak treba, jednom ili dvjema rečenicama: prvo što on JEST svakodnevnim
+              jezikom, s usporedbom iz života, i zašto se tako zove. Tek onda formula. Pojam iz ranijih lekcija ne objašnjavaj ponovno.
             %s
             - Preuređivanje formule pokaži korak po korak s operacijom desno:
               $$\\begin{aligned} pV &= nRT && / : V \\\\ p &= \\frac{nRT}{V} \\end{aligned}$$
             - Pretvorbe jedinica napiši izričito prije uvrštavanja; uvrštavanje pokaži s brojevima; konačan rezultat
               \\textcolor{green}{…}.
-            - Piši u odlomcima od 2–4 povezane rečenice, prirodnim tonom („Primijeti…“, „Ključna riječ u zadatku je
-              **jednoliko**.“). Ne piši telegrafski.
+            - Piši kratkim odlomcima prirodnim tonom („Ključna riječ u zadatku je **jednoliko**.“), bez telegrafskog stila,
+              ali i bez rečenica koje ponavljaju ono što piše u formuli ili u zadatku.
             - Zamku najavi izričito („Prvo jedna zamka.“) i objasni zašto je zamka.
-            - Nakon rezultata jednom ili dvjema rečenicama poveži ga s intuicijom ili provjeri drugim putem.
+            - Nakon rezultata dodaj provjeru ili intuiciju samo kad učeniku otkriva nešto novo (zašto je rezultat manji, gdje bi
+              pogriješio); inače odmah idi na sljedeći podzadatak.
             - Pojmove i ključne riječi podebljaj. Decimalni zarez u LaTeX-u: 0{,}8. Jedinice: 20 \\ \\text{m/s}.
             - LaTeX: inline \\( … \\), display $$ … $$ u jednom retku (osim aligned), prazan red prije i poslije.
             - Zadnji korak `## ✅ Rezultati`: po jedan redak za svaki podzadatak s rezultatom.
@@ -104,6 +112,13 @@ public class VariationPrompt {
     static final String FORMULA_WITHOUT_MATERIAL = """
             - Učenik na ispitu nema materijal s formulama: formulu uvedi iz onoga što zna, objasni odakle dolazi i kako je zapamtiti.""";
     static final String PHYSICS_NUMBERS = " Uzmi g = 10 m/s².";
+    // Duljina po razini: zadatak se čita cijeli, a objašnjenje bez ponavljanja uči jednako dobro.
+    static final String LENGTH_PRIMARY = """
+
+            - Duljina: podzadatak do oko 30 riječi, cijeli zadatak do oko 90; objašnjenje oko 350–450 riječi.""";
+    static final String LENGTH_SECONDARY = """
+
+            - Duljina: podzadatak do oko 40 riječi, cijeli zadatak do oko 120; objašnjenje oko 450–600 riječi.""";
     // Matematika koju učenik 7.–8. razreda zna: računa se korak po korak, jednom nepoznanicom.
     static final String PRIMARY_MATH = """
 
@@ -158,8 +173,9 @@ public class VariationPrompt {
         PlanSupport.CourseInfo course = plan.course(courseId);
         String material = plan.availableOnExam(courseId);
         boolean physics = "fizika".equals(course.subject());
-        return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "", "os78".equals(course.level()) ? PRIMARY_MATH : "",
-                String.join("; ", plan.assumedKnowledge(course)),
+        boolean primary = "os78".equals(course.level());
+        return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "", primary ? PRIMARY_MATH : "",
+                primary ? LENGTH_PRIMARY : LENGTH_SECONDARY, String.join("; ", plan.assumedKnowledge(course)),
                 material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL,
                 physics ? PHYSICS_MISTAKES : "", material);
     }
