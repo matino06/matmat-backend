@@ -21,8 +21,9 @@ public class VariationPrompt {
             - Jedna kratka realna situacija kroz NAJVIŠE TRI podzadatka a), b), c), nikad d): podzadaci se nastavljaju jedan na drugi.
             - Zadatak i objašnjenje zajedno pokrivaju sve stavke lekcije. Stavka s postupkom ili razumijevanjem dobiva pitanje;
               stavku koja je samo činjenica (npr. „postoje različite vrste vaga“) smiješ naučiti samo u odjeljku „📌 Zapamti“.
-              Kad sve stavke ne stanu u tri podzadatka, pitanje dobivaju one koje materijal ističe (u sažetku „Naučili
-              smo“ ili u pitanjima i zadatcima), jer one dolaze na test; „Zapamti“ je za sporedne.
+              Kad sve stavke ne stanu u tri podzadatka, najprije odredi koje materijal ističe: one iz sažetka („Naučili
+              smo“) i one o kojima ima pitanje ili zadatak. One dolaze na test i dobivaju pitanje; u „Zapamti“ ide stavka
+              koje u sažetku i pitanjima nema, čak i kad je prva u lekciji.
             - Barem jedan podzadatak traži razumijevanje (koliko puta se nešto promijeni, što ako, zašto) i ugrađen je
               prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
             - Kratko: učenik mora pročitati sve, a dug tekst ga odbija i ne uči ništa više. Svaki podzadatak ima jedno glavno
