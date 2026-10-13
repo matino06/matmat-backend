@@ -28,6 +28,8 @@ public class VariationPrompt {
               rješavanje: bez imena, priče i ukrasnih detalja koji ništa ne uče. Isti postupak ne traži dvaput (dvije
               površine, sedam jedinica: dovoljna je jedna površina i dvije jedinice). Ne dodaj ograde za slučajeve na koje
               učenik ne bi ni pomislio („ništa se ne gubi“, „pri istom tlaku“).
+            - Kraće ne znači opisno: postupak koji lekcija uči (račun, pretvaranje, očitavanje, prebrojavanje) učenik izvodi
+              s brojevima. Pitanje „Kako bi odredio…?“ ne zamjenjuje zadatak u kojem to stvarno odredi.
             - Ne otkrivaj formulu u tekstu zadatka. Ne prepisuj zadatke s ispita.
             - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s%s
             - Koristi samo stavke ove lekcije, ono što učenik već zna i predznanje: %s.
