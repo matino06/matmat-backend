@@ -25,6 +25,10 @@ public class Task {
     @Column(name = "explanation")
     private String explanation;
 
+    // JSON opis skice uz zadatak vlastitog predmeta (null = bez skice); frontend ga crta kao SVG.
+    @Column(name = "sketch")
+    private String sketch;
+
     public Task() {
     }
 
@@ -54,6 +58,14 @@ public class Task {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getSketch() {
+        return sketch;
+    }
+
+    public void setSketch(String sketch) {
+        this.sketch = sketch;
     }
 
 

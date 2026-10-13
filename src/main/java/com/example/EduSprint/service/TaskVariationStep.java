@@ -14,6 +14,8 @@ import java.util.List;
 // s ispita, korak pada i red ga ponavlja (do 3 puta), pa nastaje nova varijacija.
 // Nacrt iz batcha (input.draft) koristi se samo u prvom pokušaju; ponovni pokušaji pišu zadatak iznova.
 // Varijacije 2–4 piše jeftiniji model po predlošku 1. varijacije, kad učenik riješi prethodnu.
+// Skica: model uz zadatak može dati JSON opis skice; provjerava ga isti kod kojim ga frontend crta (SketchChecker).
+// Ako ne prođe, model ga jednom pokuša ispraviti; ako ni tada ne prođe, zadatak se sprema bez skice.
 @Component
 public class TaskVariationStep implements BuildStep {
 
@@ -23,18 +25,24 @@ public class TaskVariationStep implements BuildStep {
     public static final int MAX_VARIATIONS = 4;
     static final double MIN_TEMPLATE_LENGTH = 0.8;
 
+    static final String SKETCH_FIX = """
+            Popravljaš opis skice uz zadatak. Aplikacija iz opisa sama crta skicu i provjerava ga, a provjera je našla probleme.
+            Ispravi opis tako da odgovara zadatku i rješenju: isti tip skice i ista JSON građa, brojevi kao u zadatku i rješenju.
+            Ako skica zadatku ne treba ili se ne može ispraviti, vrati null. Vrati JSON {"skica":opis ili null}.""";
+
     private final NamedParameterJdbcTemplate jdbc;
     private final OwnCourseLlm llm;
     private final PlanSupport plan;
     private final VariationPrompt prompt;
     private final VariationChecks checks;
     private final TooCloseCheck tooClose;
+    private final SketchChecker sketches;
     private final OwnCourseMailer mailer;
     private final String writerModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public TaskVariationStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan, VariationPrompt prompt,
-                             VariationChecks checks, TooCloseCheck tooClose, OwnCourseMailer mailer,
+                             VariationChecks checks, TooCloseCheck tooClose, SketchChecker sketches, OwnCourseMailer mailer,
                              @Value("${own-courses.models.writer:openai/gpt-6.1-sol}") String writerModel) {
         this.jdbc = jdbc;
         this.llm = llm;
@@ -42,6 +50,7 @@ public class TaskVariationStep implements BuildStep {
         this.prompt = prompt;
         this.checks = checks;
         this.tooClose = tooClose;
+        this.sketches = sketches;
         this.mailer = mailer;
         this.writerModel = writerModel;
     }
@@ -82,14 +91,18 @@ public class TaskVariationStep implements BuildStep {
             problems = checks.problems(v);
         } else {
             List<java.util.Map<String, Object>> existing = jdbc.queryForList("""
-                    SELECT variation, task_text, explanation, results FROM task WHERE objective_id = :o AND variation IS NOT NULL
+                    SELECT variation, task_text, explanation, results, sketch FROM task WHERE objective_id = :o AND variation IS NOT NULL
                     ORDER BY variation""", o);
             if (existing.isEmpty() || ((Number) existing.get(0).get("variation")).intValue() != 1) {
                 throw new IllegalStateException("Lekcija nema 1. varijaciju");
             }
             java.util.Map<String, Object> first = existing.get(0);
-            String template = mapper.writeValueAsString(java.util.Map.of("zadatak", first.get("task_text"),
-                    "objasnjenje", first.get("explanation"), "rezultati", mapper.readTree(String.valueOf(first.get("results")))));
+            java.util.Map<String, Object> tpl = new java.util.LinkedHashMap<>();
+            tpl.put("zadatak", first.get("task_text"));
+            tpl.put("objasnjenje", first.get("explanation"));
+            tpl.put("rezultati", mapper.readTree(String.valueOf(first.get("results"))));
+            tpl.put("skica", first.get("sketch") == null ? null : mapper.readTree(String.valueOf(first.get("sketch"))));
+            String template = mapper.writeValueAsString(tpl);
             List<String> previous = existing.stream().skip(1).map(t -> (String) t.get("task_text")).toList();
             v = plan.json(llm.chat(job, plan.cheapModel, prompt.templateSystem(job.courseId()), prompt.templateUser(template, previous),
                     OwnCourseLlm.Options.of("xhigh", 32000)).content());
@@ -103,15 +116,39 @@ public class TaskVariationStep implements BuildStep {
             if (close != null) throw new IllegalStateException("Preblizu zadatku s ispita: " + close);
         }
 
+        String sketch = sketch(job, v);
         o.addValue("t", v.path("zadatak").asText()).addValue("e", v.path("objasnjenje").asText())
-                .addValue("r", mapper.writeValueAsString(v.path("rezultati")));
+                .addValue("r", mapper.writeValueAsString(v.path("rezultati"))).addValue("s", sketch);
+        String withSketch = sketch == null ? "" : " sa skicom";
         if (replace && exists != null && exists > 0) {
             // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega
-            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r WHERE objective_id = :o AND variation = :v", o);
-            return "zamijenjeno";
+            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s WHERE objective_id = :o AND variation = :v", o);
+            return "zamijenjeno" + withSketch;
         }
-        jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results) VALUES (:o, :t, :e, :v, :r)", o);
-        return "spremljeno";
+        jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results, sketch) VALUES (:o, :t, :e, :v, :r, :s)", o);
+        return "spremljeno" + withSketch;
+    }
+
+    // Opis skice koji se može nacrtati (JSON), ili null: bez skice, ili ni nakon jednog ispravka ne prolazi provjeru.
+    String sketch(BuildJob job, JsonNode v) throws Exception {
+        JsonNode spec = v.path("skica");
+        if (!spec.isObject()) return null;
+        String text = v.path("zadatak").asText("") + "\n" + v.path("objasnjenje").asText("") + "\n" + v.path("rezultati");
+        String json = mapper.writeValueAsString(spec);
+        List<String> problems = sketches.problems(json, text);
+        if (problems.isEmpty()) return json;
+        try {
+            JsonNode fixed = plan.json(llm.chat(job, plan.cheapModel, SKETCH_FIX,
+                    "ZADATAK I RJEŠENJE:\n" + text + "\n\nOPIS SKICE:\n" + json + "\n\nPROBLEMI:\n- " + String.join("\n- ", problems),
+                    OwnCourseLlm.Options.of("low", 4000)).content()).path("skica");
+            if (!fixed.isObject()) return null;
+            String fixedJson = mapper.writeValueAsString(fixed);
+            return sketches.problems(fixedJson, text).isEmpty() ? fixedJson : null;
+        } catch (OwnCourseLlm.GlobalLimitException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            return null; // zadatak ide bez skice
+        }
     }
 
     // Kad sve lekcije imaju 1. varijaciju, predmet je spreman; ako je izrada išla preko batcha, kreator dobije e-mail.

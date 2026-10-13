@@ -25,8 +25,7 @@ public class VariationPrompt {
             - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s
             - Koristi samo stavke ove lekcije, ono što učenik već zna i predznanje: %s.
             - Nikad ne crtaj graf, shemu ni sliku znakovima u tekstu (crtice, kose crte, točkice, blok koda): učenik to ne
-              može pouzdano očitati. Ako zadatak treba graf ili crtež, zadaj podatke tablicom ili riječima (npr. „pravac prolazi
-              ishodištem i točkom (20 cm³, 60 g)“).
+              može pouzdano očitati. Ako zadatak treba graf ili crtež, opiši ga u polju "skica" (vidi SKICA).
 
             KAKO OBJAŠNJAVATI:
             - Jedan korak po podzadatku: `## <emoji> Kratak naslov`, pa odmah **podebljano ponovljeno pitanje
@@ -55,8 +54,35 @@ public class VariationPrompt {
             - Formule piši samo unutar \\( \\) ili $$ $$; izvan njih nikad LaTeX naredbe ni {,}.
             - Zadnji odjeljak „## ✅ Rezultati“ s po jednim retkom za svaki podzadatak je obavezan.
 
+            SKICA:
+            - Ako crtež učeniku pomaže razumjeti ili riješiti zadatak (graf, ljestvica mjernog instrumenta koju treba očitati,
+              tijelo ili lik s dimenzijama, sile na tijelo, strujni krug), dodaj polje "skica" s opisom JEDNOG crteža; inače
+              "skica": null. Ne crtaš ti: aplikacija iz opisa sama nacrta crtež i provjeri ga.
+            - Brojevi u skici moraju odgovarati zadatku i rješenju. Ako učenik nešto treba očitati sa skice, ne piši tu
+              vrijednost u tekst zadatka, nego se pozovi na sliku („Očitaj sa slike…“); u objašnjenju je navedi.
+            - Tipovi (točno ovakav JSON; null gdje nešto ne treba):
+              graf: {"tip":"graf","x":[0,40],"y":[0,120],"os_x":"V (cm³)","os_y":"m (g)","funkcije":[{"izraz":"3*x","oznaka":"A"}],
+                "tocke":[{"x":20,"y":60,"oznaka":"(20, 60)","na":"A","zadana":true}]} (izraz: x, brojevi, + - * / ^ i zagrade;
+                točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka)
+              koordinatni: {"tip":"koordinatni","x":[-3,5],"y":[-1,4],"tocke":[{"oznaka":"A","x":-2,"y":1,"zadana":true}],
+                "duzine":[["A","B"]],"polovista":[{"tocka":"M","od":["A","B"]}]}
+              trokut: {"tip":"trokut","stranice":{"a":6,"b":8,"c":10},"pravi_kut":"C","oznake":{"a":"6 cm","b":"8 cm","c":"?"},"kutovi":{"α":"?"}}
+              kruznica: {"tip":"kruznica","r":5,"tetiva":{"duljina":8},"oznake":{"r":"5 cm","tetiva":"8 cm","d":"?"}}
+              pravokutnik: {"tip":"pravokutnik","a":120,"b":80,"mreza":20,"oznake":{"a":"1,2 m","b":"80 cm"}} (a, b i mreza u istoj
+                jedinici; mreza = stranica jednog kvadratića ili pločice)
+              kvadar: {"tip":"kvadar","a":25,"b":16,"c":20,"razina":8,"oznake":{"a":"25 cm","b":"16 cm","c":"20 cm","razina":"h = ?"}}
+                (razina = visina tekućine u kvadru)
+              ljestvica: {"tip":"ljestvica","instrument":"menzura","od":40,"do":80,"razmak":4,"oznaka_svakih":20,"jedinica":"mL",
+                "vrijednosti":[48,68]} (instrument: menzura, vaga ili ravnalo; razmak = vrijednost najmanjeg podjeljka;
+                menzura: razina vode, ili dvije razine prije i poslije uranjanja; vaga: položaj kazaljke; ravnalo: početak i kraj predmeta)
+              sile: {"tip":"sile","podloga":{"vrsta":"kosina","kut":30},"sile":[{"oznaka":"G","smjer":"dolje","iznos":40,"zadana":false}],
+                "rastav":"G"} (vrsta: kosina ili vodoravna; smjer: dolje, gore, okomito_od_podloge, uz_kosinu, niz_kosinu, desno, lijevo)
+              strujni_krug: {"tip":"strujni_krug","izvor":{"oznaka":"U = 12 V"},"spoj":{"serijski":[{"R":"R₁ = 4 Ω"},
+                {"paralelno":[{"R":"R₂ = 6 Ω"},{"R":"R₃ = 3 Ω"}]}]},"instrumenti":[{"vrsta":"A"}]}
+
             Odgovori isključivo kao json objekt {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja",
-            "rezultati":{"a":"konačan odgovor","b":"…"}}. U rezultatima za računske podzadatke broj s jedinicom, za ostale jedna rečenica.
+            "rezultati":{"a":"konačan odgovor","b":"…"},"skica":opis skice ili null}. U rezultatima za računske podzadatke broj
+            s jedinicom, za ostale jedna rečenica.
 
             %s""";
 
@@ -100,10 +126,13 @@ public class VariationPrompt {
             - Nikakve samokorekcije u tekstu. Objašnjenje je konačna verzija.
             - Podaci u podzadacima ne smiju proturječiti jedni drugima.%s
             - Formule piši samo unutar \\( \\) ili $$ $$; izvan njih nikad LaTeX naredbe ni {,}.
-            - Nikad ne crtaj graf ni sliku znakovima u tekstu; podatke zadaj tablicom ili riječima.
+            - Nikad ne crtaj graf ni sliku znakovima u tekstu.
+            - Ako predložak ima skicu, napravi istu skicu (isti tip i ista građa) s novim brojevima, usklađenu s novim zadatkom
+              i rješenjem; ako je nema, "skica": null.
             - Zadnji odjeljak „## ✅ Rezultati“ s po jednim retkom za svaki podzadatak je obavezan.
 
-            Vrati json {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja","rezultati":{"a":"konačan odgovor","b":"…"}}.""";
+            Vrati json {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja","rezultati":{"a":"konačan odgovor","b":"…"},
+            "skica":opis skice ili null}.""";
 
     private final NamedParameterJdbcTemplate jdbc;
     private final PlanSupport plan;

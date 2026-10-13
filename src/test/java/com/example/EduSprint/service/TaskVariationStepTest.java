@@ -20,8 +20,9 @@ class TaskVariationStepTest {
     private final VariationPrompt prompt = mock(VariationPrompt.class);
     private final VariationChecks checks = mock(VariationChecks.class);
     private final TooCloseCheck tooClose = mock(TooCloseCheck.class);
+    private final SketchChecker sketches = new SketchChecker();
     private final TaskVariationStep step = new TaskVariationStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"), prompt, checks, tooClose,
-            mock(OwnCourseMailer.class), "sol");
+            sketches, mock(OwnCourseMailer.class), "sol");
     private final BuildJob job = new BuildJob(1, 5, 7, TaskVariationStep.KIND, "v2 11", 0, false, 1, TaskVariationStep.input(11, 2));
 
     private void firstVariation(String answer) {
