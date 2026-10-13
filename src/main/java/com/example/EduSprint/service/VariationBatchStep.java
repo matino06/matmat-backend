@@ -47,7 +47,7 @@ public class VariationBatchStep implements BuildStep {
         String system = prompt.system(job.courseId());
         Map<String, ObjectNode> requests = new LinkedHashMap<>();
         for (JsonNode id : ids) {
-            requests.put("o" + id.asLong(), llm.body(variations.model(), system, prompt.user(id.asLong()), TaskVariationStep.options()));
+            requests.put("o" + id.asLong(), llm.body(variations.model(), system, prompt.user(job.courseId(), id.asLong()), TaskVariationStep.options()));
         }
         String batchId = llm.createBatch(variations.model(), requests);
         jdbc.update("""

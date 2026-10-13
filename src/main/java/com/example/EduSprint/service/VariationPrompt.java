@@ -24,6 +24,10 @@ public class VariationPrompt {
             - Ne otkrivaj formulu u tekstu zadatka. Ne prepisuj zadatke s ispita.
             - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s
             - Koristi samo stavke ove lekcije, ono što učenik već zna i predznanje: %s.
+            - Ako je uz lekciju priloženo GRADIVO IZ MATERIJALA, učenik se iz njega sprema za test. Računski podzadatak smije
+              tražiti samo postupak koji materijal objašnjava ili uvježbava (objašnjenjem, riješenim primjerom ili pitanjima i
+              zadatcima). Što materijal samo spomene, bez postupka (npr. „gustoćom se može odrediti udio tvari u smjesi“), smiješ
+              pitati samo riječima, nikad računom. Težina neka bude kao pitanja i zadatci u materijalu.
             - Nikad ne crtaj graf, shemu ni sliku znakovima u tekstu (crtice, kose crte, točkice, blok koda): učenik to ne
               može pouzdano očitati. Ako zadatak treba graf ili crtež, opiši ga u polju "skica" (vidi SKICA).
 
@@ -174,8 +178,9 @@ public class VariationPrompt {
         return sb.toString();
     }
 
-    // Lekcija: naziv i stavke (ili tip, opis i primjer situacije za lekciju primjene) te stavke izravnih preduvjeta.
-    public String user(long objectiveId) {
+    // Lekcija: naziv i stavke (ili tip, opis i primjer situacije za lekciju primjene), stavke izravnih preduvjeta i
+    // stranice materijala na kojima se uči (iz opsega gradiva; lekcija primjene uzima stranice svojih preduvjeta).
+    public String user(long courseId, long objectiveId) {
         MapSqlParameterSource o = new MapSqlParameterSource("o", objectiveId);
         Map<String, Object> l = jdbc.queryForMap(
                 "SELECT objective_name, concept, kind, application_type, example_situation FROM learning_objective WHERE objective_id = :o", o);
@@ -197,6 +202,12 @@ public class VariationPrompt {
         sb.append("\n\nUČENIK VEĆ ZNA (stavke preduvjeta):\n");
         if (known.isEmpty()) sb.append("—");
         known.forEach(k -> sb.append("- ").append(k).append('\n'));
+        List<String> pages = plan.outcomePages(courseId, jdbc.queryForList("""
+                SELECT DISTINCT po.page_ids FROM knowledge_item k JOIN plan_outcome po ON po.outcome_id = k.outcome_id
+                WHERE k.duplicate_of IS NULL AND (k.objective_id = :o OR (:application AND k.objective_id IN
+                    (SELECT prerequisite_id FROM objective_prerequisite WHERE objective_id = :o)))""",
+                o.addValue("application", PlanApplicationStep.LESSON_KIND.equals(l.get("kind"))), String.class));
+        if (!pages.isEmpty()) sb.append("\n\nGRADIVO IZ MATERIJALA (odavde učenik uči za test):\n").append(String.join("\n\n", pages));
         return sb.toString();
     }
 }

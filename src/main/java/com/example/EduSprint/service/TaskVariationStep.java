@@ -87,7 +87,7 @@ public class TaskVariationStep implements BuildStep {
         if (variation == 1) {
             v = in.has("draft") && job.attempts() <= 1
                     ? in.get("draft")
-                    : plan.json(llm.chat(job, writerModel, prompt.system(job.courseId()), prompt.user(objectiveId), options()).content());
+                    : plan.json(llm.chat(job, writerModel, prompt.system(job.courseId()), prompt.user(job.courseId(), objectiveId), options()).content());
             problems = checks.problems(v);
         } else {
             List<java.util.Map<String, Object>> existing = jdbc.queryForList("""

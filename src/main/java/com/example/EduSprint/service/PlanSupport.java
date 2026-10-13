@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +62,18 @@ public class PlanSupport {
         List<String> rows = jdbc.queryForList("SELECT text FROM assumed_knowledge WHERE course_id = :c ORDER BY assumed_id",
                 new MapSqlParameterSource("c", course.courseId()), String.class);
         return rows.isEmpty() ? List.of(defaultAssumedKnowledge(course.level())) : rows;
+    }
+
+    // Stranice materijala na kojima se obrađuju ishodi (plan_outcome.page_ids, JSON popisi page_id), redom materijala.
+    List<String> outcomePages(long courseId, Collection<String> pageIdsJson) {
+        List<Long> ids = new ArrayList<>();
+        for (String json : pageIdsJson) readJson(json).forEach(n -> ids.add(n.asLong()));
+        if (ids.isEmpty()) return List.of();
+        return jdbc.queryForList("""
+                SELECT '### ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
+                FROM material_page p JOIN course_material m ON m.material_id = p.material_id
+                WHERE p.page_id IN (:p) AND m.course_id = :c AND p.markdown IS NOT NULL ORDER BY m.material_id, p.page_no""",
+                new MapSqlParameterSource("p", ids).addValue("c", courseId), String.class);
     }
 
     // Stranice materijala koje učenik smije koristiti na ispitu (npr. knjižica formula), po stranicama.

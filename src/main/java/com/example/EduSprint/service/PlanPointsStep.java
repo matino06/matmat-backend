@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,16 +78,8 @@ public class PlanPointsStep implements BuildStep {
                 new MapSqlParameterSource("o", outcomeId));
         String pagesJson = (String) outcome.remove("page_ids");
         String user = "OVAJ ISHOD:\n" + plan.toJson(outcome);
-        List<Long> pageIds = new ArrayList<>();
-        if (pagesJson != null) plan.readJson(pagesJson).forEach(n -> pageIds.add(n.asLong()));
-        if (!pageIds.isEmpty()) {
-            List<String> pages = jdbc.queryForList("""
-                    SELECT '### ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
-                    FROM material_page p JOIN course_material m ON m.material_id = p.material_id
-                    WHERE p.page_id IN (:p) AND m.course_id = :c AND p.markdown IS NOT NULL ORDER BY m.material_id, p.page_no""",
-                    new MapSqlParameterSource("p", pageIds).addValue("c", job.courseId()), String.class);
-            if (!pages.isEmpty()) user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA:\n" + String.join("\n\n", pages);
-        }
+        List<String> pages = plan.outcomePages(job.courseId(), Collections.singletonList(pagesJson));
+        if (!pages.isEmpty()) user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA:\n" + String.join("\n\n", pages);
 
         JsonNode out = plan.json(llm.chat(job, plan.planModel, system, user, OwnCourseLlm.Options.of("medium", 12000)).content());
         jdbc.update("DELETE FROM knowledge_item WHERE outcome_id = :o", new MapSqlParameterSource("o", outcomeId));
