@@ -37,4 +37,15 @@ class PlanApplicationStepTest {
                 ]}"""), POSITIONS);
         assertTrue(out.isEmpty());
     }
+
+    @Test
+    void materialQuestionsAreTakenFromTheirSection() {
+        String page = "Gustoća je svojstvo tvari.\nNAUČILI SMO\nGustoća je količnik mase i volumena.\n\nPitanja i zadatci\n"
+                + "1. Odredi gustoću svog tijela.\n2. Izračunaj u kojem slučaju nosiš veću masu: 5 litara vode ili 5 litara ulja.";
+        List<String> parts = PlanApplicationStep.taskParts(page);
+        assertEquals(1, parts.size());
+        assertTrue(parts.get(0).startsWith("Pitanja i zadatci"));
+        assertTrue(parts.get(0).contains("5 litara ulja"));
+        assertTrue(PlanApplicationStep.taskParts("Samo tekst bez pitanja.").isEmpty());
+    }
 }

@@ -38,11 +38,14 @@ public class PlanApplicationStep implements BuildStep {
 
             Pravila:
             1. Ne radi lekciju primjene za ono što zadatak lekcije koncepta već pokriva (izravna primjena jedne formule iz te lekcije).
-            2. Po cjelini 1–3 lekcije primjene, za tipove koji se na testovima stvarno pojavljuju. Na kraju područja jedna miješana.
-               Ukupno otprilike 40–60 %% broja lekcija koncepata.
-            3. Pokrij većinu tipova zadataka iz gradiva, ne nužno sve; važnije je da su pokriveni najčešći.
-            4. Tipove biraj iz GRADIVA (stavke lekcija). Zadaci s ispita služe samo da vidiš koje vrste zadataka postoje.
-               Nikad ne kopiraj zadatak s ispita: primjer situacije mora imati drugi kontekst i druge brojeve.
+            2. Lekcija primjene smije uvježbavati SAMO tip zadatka koji se pojavljuje u materijalu: u pitanjima i zadacima iz
+               materijala ili u zadacima s ispita (ispod). Tip zadatka kojeg u materijalu nema (npr. graf, smjese, udjeli, ako ih
+               materijal ne traži) ne smije biti lekcija primjene, čak ni kad bi bio dobra vježba: učenik bi učio nešto što ne
+               dolazi na test. Bolje je manje lekcija primjene nego jedna suvišna.
+            3. Po cjelini 0–2 lekcije primjene, samo za tipove koji su u materijalu; miješana na kraju područja samo ako materijal
+               ima zadatke koji spajaju više cjelina. Ukupno najviše oko 40 %% broja lekcija koncepata.
+            4. Težina kao zadaci u materijalu.%s Ne kopiraj zadatke iz materijala ni s ispita: primjer situacije mora imati drugi
+               kontekst i druge brojeve.
             5. Nulta pretpostavka: lekcija primjene koristi samo koncepte iz lekcija koje navedeš u „koristi“ (i njihovih preduvjeta).
             6. Zadatak lekcije primjene ima najviše tri podzadatka a), b), c).
 
@@ -104,11 +107,52 @@ public class PlanApplicationStep implements BuildStep {
                 : "ZADACI S ISPITA (samo da vidiš koje vrste postoje, ne kopiraj ih):\n" + String.join("\n", tasks);
 
         PlanSupport.CourseInfo course = plan.course(job.courseId());
-        JsonNode out = plan.json(llm.chat(job, plan.planModel, SYSTEM.formatted(course.describe(), String.join("\n", lessons.values())),
+        String materialTasks = materialTasks(job.courseId());
+        user += materialTasks.isEmpty()
+                ? "\n\nU materijalu nema pitanja ni zadataka: lekcije primjene radi samo za tipove koje stavke lekcija izravno traže, najviše jednu po cjelini."
+                : "\n\nPITANJA I ZADACI IZ MATERIJALA (to su tipovi koji dolaze na test):\n" + materialTasks;
+        String level = "os78".equals(course.level())
+                ? " Učenik je u 7.–8. razredu: samo zadaci niske i srednje složenosti, računa se korak po korak jednom nepoznanicom."
+                : "";
+        JsonNode out = plan.json(llm.chat(job, plan.planModel, SYSTEM.formatted(course.describe(), level, String.join("\n", lessons.values())),
                 user, OwnCourseLlm.Options.of("medium", 16000)).content());
         List<Application> applications = parse(out, positions);
         transactions.executeWithoutResult(tx -> write(job.courseId(), applications));
         return applications.size() + " lekcija primjene";
+    }
+
+    static final int MATERIAL_TASKS_MAX = 30000;
+    static final java.util.regex.Pattern TASK_HEADING = java.util.regex.Pattern.compile(
+            "(?im)^.*(pitanja i zadat|pitanja i zadac|zadatci|zadaci|riješeni primjer|primjer\\b|vježba).*$");
+
+    // Pitanja i zadaci iz samog materijala (dijelovi stranica od naslova „Pitanja i zadatci“, „Primjer“ i sl.).
+    String materialTasks(long courseId) {
+        StringBuilder out = new StringBuilder();
+        for (Map<String, Object> page : jdbc.queryForList("""
+                SELECT m.original_name, p.page_no, p.markdown FROM material_page p
+                JOIN course_material m ON m.material_id = p.material_id
+                WHERE m.course_id = :c AND p.kind IN ('skripta', 'kurikulum') AND p.markdown IS NOT NULL
+                ORDER BY m.material_id, p.page_no""", new MapSqlParameterSource("c", courseId))) {
+            for (String part : taskParts(String.valueOf(page.get("markdown")))) {
+                if (out.length() + part.length() > MATERIAL_TASKS_MAX) return out.toString();
+                out.append("### ").append(page.get("original_name")).append(", str. ").append(page.get("page_no")).append('\n')
+                        .append(part).append("\n\n");
+            }
+        }
+        return out.toString();
+    }
+
+    static List<String> taskParts(String markdown) {
+        List<String> parts = new ArrayList<>();
+        java.util.regex.Matcher m = TASK_HEADING.matcher(markdown);
+        int last = -1;
+        while (m.find()) {
+            if (m.start() < last) continue;
+            int end = Math.min(markdown.length(), m.start() + 1500);
+            parts.add(markdown.substring(m.start(), end).strip());
+            last = end;
+        }
+        return parts;
     }
 
     // Zadržava lekcije poznatog tipa koje koriste postojeće lekcije koncepata; mjesto je iza zadnje od njih.

@@ -21,7 +21,8 @@ public class PlanScopeStep implements BuildStep {
             - Ako materijal ima ispitni katalog ili kurikulum, ishodi su njegovi ishodi, a razrada doslovno ono što piše uz njih.
             - Ako ga nema, ishodi su glavne teme skripte (otprilike jedna po poglavlju), a razrada su njihove podteme.
             - Ne izmišljaj ništa čega u materijalu nema. Poredaj ishode redom kojim se uče.
-            Vrati JSON {"ishodi":[{"oznaka":"oznaka iz kataloga ili prazno","naslov":"…","razrada":["…"]}]}.""";
+            - Uz svaki ishod navedi stranice materijala na kojima se obrađuje (broj iz zaglavlja „[stranica N]“).
+            Vrati JSON {"ishodi":[{"oznaka":"oznaka iz kataloga ili prazno","naslov":"…","razrada":["…"],"stranice":[N]}]}.""";
 
     private final NamedParameterJdbcTemplate jdbc;
     private final OwnCourseLlm llm;
@@ -56,15 +57,21 @@ public class PlanScopeStep implements BuildStep {
         JsonNode outcomes = out.path("ishodi");
         if (!outcomes.isArray() || outcomes.isEmpty()) throw new IllegalStateException("Model nije našao nijedan ishod.");
 
+        java.util.Set<Long> coursePages = new java.util.HashSet<>(jdbc.queryForList("""
+                SELECT p.page_id FROM material_page p JOIN course_material m ON m.material_id = p.material_id WHERE m.course_id = :c""",
+                c, Long.class));
         jdbc.update("DELETE FROM plan_outcome WHERE course_id = :c", c); // ponovljeni korak počinje ispočetka
         int position = 0;
         for (JsonNode o : outcomes) {
             String title = o.path("naslov").asText("").strip();
             if (title.isEmpty()) continue;
-            jdbc.update("INSERT INTO plan_outcome (course_id, position, code, title, details) VALUES (:c, :p, :code, :t, :d)",
+            List<Long> pageIds = new java.util.ArrayList<>();
+            for (JsonNode p : o.path("stranice")) if (coursePages.contains(p.asLong())) pageIds.add(p.asLong());
+            jdbc.update("INSERT INTO plan_outcome (course_id, position, code, title, details, page_ids) VALUES (:c, :p, :code, :t, :d, :pages)",
                     new MapSqlParameterSource(Map.of("c", job.courseId(), "p", ++position, "t", title))
                             .addValue("code", o.path("oznaka").asText("").strip())
-                            .addValue("d", plan.toJson(o.path("razrada"))));
+                            .addValue("d", plan.toJson(o.path("razrada")))
+                            .addValue("pages", pageIds.isEmpty() ? null : pageIds.toString()));
         }
         if (jdbc.queryForObject("SELECT count(*) FROM build_job WHERE course_id = :c AND kind = 'plan_exam_tasks'", c, Integer.class) == 0) {
             List<Long> exams = jdbc.queryForList("""
@@ -85,7 +92,7 @@ public class PlanScopeStep implements BuildStep {
 
     private List<String> pages(long courseId, String kinds) {
         return jdbc.queryForList("""
-                SELECT '### ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
+                SELECT '### [stranica ' || p.page_id || '] ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
                 FROM material_page p JOIN course_material m ON m.material_id = p.material_id
                 WHERE m.course_id = :c AND p.kind IN """ + kinds + " AND p.markdown IS NOT NULL ORDER BY m.material_id, p.page_no",
                 new MapSqlParameterSource("c", courseId), String.class);

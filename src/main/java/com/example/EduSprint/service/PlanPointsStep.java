@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,10 @@ public class PlanPointsStep implements BuildStep {
             ali značenje veličine i kada se formula koristi jesu.
             Uzmi samo stavke koje pripadaju OVOM ishodu (ostali imaju svoje pozive). Uključi sve što traži razrada
             i sve što zadaci s ispita iz ovog područja zahtijevaju. Poredaj ih redom učenja.
+            Kad je uz ishod priloženo GRADIVO IZ MATERIJALA, stavke izvlači samo iz njega: ništa ne dodaji iz svojeg
+            znanja (pojam, formulu, primjer, popis, iznimku), čak ni kad bi to bilo korisno. Što gradivo samo spominje,
+            stavka samo spominje: ako piše „SI ima sedam osnovnih jedinica“, ne nabrajaj ih. Cilj je da učenik nauči
+            točno ono što je u materijalu, jer to dolazi na test, i ništa više.
             Vrati JSON {"stavke":[{"tekst":"…","vrsta":"formula|definicija|pojava|postupak|zamka"}]}.""";
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -69,9 +74,20 @@ public class PlanPointsStep implements BuildStep {
                 + (tasks.isEmpty() ? "" : "\n\nZADACI S ISPITA IZ MATERIJALA:\n" + String.join("\n", tasks))
                 + "\n\n" + plan.availableOnExam(job.courseId());
 
-        Map<String, Object> outcome = jdbc.queryForMap("SELECT code, title, details FROM plan_outcome WHERE outcome_id = :o",
+        Map<String, Object> outcome = jdbc.queryForMap("SELECT code, title, details, page_ids FROM plan_outcome WHERE outcome_id = :o",
                 new MapSqlParameterSource("o", outcomeId));
+        String pagesJson = (String) outcome.remove("page_ids");
         String user = "OVAJ ISHOD:\n" + plan.toJson(outcome);
+        List<Long> pageIds = new ArrayList<>();
+        if (pagesJson != null) plan.readJson(pagesJson).forEach(n -> pageIds.add(n.asLong()));
+        if (!pageIds.isEmpty()) {
+            List<String> pages = jdbc.queryForList("""
+                    SELECT '### ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
+                    FROM material_page p JOIN course_material m ON m.material_id = p.material_id
+                    WHERE p.page_id IN (:p) AND m.course_id = :c AND p.markdown IS NOT NULL ORDER BY m.material_id, p.page_no""",
+                    new MapSqlParameterSource("p", pageIds).addValue("c", job.courseId()), String.class);
+            if (!pages.isEmpty()) user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA:\n" + String.join("\n\n", pages);
+        }
 
         JsonNode out = plan.json(llm.chat(job, plan.planModel, system, user, OwnCourseLlm.Options.of("medium", 12000)).content());
         jdbc.update("DELETE FROM knowledge_item WHERE outcome_id = :o", new MapSqlParameterSource("o", outcomeId));

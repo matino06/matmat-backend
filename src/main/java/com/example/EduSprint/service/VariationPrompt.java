@@ -105,7 +105,8 @@ public class VariationPrompt {
 
             - Učenik je u 7. ili 8. razredu osnovne škole: računaj samo osnovnim računskim operacijama, omjerima i jednostavnim
               jednadžbama s jednom nepoznanicom. Nikad ne traži sustav jednadžbi, dvije nepoznanice ni množenje zagrada; ako
-              zadatak to traži, promijeni ga tako da se rješava korak po korak.""";
+              zadatak to traži, promijeni ga tako da se rješava korak po korak. Težina neka bude niska ili srednja, kao zadaci
+              u školskom udžbeniku za taj razred.""";
     static final String PHYSICS_MISTAKES = """
 
             - Težina NIJE sila teža: sila teža je sila kojom Zemlja privlači tijelo, težina je sila kojom tijelo
