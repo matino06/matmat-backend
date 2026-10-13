@@ -60,25 +60,30 @@ public class VariationPrompt {
               "skica": null. Ne crtaš ti: aplikacija iz opisa sama nacrta crtež i provjeri ga.
             - Brojevi u skici moraju odgovarati zadatku i rješenju. Ako učenik nešto treba očitati sa skice, ne piši tu
               vrijednost u tekst zadatka, nego se pozovi na sliku („Očitaj sa slike…“); u objašnjenju je navedi.
+            - Skica prikazuje samo zadane podatke i ono što učenik treba očitati, nikad ono što treba izračunati ili prebrojiti:
+              npr. ne dijeli plohu na pločice kad se traži broj pločica, ne crtaj razinu vode kad se traži njezina visina
+              (tada „razina": null), ne označavaj točku čije koordinate učenik računa.
+            - Brojevi u primjerima ispod samo pokazuju oblik JSON-a. Nikad ih ne prepisuj u zadatak ni skicu: zadatak smisli sa
+              svojim brojevima, a skica ih prati.
             - Tipovi (točno ovakav JSON; null gdje nešto ne treba):
-              graf: {"tip":"graf","x":[0,40],"y":[0,120],"os_x":"V (cm³)","os_y":"m (g)","funkcije":[{"izraz":"3*x","oznaka":"A"}],
-                "tocke":[{"x":20,"y":60,"oznaka":"(20, 60)","na":"A","zadana":true}]} (izraz: x, brojevi, + - * / ^ i zagrade;
+              graf: {"tip":"graf","x":[0,70],"y":[0,140],"os_x":"V (cm³)","os_y":"m (g)","funkcije":[{"izraz":"1.7*x","oznaka":"A"}],
+                "tocke":[{"x":30,"y":51,"oznaka":"(30, 51)","na":"A","zadana":true}]} (izraz: x, brojevi, + - * / ^ i zagrade;
                 točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka)
-              koordinatni: {"tip":"koordinatni","x":[-3,5],"y":[-1,4],"tocke":[{"oznaka":"A","x":-2,"y":1,"zadana":true}],
+              koordinatni: {"tip":"koordinatni","x":[-6,7],"y":[-2,9],"tocke":[{"oznaka":"A","x":-5,"y":3,"zadana":true}],
                 "duzine":[["A","B"]],"polovista":[{"tocka":"M","od":["A","B"]}]}
-              trokut: {"tip":"trokut","stranice":{"a":6,"b":8,"c":10},"pravi_kut":"C","oznake":{"a":"6 cm","b":"8 cm","c":"?"},"kutovi":{"α":"?"}}
-              kruznica: {"tip":"kruznica","r":5,"tetiva":{"duljina":8},"oznake":{"r":"5 cm","tetiva":"8 cm","d":"?"}}
-              pravokutnik: {"tip":"pravokutnik","a":120,"b":80,"mreza":20,"oznake":{"a":"1,2 m","b":"80 cm"}} (a, b i mreza u istoj
-                jedinici; mreza = stranica jednog kvadratića ili pločice)
-              kvadar: {"tip":"kvadar","a":25,"b":16,"c":20,"razina":8,"oznake":{"a":"25 cm","b":"16 cm","c":"20 cm","razina":"h = ?"}}
-                (razina = visina tekućine u kvadru)
-              ljestvica: {"tip":"ljestvica","instrument":"menzura","od":40,"do":80,"razmak":4,"oznaka_svakih":20,"jedinica":"mL",
-                "vrijednosti":[48,68]} (instrument: menzura, vaga ili ravnalo; razmak = vrijednost najmanjeg podjeljka;
+              trokut: {"tip":"trokut","stranice":{"a":9,"b":12,"c":15},"pravi_kut":"C","oznake":{"a":"9 cm","b":"12 cm","c":"?"},"kutovi":{"α":"?"}}
+              kruznica: {"tip":"kruznica","r":13,"tetiva":{"duljina":24},"oznake":{"r":"13 cm","tetiva":"24 cm","d":"?"}}
+              pravokutnik: {"tip":"pravokutnik","a":270,"b":150,"mreza":null,"oznake":{"a":"2,7 m","b":"150 cm"}} (a, b i mreza u istoj
+                jedinici; mreza = stranica jednog kvadratića, samo kad mreža nije ono što se traži)
+              kvadar: {"tip":"kvadar","a":37,"b":19,"c":23,"razina":11,"oznake":{"a":"37 cm","b":"19 cm","c":"23 cm","razina":"11 cm"}}
+                (razina = visina tekućine u kvadru, ili null)
+              ljestvica: {"tip":"ljestvica","instrument":"menzura","od":0,"do":250,"razmak":5,"oznaka_svakih":50,"jedinica":"mL",
+                "vrijednosti":[135,170]} (instrument: menzura, vaga ili ravnalo; razmak = vrijednost najmanjeg podjeljka;
                 menzura: razina vode, ili dvije razine prije i poslije uranjanja; vaga: položaj kazaljke; ravnalo: početak i kraj predmeta)
-              sile: {"tip":"sile","podloga":{"vrsta":"kosina","kut":30},"sile":[{"oznaka":"G","smjer":"dolje","iznos":40,"zadana":false}],
+              sile: {"tip":"sile","podloga":{"vrsta":"kosina","kut":37},"sile":[{"oznaka":"G","smjer":"dolje","iznos":65,"zadana":false}],
                 "rastav":"G"} (vrsta: kosina ili vodoravna; smjer: dolje, gore, okomito_od_podloge, uz_kosinu, niz_kosinu, desno, lijevo)
-              strujni_krug: {"tip":"strujni_krug","izvor":{"oznaka":"U = 12 V"},"spoj":{"serijski":[{"R":"R₁ = 4 Ω"},
-                {"paralelno":[{"R":"R₂ = 6 Ω"},{"R":"R₃ = 3 Ω"}]}]},"instrumenti":[{"vrsta":"A"}]}
+              strujni_krug: {"tip":"strujni_krug","izvor":{"oznaka":"U = 9 V"},"spoj":{"serijski":[{"R":"R₁ = 7 Ω"},
+                {"paralelno":[{"R":"R₂ = 15 Ω"},{"R":"R₃ = 10 Ω"}]}]},"instrumenti":[{"vrsta":"A"}]}
 
             Odgovori isključivo kao json objekt {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja",
             "rezultati":{"a":"konačan odgovor","b":"…"},"skica":opis skice ili null}. U rezultatima za računske podzadatke broj
