@@ -31,7 +31,7 @@ public class FieldOfStudyController {
 
     @GetMapping
     public List<FieldOfStudy> getAllFieldsOfStudy() {
-        return fieldOfStudyRepository.findAll();
+        return fieldOfStudyRepository.findOfficial(); // područja vlastitih predmeta ne idu u izbornike
     }
 
     @GetMapping("/map")

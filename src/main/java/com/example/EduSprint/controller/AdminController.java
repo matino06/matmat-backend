@@ -37,10 +37,13 @@ public class AdminController {
     private final LearningObjectiveRepository learningObjectiveRepository;
     private final AiSettingsService aiSettingsService;
     private final AdminMockExamService adminMockExamService;
+    private final com.example.EduSprint.service.AdminOwnCourseService ownCourses;
 
     public AdminController(AccountService accountService, CourseService courseService,
                           CourseRepository courseRepository, LearningObjectiveRepository learningObjectiveRepository,
-                          AiSettingsService aiSettingsService, AdminMockExamService adminMockExamService) {
+                          AiSettingsService aiSettingsService, AdminMockExamService adminMockExamService,
+                          com.example.EduSprint.service.AdminOwnCourseService ownCourses) {
+        this.ownCourses = ownCourses;
         this.accountService = accountService;
         this.courseService = courseService;
         this.courseRepository = courseRepository;
@@ -128,6 +131,36 @@ public class AdminController {
         return ResponseEntity.ok(value == null ? "" : value);
     }
 
+    // --- vlastiti predmeti kreatora (samo za čitanje) ---
+
+    @GetMapping("/own-courses")
+    public ResponseEntity<List<java.util.Map<String, Object>>> ownCourses(Authentication authentication) {
+        if (!isAdmin(authentication)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.ok(ownCourses.courses());
+    }
+
+    @GetMapping("/own-courses/{courseId}/events")
+    public ResponseEntity<List<java.util.Map<String, Object>>> ownCourseEvents(Authentication authentication, @PathVariable Long courseId) {
+        if (!isAdmin(authentication)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.ok(ownCourses.events(courseId));
+    }
+
+    @GetMapping("/creators")
+    public ResponseEntity<List<java.util.Map<String, Object>>> creators(Authentication authentication) {
+        if (!isAdmin(authentication)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        return ResponseEntity.ok(ownCourses.creators());
+    }
+
+    // {email, isCreator?, monthlyQuotaUsd?}: izostavljeno polje ostaje kakvo jest.
+    @PutMapping("/creators")
+    public ResponseEntity<Void> updateCreator(Authentication authentication, @RequestBody java.util.Map<String, Object> body) {
+        if (!isAdmin(authentication)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        Object quota = body.get("monthlyQuotaUsd");
+        ownCourses.updateCreator((String) body.get("email"), (Boolean) body.get("isCreator"),
+                quota == null ? null : new java.math.BigDecimal(quota.toString()));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/courses/{courseId}/graph")
     public ResponseEntity<AdminCourseGraphDTO> getCourseGraph(Authentication authentication, @PathVariable Long courseId) {
         if (!isAdmin(authentication)) {
@@ -189,5 +222,10 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(adminMockExamService.updateQuestion(questionId, request));
+    }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<java.util.Map<String, String>> error(org.springframework.web.server.ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode()).body(java.util.Map.of("message", e.getReason() == null ? "" : e.getReason()));
     }
 }
