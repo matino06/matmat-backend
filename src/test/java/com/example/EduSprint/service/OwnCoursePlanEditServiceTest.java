@@ -191,4 +191,61 @@ class OwnCoursePlanEditServiceTest {
         verify(jdbc).update(contains("DELETE FROM objective_prerequisite op USING course_objective"), any(SqlParameterSource.class));
         verify(jdbc).update(contains("INSERT INTO account_objective"), argThat((SqlParameterSource p) -> Long.valueOf(7L).equals(p.getValue("a"))));
     }
+
+    private static void row(org.springframework.jdbc.core.RowCallbackHandler h, long a, long b) throws java.sql.SQLException {
+        java.sql.ResultSet rs = mock(java.sql.ResultSet.class);
+        when(rs.getLong(1)).thenReturn(a);
+        when(rs.getLong(2)).thenReturn(b);
+        h.processRow(rs);
+    }
+
+    @Test
+    void acceptedItemMoveAndPrerequisiteChangeTheirLessons() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        instructionJob(BuildJobQueue.DONE, """
+                {"poruka":"","operacije":[{"op":"premjesti_stavku","stavka":200,"u":11},{"op":"dodaj_preduvjet","id":13,"preduvjet":11}]}""");
+        doAnswer(inv -> { row(inv.getArgument(2), 200L, 12L); return null; })
+                .when(jdbc).query(contains("SELECT k.item_id, k.objective_id"), any(SqlParameterSource.class), any(org.springframework.jdbc.core.RowCallbackHandler.class));
+        List<Long> changed = service.accept(creator, 5, 70);
+        assertTrue(changed.containsAll(List.of(11L, 12L, 13L)), changed.toString());
+        verify(jdbc).update(contains("UPDATE knowledge_item SET objective_id"), argThat((SqlParameterSource p) -> Long.valueOf(11L).equals(p.getValue("o"))));
+        verify(jdbc).update(contains("INSERT INTO objective_prerequisite"), argThat((SqlParameterSource p) -> Long.valueOf(11L).equals(p.getValue("p"))));
+    }
+
+    private void warning(String kind, Long lesson, Long other) {
+        Map<String, Object> w = new HashMap<>();
+        w.put("kind", kind);
+        w.put("objective_id", lesson);
+        w.put("prerequisite_id", other);
+        when(jdbc.queryForList(contains("FROM plan_warning WHERE warning_id"), any(SqlParameterSource.class))).thenReturn(List.of(w));
+    }
+
+    @Test
+    void fixingAZeroAssumptionWarningChecksTheLessonAgainAndRepairsIt() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        warning("nulta", 11L, 12L);
+        service.fixWarning(creator, 5, 37);
+        verify(flow).fix(eq(5L), eq(7L), anyLong(), eq(List.of(11L)), eq(true));
+    }
+
+    @Test
+    void fixingAnOrderWarningInACycleDropsTheEdgeFirst() throws Exception {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        warning("redoslijed", 11L, 12L);
+        // 12 ovisi o 11, a 11 o 12: krug
+        doAnswer(inv -> { row(inv.getArgument(2), 12L, 11L); row(inv.getArgument(2), 11L, 12L); return null; })
+                .when(jdbc).query(contains("SELECT op.objective_id, op.prerequisite_id"), any(SqlParameterSource.class), any(org.springframework.jdbc.core.RowCallbackHandler.class));
+        service.fixWarning(creator, 5, 40);
+        verify(jdbc).update(contains("DELETE FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p"),
+                argThat((SqlParameterSource p) -> Long.valueOf(11L).equals(p.getValue("o")) && Long.valueOf(12L).equals(p.getValue("p"))));
+        verify(flow).fix(eq(5L), eq(7L), anyLong(), eq(List.of(11L)), eq(true));
+    }
+
+    @Test
+    void holesAndExamWarningsAreNotFixedByCode() {
+        course(PlanFinalizeStep.STATUS_DRAFT);
+        warning("rupa", 11L, null);
+        assertEquals(HttpStatus.BAD_REQUEST, status(() -> service.fixWarning(creator, 5, 35)));
+        verifyNoInteractions(flow);
+    }
 }

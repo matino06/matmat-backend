@@ -166,10 +166,14 @@ public class OwnCourseMaterialService {
         own(account, courseId);
         MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
         Map<Long, List<String>> items = new java.util.HashMap<>();
+        Map<Long, List<Long>> itemIds = new java.util.HashMap<>();
         jdbc.query("""
-                SELECT objective_id, text FROM knowledge_item
+                SELECT objective_id, text, item_id FROM knowledge_item
                 WHERE course_id = :c AND objective_id IS NOT NULL AND duplicate_of IS NULL ORDER BY position""", c,
-                rs -> { items.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getString(2)); });
+                rs -> {
+                    items.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getString(2));
+                    itemIds.computeIfAbsent(rs.getLong(1), k -> new java.util.ArrayList<>()).add(rs.getLong(3));
+                });
         Map<Long, List<Long>> pre = new java.util.HashMap<>();
         jdbc.query("""
                 SELECT op.objective_id, op.prerequisite_id FROM objective_prerequisite op
@@ -185,7 +189,8 @@ public class OwnCourseMaterialService {
                 WHERE co.course_id = :c ORDER BY co.position""", c,
                 (rs, i) -> new PlanLessonDTO(rs.getLong(1), rs.getInt(2), rs.getString(3), rs.getString(4), rs.getString(5),
                         rs.getString(6), rs.getString(7), items.getOrDefault(rs.getLong(1), List.of()),
-                        pre.getOrDefault(rs.getLong(1), List.of()), rs.getString(8), rs.getString(9)));
+                        pre.getOrDefault(rs.getLong(1), List.of()), rs.getString(8), rs.getString(9),
+                        itemIds.getOrDefault(rs.getLong(1), List.of())));
     }
 
     public List<PlanWarningDTO> warningList(Account account, long courseId) {

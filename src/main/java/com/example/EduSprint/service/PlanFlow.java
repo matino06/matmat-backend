@@ -87,8 +87,9 @@ public class PlanFlow {
             return;
         }
         long round = round(job);
+        String fix = fixLessons(job);
         if (round == 0) add(job, PlanCheckRepairStep.KIND, "provjera", null);
-        else add(job, PlanCheckRepairStep.KIND, "provjera " + round, "{\"recheck\":true}");
+        else add(job, PlanCheckRepairStep.KIND, "provjera " + round, "{\"recheck\":true" + (fix == null ? "" : ",\"fix\":[" + fix + "]") + "}");
     }
 
     // Ponovna provjera nakon izmjena kreatora (runda > 0): nulta pretpostavka jednom, samo za zadane lekcije,
@@ -109,6 +110,28 @@ public class PlanFlow {
             queue.enqueue(courseId, accountId, PlanCheckRepairStep.KIND, "provjera " + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
                     "{\"recheck\":true}");
         }
+    }
+
+    // „Popravi“ jedno upozorenje: lekcije se po potrebi ponovno provjere (nulta pretpostavka), a zatim popravak
+    // za njih radi kao pri izradi (dodaje preduvjete, premješta, prepravlja stavke); ostalo samo javlja.
+    void fix(long courseId, long accountId, long round, java.util.Collection<Long> lessons, boolean checkAgain) {
+        String ids = lessons.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+        if (!checkAgain) {
+            queue.enqueue(courseId, accountId, PlanCheckRepairStep.KIND, "provjera " + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"recheck\":true,\"fix\":[" + ids + "]}");
+            return;
+        }
+        for (Long o : lessons) {
+            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " r" + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"objectiveId\":" + o + ",\"run\":1,\"round\":" + round + ",\"fix\":[" + ids + "]}");
+        }
+    }
+
+    static String fixLessons(BuildJob job) {
+        String in = job.input();
+        if (in == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"fix\":\\[([0-9,]*)\\]").matcher(in);
+        return m.find() && !m.group(1).isEmpty() ? m.group(1) : null;
     }
 
     // Krug popravka pri izradi plana: lekcije s neriješenim crvenim nalazom ponovno prolaze nultu pretpostavku

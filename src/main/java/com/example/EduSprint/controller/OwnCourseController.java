@@ -154,6 +154,11 @@ public class OwnCourseController {
         return java.util.Map.of("changed", planEdit.accept(account(a), courseId, jobId));
     }
 
+    @PostMapping("/{courseId}/warnings/{warningId}/fix")
+    public void fixWarning(Authentication a, @PathVariable Long courseId, @PathVariable Long warningId) {
+        planEdit.fixWarning(account(a), courseId, warningId);
+    }
+
     @PostMapping("/{courseId}/warnings/{warningId}/add-lesson")
     public java.util.Map<String, Object> addLessonForWarning(Authentication a, @PathVariable Long courseId, @PathVariable Long warningId) {
         return java.util.Map.of("jobId", planEdit.instructForWarning(account(a), courseId, warningId));

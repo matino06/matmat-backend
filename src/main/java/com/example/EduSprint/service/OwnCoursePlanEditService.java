@@ -199,9 +199,16 @@ public class OwnCoursePlanEditService {
         List<Long> changed = new ArrayList<>();
         Set<Long> present = new HashSet<>(jdbc.queryForList("SELECT objective_id FROM course_objective WHERE course_id = :c",
                 new MapSqlParameterSource("c", courseId), Long.class));
+        Map<Long, Long> itemLesson = new HashMap<>();
+        jdbc.query("""
+                SELECT k.item_id, k.objective_id FROM knowledge_item k
+                JOIN course_objective co ON co.objective_id = k.objective_id AND co.course_id = :c WHERE k.duplicate_of IS NULL""",
+                new MapSqlParameterSource("c", courseId), rs -> { itemLesson.put(rs.getLong(1), rs.getLong(2)); });
         for (Object o : (List<?>) proposal.getOrDefault("operacije", List.of())) {
             Map<?, ?> op = (Map<?, ?>) o;
             Long a = num(op.get("a")), b = num(op.get("b")), id = num(op.get("id")), after = num(op.get("iza"));
+            Long item = num(op.get("stavka")), to = num(op.get("u")), pre = num(op.get("preduvjet"));
+            String text = op.get("tekst") == null ? "" : String.valueOf(op.get("tekst")).strip();
             switch (String.valueOf(op.get("op"))) {
                 case "spoji" -> { if (present.contains(a) && present.contains(b)) { merge(courseId, a, b); present.remove(b); changed.add(a); } }
                 case "preimenuj" -> { if (present.contains(id)) { jdbc.update("UPDATE learning_objective SET objective_name = :n WHERE objective_id = :o",
@@ -220,6 +227,33 @@ public class OwnCoursePlanEditService {
                     present.add(insertLesson(account, courseId, subfield, position, validName(String.valueOf(op.get("naziv")))));
                 }
                 case "premjesti" -> { if (present.contains(id) && (after == null || present.contains(after))) { moveAfter(courseId, id, after); changed.add(id); } }
+                case "prepravi_stavku" -> { if (itemLesson.containsKey(item) && present.contains(itemLesson.get(item)) && !text.isEmpty()) {
+                    jdbc.update("UPDATE knowledge_item SET text = :t WHERE item_id = :i", new MapSqlParameterSource("i", item).addValue("t", text));
+                    changed.add(itemLesson.get(item)); } }
+                case "premjesti_stavku" -> { if (itemLesson.containsKey(item) && present.contains(to) && present.contains(itemLesson.get(item))) {
+                    changed.add(itemLesson.get(item));
+                    jdbc.update("""
+                            UPDATE knowledge_item SET objective_id = :o,
+                                   position = (SELECT COALESCE(max(position), 0) + 1 FROM knowledge_item WHERE objective_id = :o)
+                            WHERE item_id = :i""", new MapSqlParameterSource("i", item).addValue("o", to));
+                    itemLesson.put(item, to);
+                    changed.add(to); } }
+                case "dodaj_stavku" -> { if (present.contains(id) && !text.isEmpty()) {
+                    jdbc.update("""
+                            INSERT INTO knowledge_item (course_id, objective_id, position, text)
+                            SELECT :c, :o, COALESCE(max(position), 0) + 1, :t FROM knowledge_item WHERE objective_id = :o""",
+                            new MapSqlParameterSource("c", courseId).addValue("o", id).addValue("t", text));
+                    changed.add(id); } }
+                case "dodaj_preduvjet" -> { if (present.contains(id) && present.contains(pre) && !id.equals(pre)) {
+                    jdbc.update("""
+                            INSERT INTO objective_prerequisite (objective_id, prerequisite_id)
+                            SELECT :o, :p WHERE NOT EXISTS (SELECT 1 FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p)""",
+                            new MapSqlParameterSource("o", id).addValue("p", pre));
+                    changed.add(id); } }
+                case "ukloni_preduvjet" -> { if (present.contains(id) && pre != null) {
+                    jdbc.update("DELETE FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p",
+                            new MapSqlParameterSource("o", id).addValue("p", pre));
+                    changed.add(id); } }
                 default -> { }
             }
         }
@@ -228,6 +262,49 @@ public class OwnCoursePlanEditService {
                 new MapSqlParameterSource("j", jobId).addValue("o", toJson(proposal)));
         changed.removeIf(x -> !present.contains(x));
         return changed;
+    }
+
+    // „Popravi“ uz ozbiljno upozorenje: isti popravak kodom kao pri izradi plana, samo za tu lekciju.
+    // Nulta pretpostavka: lekcija se ponovno provjeri, pa popravak doda preduvjet, premjesti lekciju ili prepravi
+    // stavku. Redoslijed: ako nema kruga, lekcija ide iza preduvjeta; u krugu se brid miče, a provjera odluči treba li
+    // lekciji taj pojam stvarno. Troši kvotu (provjera i eventualno prepravak stavke).
+    public void fixWarning(Account account, long courseId, long warningId) {
+        draft(account, courseId);
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT kind, objective_id, prerequisite_id FROM plan_warning WHERE warning_id = :w AND course_id = :c",
+                new MapSqlParameterSource("w", warningId).addValue("c", courseId));
+        if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        String kind = (String) rows.get(0).get("kind");
+        Long lesson = rows.get(0).get("objective_id") == null ? null : ((Number) rows.get(0).get("objective_id")).longValue();
+        Long other = rows.get(0).get("prerequisite_id") == null ? null : ((Number) rows.get(0).get("prerequisite_id")).longValue();
+        if (lesson == null || !("nulta".equals(kind) || "redoslijed".equals(kind))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ovo upozorenje popravlja se uputom AI-ju ili ručno.");
+        }
+        long round = System.currentTimeMillis();
+        if ("redoslijed".equals(kind) && other != null && dependsOn(courseId, other, lesson)) {
+            jdbc.update("DELETE FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p",
+                    new MapSqlParameterSource("o", lesson).addValue("p", other));
+            flow.fix(courseId, account.getAccountId(), round, List.of(lesson), true);
+        } else {
+            flow.fix(courseId, account.getAccountId(), round, List.of(lesson), "nulta".equals(kind));
+        }
+    }
+
+    // Je li lekcija a (tranzitivno) ovisna o lekciji b?
+    private boolean dependsOn(long courseId, long a, long b) {
+        Map<Long, List<Long>> pre = new HashMap<>();
+        jdbc.query("""
+                SELECT op.objective_id, op.prerequisite_id FROM objective_prerequisite op
+                JOIN course_objective co ON co.objective_id = op.objective_id AND co.course_id = :c""",
+                new MapSqlParameterSource("c", courseId), rs -> { pre.computeIfAbsent(rs.getLong(1), k -> new ArrayList<>()).add(rs.getLong(2)); });
+        Deque<Long> stack = new ArrayDeque<>(List.of(a));
+        Set<Long> seen = new HashSet<>();
+        while (!stack.isEmpty()) {
+            long x = stack.pop();
+            if (x == b) return true;
+            if (seen.add(x)) stack.addAll(pre.getOrDefault(x, List.of()));
+        }
+        return false;
     }
 
     private Map<String, Object> instructionJob(long courseId, long jobId) {

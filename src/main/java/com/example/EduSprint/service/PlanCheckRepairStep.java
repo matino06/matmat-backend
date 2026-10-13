@@ -131,6 +131,10 @@ public class PlanCheckRepairStep implements BuildStep {
         boolean recheck = job.input() != null && plan.readJson(job.input()).path("recheck").asBoolean(false);
         int repair = job.input() == null ? 0 : plan.readJson(job.input()).path("repair").asInt(0);
         boolean lastRound = recheck || repair >= REPAIR_ROUNDS;
+        // „Popravi“ uz upozorenje: za te lekcije popravak radi kao pri izradi, za ostale samo javlja
+        Set<Long> fix = new HashSet<>();
+        if (job.input() != null) plan.readJson(job.input()).path("fix").forEach(n -> fix.add(n.asLong()));
+        boolean reorder = !recheck || !fix.isEmpty();
         long courseId = job.courseId();
         MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
         PlanSupport.CourseInfo course = plan.course(courseId);
@@ -185,14 +189,15 @@ public class PlanCheckRepairStep implements BuildStep {
                 case OK -> { }
                 case NOWHERE -> collect(findings, "rupa", lesson, -1, false, false, concept);
                 case ADD_PREREQUISITE, LATER -> {
-                    if (recheck) {
+                    if (recheck && !fix.contains(ids.get(lesson))) {
                         // nakon izmjena kreatora samo javljamo: preduvjet je možda namjerno maknut
                         boolean later = j.verdict() == Verdict.LATER;
                         collect(findings, "nulta", lesson, j.teacher(), later, later, concept);
                     } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
-                    } else if (f.get("item_id") != null && rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)) {
+                    } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)
+                            : rewriteMentions(job, course, ids.get(lesson), concept)) {
                         rewritten++;
                         // nalaz je riješen: da ga kasnija provjera ne prijavi ponovno, briše se; lekcija se još jednom provjerava
                         jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
@@ -209,7 +214,7 @@ public class PlanCheckRepairStep implements BuildStep {
         for (Finding f : findings.values()) warnings.add(toWarning(f, ids, names));
 
         // Pri izradi se lekcije slažu ispočetka; nakon izmjena kreatora redoslijed ostaje njegov i samo se javlja.
-        PlanRepair.Order order = recheck ? currentOrder(pre) : PlanRepair.topoOrder(pre);
+        PlanRepair.Order order = reorder ? PlanRepair.topoOrder(pre) : currentOrder(pre);
         List<long[]> dropped = new ArrayList<>();
         for (int[] b : order.backwards()) {
             int lesson = order.order().get(b[0]), prerequisite = order.order().get(b[1]);
@@ -243,7 +248,7 @@ public class PlanCheckRepairStep implements BuildStep {
         }
 
         transactions.executeWithoutResult(tx -> {
-            for (int k = 0; !recheck && k < order.order().size(); k++) {
+            for (int k = 0; reorder && k < order.order().size(); k++) {
                 jdbc.update("UPDATE course_objective SET position = :p WHERE course_id = :c AND objective_id = :o",
                         new MapSqlParameterSource("c", courseId).addValue("p", k + 1).addValue("o", ids.get(order.order().get(k))));
             }
@@ -333,6 +338,22 @@ public class PlanCheckRepairStep implements BuildStep {
                     new MapSqlParameterSource("c", courseId).addValue("f", e.getKey())
                             .addValue("w", BigDecimal.valueOf(100.0 * e.getValue() / touches).setScale(1, RoundingMode.HALF_UP)));
         }
+    }
+
+    // Model nije rekao koja stavka koristi pojam: prepravljaju se stavke lekcije u kojima se pojam spominje (najviše dvije).
+    private boolean rewriteMentions(BuildJob job, PlanSupport.CourseInfo course, long objectiveId, String concept) {
+        List<String> stems = Arrays.stream(conceptKey(concept).split(" ")).filter(w -> w.length() >= 4).toList();
+        if (stems.isEmpty()) return false;
+        int done = 0;
+        for (Map<String, Object> item : jdbc.queryForList(
+                "SELECT item_id, text FROM knowledge_item WHERE objective_id = :o AND duplicate_of IS NULL ORDER BY position",
+                new MapSqlParameterSource("o", objectiveId))) {
+            String text = String.valueOf(item.get("text")).toLowerCase(Locale.ROOT);
+            if (done < 2 && stems.stream().anyMatch(text::contains) && rewrite(job, course, ((Number) item.get("item_id")).longValue(), concept)) {
+                done++;
+            }
+        }
+        return done > 0;
     }
 
     private boolean rewrite(BuildJob job, PlanSupport.CourseInfo course, long itemId, String concept) {
