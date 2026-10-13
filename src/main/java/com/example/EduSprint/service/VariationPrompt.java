@@ -51,7 +51,8 @@ public class VariationPrompt {
             - Novi pojam uvedi tek kad ga podzadatak treba, jednom ili dvjema rečenicama: prvo što on JEST svakodnevnim
               jezikom, s usporedbom iz života, i zašto se tako zove. Tek onda formula. Pojam iz ranijih lekcija ne objašnjavaj ponovno.
             - Svaki korak objašnjava samo svoj podzadatak. Stavke lekcije koje zadatak ne pita ne stavljaj u korake, nego
-              prije Rezultata u odjeljak `## 📌 Zapamti` s 2–4 kratke natuknice; ako ih nema, izostavi taj odjeljak.
+              prije Rezultata u odjeljak `## 📌 Zapamti` s 2–4 kratke natuknice; ako ih nema, izostavi taj odjeljak. U
+              „Zapamti“ idu samo stavke ove lekcije, ne gradivo drugih lekcija s istih stranica materijala.
             %s%s
             - Pretvorbe jedinica napiši izričito prije uvrštavanja; uvrštavanje pokaži s brojevima; konačan rezultat
               \\textcolor{green}{…}.
