@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
@@ -14,7 +15,11 @@ import java.util.Map;
 
 // Admin pregled vlastitih predmeta: predmeti s kreatorom, stanjem i troškom, zapisnik izrade po predmetu,
 // te kreatori s mjesečnom kvotom i potrošnjom. Trošak dolazi iz build_cost (stvarni usage.cost poziva).
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class AdminOwnCourseService {
 
     static final int EVENT_LIMIT = 1000;

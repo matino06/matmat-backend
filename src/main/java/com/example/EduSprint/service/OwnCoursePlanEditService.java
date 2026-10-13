@@ -16,7 +16,11 @@ import java.util.*;
 // Izmjene plana vlastitog predmeta dok je „nacrt“ (ticket „Pregled i uređivanje plana“).
 // Nakon potvrde smije se samo preimenovati lekcija. Svaka izmjena odmah vrijedi; upozorenja osvježava
 // ponovna provjera koju frontend traži kad kreator napravi pauzu (recheck).
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class OwnCoursePlanEditService {
 
     private static final java.time.ZoneId ZAGREB = java.time.ZoneId.of("Europe/Zagreb");

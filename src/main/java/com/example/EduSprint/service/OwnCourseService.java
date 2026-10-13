@@ -20,7 +20,11 @@ import java.util.Locale;
 import java.util.Set;
 
 // Vlastiti predmeti kreatora: popis, izrada i potpuno brisanje.
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class OwnCourseService {
 
     public static final Set<String> SUBJECTS = Set.of("matematika", "fizika", "kemija", "biologija", "informatika", "ostalo");

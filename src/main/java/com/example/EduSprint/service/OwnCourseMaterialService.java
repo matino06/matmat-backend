@@ -24,7 +24,11 @@ import java.util.UUID;
 
 // Materijali vlastitog predmeta: upload preko presigned URL-a, provjera ograničenja,
 // procjena kvote, pokretanje izrade i napredak čitanja.
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class OwnCourseMaterialService {
 
     static final long MAX_FILE_BYTES = 100L * 1024 * 1024;

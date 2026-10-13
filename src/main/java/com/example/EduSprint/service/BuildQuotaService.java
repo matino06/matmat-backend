@@ -7,6 +7,7 @@ import com.example.EduSprint.repository.AccountRepository;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -16,7 +17,11 @@ import java.time.LocalDate;
 
 // Mjesečna kvota kreatora: zbroj stvarnog troška izrade (build_cost) u kalendarskom mjesecu
 // po hrvatskom vremenu, prema account.monthly_quota_usd. Varijacije zadataka se ne broje.
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class BuildQuotaService {
 
     private final NamedParameterJdbcTemplate jdbc;

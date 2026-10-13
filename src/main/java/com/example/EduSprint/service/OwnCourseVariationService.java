@@ -5,6 +5,7 @@ import com.example.EduSprint.entity.Task;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,11 @@ import java.util.Map;
 // Varijacije 2–4 vlastitog predmeta nastaju postupno: kad učenik riješi zadatak lekcije, izrađuje se sljedeća
 // varijacija (posao s prioritetom, ne troši kvotu). Učenik nikad ne ostaje bez zadatka: dok nova nije gotova,
 // rotacija (findTaskFromObjective) daje neku od postojećih.
+// U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
+// pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
+// međusobno blokirali čekajući slobodnu vezu.
 @Service
+@Transactional
 public class OwnCourseVariationService {
 
     // Stanje sljedeće varijacije za zadatak koji učenik upravo dobiva.
