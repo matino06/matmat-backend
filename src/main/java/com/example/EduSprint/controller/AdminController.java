@@ -98,13 +98,36 @@ public class AdminController {
                         (String) row[1],
                         (String) row[2],
                         ((Number) row[3]).longValue(),
-                        ((Number) row[4]).longValue()))
+                        ((Number) row[4]).longValue(),
+                        row[5] == null ? null : row[5].toString()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(courses);
     }
 
     // Full dependency graph for one course: objective nodes + prerequisite edges.
+    // Datum ispita službenog predmeta (npr. ljetni rok mature); do njega se ponavljanje sažima. Prazno briše datum.
+    @PutMapping("/courses/{courseId}/exam-date")
+    public ResponseEntity<String> setExamDate(Authentication authentication, @PathVariable Long courseId,
+                                              @RequestBody java.util.Map<String, String> body) {
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Course course = courseRepository.findCourseByCourseId(courseId).orElse(null);
+        if (course == null) return ResponseEntity.notFound().build();
+        if (course.getOwnerAccountId() != null) {
+            return ResponseEntity.badRequest().body("Datum ispita vlastitog predmeta upisuje kreator.");
+        }
+        String value = body.get("examDate");
+        try {
+            course.setExamDate(value == null || value.isBlank() ? null : java.time.LocalDate.parse(value));
+        } catch (java.time.format.DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("Neispravan datum.");
+        }
+        courseRepository.save(course);
+        return ResponseEntity.ok(value == null ? "" : value);
+    }
+
     @GetMapping("/courses/{courseId}/graph")
     public ResponseEntity<AdminCourseGraphDTO> getCourseGraph(Authentication authentication, @PathVariable Long courseId) {
         if (!isAdmin(authentication)) {

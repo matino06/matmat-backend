@@ -1,5 +1,6 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.entity.*;
 import com.example.EduSprint.repository.AccountObjectiveRepository;
 import com.example.EduSprint.repository.AccountRepository;
@@ -8,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,7 +69,9 @@ public class AccountObjectiveService {
         Short lastQ = accountObjective.getLastQ();
         Instant newSolvedTaskEndTime = newSolvedTask.getEndTime();
 
-        accountObjective.setI(nextInterval(accountObjective, q, newSolvedTaskEndTime));
+        Course course = newSolvedTask.getCourse();
+        accountObjective.setI(capToExam(nextInterval(accountObjective, q, newSolvedTaskEndTime),
+                newSolvedTaskEndTime, course == null ? null : course.getExamDate()));
         if (q >= 3) {
             if (lastQ == null && q.equals((short)5)) {
                 accountObjective.setN((short)2);
@@ -105,11 +110,24 @@ public class AccountObjectiveService {
         }
 
         Instant now = Instant.now();
+        Course course = account.getCurrentCourse();
         short[] intervals = new short[6];
         for (short q = 0; q <= 5; q++) {
-            intervals[q] = nextInterval(accountObjective.get(), q, now);
+            intervals[q] = capToExam(nextInterval(accountObjective.get(), q, now), now, course == null ? null : course.getExamDate());
         }
         return intervals;
+    }
+
+    /**
+     * Datum ispita: dok je ispit pred nama, sljedeće ponavljanje dolazi najkasnije dan prije ispita
+     * (sažeto ponavljanje). Bez datuma, na dan ispita i nakon njega SM-2 interval ostaje kakav jest.
+     */
+    static short capToExam(short interval, Instant solvedAt, LocalDate examDate) {
+        if (examDate == null) return interval;
+        LocalDate solvedDay = solvedAt.atZone(AppTime.ZONE).toLocalDate();
+        if (!solvedDay.isBefore(examDate)) return interval;
+        long untilDayBefore = ChronoUnit.DAYS.between(solvedDay, examDate.minusDays(1));
+        return (short) Math.max(1, Math.min(interval, untilDayBefore));
     }
 
     /** SM-2 interval (in days) the objective gets after being rated q at the given time. */

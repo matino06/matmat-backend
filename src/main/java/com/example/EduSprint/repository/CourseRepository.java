@@ -21,17 +21,20 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     // Službeni predmet na koji se vraća račun kojemu je obrisan trenutni vlastiti predmet.
     Optional<Course> findFirstByOwnerAccountIdIsNullOrderByCourseIdAsc();
 
-    // Admin overview: every course with how many objectives (and tasks within those objectives) it holds.
+    // Admin overview: every official course with how many objectives (and tasks within those objectives) it holds.
+    // Own courses of creators are listed separately.
     @Query(value = """
                 SELECT c.course_id,
                        c.course_name,
                        c.course_description,
                        COUNT(DISTINCT co.objective_id) AS objective_count,
-                       COUNT(DISTINCT t.task_id)        AS task_count
+                       COUNT(DISTINCT t.task_id)        AS task_count,
+                       c.exam_date
                 FROM course c
                 LEFT JOIN course_objective co ON co.course_id = c.course_id
                 LEFT JOIN task t ON t.objective_id = co.objective_id
-                GROUP BY c.course_id, c.course_name, c.course_description
+                WHERE c.owner_account_id IS NULL
+                GROUP BY c.course_id, c.course_name, c.course_description, c.exam_date
                 ORDER BY c.course_id
             """, nativeQuery = true)
     List<Object[]> findAllCoursesWithCounts();

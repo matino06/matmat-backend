@@ -6,8 +6,11 @@ public class AdminCourseDTO {
     private String courseDescription;
     private long objectiveCount;
     private long taskCount;
+    private String examDate;
 
-    public AdminCourseDTO(Long courseId, String courseName, String courseDescription, long objectiveCount, long taskCount) {
+    public AdminCourseDTO(Long courseId, String courseName, String courseDescription, long objectiveCount, long taskCount,
+                          String examDate) {
+        this.examDate = examDate;
         this.courseId = courseId;
         this.courseName = courseName;
         this.courseDescription = courseDescription;
@@ -45,6 +48,10 @@ public class AdminCourseDTO {
 
     public void setObjectiveCount(long objectiveCount) {
         this.objectiveCount = objectiveCount;
+    }
+
+    public String getExamDate() {
+        return examDate;
     }
 
     public long getTaskCount() {
