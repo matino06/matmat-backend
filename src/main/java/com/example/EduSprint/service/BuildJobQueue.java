@@ -100,10 +100,11 @@ public class BuildJobQueue {
     }
 
     // Globalni limit ključa: isto kao kvota, ali za sve kreatore; vraća se u red periodično.
-    public void markPaused(BuildJob job) {
+    // Razlog pauze (odgovor OpenRoutera) ostaje u error, da se vidi u adminovu zapisniku izrade.
+    public void markPaused(BuildJob job, String reason) {
         jdbc.update("""
-                UPDATE build_job SET status = 'paused', attempts = attempts - 1, lease_until = NULL
-                WHERE job_id = :id""", new MapSqlParameterSource("id", job.jobId()));
+                UPDATE build_job SET status = 'paused', attempts = attempts - 1, lease_until = NULL, error = :e
+                WHERE job_id = :id""", new MapSqlParameterSource("id", job.jobId()).addValue("e", reason));
     }
 
     // Posao u radu čiji je najam istekao (instanca je pala ili redeployana) vraća se u red.

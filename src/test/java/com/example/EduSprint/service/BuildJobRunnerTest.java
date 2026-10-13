@@ -60,7 +60,7 @@ class BuildJobRunnerTest {
     void globalLimitPausesInsteadOfFailing() {
         BuildJob j = job("read_page", true);
         runner(step("read_page", null, new OwnCourseLlm.GlobalLimitException("OpenRouter 403 limit", null))).run(j);
-        verify(queue).markPaused(j);
+        verify(queue).markPaused(j, "OpenRouter 403 limit");
         verify(queue, never()).fail(any(), any());
     }
 

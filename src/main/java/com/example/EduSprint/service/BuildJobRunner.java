@@ -104,7 +104,8 @@ public class BuildJobRunner {
             queue.complete(job, step.run(job));
             step.afterComplete(job);
         } catch (OwnCourseLlm.GlobalLimitException e) {
-            queue.markPaused(job);
+            log.warn("Korak {} posla {} pauziran, OpenRouter je odbio poziv: {}", job.kind(), job.jobId(), e.getMessage());
+            queue.markPaused(job, e.getMessage());
             alertGlobalLimit(e.getMessage());
         } catch (Exception e) {
             log.warn("Korak {} posla {} nije uspio (pokušaj {}): {}", job.kind(), job.jobId(), job.attempts(), e.getMessage());
