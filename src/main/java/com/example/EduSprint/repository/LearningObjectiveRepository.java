@@ -11,8 +11,18 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+// Vlastiti predmet ima redoslijed lekcija iz plana (course_objective.position); službeni predmeti ga nemaju
+// (NULL), pa „co.position NULLS LAST“ u poretku njima ništa ne mijenja.
 public interface LearningObjectiveRepository extends JpaRepository<LearningObjective, Long> {
     List<LearningObjective> findAllBySubfield(SubfieldOfStudy subfield);
+
+    // Lekcije službenih predmeta (bez lekcija vlastitih predmeta drugih kreatora).
+    @Query(value = """
+                SELECT lo.* FROM learning_objective lo
+                WHERE NOT EXISTS (SELECT 1 FROM course_objective co JOIN course c ON c.course_id = co.course_id
+                                  WHERE co.objective_id = lo.objective_id AND c.owner_account_id IS NOT NULL)
+            """, nativeQuery = true)
+    List<LearningObjective> findOfficial();
 
     @Query("SELECT lo FROM LearningObjective lo " +
             "WHERE lo.subfield.subfieldId = :subfieldId " +
@@ -50,7 +60,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 WHERE EXISTS (
                     SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
                 )
-                ORDER BY s.subfield_id, is_unlocked DESC,
+                ORDER BY s.subfield_id, is_unlocked DESC, co.position NULLS LAST,
                          (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
                          lo.objective_id
             """, nativeQuery = true)
@@ -106,7 +116,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 WHERE EXISTS (
                     SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
                 )
-                ORDER BY fo.field_id, s.subfield_id,
+                ORDER BY fo.field_id, s.subfield_id, co.position NULLS LAST,
                          COALESCE((SELECT MAX(depth) FROM objective_depth od WHERE od.objective_id = lo.objective_id), 0),
                          lo.objective_id
             """, nativeQuery = true)
@@ -136,7 +146,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
     LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
@@ -179,7 +189,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
     LearningObjective findNextLearningObjectiveInField(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo, @Param("fieldId") Long fieldId);
@@ -208,7 +218,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
     List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
@@ -322,7 +332,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 INNER JOIN course_objective co ON co.objective_id = lo.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
                 LEFT JOIN field_of_study f ON s.field_id = f.field_id
-                ORDER BY f.field_id, s.subfield_id, lo.objective_id
+                ORDER BY f.field_id, s.subfield_id, co.position NULLS LAST, lo.objective_id
             """, nativeQuery = true)
     List<Object[]> findCourseObjectiveNodes(@Param("courseId") Long courseId);
 

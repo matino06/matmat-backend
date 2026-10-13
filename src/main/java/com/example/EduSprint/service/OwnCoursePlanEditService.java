@@ -288,6 +288,19 @@ public class OwnCoursePlanEditService {
         if (lessons.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Plan nema lekcija.");
         course.setStatus(TaskVariationStep.STATUS_CONFIRMED);
         courseRepository.save(course);
+        // Učenje ide redom plana: preduvjet koji je u planu iza lekcije (krug ili upozorenje o redoslijedu koje je
+        // kreator prihvatio) zauvijek bi zaključao lekciju, pa se takvi bridovi uklanjaju.
+        jdbc.update("""
+                DELETE FROM objective_prerequisite op USING course_objective a, course_objective p
+                WHERE a.course_id = :c AND p.course_id = :c AND a.objective_id = op.objective_id
+                  AND p.objective_id = op.prerequisite_id AND p.position >= a.position""", c);
+        // Ponavljanje radi preko account_objective: kreator dobiva redove za sve lekcije (kao novi račun za službene).
+        jdbc.update("""
+                INSERT INTO account_objective (account_id, objective_id, ef, i, n, last_solved_date)
+                SELECT :a, co.objective_id, 2.5, 0, 0, now() FROM course_objective co
+                WHERE co.course_id = :c AND NOT EXISTS (
+                    SELECT 1 FROM account_objective ao WHERE ao.account_id = :a AND ao.objective_id = co.objective_id)""",
+                new MapSqlParameterSource("c", courseId).addValue("a", account.getAccountId()));
         boolean batch = lessons.size() > MAX_LESSONS_WITHOUT_BATCH;
         for (int i = 0; i < lessons.size(); i++) {
             if (batch && i >= FIRST_LESSONS_NOW) break;

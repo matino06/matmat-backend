@@ -171,6 +171,11 @@ public class OwnCourseController {
         return ownCourseService.get(account(authentication), courseId);
     }
 
+    @GetMapping("/{courseId}/exam-materials")
+    public java.util.List<java.util.Map<String, Object>> examMaterials(Authentication authentication, @PathVariable Long courseId) {
+        return materials.examMaterials(account(authentication), courseId);
+    }
+
     @GetMapping("/{courseId}/materials")
     public MaterialsSummaryDTO materials(Authentication authentication, @PathVariable Long courseId) {
         return materials.summary(account(authentication), courseId);

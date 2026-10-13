@@ -183,4 +183,12 @@ class OwnCoursePlanEditServiceTest {
         verify(queue).enqueue(eq(5L), eq(7L), eq(VariationBatchStep.KIND), eq("v1"), anyInt(), eq(false),
                 argThat(in -> in.startsWith("{\"objectiveIds\":[106,") && in.endsWith("160]}")));
     }
+
+    @Test
+    void confirmingGivesTheCreatorReviewRowsAndDropsPrerequisitesThatComeLaterInThePlan() {
+        BuildJobQueue queue = confirmable(8, 0);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        verify(jdbc).update(contains("DELETE FROM objective_prerequisite op USING course_objective"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("INSERT INTO account_objective"), argThat((SqlParameterSource p) -> Long.valueOf(7L).equals(p.getValue("a"))));
+    }
 }

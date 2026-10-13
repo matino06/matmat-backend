@@ -151,6 +151,16 @@ public class OwnCourseMaterialService {
         }
     }
 
+    // Materijal dostupan na ispitu (npr. knjižica formula) za panel Formule: privremeni linkovi za čitanje.
+    public List<Map<String, Object>> examMaterials(Account account, long courseId) {
+        own(account, courseId);
+        return jdbc.query("""
+                SELECT material_id, original_name, content_type, s3_key FROM course_material
+                WHERE course_id = :c AND available_on_exam ORDER BY material_id""", new MapSqlParameterSource("c", courseId),
+                (rs, i) -> Map.<String, Object>of("materialId", rs.getLong(1), "name", rs.getString(2),
+                        "contentType", rs.getString(3), "url", storage.presignGet(rs.getString(4), java.time.Duration.ofHours(2))));
+    }
+
     // Plan redom učenja: lekcije s područjem, cjelinom, stavkama znanja i preduvjetima.
     public List<PlanLessonDTO> plan(Account account, long courseId) {
         own(account, courseId);

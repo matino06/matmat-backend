@@ -29,6 +29,10 @@ public class LearningObjectiveService {
         return learningObjectiveRepository.findAll();
     }
 
+    public final List<LearningObjective> findOfficial() {
+        return learningObjectiveRepository.findOfficial();
+    }
+
     public final LearningObjective findById(Long id) {
         return learningObjectiveRepository.findById(id).orElse(null);
     }

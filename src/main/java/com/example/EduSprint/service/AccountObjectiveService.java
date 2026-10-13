@@ -27,7 +27,8 @@ public class AccountObjectiveService {
     @Transactional
     public boolean initializeAccountObjectives(Account account) {
         try {
-            List<LearningObjective> objectives = learningObjectiveService.findAll();
+            // lekcije vlastitih predmeta dobiva samo njihov kreator, pri potvrdi plana
+            List<LearningObjective> objectives = learningObjectiveService.findOfficial();
             for (LearningObjective objective : objectives) {
                 AccountObjective accountObjective = new AccountObjective();
                 accountObjective.setAccount(account);

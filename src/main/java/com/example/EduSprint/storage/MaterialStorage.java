@@ -50,6 +50,15 @@ public class MaterialStorage {
         return s3.generatePresignedUrl(request).toString();
     }
 
+    // Privremeni link za čitanje (npr. materijal dostupan na ispitu u panelu Formule).
+    public String presignGet(String key, Duration validFor) {
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, key)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(new Date(System.currentTimeMillis() + validFor.toMillis()));
+        request.setResponseHeaders(new com.amazonaws.services.s3.model.ResponseHeaderOverrides().withContentDisposition("inline"));
+        return s3.generatePresignedUrl(request).toString();
+    }
+
     public boolean exists(String key) {
         return s3.doesObjectExist(bucket, key);
     }
