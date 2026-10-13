@@ -35,7 +35,11 @@ public class SolvedTaskController {
     public final AccountObjectiveService accountObjectiveService;
     public final LearningObjectiveService learningObjectiveService;
 
-    public SolvedTaskController(SolvedTaskRepository solvedTaskRepository, AccountService accountService, TaskService taskService, AccountObjectiveService accountObjectiveService, LearningObjectiveService learningObjectiveService) {
+    private final com.example.EduSprint.service.OwnCourseVariationService variations;
+
+    public SolvedTaskController(SolvedTaskRepository solvedTaskRepository, AccountService accountService, TaskService taskService, AccountObjectiveService accountObjectiveService, LearningObjectiveService learningObjectiveService,
+                                com.example.EduSprint.service.OwnCourseVariationService variations) {
+        this.variations = variations;
         this.solvedTaskRepository = solvedTaskRepository;
         this.accountService = accountService;
         this.taskService = taskService;
@@ -72,6 +76,11 @@ public class SolvedTaskController {
             solvedTaskRepository.save(solvedTask);
 
             accountObjectiveService.updateAccountObjective(solvedTask);
+            try {
+                variations.onSolved(taskId); // vlastiti predmet: izradi sljedeću varijaciju zadatka
+            } catch (RuntimeException e) {
+                System.out.println("Sljedeća varijacija nije pokrenuta: " + e.getMessage());
+            }
 
             account.setCurrentTask(null);
 

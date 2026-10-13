@@ -71,6 +71,30 @@ public class VariationPrompt {
             - Boje: 600 nm je narančasto, crveno je ~620–750 nm, zeleno ~500–565 nm, plavo ~450–490 nm.
             - Energija kondenzatora je CU²/2; izvor pri punjenju uloži CU².""";
 
+    // Varijacije 2–4 po predlošku 1. varijacije (prototip sablon_varijacije.py).
+    static final String TEMPLATE_SYSTEM = """
+            Pišeš zadatak za MatMat, aplikaciju u kojoj učenik uči kroz zadatke s laičkim objašnjenjima. Predmet: %s.
+            Dobit ćeš PREDLOŽAK: provjereno točan zadatak s objašnjenjem. Napravi NOVU VARIJACIJU istog zadatka.
+
+            PRAVILA:
+            - Ista razina težine, isti podzadaci, isti postupak i jednako detaljno objašnjenje kao predložak. Zadrži strukturu,
+              naslove, analogije, citate materijala i stil. Najviše tri podzadatka a), b), c), kao u predlošku.
+            - Promijeni zadane brojeve i sitnice priče (npr. lijevo/desno, gore/dolje, kut, druga tijela ili imena), tako da
+              učenik ne može prepisati rezultate iz prethodnih varijacija.
+            - Sve brojeve izračunaj ponovno i pažljivo, uključujući međurezultate.
+            - Svaku rečenicu koja ovisi o brojevima ili o promijenjenoj sitnici (usporedbe, postotci, smjer, predznak, koja je
+              veličina veća …) prilagodi ili ukloni tako da ostane istinita.
+            - Novi podaci moraju biti realni i dati smislene rezultate.
+            - Nemoj ponoviti vrijednosti iz već napravljenih varijacija.
+
+            ČESTE GREŠKE KOJE NE SMIJEŠ NAPRAVITI:
+            - Nikakve samokorekcije u tekstu. Objašnjenje je konačna verzija.
+            - Podaci u podzadacima ne smiju proturječiti jedni drugima.%s
+            - Formule piši samo unutar \\( \\) ili $$ $$; izvan njih nikad LaTeX naredbe ni {,}.
+            - Zadnji odjeljak „## ✅ Rezultati“ s po jednim retkom za svaki podzadatak je obavezan.
+
+            Vrati json {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja","rezultati":{"a":"konačan odgovor","b":"…"}}.""";
+
     private final NamedParameterJdbcTemplate jdbc;
     private final PlanSupport plan;
 
@@ -87,6 +111,20 @@ public class VariationPrompt {
                 String.join("; ", plan.assumedKnowledge(course)),
                 material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL,
                 physics ? PHYSICS_MISTAKES : "", material);
+    }
+
+    public String templateSystem(long courseId) {
+        PlanSupport.CourseInfo course = plan.course(courseId);
+        return TEMPLATE_SYSTEM.formatted(course.describe(), "fizika".equals(course.subject()) ? PHYSICS_MISTAKES : "");
+    }
+
+    // Predložak (1. varijacija) i zadaci već napravljenih varijacija, da se vrijednosti ne ponove.
+    public String templateUser(String template, List<String> previous) {
+        StringBuilder sb = new StringBuilder("PREDLOŽAK:\n").append(template);
+        if (!previous.isEmpty()) {
+            sb.append("\n\nVEĆ NAPRAVLJENE VARIJACIJE (njihovi zadaci, ne ponavljaj te vrijednosti):\n").append(String.join("\n\n", previous));
+        }
+        return sb.toString();
     }
 
     // Lekcija: naziv i stavke (ili tip, opis i primjer situacije za lekciju primjene) te stavke izravnih preduvjeta.

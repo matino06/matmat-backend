@@ -28,7 +28,11 @@ public class TaskController {
     private final LearningObjectiveService learningObjectiveService;
     private final ExplanationStepService explanationStepService;
 
-    public TaskController(TaskRepository taskRepository, TaskService taskService, AccountService accountService, StorageService storageService, LearningObjectiveService learningObjectiveService, ExplanationStepService explanationStepService) {
+    private final OwnCourseVariationService variations;
+
+    public TaskController(TaskRepository taskRepository, TaskService taskService, AccountService accountService, StorageService storageService, LearningObjectiveService learningObjectiveService, ExplanationStepService explanationStepService,
+                          OwnCourseVariationService variations) {
+        this.variations = variations;
         this.taskRepository = taskRepository;
         this.taskService = taskService;
         this.accountService = accountService;
@@ -64,6 +68,27 @@ public class TaskController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    // Vlastiti predmet: je li učenik dobio zadatak koji je već riješio dok se nova varijacija još izrađuje.
+    @GetMapping("/{taskId}/next-variation")
+    public ResponseEntity<java.util.Map<String, String>> nextVariation(Authentication authentication, @PathVariable Long taskId) {
+        Account account = accountService.getAccount(((AuthPrincipal) authentication.getPrincipal()).getEmail());
+        if (account == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(java.util.Map.of("state", variations.nextVariation(account, taskId)));
+    }
+
+    // Nakon čekanja na novu varijaciju trenutni zadatak se bira ponovno.
+    @PostMapping("/refresh-current")
+    public ResponseEntity<Task> refreshCurrent(Authentication authentication) {
+        Account account = accountService.getAccount(((AuthPrincipal) authentication.getPrincipal()).getEmail());
+        if (account == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        Task task = variations.refreshCurrent(account);
+        if (task != null && (account.getCurrentTask() == null || !task.getId().equals(account.getCurrentTask().getId()))) {
+            account.setCurrentTask(task);
+            accountService.saveAccount(account);
+        }
+        return task == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(task);
     }
 
     @GetMapping("/get-by-id/{id}")

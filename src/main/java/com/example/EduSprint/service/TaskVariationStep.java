@@ -13,12 +13,15 @@ import java.util.List;
 // 1. varijacija zadatka lekcije (Sol medium). Ne prođu li provjere kodom ili je zadatak preblizu zadatku
 // s ispita, korak pada i red ga ponavlja (do 3 puta), pa nastaje nova varijacija.
 // Nacrt iz batcha (input.draft) koristi se samo u prvom pokušaju; ponovni pokušaji pišu zadatak iznova.
+// Varijacije 2–4 piše jeftiniji model po predlošku 1. varijacije, kad učenik riješi prethodnu.
 @Component
 public class TaskVariationStep implements BuildStep {
 
     public static final String KIND = "task_variation";
     public static final String STATUS_CONFIRMED = "potvrden";
     public static final String STATUS_READY = "spreman";
+    public static final int MAX_VARIATIONS = 4;
+    static final double MIN_TEMPLATE_LENGTH = 0.8;
 
     private final NamedParameterJdbcTemplate jdbc;
     private final OwnCourseLlm llm;
@@ -69,13 +72,35 @@ public class TaskVariationStep implements BuildStep {
         Integer exists = jdbc.queryForObject("SELECT count(*) FROM task WHERE objective_id = :o AND variation = :v", o, Integer.class);
         if (exists != null && exists > 0) return "već postoji";
 
-        JsonNode v = in.has("draft") && job.attempts() <= 1
-                ? in.get("draft")
-                : plan.json(llm.chat(job, writerModel, prompt.system(job.courseId()), prompt.user(objectiveId), options()).content());
-        List<String> problems = checks.problems(v);
+        JsonNode v;
+        List<String> problems;
+        if (variation == 1) {
+            v = in.has("draft") && job.attempts() <= 1
+                    ? in.get("draft")
+                    : plan.json(llm.chat(job, writerModel, prompt.system(job.courseId()), prompt.user(objectiveId), options()).content());
+            problems = checks.problems(v);
+        } else {
+            List<java.util.Map<String, Object>> existing = jdbc.queryForList("""
+                    SELECT variation, task_text, explanation, results FROM task WHERE objective_id = :o AND variation IS NOT NULL
+                    ORDER BY variation""", o);
+            if (existing.isEmpty() || ((Number) existing.get(0).get("variation")).intValue() != 1) {
+                throw new IllegalStateException("Lekcija nema 1. varijaciju");
+            }
+            java.util.Map<String, Object> first = existing.get(0);
+            String template = mapper.writeValueAsString(java.util.Map.of("zadatak", first.get("task_text"),
+                    "objasnjenje", first.get("explanation"), "rezultati", mapper.readTree(String.valueOf(first.get("results")))));
+            List<String> previous = existing.stream().skip(1).map(t -> (String) t.get("task_text")).toList();
+            v = plan.json(llm.chat(job, plan.cheapModel, prompt.templateSystem(job.courseId()), prompt.templateUser(template, previous),
+                    OwnCourseLlm.Options.of("xhigh", 32000)).content());
+            problems = new java.util.ArrayList<>(checks.problems(v));
+            double ratio = (double) v.path("objasnjenje").asText("").length() / Math.max(1, ((String) first.get("explanation")).length());
+            if (ratio < MIN_TEMPLATE_LENGTH) problems.add("Objašnjenje je kraće od predloška (" + Math.round(ratio * 100) + " %).");
+        }
         if (!problems.isEmpty()) throw new IllegalStateException("Provjere: " + String.join(" | ", problems));
-        String close = tooClose.tooCloseTo(job, v.path("zadatak").asText());
-        if (close != null) throw new IllegalStateException("Preblizu zadatku s ispita: " + close);
+        if (variation == 1) {
+            String close = tooClose.tooCloseTo(job, v.path("zadatak").asText());
+            if (close != null) throw new IllegalStateException("Preblizu zadatku s ispita: " + close);
+        }
 
         jdbc.update("""
                 INSERT INTO task (objective_id, task_text, explanation, variation, results) VALUES (:o, :t, :e, :v, :r)""",
@@ -87,6 +112,7 @@ public class TaskVariationStep implements BuildStep {
     // Kad sve lekcije imaju 1. varijaciju, predmet je spreman; ako je izrada išla preko batcha, kreator dobije e-mail.
     @Override
     public void afterComplete(BuildJob job) {
+        if (job.ref() != null && !job.ref().startsWith("v1 ")) return;
         MapSqlParameterSource c = new MapSqlParameterSource("c", job.courseId());
         Integer missing = jdbc.queryForObject("""
                 SELECT count(*) FROM course_objective co
