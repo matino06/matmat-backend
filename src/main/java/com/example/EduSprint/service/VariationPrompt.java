@@ -22,8 +22,11 @@ public class VariationPrompt {
             - Podzadaci zajedno pokrivaju sve stavke lekcije. Barem jedan traži razumijevanje (koliko puta se nešto
               promijeni, što ako, zašto) i ugrađen je prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
             - Ne otkrivaj formulu u tekstu zadatka. Ne prepisuj zadatke s ispita.
-            - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s
+            - Uzmi lijepe brojeve s kojima se lako računa; rezultati moraju biti realni.%s%s
             - Koristi samo stavke ove lekcije, ono što učenik već zna i predznanje: %s.
+            - Nikad ne crtaj graf, shemu ni sliku znakovima u tekstu (crtice, kose crte, točkice, blok koda): učenik to ne
+              može pouzdano očitati. Ako zadatak treba graf ili crtež, zadaj podatke tablicom ili riječima (npr. „pravac prolazi
+              ishodištem i točkom (20 cm³, 60 g)“).
 
             KAKO OBJAŠNJAVATI:
             - Jedan korak po podzadatku: `## <emoji> Kratak naslov`, pa odmah **podebljano ponovljeno pitanje
@@ -64,6 +67,12 @@ public class VariationPrompt {
     static final String FORMULA_WITHOUT_MATERIAL = """
             - Učenik na ispitu nema materijal s formulama: formulu uvedi iz onoga što zna, objasni odakle dolazi i kako je zapamtiti.""";
     static final String PHYSICS_NUMBERS = " Uzmi g = 10 m/s².";
+    // Matematika koju učenik 7.–8. razreda zna: računa se korak po korak, jednom nepoznanicom.
+    static final String PRIMARY_MATH = """
+
+            - Učenik je u 7. ili 8. razredu osnovne škole: računaj samo osnovnim računskim operacijama, omjerima i jednostavnim
+              jednadžbama s jednom nepoznanicom. Nikad ne traži sustav jednadžbi, dvije nepoznanice ni množenje zagrada; ako
+              zadatak to traži, promijeni ga tako da se rješava korak po korak.""";
     static final String PHYSICS_MISTAKES = """
 
             - Težina NIJE sila teža: sila teža je sila kojom Zemlja privlači tijelo, težina je sila kojom tijelo
@@ -91,6 +100,7 @@ public class VariationPrompt {
             - Nikakve samokorekcije u tekstu. Objašnjenje je konačna verzija.
             - Podaci u podzadacima ne smiju proturječiti jedni drugima.%s
             - Formule piši samo unutar \\( \\) ili $$ $$; izvan njih nikad LaTeX naredbe ni {,}.
+            - Nikad ne crtaj graf ni sliku znakovima u tekstu; podatke zadaj tablicom ili riječima.
             - Zadnji odjeljak „## ✅ Rezultati“ s po jednim retkom za svaki podzadatak je obavezan.
 
             Vrati json {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja","rezultati":{"a":"konačan odgovor","b":"…"}}.""";
@@ -107,7 +117,7 @@ public class VariationPrompt {
         PlanSupport.CourseInfo course = plan.course(courseId);
         String material = plan.availableOnExam(courseId);
         boolean physics = "fizika".equals(course.subject());
-        return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "",
+        return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "", "os78".equals(course.level()) ? PRIMARY_MATH : "",
                 String.join("; ", plan.assumedKnowledge(course)),
                 material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL,
                 physics ? PHYSICS_MISTAKES : "", material);

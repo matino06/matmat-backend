@@ -51,7 +51,22 @@ public class VariationChecks {
         foreign.addAll(find(FOREIGN_WORDS, all));
         if (!foreign.isEmpty()) out.add("Strani jezik ili pismo: " + foreign.subList(0, Math.min(4, foreign.size())));
         if (all.contains("\\n")) out.add("Doslovni \\n u tekstu.");
+        if (textDrawing(text)) out.add("Crtež znakovima u tekstu (graf ili shema); podatke treba zadati tablicom ili riječima.");
         return out;
+    }
+
+    // Graf ili shema „nacrtana“ znakovima: blok koda ili barem tri retka koja su većinom crtice, kose crte i točke.
+    static boolean textDrawing(String text) {
+        if (text.contains("```")) return true;
+        int lines = 0;
+        for (String line : text.split("\n")) {
+            String t = line.strip();
+            if (t.length() < 4 || t.startsWith("|") && t.endsWith("|")) continue; // markdown tablica je dopuštena
+            long filled = t.chars().filter(ch -> !Character.isWhitespace(ch)).count();
+            long drawn = t.chars().filter(ch -> "|/\\_-●○*.".indexOf(ch) >= 0).count();
+            if (drawn * 2 >= filled && t.matches(".*[|/\\●].*")) lines++;
+        }
+        return lines >= 3;
     }
 
     // LaTeX naredbe izvan \( \), $$ $$ i $ $.

@@ -57,4 +57,14 @@ class VariationChecksTest {
         assertTrue(p.stream().anyMatch(x -> x.contains("Strani")));
         assertTrue(p.stream().anyMatch(x -> x.contains("Doslovni")));
     }
+
+    @Test
+    void graphDrawnWithCharactersIsCaughtButMarkdownTableIsNot() throws Exception {
+        ObjectNode v = recorded();
+        v.put("zadatak", v.get("zadatak").asText() + "\n\nm (g)\n60 |            ● A\n   |           /\n50 |          /\n   |         /\n 0 |●----------");
+        assertTrue(checks.problems(v).stream().anyMatch(p -> p.contains("Crtež znakovima")));
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + "\n\n| V (cm³) | m (g) |\n|---|---|\n| 10 | 30 |\n| 20 | 60 |\n| 30 | 90 |");
+        assertTrue(checks.problems(w).stream().noneMatch(p -> p.contains("Crtež znakovima")), checks.problems(w).toString());
+    }
 }

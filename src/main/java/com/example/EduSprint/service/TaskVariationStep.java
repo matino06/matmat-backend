@@ -69,8 +69,9 @@ public class TaskVariationStep implements BuildStep {
         long objectiveId = in.path("objectiveId").asLong();
         int variation = in.path("variation").asInt(1);
         MapSqlParameterSource o = new MapSqlParameterSource("o", objectiveId).addValue("v", variation);
+        boolean replace = in.path("replace").asBoolean(false); // ponovna izrada postojeće varijacije
         Integer exists = jdbc.queryForObject("SELECT count(*) FROM task WHERE objective_id = :o AND variation = :v", o, Integer.class);
-        if (exists != null && exists > 0) return "već postoji";
+        if (!replace && exists != null && exists > 0) return "već postoji";
 
         JsonNode v;
         List<String> problems;
@@ -102,10 +103,14 @@ public class TaskVariationStep implements BuildStep {
             if (close != null) throw new IllegalStateException("Preblizu zadatku s ispita: " + close);
         }
 
-        jdbc.update("""
-                INSERT INTO task (objective_id, task_text, explanation, variation, results) VALUES (:o, :t, :e, :v, :r)""",
-                o.addValue("t", v.path("zadatak").asText()).addValue("e", v.path("objasnjenje").asText())
-                        .addValue("r", mapper.writeValueAsString(v.path("rezultati"))));
+        o.addValue("t", v.path("zadatak").asText()).addValue("e", v.path("objasnjenje").asText())
+                .addValue("r", mapper.writeValueAsString(v.path("rezultati")));
+        if (replace && exists != null && exists > 0) {
+            // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega
+            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r WHERE objective_id = :o AND variation = :v", o);
+            return "zamijenjeno";
+        }
+        jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results) VALUES (:o, :t, :e, :v, :r)", o);
         return "spremljeno";
     }
 
