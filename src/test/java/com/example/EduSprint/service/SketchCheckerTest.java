@@ -40,4 +40,12 @@ class SketchCheckerTest {
         assertFalse(checker.problems("""
                 {"tip":"graf","x":[0,1],"y":[0,1],"funkcije":[{"izraz":"x;globalThis.y=1"}],"tocke":[]}""", "").isEmpty());
     }
+
+    @Test
+    void tooDenseScaleIsRejected() {
+        List<String> p = checker.problems("""
+                {"tip":"ljestvica","instrument":"menzura","od":0,"do":100,"razmak":2,"oznaka_svakih":20,"jedinica":"mL","vrijednosti":[60,80]}""",
+                "60 mL i 80 mL");
+        assertTrue(p.stream().anyMatch(x -> x.contains("podjeljaka")), p.toString());
+    }
 }

@@ -325,7 +325,10 @@ function scale(s, text) {
     return { checks: [fail("ljestvica treba od < do i pozitivan razmak")] };
   }
   const n = (to - od) / razmak;
-  checks.push({ ok: Math.abs(n - Math.round(n)) < 1e-6 && n <= 200, text: `od ${num(od)} do ${num(to)} ima ${num(n)} razmaka (cijeli broj, najviše 200)` });
+  // najviše podjeljaka da crtice ostanu čitljive i na mobitelu (≈ 5 px razmaka)
+  const maxTicks = { menzura: 36, ravnalo: 64, vaga: 90 }[s.instrument] ?? 36;
+  checks.push({ ok: Math.abs(n - Math.round(n)) < 1e-6, text: `od ${num(od)} do ${num(to)} ima ${num(n)} razmaka (mora biti cijeli broj)` });
+  checks.push({ ok: n <= maxTicks, text: `${num(n)} podjeljaka ${n <= maxTicks ? "je" : "NIJE"} čitljivo (najviše ${maxTicks}); povećaj razmak ili smanji raspon` });
   if (!values.length) checks.push(fail("ljestvica nema nijednu vrijednost za očitati"));
   for (const v of values) checks.push({ ok: v >= od && v <= to, text: `vrijednost ${num(v)} ${v >= od && v <= to ? "je" : "NIJE"} na ljestvici` });
   checks.push(...numbersInText(values.map(num), text));

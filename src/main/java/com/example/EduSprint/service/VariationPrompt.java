@@ -79,7 +79,9 @@ public class VariationPrompt {
                 (razina = visina tekućine u kvadru, ili null)
               ljestvica: {"tip":"ljestvica","instrument":"menzura","od":0,"do":250,"razmak":5,"oznaka_svakih":50,"jedinica":"mL",
                 "vrijednosti":[135,170]} (instrument: menzura, vaga ili ravnalo; razmak = vrijednost najmanjeg podjeljka;
-                menzura: razina vode, ili dvije razine prije i poslije uranjanja; vaga: položaj kazaljke; ravnalo: početak i kraj predmeta)
+                menzura: razina vode, ili dvije razine prije i poslije uranjanja; vaga: položaj kazaljke; ravnalo: početak i kraj predmeta;
+                najviše 30 podjeljaka na menzuri, 60 na ravnalu i 90 na vagi; barem jedna vrijednost neka ne bude na označenoj crtici,
+                da učenik vježba očitavanje podjeljaka)
               sile: {"tip":"sile","podloga":{"vrsta":"kosina","kut":37},"sile":[{"oznaka":"G","smjer":"dolje","iznos":65,"zadana":false}],
                 "rastav":"G"} (vrsta: kosina ili vodoravna; smjer: dolje, gore, okomito_od_podloge, uz_kosinu, niz_kosinu, desno, lijevo)
               strujni_krug: {"tip":"strujni_krug","izvor":{"oznaka":"U = 9 V"},"spoj":{"serijski":[{"R":"R₁ = 7 Ω"},
