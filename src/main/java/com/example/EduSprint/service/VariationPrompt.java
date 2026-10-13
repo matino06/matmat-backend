@@ -21,6 +21,8 @@ public class VariationPrompt {
             - Jedna kratka realna situacija kroz NAJVIŠE TRI podzadatka a), b), c), nikad d): podzadaci se nastavljaju jedan na drugi.
             - Zadatak i objašnjenje zajedno pokrivaju sve stavke lekcije. Stavka s postupkom ili razumijevanjem dobiva pitanje;
               stavku koja je samo činjenica (npr. „postoje različite vrste vaga“) smiješ naučiti samo u odjeljku „📌 Zapamti“.
+              Kad sve stavke ne stanu u tri podzadatka, pitanje dobivaju one koje materijal ističe (u sažetku „Naučili
+              smo“ ili u pitanjima i zadatcima), jer one dolaze na test; „Zapamti“ je za sporedne.
             - Barem jedan podzadatak traži razumijevanje (koliko puta se nešto promijeni, što ako, zašto) i ugrađen je
               prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
             - Kratko: učenik mora pročitati sve, a dug tekst ga odbija i ne uči ništa više. Svaki podzadatak ima jedno glavno
@@ -69,6 +71,8 @@ public class VariationPrompt {
               graf, trokut ili sile. Za učenike osnovne škole crtež je često ono što ideju učini jasnom: kad god neki tip
               skice pomaže, upotrijebi ga.
             - Skica u objašnjenju smije pokazati i rješenje (npr. mrežu kvadratića koje se broje). Ne ponavljaj skicu zadatka.
+            - Ne uvodi prikaz koji učenik ne zna iz gradiva: graf samo ako ga lekcija ili materijal koristi (u 7. razredu
+              fizike grafova nema).
             - Piše se kao zaseban blok na mjestu gdje pomaže, s JSON opisom u jednom retku, istim tipovima kao u SKICA:
               ```skica
               {"tip":"pravokutnik","a":6,"b":4,"mreza":1,"oznake":{"a":"6 cm","b":"4 cm"}}
