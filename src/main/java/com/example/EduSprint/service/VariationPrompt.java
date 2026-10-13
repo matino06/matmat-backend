@@ -20,12 +20,13 @@ public class VariationPrompt {
             - Zadatak uči gradivo lekcije; učenik ga ne zna unaprijed i uči ga iz objašnjenja. Nema uvodnog teksta.
             - Jedna kratka realna situacija kroz NAJVIŠE TRI podzadatka a), b), c), nikad d): podzadaci se nastavljaju jedan na drugi.
             - Zadatak i objašnjenje zajedno pokrivaju sve stavke lekcije. Stavka s postupkom ili razumijevanjem dobiva pitanje;
-              stavku koja je samo činjenica (npr. „postoje različite vrste vaga“) smiješ naučiti samo u objašnjenju.
+              stavku koja je samo činjenica (npr. „postoje različite vrste vaga“) smiješ naučiti samo u odjeljku „📌 Zapamti“.
             - Barem jedan podzadatak traži razumijevanje (koliko puta se nešto promijeni, što ako, zašto) i ugrađen je
               prirodno u situaciju, ne kao „Navedi…“ ili „Opiši…“.
             - Kratko: učenik mora pročitati sve, a dug tekst ga odbija i ne uči ništa više. Svaki podzadatak ima jedno glavno
               pitanje, najviše uz jedno kratko „zašto“. Situaciju opiši jednom rečenicom i samo podacima koji trebaju za
-              rješavanje: bez imena, priče i ukrasnih detalja koji ništa ne uče. Isti postupak ne traži dvaput (dvije
+              rješavanje: bez imena, priče i ukrasnih detalja koji ništa ne uče. Svi podzadaci su u istoj situaciji; ne
+              spajaj nepovezane stvari (putnik u autu i čokolada). Isti postupak ne traži dvaput (dvije
               površine, sedam jedinica: dovoljna je jedna površina i dvije jedinice). Ne dodaj ograde za slučajeve na koje
               učenik ne bi ni pomislio („ništa se ne gubi“, „pri istom tlaku“).
             - Kraće ne znači opisno: postupak koji lekcija uči (račun, pretvaranje, očitavanje, prebrojavanje) učenik izvodi
@@ -38,26 +39,41 @@ public class VariationPrompt {
               zadatcima). Što materijal samo spomene, bez postupka (npr. „gustoćom se može odrediti udio tvari u smjesi“), smiješ
               pitati samo riječima, nikad računom. Težina neka bude kao pitanja i zadatci u materijalu.
             - Nikad ne crtaj graf, shemu ni sliku znakovima u tekstu (crtice, kose crte, točkice, blok koda): učenik to ne
-              može pouzdano očitati. Ako zadatak treba graf ili crtež, opiši ga u polju "skica" (vidi SKICA).
+              može pouzdano očitati. Ako zadatak treba graf ili crtež, opiši ga u polju "skica" (vidi SKICA); jedini blok
+              koda koji smiješ napisati je blok ```skica u objašnjenju (vidi SKICE U OBJAŠNJENJU).
 
             KAKO OBJAŠNJAVATI:
             - Jedan korak po podzadatku: `## <emoji> Kratak naslov`, pa odmah **podebljano ponovljeno pitanje
               podzadatka**. Ne prepričavaj što je zadano: učenik je to upravo pročitao.
             - Novi pojam uvedi tek kad ga podzadatak treba, jednom ili dvjema rečenicama: prvo što on JEST svakodnevnim
               jezikom, s usporedbom iz života, i zašto se tako zove. Tek onda formula. Pojam iz ranijih lekcija ne objašnjavaj ponovno.
-            %s
-            - Preuređivanje formule pokaži korak po korak s operacijom desno:
-              $$\\begin{aligned} pV &= nRT && / : V \\\\ p &= \\frac{nRT}{V} \\end{aligned}$$
+            - Svaki korak objašnjava samo svoj podzadatak. Stavke lekcije koje zadatak ne pita ne stavljaj u korake, nego
+              prije Rezultata u odjeljak `## 📌 Zapamti` s 2–4 kratke natuknice; ako ih nema, izostavi taj odjeljak.
+            %s%s
             - Pretvorbe jedinica napiši izričito prije uvrštavanja; uvrštavanje pokaži s brojevima; konačan rezultat
               \\textcolor{green}{…}.
             - Piši kratkim odlomcima prirodnim tonom („Ključna riječ u zadatku je **jednoliko**.“), bez telegrafskog stila,
               ali i bez rečenica koje ponavljaju ono što piše u formuli ili u zadatku.
-            - Zamku najavi izričito („Prvo jedna zamka.“) i objasni zašto je zamka.
+            - Zamku spomeni samo kad stvarno postoji (česta greška učenika baš u tom koraku): najavi je („Pazi:“) i objasni
+              zašto je zamka. Ne izmišljaj zamku samo da bi je bilo.
             - Nakon rezultata dodaj provjeru ili intuiciju samo kad učeniku otkriva nešto novo (zašto je rezultat manji, gdje bi
               pogriješio); inače odmah idi na sljedeći podzadatak.
-            - Pojmove i ključne riječi podebljaj. Decimalni zarez u LaTeX-u: 0{,}8. Jedinice: 20 \\ \\text{m/s}.
+            - Podebljaj samo nove pojmove i ključnu riječ zadatka, najviše oko pet u cijelom objašnjenju: kad je podebljano
+              sve, ništa se ne ističe. Decimalni zarez u LaTeX-u: 0{,}8. Jedinice: 20 \\ \\text{m/s}.
             - LaTeX: inline \\( … \\), display $$ … $$ u jednom retku (osim aligned), prazan red prije i poslije.
             - Zadnji korak `## ✅ Rezultati`: po jedan redak za svaki podzadatak s rezultatom.
+
+            SKICE U OBJAŠNJENJU:
+            - U objašnjenje umetni jednu ili dvije skice kad crtež pokazuje ideju koraka bolje od riječi: pravokutnik podijeljen
+              na kvadratiće uz A = a · b, kvadar s dimenzijama uz V = a · b · c, menzura prije i poslije uranjanja, vaga,
+              graf, trokut ili sile. Za učenike osnovne škole crtež je često ono što ideju učini jasnom: kad god neki tip
+              skice pomaže, upotrijebi ga.
+            - Skica u objašnjenju smije pokazati i rješenje (npr. mrežu kvadratića koje se broje). Ne ponavljaj skicu zadatka.
+            - Piše se kao zaseban blok na mjestu gdje pomaže, s JSON opisom u jednom retku, istim tipovima kao u SKICA:
+              ```skica
+              {"tip":"pravokutnik","a":6,"b":4,"mreza":1,"oznake":{"a":"6 cm","b":"4 cm"}}
+              ```
+              Brojevi u ovom primjeru samo pokazuju oblik. Brojevi s oznaka skice moraju se pojaviti u tekstu objašnjenja.
 
             ČESTE GREŠKE KOJE NE SMIJEŠ NAPRAVITI:
             - Nikakve samokorekcije u tekstu („26 N? Ne, …“). Objašnjenje je konačna verzija.
@@ -114,6 +130,15 @@ public class VariationPrompt {
     static final String FORMULA_WITHOUT_MATERIAL = """
             - Učenik na ispitu nema materijal s formulama: formulu uvedi iz onoga što zna, objasni odakle dolazi i kako je zapamtiti.""";
     static final String PHYSICS_NUMBERS = " Uzmi g = 10 m/s².";
+    static final String FORMULA_DERIVATION = """
+
+            - Preuređivanje formule pokaži korak po korak s operacijom desno:
+              $$\\begin{aligned} pV &= nRT && / : V \\\\ p &= \\frac{nRT}{V} \\end{aligned}$$""";
+    // Učenik 7.–8. razreda formulu uzima iz udžbenika gotovu; preuređivanje i oznake iz srednje škole ga gube.
+    static final String FORMULA_TEXTBOOK = """
+
+            - Formule piši u obliku iz udžbenika (npr. m = ρV i V = m/ρ uz ρ = m/V) i ne izvodi ih preuređivanjem. Ne
+              koristi oznake koje udžbenik ne koristi (npr. Δ za razliku): piši riječima „razlika“.""";
     // Duljina po razini: zadatak se čita cijeli, a objašnjenje bez ponavljanja uči jednako dobro.
     static final String LENGTH_PRIMARY = """
 
@@ -127,7 +152,11 @@ public class VariationPrompt {
             - Učenik je u 7. ili 8. razredu osnovne škole: računaj samo osnovnim računskim operacijama, omjerima i jednostavnim
               jednadžbama s jednom nepoznanicom. Nikad ne traži sustav jednadžbi, dvije nepoznanice ni množenje zagrada; ako
               zadatak to traži, promijeni ga tako da se rješava korak po korak. Težina neka bude niska ili srednja, kao zadaci
-              u školskom udžbeniku za taj razred.""";
+              u školskom udžbeniku za taj razred.
+            - Brojevi neka se mogu izračunati napamet ili na papiru, bez kalkulatora: izbjegavaj dijeljenje decimalnim brojem
+              (umjesto 50 kg : 0,05 m³ uzmi 50 000 g i 50 000 cm³).
+            - Najviše jedan podzadatak traži objašnjenje „zašto“; ostali traže broj ili kratak odgovor. Objasniti „zašto“
+              prosječnom je učeniku najteže i najzamornije.""";
     static final String PHYSICS_MISTAKES = """
 
             - Težina NIJE sila teža: sila teža je sila kojom Zemlja privlači tijelo, težina je sila kojom tijelo
@@ -158,6 +187,8 @@ public class VariationPrompt {
             - Nikad ne crtaj graf ni sliku znakovima u tekstu.
             - Ako predložak ima skicu, napravi istu skicu (isti tip i ista građa) s novim brojevima, usklađenu s novim zadatkom
               i rješenjem; ako je nema, "skica": null.
+            - Ako objašnjenje predloška ima skice (blokovi ```skica s JSON-om u jednom retku), napravi iste skice na istim
+              mjestima, s novim brojevima koji se pojavljuju u novom objašnjenju.
             - Zadnji odjeljak „## ✅ Rezultati“ s po jednim retkom za svaki podzadatak je obavezan.
 
             Vrati json {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja","rezultati":{"a":"konačan odgovor","b":"…"},
@@ -178,7 +209,7 @@ public class VariationPrompt {
         boolean primary = "os78".equals(course.level());
         return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "", primary ? PRIMARY_MATH : "",
                 primary ? LENGTH_PRIMARY : LENGTH_SECONDARY, String.join("; ", plan.assumedKnowledge(course)),
-                material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL,
+                material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL, primary ? FORMULA_TEXTBOOK : FORMULA_DERIVATION,
                 physics ? PHYSICS_MISTAKES : "", material);
     }
 

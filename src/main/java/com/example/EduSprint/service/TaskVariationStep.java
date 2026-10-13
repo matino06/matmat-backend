@@ -37,12 +37,14 @@ public class TaskVariationStep implements BuildStep {
     private final VariationChecks checks;
     private final TooCloseCheck tooClose;
     private final SketchChecker sketches;
+    private final ExplanationSketches explanationSketches;
     private final OwnCourseMailer mailer;
     private final String writerModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public TaskVariationStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan, VariationPrompt prompt,
-                             VariationChecks checks, TooCloseCheck tooClose, SketchChecker sketches, OwnCourseMailer mailer,
+                             VariationChecks checks, TooCloseCheck tooClose, SketchChecker sketches,
+                             ExplanationSketches explanationSketches, OwnCourseMailer mailer,
                              @Value("${own-courses.models.writer:openai/gpt-6.1-sol}") String writerModel) {
         this.jdbc = jdbc;
         this.llm = llm;
@@ -51,6 +53,7 @@ public class TaskVariationStep implements BuildStep {
         this.checks = checks;
         this.tooClose = tooClose;
         this.sketches = sketches;
+        this.explanationSketches = explanationSketches;
         this.mailer = mailer;
         this.writerModel = writerModel;
     }
@@ -117,9 +120,10 @@ public class TaskVariationStep implements BuildStep {
         }
 
         String sketch = sketch(job, v);
-        o.addValue("t", v.path("zadatak").asText()).addValue("e", v.path("objasnjenje").asText())
+        ExplanationSketches.Result explanation = explanationSketches.validate(v.path("objasnjenje").asText());
+        o.addValue("t", v.path("zadatak").asText()).addValue("e", explanation.explanation())
                 .addValue("r", mapper.writeValueAsString(v.path("rezultati"))).addValue("s", sketch);
-        String withSketch = sketch == null ? "" : " sa skicom";
+        String withSketch = (sketch == null ? "" : " sa skicom") + explanation.summary();
         if (replace && exists != null && exists > 0) {
             // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega
             jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s WHERE objective_id = :o AND variation = :v", o);
@@ -133,7 +137,7 @@ public class TaskVariationStep implements BuildStep {
     String sketch(BuildJob job, JsonNode v) throws Exception {
         JsonNode spec = v.path("skica");
         if (!spec.isObject()) return null;
-        String text = v.path("zadatak").asText("") + "\n" + v.path("objasnjenje").asText("") + "\n" + v.path("rezultati");
+        String text = v.path("zadatak").asText("") + "\n" + ExplanationSketches.strip(v.path("objasnjenje").asText("")) + "\n" + v.path("rezultati");
         String json = mapper.writeValueAsString(spec);
         List<String> problems = sketches.problems(json, text);
         if (problems.isEmpty()) return json;

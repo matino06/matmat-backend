@@ -30,7 +30,7 @@ public class VariationChecks {
     // Popis problema; prazan znači da je varijacija prošla.
     public List<String> problems(JsonNode v) {
         String task = v.path("zadatak").asText("");
-        String explanation = v.path("objasnjenje").asText("");
+        String explanation = ExplanationSketches.strip(v.path("objasnjenje").asText("")); // skice provjerava ExplanationSketches
         List<String> out = new ArrayList<>();
         if (task.isBlank() || explanation.isBlank()) {
             out.add("Nedostaje zadatak ili objašnjenje.");

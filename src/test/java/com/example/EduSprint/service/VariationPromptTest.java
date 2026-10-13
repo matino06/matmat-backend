@@ -26,9 +26,13 @@ class VariationPromptTest {
         assertTrue(primary.contains("cijeli zadatak do oko 90"));
         assertTrue(primary.contains("Nikad ne traži sustav jednadžbi"));
         assertTrue(primary.contains("predznanje: matematika do 6. razreda."));
+        assertTrue(primary.contains("ne izvodi ih preuređivanjem"));
+        assertFalse(primary.contains("begin{aligned}"));
 
         String secondary = system("ss");
         assertTrue(secondary.contains("cijeli zadatak do oko 120"));
         assertFalse(secondary.contains("Nikad ne traži sustav jednadžbi"));
+        assertTrue(secondary.contains("Preuređivanje formule pokaži korak po korak"));
+        assertTrue(secondary.contains("SKICE U OBJAŠNJENJU"));
     }
 }
