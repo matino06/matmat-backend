@@ -19,10 +19,13 @@ import java.util.*;
 //    inače model prepravi stavku tako da ne koristi taj pojam;
 //  - „nigdje“ → upozorenje „rupa“.
 // Ostalo što se ne da popraviti postaje upozorenje; zatim plan ide kreatoru na pregled („nacrt“) uz e-mail.
+// Ozbiljno (crveno) se pri izradi ne predaje kreatoru dok se ne pokuša popraviti: lekcije s neriješenim
+// prekršajem i krugovi preduvjeta ponovno se provjeravaju i popravljaju, najviše REPAIR_ROUNDS puta.
 @Component
 public class PlanCheckRepairStep implements BuildStep {
 
     public static final String KIND = "plan_check_repair";
+    static final int REPAIR_ROUNDS = 2;
 
     static final String REWRITE = """
             Prepravi stavku znanja iz %s tako da više NE koristi pojam „%s“ (učenik ga u tom trenutku još ne zna),
@@ -39,9 +42,11 @@ public class PlanCheckRepairStep implements BuildStep {
     private final PlanSupport plan;
     private final TransactionTemplate transactions;
     private final OwnCourseMailer mailer;
+    private final PlanFlow flow;
 
     public PlanCheckRepairStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan,
-                               TransactionTemplate transactions, OwnCourseMailer mailer) {
+                               TransactionTemplate transactions, OwnCourseMailer mailer, PlanFlow flow) {
+        this.flow = flow;
         this.jdbc = jdbc;
         this.llm = llm;
         this.plan = plan;
@@ -80,9 +85,52 @@ public class PlanCheckRepairStep implements BuildStep {
     private record Warning(String kind, Long objectiveId, Long prerequisiteId, String text, String detail, boolean serious) {
     }
 
+    // Prijave istog para lekcija skupljaju se u jedno upozorenje; model isti pojam zna napisati na dva načina
+    // („homogeno tijelo/tvar“, „homogena tvar/tijelo“), pa se pojmovi istih riječi broje jednom.
+    private static final class Finding {
+        final String kind;
+        final int lesson;
+        final int other;
+        final boolean later;
+        final boolean serious;
+        final Map<String, String> concepts = new LinkedHashMap<>();
+
+        Finding(String kind, int lesson, int other, boolean later, boolean serious) {
+            this.kind = kind;
+            this.lesson = lesson;
+            this.other = other;
+            this.later = later;
+            this.serious = serious;
+        }
+    }
+
+    static String conceptKey(String concept) {
+        return Arrays.stream(concept.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+"))
+                .filter(w -> !w.isEmpty()).map(w -> w.length() > 5 ? w.substring(0, 5) : w).sorted().distinct()
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
+
+    static String quoted(Collection<String> concepts) {
+        return concepts.stream().map(x -> "„" + x + "“").collect(java.util.stream.Collectors.joining(", "));
+    }
+
+    private static Warning toWarning(Finding f, List<Long> ids, List<String> names) {
+        boolean many = f.concepts.size() > 1;
+        String who = "„" + names.get(f.lesson) + "“ koristi " + (many ? "pojmove " : "pojam ") + quoted(f.concepts.values());
+        if (f.kind.equals("rupa")) {
+            return new Warning("rupa", ids.get(f.lesson), null, who + (many ? ", a nijedna lekcija ih ne uči." : ", a nijedna lekcija ga ne uči."), null, false);
+        }
+        String text = f.later
+                ? who + (many ? ", koji se uče tek u lekciji „" : ", koji se uči tek u lekciji „") + names.get(f.other) + "“."
+                : who + " iz lekcije „" + names.get(f.other) + "“, koja mu nije preduvjet.";
+        return new Warning("nulta", ids.get(f.lesson), ids.get(f.other), text, null, f.serious);
+    }
+
     @Override
     public String run(BuildJob job) {
         boolean recheck = job.input() != null && plan.readJson(job.input()).path("recheck").asBoolean(false);
+        int repair = job.input() == null ? 0 : plan.readJson(job.input()).path("repair").asInt(0);
+        boolean lastRound = recheck || repair >= REPAIR_ROUNDS;
         long courseId = job.courseId();
         MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
         PlanSupport.CourseInfo course = plan.course(courseId);
@@ -116,13 +164,15 @@ public class PlanCheckRepairStep implements BuildStep {
         });
 
         List<Warning> warnings = new ArrayList<>();
+        Map<String, Finding> findings = new LinkedHashMap<>();
+        Set<Integer> toVerify = new TreeSet<>(); // lekcije koje se ponovno provjeravaju prije predaje kreatoru
         Set<String> seenFindings = new HashSet<>();
         int added = 0, rewritten = 0;
         for (Map<String, Object> f : jdbc.queryForList("""
                 SELECT objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c)) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             String concept = (String) f.get("concept");
-            if (lesson == null || !seenFindings.add(lesson + "|" + concept.toLowerCase(Locale.ROOT))) continue;
+            if (lesson == null || !seenFindings.add(lesson + "|" + conceptKey(concept))) continue;
             List<String> taughtBy = new ArrayList<>();
             List<Integer> teachers = new ArrayList<>();
             for (JsonNode t : plan.readJson((String) f.get("taught_by"))) {
@@ -133,37 +183,48 @@ public class PlanCheckRepairStep implements BuildStep {
             Judgement j = judge(lesson, taughtBy, teachers, pre);
             switch (j.verdict()) {
                 case OK -> { }
-                case NOWHERE -> warnings.add(new Warning("rupa", ids.get(lesson), null,
-                        "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“, a nijedna lekcija ga ne uči.", null, false));
+                case NOWHERE -> collect(findings, "rupa", lesson, -1, false, false, concept);
                 case ADD_PREREQUISITE, LATER -> {
                     if (recheck) {
                         // nakon izmjena kreatora samo javljamo: preduvjet je možda namjerno maknut
-                        warnings.add(new Warning("nulta", ids.get(lesson), ids.get(j.teacher()),
-                                j.verdict() == Verdict.LATER
-                                        ? "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“, koji se uči tek u lekciji „" + names.get(j.teacher()) + "“."
-                                        : "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“ iz lekcije „" + names.get(j.teacher()) + "“, koja mu nije preduvjet.",
-                                null, j.verdict() == Verdict.LATER));
+                        boolean later = j.verdict() == Verdict.LATER;
+                        collect(findings, "nulta", lesson, j.teacher(), later, later, concept);
                     } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
                     } else if (f.get("item_id") != null && rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)) {
                         rewritten++;
+                        // nalaz je riješen: da ga kasnija provjera ne prijavi ponovno, briše se; lekcija se još jednom provjerava
+                        jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
+                                new MapSqlParameterSource("o", ids.get(lesson)).addValue("k", concept));
+                        toVerify.add(lesson);
                     } else {
-                        warnings.add(new Warning("nulta", ids.get(lesson), ids.get(j.teacher()),
-                                "„" + names.get(lesson) + "“ koristi pojam „" + concept + "“, koji se uči tek u lekciji „"
-                                        + names.get(j.teacher()) + "“.", null, true));
+                        collect(findings, "nulta", lesson, j.teacher(), true, true, concept);
+                        toVerify.add(lesson);
                     }
                 }
             }
         }
 
+        for (Finding f : findings.values()) warnings.add(toWarning(f, ids, names));
+
         // Pri izradi se lekcije slažu ispočetka; nakon izmjena kreatora redoslijed ostaje njegov i samo se javlja.
         PlanRepair.Order order = recheck ? currentOrder(pre) : PlanRepair.topoOrder(pre);
+        List<long[]> dropped = new ArrayList<>();
         for (int[] b : order.backwards()) {
             int lesson = order.order().get(b[0]), prerequisite = order.order().get(b[1]);
+            if (!lastRound) {
+                // krug preduvjeta pri izradi: brid se miče, a provjera nulte pretpostavke odluči treba li lekciji
+                // stvarno taj pojam (ako treba, idući krug je premjesti ili prepravi stavku)
+                dropped.add(new long[]{ids.get(lesson), ids.get(prerequisite)});
+                pre.get(lesson).remove(prerequisite);
+                toVerify.add(lesson);
+                continue;
+            }
             warnings.add(new Warning("redoslijed", ids.get(lesson), ids.get(prerequisite),
                     "„" + names.get(lesson) + "“ dolazi prije svog preduvjeta „" + names.get(prerequisite) + "“.", null, true));
         }
+        boolean anotherRound = !lastRound && !toVerify.isEmpty();
         Set<String> ignored = new HashSet<>(jdbc.queryForList("""
                 SELECT kind || '|' || COALESCE(objective_id, 0) || '|' || COALESCE(prerequisite_id, 0) || '|' || text
                 FROM plan_warning WHERE course_id = :c AND ignored""", c, String.class));
@@ -194,7 +255,12 @@ public class PlanCheckRepairStep implements BuildStep {
                             new MapSqlParameterSource("o", ids.get(i)).addValue("p", ids.get(p)));
                 }
             }
+            for (long[] d : dropped) {
+                jdbc.update("DELETE FROM objective_prerequisite WHERE objective_id = :o AND prerequisite_id = :p",
+                        new MapSqlParameterSource("o", d[0]).addValue("p", d[1]));
+            }
             updateWeights(courseId);
+            if (anotherRound) return; // upozorenja i predaja kreatoru tek nakon idućeg kruga
             jdbc.update("DELETE FROM plan_warning WHERE course_id = :c", new MapSqlParameterSource("c", courseId));
             for (Warning w : warnings) {
                 jdbc.update("""
@@ -211,8 +277,21 @@ public class PlanCheckRepairStep implements BuildStep {
                         new MapSqlParameterSource("c", courseId).addValue("s", PlanFinalizeStep.STATUS_DRAFT));
             }
         });
+        if (anotherRound) {
+            List<Long> lessons = toVerify.stream().map(ids::get).toList();
+            flow.repairRound(courseId, job.accountId(), repair + 1, lessons);
+            return added + " preduvjeta dodano, " + rewritten + " stavki prepravljeno, " + dropped.size()
+                    + " bridova kruga maknuto; ponovna provjera " + lessons.size() + " lekcija (krug " + (repair + 1) + ")";
+        }
         if (!recheck) mailer.planReady(courseId);
         return added + " preduvjeta dodano, " + rewritten + " stavki prepravljeno, " + warnings.size() + " upozorenja";
+    }
+
+    private static void collect(Map<String, Finding> findings, String kind, int lesson, int other, boolean later,
+                                boolean serious, String concept) {
+        Finding f = findings.computeIfAbsent(kind + "|" + lesson + "|" + other + "|" + later,
+                k -> new Finding(kind, lesson, other, later, serious));
+        f.concepts.putIfAbsent(conceptKey(concept), concept);
     }
 
     // Trenutni poredak bez premještanja: brid prema kasnijoj lekciji je „backwards“.

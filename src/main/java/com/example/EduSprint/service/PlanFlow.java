@@ -81,6 +81,11 @@ public class PlanFlow {
 
     void afterChecks(BuildJob job) {
         if (queue.notDone(job.courseId(), PlanZeroStep.KIND, PlanCoverageStep.KIND) > 0) return;
+        int repair = repairRound(job);
+        if (repair > 0) {
+            add(job, PlanCheckRepairStep.KIND, "provjera popravak " + repair, "{\"repair\":" + repair + "}");
+            return;
+        }
         long round = round(job);
         if (round == 0) add(job, PlanCheckRepairStep.KIND, "provjera", null);
         else add(job, PlanCheckRepairStep.KIND, "provjera " + round, "{\"recheck\":true}");
@@ -104,6 +109,22 @@ public class PlanFlow {
             queue.enqueue(courseId, accountId, PlanCheckRepairStep.KIND, "provjera " + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
                     "{\"recheck\":true}");
         }
+    }
+
+    // Krug popravka pri izradi plana: lekcije s neriješenim crvenim nalazom ponovno prolaze nultu pretpostavku
+    // (jednom, stari nalazi se brišu), pa popravak ide ponovno, i dalje sa samostalnim popravljanjem.
+    void repairRound(long courseId, long accountId, int repair, java.util.Collection<Long> objectives) {
+        for (Long o : objectives) {
+            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " popravak " + repair, BuildJobQueue.PRIORITY_WAITED_ON, true,
+                    "{\"objectiveId\":" + o + ",\"run\":1,\"repair\":" + repair + "}");
+        }
+    }
+
+    static int repairRound(BuildJob job) {
+        String in = job.input();
+        if (in == null) return 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"repair\":(\\d+)").matcher(in);
+        return m.find() ? Integer.parseInt(m.group(1)) : 0;
     }
 
     static long round(BuildJob job) {

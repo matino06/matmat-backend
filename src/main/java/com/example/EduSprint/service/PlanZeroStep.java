@@ -83,7 +83,7 @@ public class PlanZeroStep implements BuildStep {
 
         JsonNode out = plan.json(llm.chat(job, plan.cheapModel, system, user, OwnCourseLlm.Options.of("low", 4000)).content());
         MapSqlParameterSource key = new MapSqlParameterSource("o", objectiveId).addValue("r", run);
-        if (in.path("round").asLong(0) > 0) {
+        if (in.path("round").asLong(0) > 0 || in.path("repair").asInt(0) > 0) {
             jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o", key); // lekcija se promijenila: stari nalazi ne vrijede
         } else {
             jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND run = :r", key);
