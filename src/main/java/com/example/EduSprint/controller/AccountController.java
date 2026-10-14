@@ -87,6 +87,8 @@ public class AccountController {
             account.setTempo(tempo);
             accountRepository.save(account);
             return new ResponseEntity<>(HttpStatus.OK);
+        } catch (AccountNotFoundException e) {
+            throw e;   // answered as 404 {message} by ApiExceptionHandler
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>("Account not found", HttpStatus.NOT_FOUND);
         } catch (DataAccessException e) {
@@ -183,7 +185,7 @@ public class AccountController {
     @PostMapping("/create")
     public ResponseEntity<String> createAccount(Authentication authentication) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
-        boolean accountCreated = accountService.createAccount(principal.getEmail(), principal.getName());
+        boolean accountCreated = accountService.createAccount(principal.getEmail(), principal.getName(), principal.getSubject());
 
         if (accountCreated) {
             emailService.sendWelcomeEmail(principal.getEmail());

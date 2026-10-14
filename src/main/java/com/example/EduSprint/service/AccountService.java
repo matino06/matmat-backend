@@ -3,6 +3,7 @@ package com.example.EduSprint.service;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.repository.AccountRepository;
+import com.example.EduSprint.security.AccountResolver;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +18,10 @@ public class AccountService {
     private final AccountObjectiveService accountObjectiveService;
     private final TaskService taskService;
     private final CourseService courseService;
+    private final AccountResolver accountResolver;
 
-    public AccountService(AccountRepository accountRepository, AccountObjectiveService accountObjectiveService, TaskService taskService, CourseService courseService) {
+    public AccountService(AccountRepository accountRepository, AccountObjectiveService accountObjectiveService, TaskService taskService, CourseService courseService, AccountResolver accountResolver) {
+        this.accountResolver = accountResolver;
         this.accountRepository = accountRepository;
         this.accountObjectiveService = accountObjectiveService;
         this.taskService = taskService;
@@ -26,7 +29,7 @@ public class AccountService {
     }
 
     @Transactional
-    public boolean createAccount(String email, String name) {
+    public boolean createAccount(String email, String name, String loginSubject) {
         Course defaultCourse = courseService.getCourseById(1L);
         System.out.println(defaultCourse);
         Account account = new Account(email, name, defaultCourse);
@@ -34,6 +37,7 @@ public class AccountService {
         try {
             accountRepository.save(account);
             accountObjectiveService.initializeAccountObjectives(account);
+            accountResolver.linkNewAccount(loginSubject, account.getAccountId(), email);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,7 +50,7 @@ public class AccountService {
         if (accountOptional.isPresent()) {
             return accountOptional.get();
         } else {
-            throw new RuntimeException("Account not found for email: " + email);
+            throw new AccountNotFoundException();
         }
     }
 
