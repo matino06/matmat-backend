@@ -19,6 +19,7 @@ import com.example.EduSprint.repository.ExplanationStepRepository;
 import com.example.EduSprint.repository.MockExamAttemptRepository;
 import com.example.EduSprint.repository.MockExamQuestionRepository;
 import com.example.EduSprint.repository.TaskRepository;
+import com.example.EduSprint.storage.PrivateStorageKeys;
 import com.example.EduSprint.storage.StorageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -483,7 +484,8 @@ public class AiChatService {
 
     /**
      * Prihvaća samo slike iz našeg storagea: URL-ove koji idu preko ImageControllera ("/image/...")
-     * ili gola imena datoteka. Proizvoljni vanjski URL-ovi se ignoriraju.
+     * ili gola imena datoteka. Proizvoljni vanjski URL-ovi i privatni ključevi (fotografije odgovora,
+     * materijali vlastitih predmeta) se ignoriraju.
      */
     static String toStorageKey(String url) {
         if (url == null || url.isBlank()) return null;
@@ -504,6 +506,8 @@ public class AiChatService {
         if (h >= 0) key = key.substring(0, h);
         key = URLDecoder.decode(key, StandardCharsets.UTF_8);
         if (key.isBlank() || key.contains("..")) return null;
+        // A quote must not attach another account's answer photo or own-course material.
+        if (PrivateStorageKeys.isPrivate(key)) return null;
         return key;
     }
 

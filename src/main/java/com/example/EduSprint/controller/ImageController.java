@@ -1,5 +1,6 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.storage.PrivateStorageKeys;
 import com.example.EduSprint.storage.StorageService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,10 @@ public class ImageController {
     public ResponseEntity<Resource> loadImage(@PathVariable String imageName) {
         if (imageName.startsWith("/")) {
             imageName = imageName.substring(1);
+        }
+        // Answer photos and creators' materials are private; this endpoint is public.
+        if (PrivateStorageKeys.isPrivate(imageName)) {
+            return ResponseEntity.notFound().build();
         }
 
         Resource resource = storageService.loadAsResource(imageName);
