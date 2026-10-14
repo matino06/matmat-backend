@@ -33,6 +33,20 @@ class ImageControllerTest {
     }
 
     @Test
+    void encodedOrDottedPathsToPrivateKeysAreNotServed() throws Exception {
+        mvc.perform(get("/image/%6Dock-exam-answers/12/345.jpg")).andExpect(status().isNotFound());
+        mvc.perform(get("/image/./mock-exam-answers/12/345.jpg")).andExpect(status().isNotFound());
+        verify(storage, never()).loadAsResource(anyString());
+    }
+
+    @Test
+    void contentImagesInFoldersStayPublic() throws Exception {
+        when(storage.loadAsResource("tasks/graf1.png")).thenReturn(new ByteArrayResource(new byte[]{1}));
+
+        mvc.perform(get("/image/tasks/graf1.png")).andExpect(status().isOk());
+    }
+
+    @Test
     void creatorMaterialsAreNotServed() throws Exception {
         mvc.perform(get("/image/own-courses/7/3/materials/skripta.pdf")).andExpect(status().isNotFound());
         mvc.perform(get("/image/own-courses/7/3/pages/9/1.png")).andExpect(status().isNotFound());
