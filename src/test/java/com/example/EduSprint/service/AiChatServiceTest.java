@@ -38,6 +38,15 @@ class AiChatServiceTest {
     }
 
     @Test
+    void privateStorageKeysCannotBeQuoted() {
+        // A quote must not pull another student's answer photo or a creator's material into the AI request.
+        assertNull(AiChatService.toStorageKey("https://api.matmat.online/api/image/mock-exam-answers/12/345.jpg"));
+        assertNull(AiChatService.toStorageKey("/api/image/own-courses/7/3/materials/skripta.pdf"));
+        assertNull(AiChatService.toStorageKey("own-courses/7/3/pages/9/1.png"));
+        assertNull(AiChatService.toStorageKey("/api/image/%6Dock-exam-answers/12/345.jpg"));
+    }
+
+    @Test
     void decodesImageDataUris() {
         byte[] png = {(byte) 0x89, 'P', 'N', 'G', 1, 2, 3};
         String b64 = Base64.getEncoder().encodeToString(png);
