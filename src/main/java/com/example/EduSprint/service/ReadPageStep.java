@@ -82,7 +82,8 @@ public class ReadPageStep implements BuildStep {
         int start = content.indexOf('{');
         int end = content.lastIndexOf('}');
         if (start < 0 || end < start) throw new IllegalStateException("Model nije vratio JSON");
-        return mapper.readTree(content.substring(start, end + 1));
+        // model prepisuje formule u LaTeX-u, a backslash u JSON-u ne udvostruči uvijek
+        return mapper.readTree(JsonLatex.fix(content.substring(start, end + 1)));
     }
 
     static String normaliseKind(String value) {
