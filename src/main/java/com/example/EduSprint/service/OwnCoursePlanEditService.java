@@ -405,6 +405,7 @@ public class OwnCoursePlanEditService {
         Course course = own(account, courseId);
         Map<String, Object> out = new HashMap<>();
         out.put("mode", course.getLearningMode());
+        out.put("lessonFormat", course.getLessonFormat());
         out.put("examDate", course.getExamDate() == null ? null : course.getExamDate().toString());
         out.put("conceptLessons", conceptLessons(courseId));
         out.put("maxQuickLessons", MAX_QUICK_LESSONS);
@@ -415,10 +416,20 @@ public class OwnCoursePlanEditService {
         return out;
     }
 
-    // Način učenja bira se jednom, dok je plan nacrt i kad je poznat broj lekcija koncepata; poslije se ne mijenja.
     @Transactional
     public void chooseLearningMode(Account account, long courseId, String mode, LocalDate examDate) {
+        chooseLearningMode(account, courseId, mode, examDate, null);
+    }
+
+    // Način učenja bira se jednom, dok je plan nacrt i kad je poznat broj lekcija koncepata; poslije se ne mijenja.
+    // S njim i oblik lekcija (tekst ili interaktivno; zadano tekst): zadaci nastaju tek nakon potvrde plana.
+    @Transactional
+    public void chooseLearningMode(Account account, long courseId, String mode, LocalDate examDate, String lessonFormat) {
         Course course = draft(account, courseId);
+        String format = lessonFormat == null || lessonFormat.isBlank() ? LessonUiStep.FORMAT_TEXT : lessonFormat;
+        if (!LessonUiStep.FORMAT_TEXT.equals(format) && !LessonUiStep.FORMAT_INTERACTIVE.equals(format)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nepoznat oblik lekcija.");
+        }
         if (course.getLearningMode() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Način učenja je već odabran i ne može se promijeniti.");
         }
@@ -435,6 +446,7 @@ public class OwnCoursePlanEditService {
         }
         course.setLearningMode(mode);
         course.setExamDate(examDate);
+        course.setLessonFormat(format);
         courseRepository.save(course);
         if (MODE_QUICK.equals(mode)) {
             queue.enqueue(courseId, account.getAccountId(), PlanApplicationStep.KIND, "primjena", BuildJobQueue.PRIORITY_WAITED_ON, true, null);

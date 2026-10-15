@@ -39,12 +39,13 @@ public class TaskVariationStep implements BuildStep {
     private final SketchChecker sketches;
     private final ExplanationSketches explanationSketches;
     private final OwnCourseMailer mailer;
+    private final LessonUiStep lessonUi;
     private final String writerModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public TaskVariationStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan, VariationPrompt prompt,
                              VariationChecks checks, TooCloseCheck tooClose, SketchChecker sketches,
-                             ExplanationSketches explanationSketches, OwnCourseMailer mailer,
+                             ExplanationSketches explanationSketches, OwnCourseMailer mailer, LessonUiStep lessonUi,
                              @Value("${own-courses.models.writer:openai/gpt-6.1-sol}") String writerModel) {
         this.jdbc = jdbc;
         this.llm = llm;
@@ -55,6 +56,7 @@ public class TaskVariationStep implements BuildStep {
         this.sketches = sketches;
         this.explanationSketches = explanationSketches;
         this.mailer = mailer;
+        this.lessonUi = lessonUi;
         this.writerModel = writerModel;
     }
 
@@ -125,8 +127,9 @@ public class TaskVariationStep implements BuildStep {
                 .addValue("r", mapper.writeValueAsString(v.path("rezultati"))).addValue("s", sketch);
         String withSketch = (sketch == null ? "" : " sa skicom") + explanation.summary();
         if (replace && exists != null && exists > 0) {
-            // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega
-            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s WHERE objective_id = :o AND variation = :v", o);
+            // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega; stara interaktivna
+            // verzija ne odgovara novom tekstu, pa se briše i (za interaktivne predmete) izrađuje iznova
+            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s, lesson_ui = NULL WHERE objective_id = :o AND variation = :v", o);
             return "zamijenjeno" + withSketch;
         }
         jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results, sketch) VALUES (:o, :t, :e, :v, :r, :s)", o);
@@ -156,8 +159,10 @@ public class TaskVariationStep implements BuildStep {
     }
 
     // Kad sve lekcije imaju 1. varijaciju, predmet je spreman; ako je izrada išla preko batcha, kreator dobije e-mail.
+    // Interaktivni predmet uz 1. varijaciju dobiva i njezinu interaktivnu verziju (ne čeka je: tekst je dovoljan za učenje).
     @Override
     public void afterComplete(BuildJob job) {
+        interactiveVersion(job);
         if (job.ref() != null && !job.ref().startsWith("v1 ")) return;
         MapSqlParameterSource c = new MapSqlParameterSource("c", job.courseId());
         Integer missing = jdbc.queryForObject("""
@@ -169,5 +174,15 @@ public class TaskVariationStep implements BuildStep {
                 c.addValue("r", STATUS_READY).addValue("p", STATUS_CONFIRMED));
         Integer batches = jdbc.queryForObject("SELECT count(*) FROM variation_batch WHERE course_id = :c", c, Integer.class);
         if (updated == 1 && batches != null && batches > 0) mailer.tasksReady(job.courseId());
+    }
+
+    private void interactiveVersion(BuildJob job) {
+        try {
+            JsonNode in = mapper.readTree(job.input());
+            int variation = in.path("variation").asInt(1);
+            if (variation == 1) lessonUi.enqueueIfInteractive(job, in.path("objectiveId").asLong(), variation, in.path("replace").asBoolean(false));
+        } catch (Exception e) {
+            // bez interaktivne verzije zadatak i dalje radi kao tekst
+        }
     }
 }

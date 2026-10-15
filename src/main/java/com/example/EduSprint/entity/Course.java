@@ -34,6 +34,10 @@ public class Course {
     @Column(name = "learning_mode", length = 20)
     private String learningMode;
 
+    // Oblik lekcija vlastitog predmeta: tekst | interaktivno (uz tekst i lekcija od widgeta).
+    @Column(name = "lesson_format", length = 20, nullable = false)
+    private String lessonFormat = "tekst";
+
     // Razina vlastitog predmeta (os78 | ss); null za službene.
     @Column(name = "level", length = 20)
     private String level;
@@ -103,6 +107,14 @@ public class Course {
 
     public void setLearningMode(String learningMode) {
         this.learningMode = learningMode;
+    }
+
+    public String getLessonFormat() {
+        return lessonFormat;
+    }
+
+    public void setLessonFormat(String lessonFormat) {
+        this.lessonFormat = lessonFormat;
     }
 
     public String getLevel() {
