@@ -90,10 +90,15 @@ public class PlanSupport {
         int start = content.indexOf('{');
         int end = content.lastIndexOf('}');
         if (start < 0 || end < start) throw new IllegalStateException("Model nije vratio JSON");
+        String json = content.substring(start, end + 1);
         try {
-            return mapper.readTree(content.substring(start, end + 1));
+            return mapper.readTree(json);
         } catch (Exception e) {
-            throw new IllegalStateException("Model je vratio neispravan JSON: " + e.getMessage());
+            try {
+                return mapper.readTree(JsonLatex.fix(json)); // LaTeX bez udvostručenog backslasha („\(“)
+            } catch (Exception again) {
+                throw new IllegalStateException("Model je vratio neispravan JSON: " + e.getMessage());
+            }
         }
     }
 
