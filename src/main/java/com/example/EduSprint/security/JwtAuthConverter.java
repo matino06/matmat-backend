@@ -23,9 +23,11 @@ import java.util.Collections;
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final String namespace;
+    private final AccountResolver accounts;
 
-    public JwtAuthConverter(@Value("${auth0.claims-namespace}") String namespace) {
+    public JwtAuthConverter(@Value("${auth0.claims-namespace}") String namespace, AccountResolver accounts) {
         this.namespace = namespace;
+        this.accounts = accounts;
     }
 
     @Override
@@ -42,7 +44,8 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
             name = email.substring(0, email.indexOf('@'));
         }
 
-        AuthPrincipal principal = new AuthPrincipal(jwt.getSubject(), email, name);
+        // Act as the account the login is linked to (its email may differ from the token's, e.g. after a change).
+        AuthPrincipal principal = new AuthPrincipal(jwt.getSubject(), accounts.accountEmail(jwt.getSubject(), email), name);
         return new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     }
 
