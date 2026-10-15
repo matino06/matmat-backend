@@ -51,6 +51,7 @@ public class MockExamGradingService {
     private static final String STATUS_PENDING = "pending";
     private static final String STATUS_DONE = "graded";
     private static final String STATUS_FAILED = "error";
+    static final String STATUS_NO_CONSENT = "no_consent";
 
     private static final String TYPE_MULTIPLE_CHOICE = "multiple_choice";
     private static final String TYPE_SHORT_ANSWER = "short_answer";
@@ -94,6 +95,18 @@ public class MockExamGradingService {
                                             Long examId,
                                             MockExamSubmitRequestDTO request,
                                             Map<String, MultipartFile> filesByPartName) {
+        return submit(account, examId, request, filesByPartName, true);
+    }
+
+    /**
+     * Without AI consent ({@code aiAllowed} false) only multiple choice is graded; the other answers are kept,
+     * scored 0 and marked {@value #STATUS_NO_CONSENT} with a note saying how to get them graded.
+     */
+    public MockExamSubmitResponseDTO submit(Account account,
+                                            Long examId,
+                                            MockExamSubmitRequestDTO request,
+                                            Map<String, MultipartFile> filesByPartName,
+                                            boolean aiAllowed) {
         MockExam exam = mockExamRepository.findById(examId)
                 .filter(e -> Boolean.TRUE.equals(e.getIsPublished()))
                 .orElseThrow(() -> new EntityNotFoundException("Mock exam not found: " + examId));
@@ -152,8 +165,12 @@ public class MockExamGradingService {
                 }
                 case TYPE_SHORT_ANSWER -> {
                     answer.setAnswerText(sub.getAnswerText());
-                    answer.setAiGradingStatus(STATUS_PENDING);
-                    anyPending = true;
+                    if (aiAllowed) {
+                        answer.setAiGradingStatus(STATUS_PENDING);
+                        anyPending = true;
+                    } else {
+                        markNoConsent(answer);
+                    }
                 }
                 case TYPE_SHORT_ANSWER_GRAPH, TYPE_EXTENDED_ANSWER -> {
                     String partName = sub.getImagePartName();
@@ -164,8 +181,12 @@ public class MockExamGradingService {
                         storageService.store(file, key);
                         answer.setAnswerImageFilename(key);
                     }
-                    answer.setAiGradingStatus(STATUS_PENDING);
-                    anyPending = true;
+                    if (aiAllowed) {
+                        answer.setAiGradingStatus(STATUS_PENDING);
+                        anyPending = true;
+                    } else {
+                        markNoConsent(answer);
+                    }
                 }
                 default -> {
                     continue;
@@ -288,6 +309,12 @@ public class MockExamGradingService {
     }
 
     @Transactional
+    private static void markNoConsent(MockExamAnswer answer) {
+        answer.setAiGradingStatus(STATUS_NO_CONSENT);
+        answer.setScoreAwarded((short) 0);
+        answer.setAiFeedback("Za ocjenu uključi AI u Profilu.");
+    }
+
     public void retryFailedAnswers(Long attemptId, Account account) {
         mockExamAttemptRepository
                 .findByAttemptIdAndAccount_AccountId(attemptId, account.getAccountId())

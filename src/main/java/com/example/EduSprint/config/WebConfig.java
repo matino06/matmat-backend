@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import com.example.EduSprint.security.AiConsentInterceptor;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -32,6 +34,22 @@ public class WebConfig {
             public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
                 // timeout ostaje iz spring.mvc.async.request-timeout
                 configurer.setTaskExecutor(mvcAsyncExecutor);
+            }
+        };
+    }
+
+    /** Requests that send the student's data to the AI need AI consent (from iOS, for now). */
+    @Bean
+    public WebMvcConfigurer aiConsentConfigurer(AiConsentInterceptor aiConsent) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addInterceptor(aiConsent).addPathPatterns(
+                        "/ai/chat",
+                        "/mock-exam/attempts/*/retry",
+                        "/own-courses/*/build", "/own-courses/*/retry", "/own-courses/*/recheck",
+                        "/own-courses/*/confirm", "/own-courses/*/instructions",
+                        "/own-courses/*/warnings/*/fix", "/own-courses/*/warnings/*/add-lesson");
             }
         };
     }
