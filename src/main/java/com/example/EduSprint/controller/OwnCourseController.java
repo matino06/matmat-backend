@@ -134,7 +134,7 @@ public class OwnCourseController {
         } catch (java.time.format.DateTimeParseException e) {
             throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Neispravan datum.");
         }
-        planEdit.chooseLearningMode(account(a), courseId, body.get("mode"), examDate);
+        planEdit.chooseLearningMode(account(a), courseId, body.get("mode"), examDate, body.get("lessonFormat"));
         return planEdit.learningMode(account(a), courseId);
     }
 

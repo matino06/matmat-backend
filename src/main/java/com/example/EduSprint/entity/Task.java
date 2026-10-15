@@ -29,6 +29,10 @@ public class Task {
     @Column(name = "sketch")
     private String sketch;
 
+    // Interaktivna verzija (JSON spec lekcije od widgeta), ili null; tekst iznad ostaje izvor istine.
+    @Column(name = "lesson_ui")
+    private String lessonUi;
+
     public Task() {
     }
 
@@ -66,6 +70,14 @@ public class Task {
 
     public void setSketch(String sketch) {
         this.sketch = sketch;
+    }
+
+    public String getLessonUi() {
+        return lessonUi;
+    }
+
+    public void setLessonUi(String lessonUi) {
+        this.lessonUi = lessonUi;
     }
 
 
