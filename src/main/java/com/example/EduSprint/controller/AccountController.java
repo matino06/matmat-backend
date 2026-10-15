@@ -1,5 +1,7 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.dto.AiConsentDTO;
+import com.example.EduSprint.dto.AiConsentRequest;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.UserCourseGoal;
@@ -32,7 +34,10 @@ public class AccountController {
     public final UserCourseGoalService userCourseGoalService;
     public final EmailService emailService;
 
-    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService) {
+    private final AiConsentService aiConsentService;
+
+    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService, AiConsentService aiConsentService) {
+        this.aiConsentService = aiConsentService;
         this.accountRepository = accountRepository;
         this.accountService = accountService;
         this.accountObjectiveService = accountObjectiveService;
@@ -180,6 +185,21 @@ public class AccountController {
         }
         accountService.updateNotificationSettings(principal.getEmail(), learningReminders, featureAnnouncements);
         return ResponseEntity.ok().build();
+    }
+
+    /** AI consent: null until decided. */
+    @GetMapping("/ai-consent")
+    public AiConsentDTO aiConsent(Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        return aiConsentService.get(accountService.getAccount(principal.getEmail()).getAccountId());
+    }
+
+    /** {"granted": true|false, "version": "2026-10-15", "source": "ios"|"web"}; records the text version and time. */
+    @PostMapping("/ai-consent")
+    public AiConsentDTO setAiConsent(Authentication authentication, @RequestBody AiConsentRequest request) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
+        return aiConsentService.set(accountId, request.granted(), request.version(), request.source());
     }
 
     @PostMapping("/create")

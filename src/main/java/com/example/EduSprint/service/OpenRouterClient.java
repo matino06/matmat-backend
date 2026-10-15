@@ -56,6 +56,18 @@ public class OpenRouterClient {
                 .build();
     }
 
+    /**
+     * Every call goes only to providers that do not collect or train on the data ({@code data_collection: "deny"}),
+     * whatever the caller set. Checked 2026-10-15: every model in use (chat, grading text and vision, own-course
+     * writer, embeddings, decisions) still has such a provider.
+     */
+    static ObjectNode denyDataCollection(ObjectNode body) {
+        ObjectNode provider = body.has("provider") && body.get("provider").isObject()
+                ? (ObjectNode) body.get("provider") : body.putObject("provider");
+        provider.put("data_collection", "deny");
+        return body;
+    }
+
     /** Blokirajući poziv; vraća cijeli JSON odgovor. */
     public JsonNode complete(ObjectNode body) {
         String response = request(body)
@@ -70,7 +82,7 @@ public class OpenRouterClient {
 
     /** POST na drugi OpenRouter endpoint; path je relativan na baseUrl (npr. „/embeddings“) ili apsolutan URL. */
     public JsonNode post(String path, ObjectNode body) {
-        return parse(webClient.post().uri(uri(path)).contentType(MediaType.APPLICATION_JSON).bodyValue(body.toString())
+        return parse(webClient.post().uri(uri(path)).contentType(MediaType.APPLICATION_JSON).bodyValue(denyDataCollection(body).toString())
                 .retrieve().onStatus(HttpStatusCode::isError, this::error).bodyToMono(String.class).block());
     }
 
@@ -115,7 +127,7 @@ public class OpenRouterClient {
         return webClient.post()
                 .uri("/chat/completions")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body.toString())
+                .bodyValue(denyDataCollection(body).toString())
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, r -> r.createException()
                         .map(ex -> new RuntimeException("OpenRouter " + ex.getStatusCode().value() + ": "

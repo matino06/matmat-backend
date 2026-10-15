@@ -1,6 +1,8 @@
 package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.MockExamAttemptDetailDTO;
+import com.example.EduSprint.security.AiConsentInterceptor;
+import com.example.EduSprint.service.AiConsentService;
 import com.example.EduSprint.dto.MockExamAttemptSummaryDTO;
 import com.example.EduSprint.dto.MockExamDetailDTO;
 import com.example.EduSprint.dto.MockExamSubmitRequestDTO;
@@ -38,11 +40,14 @@ public class MockExamController {
     private final MockExamGradingService mockExamGradingService;
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
+    private final AiConsentService aiConsentService;
 
     public MockExamController(MockExamService mockExamService,
                               MockExamGradingService mockExamGradingService,
                               AccountService accountService,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper,
+                              AiConsentService aiConsentService) {
+        this.aiConsentService = aiConsentService;
         this.mockExamService = mockExamService;
         this.mockExamGradingService = mockExamGradingService;
         this.accountService = accountService;
@@ -84,7 +89,9 @@ public class MockExamController {
         Map<String, MultipartFile> files = request.getFileMap();
 
         try {
-            MockExamSubmitResponseDTO response = mockExamGradingService.submit(account, examId, body, files);
+            // From iOS without AI consent, only multiple choice is graded.
+            boolean aiAllowed = !AiConsentInterceptor.enforcedFor(request) || aiConsentService.isGranted(account.getAccountId());
+            MockExamSubmitResponseDTO response = mockExamGradingService.submit(account, examId, body, files, aiAllowed);
             if ("pending".equals(response.getGradingStatus())) {
                 mockExamGradingService.triggerAsyncGradingForAttempt(response.getAttemptId());
             }
