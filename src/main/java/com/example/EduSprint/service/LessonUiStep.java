@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 // Interaktivna verzija varijacije zadatka (predmet s oblikom lekcija „interaktivno“): iz već spremljenog i
-// provjerenog teksta model napiše JSON lekciju od widgeta, a LessonUi je provjerava istim kodom kao frontend.
+// provjerenog teksta model za pisanje (kao za zadatke) napiše JSON lekciju od widgeta, a LessonUi je provjerava
+// istim kodom kao frontend; ako ne prođe, jeftiniji model je jednom popravlja.
 // Ne prođe li ni nakon jednog popravka, zadatak ostaje samo tekstualan: posao završava bez greške, jer tekst i
 // dalje vrijedi, a ponavljanje posla samo bi trošilo. Ne troši kvotu kreatora, kao ni izrada zadataka.
 @Component
@@ -32,7 +33,7 @@ public class LessonUiStep implements BuildStep {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public LessonUiStep(NamedParameterJdbcTemplate jdbc, OwnCourseLlm llm, PlanSupport plan, LessonUi lessonUi, BuildJobQueue queue,
-                        @Value("${own-courses.models.lesson-ui:anthropic/claude-sonnet-5.5}") String model) {
+                        @Value("${own-courses.models.writer:openai/gpt-6.1-sol}") String model) {
         this.jdbc = jdbc;
         this.llm = llm;
         this.plan = plan;
@@ -86,7 +87,7 @@ public class LessonUiStep implements BuildStep {
             // popravak u jednom pozivu: izvor, modelova lekcija i nalaz provjere (bez ponovnog razmišljanja ispočetka)
             repaired = true;
             String fix = user + "\n\nTVOJA LEKCIJA (JSON):\n" + (json == null ? "(nije JSON)" : json) + "\n\n" + lessonUi.repair(check.errors());
-            json = lesson(llm.chat(job, model, system, fix, OwnCourseLlm.Options.of("low", 32000)).content());
+            json = lesson(llm.chat(job, plan.cheapModel, system, fix, OwnCourseLlm.Options.of("medium", 32000)).content());
             check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results);
         }
         if (!check.ok()) return "bez interaktivne verzije: " + String.join(" | ", check.errors().subList(0, Math.min(3, check.errors().size())));

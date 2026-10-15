@@ -19,7 +19,7 @@ class LessonUiStepTest {
     private final NamedParameterJdbcTemplate jdbc = mock(NamedParameterJdbcTemplate.class);
     private final OwnCourseLlm llm = mock(OwnCourseLlm.class);
     private final BuildJobQueue queue = mock(BuildJobQueue.class);
-    private final LessonUiStep step = new LessonUiStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"), new LessonUi(), queue, "sonnet");
+    private final LessonUiStep step = new LessonUiStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"), new LessonUi(), queue, "sol");
     private final BuildJob job = new BuildJob(1, 5, 7, LessonUiStep.KIND, "ui1 11", 1, false, 1, LessonUiStep.input(11, 1));
 
     private void task(String lessonUi) {
@@ -53,16 +53,16 @@ class LessonUiStepTest {
         task(null);
         answers("Evo lekcije:\n" + LessonUiTest.VALID);
         assertEquals("spremljeno", step.run(job));
-        verify(llm).chat(eq(job), eq("sonnet"), contains("KATALOG WIDGETA"), contains("Mjerenje volumena"), argThat(o -> "medium".equals(o.reasoning())));
+        verify(llm).chat(eq(job), eq("sol"), contains("KATALOG WIDGETA"), contains("Mjerenje volumena"), argThat(o -> "medium".equals(o.reasoning())));
         verify(jdbc).update(contains("SET lesson_ui"), argThat((SqlParameterSource p) -> String.valueOf(p.getValue("u")).contains("\"verzija\":1")));
     }
 
     @Test
-    void invalidLessonIsRepairedOnce() throws Exception {
+    void invalidLessonIsRepairedOnceByTheCheapModel() throws Exception {
         task(null);
         answers("{\"verzija\":1}", LessonUiTest.VALID);
         assertEquals("spremljeno nakon popravka", step.run(job));
-        verify(llm).chat(eq(job), eq("sonnet"), any(), contains("TVOJA LEKCIJA"), argThat(o -> "low".equals(o.reasoning())));
+        verify(llm).chat(eq(job), eq("haiku"), any(), contains("TVOJA LEKCIJA"), any());
     }
 
     @Test
