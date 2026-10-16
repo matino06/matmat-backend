@@ -42,15 +42,18 @@ public class LessonUi {
         return call("popravakPrompt", mapper.writeValueAsString(errors)).asString();
     }
 
-    // results: JSON rezultata izvornog zadatka ({"a":"…"}), za upozorenje kad pitanje ne odgovara zadatku; smije biti null.
-    public synchronized Check check(String lessonJson, String resultsJson) {
+    // results: JSON rezultata izvornog zadatka ({"a":"…"}): svaki broj iz njih mora biti točan odgovor na pitanje.
+    // sketch: JSON skice uz izvorni zadatak: lekcija je mora prikazati (lik u zadatku, instrument kao očitanje).
+    // Oba smiju biti null.
+    public synchronized Check check(String lessonJson, String resultsJson, String sketchJson) {
         Value r = context().eval("js", """
-                (lesson, results) => {
-                  let parsed, res = null;
+                (lesson, results, sketch) => {
+                  let parsed, res = null, sk = null;
                   try { parsed = JSON.parse(lesson); } catch (e) { return { greske: ['lekcija nije ispravan JSON'], upozorenja: [] }; }
                   try { res = results ? JSON.parse(results) : null; } catch (e) {}
-                  return MatMatLesson.validateLesson(parsed, { rezultati: res });
-                }""").execute(lessonJson, resultsJson);
+                  try { sk = sketch ? JSON.parse(sketch) : null; } catch (e) {}
+                  return MatMatLesson.validateLesson(parsed, { rezultati: res, skica: sk });
+                }""").execute(lessonJson, resultsJson, sketchJson);
         return new Check(strings(r.getMember("greske")), strings(r.getMember("upozorenja")));
     }
 

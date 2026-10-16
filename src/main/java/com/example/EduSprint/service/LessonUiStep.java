@@ -77,18 +77,19 @@ public class LessonUiStep implements BuildStep {
         Map<String, Object> source = new LinkedHashMap<>();
         for (String k : List.of("subject", "level", "objective_name", "task_text", "sketch", "results", "explanation")) source.put(k, task.get(k));
         String results = (String) task.get("results");
+        String sketch = (String) task.get("sketch");
         String system = lessonUi.system();
         String user = lessonUi.user(source);
 
         String json = lesson(llm.chat(job, model, system, user, OwnCourseLlm.Options.of("medium", 32000)).content());
-        LessonUi.Check check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results);
+        LessonUi.Check check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results, sketch);
         boolean repaired = false;
         if (!check.ok()) {
             // popravak u jednom pozivu: izvor, modelova lekcija i nalaz provjere (bez ponovnog razmišljanja ispočetka)
             repaired = true;
             String fix = user + "\n\nTVOJA LEKCIJA (JSON):\n" + (json == null ? "(nije JSON)" : json) + "\n\n" + lessonUi.repair(check.errors());
             json = lesson(llm.chat(job, plan.cheapModel, system, fix, OwnCourseLlm.Options.of("medium", 32000)).content());
-            check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results);
+            check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results, sketch);
         }
         if (!check.ok()) return "bez interaktivne verzije: " + String.join(" | ", check.errors().subList(0, Math.min(3, check.errors().size())));
 
