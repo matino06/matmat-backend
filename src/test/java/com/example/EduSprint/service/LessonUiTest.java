@@ -21,7 +21,7 @@ class LessonUiTest {
                "zasto":"Kamen podigne vodu za svoj volumen: 220 − 140 = 80.","objasnjenje":"Volumen je razlika očitanja.",
                "pomoc":[{"tip":"pojam","tekst":"Uronjeno tijelo istisne vode koliko samo zauzima."},
                         {"tip":"broj","tekst":"Voda je s 100 mL porasla na 150 mL. Koliko je to?","odgovor":50,"jedinica":"mL"}],
-               "blizanac":{"tip":"broj","tekst":"Voda je s 160 mL porasla na 240 mL. Koliki je volumen tijela?","odgovor":80,"jedinica":"cm³"}}],
+               "blizanac":{"tip":"broj","tekst":"Voda je s 160 mL porasla na 250 mL. Koliki je volumen tijela?","odgovor":90,"jedinica":"cm³"}}],
              "zapamti":["Volumen tijela = završno − početno očitanje."]}""";
 
     @Test
@@ -75,6 +75,17 @@ class LessonUiTest {
         errors = ui.check(VALID.replace("To je završno očitanje.", "Podijelila si krivo."), null, null).errors();
         assertTrue(errors.stream().anyMatch(e -> e.contains("Podijelila si")), errors.toString());
         assertTrue(ui.check(VALID.replace("To je završno očitanje.", "Podijelio si krivo, 1 g/cm³."), null, null).ok());
+    }
+
+    @Test
+    void twinNeedsADifferentResult() {
+        String same = VALID.replace("porasla na 250 mL. Koliki je volumen tijela?\",\"odgovor\":90", "porasla na 240 mL. Koliki je volumen tijela?\",\"odgovor\":80");
+        assertNotEquals(VALID, same);
+        List<String> errors = ui.check(same, null, null).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("isti rezultat kao pitanje")), errors.toString());
+        // faktor bez jedinice („10 puta manja“) smije ostati isti
+        String factor = same.replace(",\"jedinica\":\"cm³\"}", "}");
+        assertFalse(ui.check(factor, null, null).errors().stream().anyMatch(e -> e.contains("isti rezultat")));
     }
 
     @Test
