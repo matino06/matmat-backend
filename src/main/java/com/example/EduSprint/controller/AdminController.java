@@ -1,6 +1,7 @@
 package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.AdminCourseDTO;
+import com.example.EduSprint.dto.AiReportDTO;
 import com.example.EduSprint.dto.AdminCourseGraphDTO;
 import com.example.EduSprint.dto.AdminMockExamDetailDTO;
 import com.example.EduSprint.dto.AdminMockExamQuestionDTO;
@@ -17,6 +18,7 @@ import com.example.EduSprint.repository.LearningObjectiveRepository;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.AdminMockExamService;
+import com.example.EduSprint.service.AiReportService;
 import com.example.EduSprint.service.AiSettingsService;
 import com.example.EduSprint.service.CourseService;
 import org.springframework.http.HttpStatus;
@@ -38,12 +40,15 @@ public class AdminController {
     private final AiSettingsService aiSettingsService;
     private final AdminMockExamService adminMockExamService;
     private final com.example.EduSprint.service.AdminOwnCourseService ownCourses;
+    private final AiReportService aiReportService;
 
     public AdminController(AccountService accountService, CourseService courseService,
                           CourseRepository courseRepository, LearningObjectiveRepository learningObjectiveRepository,
                           AiSettingsService aiSettingsService, AdminMockExamService adminMockExamService,
-                          com.example.EduSprint.service.AdminOwnCourseService ownCourses) {
+                          com.example.EduSprint.service.AdminOwnCourseService ownCourses,
+                          AiReportService aiReportService) {
         this.ownCourses = ownCourses;
+        this.aiReportService = aiReportService;
         this.accountService = accountService;
         this.courseService = courseService;
         this.courseRepository = courseRepository;
@@ -222,6 +227,15 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(adminMockExamService.updateQuestion(questionId, request));
+    }
+
+    // Reports of AI answers (chat and mock exam grading), newest first.
+    @GetMapping("/ai-reports")
+    public ResponseEntity<List<AiReportDTO>> aiReports(Authentication authentication) {
+        if (!isAdmin(authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(aiReportService.list());
     }
 
     @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)

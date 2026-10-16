@@ -2,11 +2,14 @@ package com.example.EduSprint.controller;
 
 import com.example.EduSprint.dto.AiChatRequestDTO;
 import com.example.EduSprint.dto.AiRatingRequestDTO;
+import com.example.EduSprint.dto.AiReportRequestDTO;
 import com.example.EduSprint.dto.AiUsageDTO;
 import com.example.EduSprint.entity.Account;
+import com.example.EduSprint.security.AiConsentInterceptor;
 import com.example.EduSprint.security.AuthPrincipal;
 import com.example.EduSprint.service.AccountService;
 import com.example.EduSprint.service.AiChatService;
+import com.example.EduSprint.service.AiReportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,10 +31,12 @@ public class AiChatController {
 
     private final AiChatService aiChatService;
     private final AccountService accountService;
+    private final AiReportService aiReportService;
 
-    public AiChatController(AiChatService aiChatService, AccountService accountService) {
+    public AiChatController(AiChatService aiChatService, AccountService accountService, AiReportService aiReportService) {
         this.aiChatService = aiChatService;
         this.accountService = accountService;
+        this.aiReportService = aiReportService;
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -48,6 +54,17 @@ public class AiChatController {
                                      @RequestBody AiRatingRequestDTO request,
                                      Authentication authentication) {
         aiChatService.rate(currentAccount(authentication), messageId, request.rating());
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Reports a wrong or inappropriate answer; it also counts as a thumbs down. */
+    @PostMapping("/message/{messageId}/report")
+    public ResponseEntity<Void> report(@PathVariable Long messageId,
+                                       @RequestBody AiReportRequestDTO request,
+                                       @RequestHeader(value = AiConsentInterceptor.CLIENT_HEADER, required = false) String client,
+                                       Authentication authentication) {
+        aiReportService.reportMessage(currentAccount(authentication).getAccountId(), messageId,
+                request.reason(), request.note(), client);
         return ResponseEntity.noContent().build();
     }
 
