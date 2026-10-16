@@ -1,8 +1,10 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.dto.AiReportRequestDTO;
 import com.example.EduSprint.dto.MockExamAttemptDetailDTO;
 import com.example.EduSprint.security.AiConsentInterceptor;
 import com.example.EduSprint.service.AiConsentService;
+import com.example.EduSprint.service.AiReportService;
 import com.example.EduSprint.dto.MockExamAttemptSummaryDTO;
 import com.example.EduSprint.dto.MockExamDetailDTO;
 import com.example.EduSprint.dto.MockExamSubmitRequestDTO;
@@ -22,6 +24,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -41,13 +45,16 @@ public class MockExamController {
     private final AccountService accountService;
     private final ObjectMapper objectMapper;
     private final AiConsentService aiConsentService;
+    private final AiReportService aiReportService;
 
     public MockExamController(MockExamService mockExamService,
                               MockExamGradingService mockExamGradingService,
                               AccountService accountService,
                               ObjectMapper objectMapper,
-                              AiConsentService aiConsentService) {
+                              AiConsentService aiConsentService,
+                              AiReportService aiReportService) {
         this.aiConsentService = aiConsentService;
+        this.aiReportService = aiReportService;
         this.mockExamService = mockExamService;
         this.mockExamGradingService = mockExamGradingService;
         this.accountService = accountService;
@@ -135,5 +142,20 @@ public class MockExamController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    /** Reports the AI grading of one answer of the student's own attempt as wrong or inappropriate. */
+    @PostMapping("/attempts/{attemptId}/questions/{questionId}/report")
+    public ResponseEntity<Void> reportGrading(
+            @PathVariable Long attemptId,
+            @PathVariable Long questionId,
+            @RequestBody AiReportRequestDTO request,
+            @RequestHeader(value = AiConsentInterceptor.CLIENT_HEADER, required = false) String client,
+            Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(principal.getEmail());
+        aiReportService.reportMockExamAnswer(account.getAccountId(), attemptId, questionId,
+                request.reason(), request.note(), client);
+        return ResponseEntity.noContent().build();
     }
 }
