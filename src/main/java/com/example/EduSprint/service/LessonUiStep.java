@@ -15,6 +15,8 @@ import java.util.Map;
 // Interaktivna verzija varijacije zadatka (predmet s oblikom lekcija „interaktivno“): iz već spremljenog i
 // provjerenog teksta model za pisanje (kao za zadatke) napiše JSON lekciju od widgeta, a LessonUi je provjerava
 // istim kodom kao frontend; ako ne prođe, jeftiniji model je jednom popravlja.
+// Varijacije 2–4 nastaju po predlošku 1. varijacije, pa i njihova lekcija: jeftiniji model prenosi lekciju 1. varijacije
+// na novi zadatak (oko 0,01 $ umjesto 0,04 $), a tek ako ni nakon popravka ne prođe, lekciju piše model za pisanje.
 // Ne prođe li ni nakon jednog popravka, zadatak ostaje samo tekstualan: posao završava bez greške, jer tekst i
 // dalje vrijedi, a ponavljanje posla samo bi trošilo. Ne troši kvotu kreatora, kao ni izrada zadataka.
 @Component
@@ -53,12 +55,14 @@ public class LessonUiStep implements BuildStep {
 
     // Poziva TaskVariationStep kad je varijacija spremljena: interaktivna verzija samo za predmete koji je imaju.
     // Red ne dodaje isti (predmet, vrsta, ref) dvaput, pa ponovno izrađen tekst (replaced) dobiva novu oznaku posla.
+    // Varijacije 2–4 nastaju dok predmet netko već uči (nakon riješenog zadatka), pa idu ispred izrade predmeta.
     public void enqueueIfInteractive(BuildJob job, long objectiveId, int variation, boolean replaced) {
         String format = jdbc.queryForObject("SELECT lesson_format FROM course WHERE course_id = :c",
                 new MapSqlParameterSource("c", job.courseId()), String.class);
         if (!FORMAT_INTERACTIVE.equals(format)) return;
         String ref = "ui" + variation + " " + objectiveId + (replaced ? " #" + job.jobId() : "");
-        queue.enqueue(job.courseId(), job.accountId(), KIND, ref, BuildJobQueue.PRIORITY_BACKGROUND, false, input(objectiveId, variation));
+        int priority = variation > 1 ? BuildJobQueue.PRIORITY_WAITED_ON : BuildJobQueue.PRIORITY_BACKGROUND;
+        queue.enqueue(job.courseId(), job.accountId(), KIND, ref, priority, false, input(objectiveId, variation));
     }
 
     @Override
@@ -81,21 +85,40 @@ public class LessonUiStep implements BuildStep {
         String system = lessonUi.system();
         String user = lessonUi.user(source);
 
-        String json = lesson(llm.chat(job, model, system, user, OwnCourseLlm.Options.of("medium", 32000)).content());
-        LessonUi.Check check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results, sketch);
-        boolean repaired = false;
-        if (!check.ok()) {
-            // popravak u jednom pozivu: izvor, modelova lekcija i nalaz provjere (bez ponovnog razmišljanja ispočetka)
-            repaired = true;
-            String fix = user + "\n\nTVOJA LEKCIJA (JSON):\n" + (json == null ? "(nije JSON)" : json) + "\n\n" + lessonUi.repair(check.errors());
-            json = lesson(llm.chat(job, plan.cheapModel, system, fix, OwnCourseLlm.Options.of("medium", 32000)).content());
-            check = json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results, sketch);
-        }
-        if (!check.ok()) return "bez interaktivne verzije: " + String.join(" | ", check.errors().subList(0, Math.min(3, check.errors().size())));
+        String template = in.path("variation").asInt(1) > 1 ? firstVariationLesson(p) : null;
+        Attempt a = null;
+        if (template != null) a = attempt(job, plan.cheapModel, system, user + "\n\n" + lessonUi.template(template), user, results, sketch);
+        String via = a != null && a.check.ok() ? " po predlošku" : "";
+        if (a == null || !a.check.ok()) a = attempt(job, model, system, user, user, results, sketch);
+        if (!a.check.ok()) return "bez interaktivne verzije: " + String.join(" | ", a.check.errors().subList(0, Math.min(3, a.check.errors().size())));
 
         jdbc.update("UPDATE task SET lesson_ui = :u WHERE task_id = :t AND lesson_ui IS NULL",
-                new MapSqlParameterSource("u", json).addValue("t", task.get("task_id")));
-        return "spremljeno" + (repaired ? " nakon popravka" : "") + (check.warnings().isEmpty() ? "" : ", " + check.warnings().size() + " upozorenja");
+                new MapSqlParameterSource("u", a.json).addValue("t", task.get("task_id")));
+        return "spremljeno" + via + (a.repaired ? " nakon popravka" : "") + (a.check.warnings().isEmpty() ? "" : ", " + a.check.warnings().size() + " upozorenja");
+    }
+
+    private record Attempt(String json, LessonUi.Check check, boolean repaired) {
+    }
+
+    // Lekcija od modela pa, ako ne prođe provjeru, jedan popravak jeftinijim modelom u jednom pozivu: izvor, modelova
+    // lekcija i nalaz provjere (bez ponovnog razmišljanja ispočetka).
+    private Attempt attempt(BuildJob job, String writer, String system, String prompt, String user, String results, String sketch) throws Exception {
+        String json = lesson(llm.chat(job, writer, system, prompt, OwnCourseLlm.Options.of("medium", 32000)).content());
+        LessonUi.Check check = check(json, results, sketch);
+        if (check.ok()) return new Attempt(json, check, false);
+        String fix = user + "\n\nTVOJA LEKCIJA (JSON):\n" + (json == null ? "(nije JSON)" : json) + "\n\n" + lessonUi.repair(check.errors());
+        json = lesson(llm.chat(job, plan.cheapModel, system, fix, OwnCourseLlm.Options.of("medium", 32000)).content());
+        return new Attempt(json, check(json, results, sketch), true);
+    }
+
+    private LessonUi.Check check(String json, String results, String sketch) {
+        return json == null ? new LessonUi.Check(List.of("model nije vratio JSON"), List.of()) : lessonUi.check(json, results, sketch);
+    }
+
+    // lekcija 1. varijacije iste lekcije, ili null ako je nema (izrada nije uspjela ili još traje)
+    private String firstVariationLesson(MapSqlParameterSource p) {
+        List<String> rows = jdbc.queryForList("SELECT lesson_ui FROM task WHERE objective_id = :o AND variation = 1 AND lesson_ui IS NOT NULL", p, String.class);
+        return rows.isEmpty() ? null : rows.get(0);
     }
 
     // JSON lekcije u jednom retku, ili null ako ga u odgovoru nema
