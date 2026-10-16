@@ -1455,11 +1455,12 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   var widget = (spec) => KATALOG[spec?.tip];
   var uloga = (spec) => widget(spec)?.uloga(spec);
   var istrazuje = (spec) => uloga(spec) === POGLEDAJ && !!widget(spec)?.istrazi?.(spec);
+  var tocanOdgovor = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
 
   // src/lib/lesson/validateLesson.js
   var VERZIJA = 1;
   var MAX_POMOC = 4;
-  function validateLesson(lekcija, { rezultati } = {}) {
+  function validateLesson(lekcija, { rezultati, skica: skica2 } = {}) {
     const greske = [];
     const upozorenja = [];
     const err = (ok, msg) => {
@@ -1508,6 +1509,10 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
         }
       });
     }
+    if (Array.isArray(pz)) {
+      sourceSketch(lekcija, parseMaybe(skica2), err);
+      sourceResults(pz, rezultati, err, warn);
+    }
     if (err(Array.isArray(lekcija.zapamti) && lekcija.zapamti.length >= 1 && lekcija.zapamti.length <= 4, "zapamti treba 1–4 kratke natuknice")) {
       lekcija.zapamti.forEach((t, i) => err(isText(t), `zapamti[${i}] mora biti tekst`));
     }
@@ -1520,8 +1525,65 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     }
     return { greske, upozorenja };
   }
+  function sourceSketch(lekcija, izvor, err) {
+    if (!izvor?.tip || lekcija.zadatak?.skica) return;
+    const pitanja = lekcija.podzadaci.map((p) => p?.pitanje).filter(Boolean);
+    if (izvor.tip === "ljestvica") {
+      err(
+        pitanja.some((q) => q.tip === "mjerilo" && q.nacin !== "istrazi" && (!izvor.instrument || q.instrument === izvor.instrument)),
+        `izvorni zadatak očitava se s instrumenta (${izvor.instrument ?? "ljestvica"}), a lekcija ga ne prikazuje: neka očitanje bude pitanje (mjerilo "procitaj") ili stavi ljestvicu u zadatak.skica`
+      );
+    } else if (!(izvor.tip === "graf" && pitanja.some((q) => q.tip === "ocitaj_graf"))) {
+      err(false, `izvorni zadatak ima skicu (${izvor.tip}), a lekcija je nema: učenik ne vidi lik. Stavi istu skicu u zadatak.skica (izostavi samo oznaku koju učenik treba izračunati)`);
+    }
+  }
+  function sourceResults(pz, rezultati, err, warn) {
+    if (!rezultati || typeof rezultati !== "object") return;
+    const odgovori = pz.flatMap((p) => answerNumbers(p?.pitanje));
+    const odgovoreno = (n) => odgovori.some((a) => Math.abs(a - n) <= Math.max(1e-9, Math.abs(n) * 5e-3));
+    for (const [id, r] of Object.entries(rezultati)) {
+      if (typeof r !== "string" && typeof r !== "number") continue;
+      for (const dio of answerParts(String(r))) {
+        const brojevi = numbersIn(dio);
+        const nedostaje = brojevi.filter((n) => !odgovoreno(n));
+        if (!nedostaje.length) continue;
+        const poruka = `rezultat ${id}) izvornog zadatka („${dio.trim()}“): ${nedostaje.map(formatNumber2).join(", ")} nije točan odgovor nijednog pitanja`;
+        if (nedostaje.length === brojevi.length) err(false, `${poruka}. Učenik taj rezultat mora sam dobiti u pitanju podzadatka, ne samo u pomoći ili u tekstu. Ako podzadatak ima više rezultata, pitanje neka bude praznina s njima`);
+        else warn(false, `${poruka}; učenik ga vidi samo u objašnjenju`);
+      }
+    }
+  }
+  function answerNumbers(spec) {
+    if (!spec || !widget(spec)) return [];
+    if (spec.tip === "praznina") return (spec.praznine ?? []).flatMap((p) => isNum(p?.odgovor) ? [p.odgovor] : numbersIn(String(p?.odgovor ?? "")));
+    const out = [];
+    try {
+      const a = widget(spec).brojcaniOdgovor?.(spec);
+      if (isNum(a)) out.push(a);
+      out.push(...numbersIn(String(tocanOdgovor(spec))));
+    } catch {
+    }
+    return out;
+  }
+  function answerParts(r) {
+    const bezObrazlozenja = (t) => t.split(/\bjer\b|\bzato\b|\(/i)[0];
+    const [prvi, ...ostali] = r.split(";");
+    return [prvi, ...ostali.filter((t) => /^\s*(?:[^:\d]{1,30}:\s*)?-?\d/.test(t))].map(bezObrazlozenja);
+  }
+  function parseMaybe(v) {
+    if (typeof v !== "string") return v ?? null;
+    try {
+      return JSON.parse(v);
+    } catch {
+      return null;
+    }
+  }
+  function formatNumber2(n) {
+    return String(Number(n.toPrecision(4))).replace(".", ",");
+  }
   function numbersIn(text) {
-    return (text.match(/-?\d+(?:[.,]\d+)?/g) ?? []).map((s) => parseNumber(s)).filter(isNum);
+    text = text.replace(/\^\{?-?\d+\}?/g, "").replace(/(\d)[ \u00a0](?=\d{3}(?!\d))/g, "$1");
+    return (text.match(/-?\d+(?:[.,]\d+)?(?:\/\d+)?/g) ?? []).map((s) => parseNumber(s)).filter(isNum);
   }
   function allText(l) {
     const out = [];
@@ -1569,12 +1631,25 @@ WIDGETI UMJESTO TEKSTA:
   redoslijed koraka redoslijed, plivanje i tonjenje uronjeno, stanja tvari cestice.
 - Najviše 3 podzadatka (a, b, c), kao u izvornom zadatku. Kad podzadatak traži dva rezultata (npr. u g/cm³ i kg/m³), pitanje
   je praznina s dvije praznine, a ne novi podzadatak.
-- zadatak.tekst je samo situacija i podaci, bez pitanja a), b), c): pitanja dolaze u podzadacima. Ako učenik iz skice treba
-  nešto očitati, ta skica ne ide u zadatak (inače je odgovor već nacrtan), nego mjerilo ide u pitanje.
+- zadatak.tekst je samo situacija i podaci, bez pitanja a), b), c): pitanja dolaze u podzadacima.
+
+SKICA UZ ZADATAK (ako je izvor ima, učenik mora vidjeti situaciju; aplikacija to provjerava):
+- Lik, tijelo ili graf (trokut, pravokutnik, kvadar, koordinatni, graf…) ide u zadatak.skica: isti crtež i iste oznake,
+  osim oznake koju učenik treba izračunati (nju izostavi). Tekst zadatka ne smije govoriti o crtežu koji se ne vidi.
+- Duljinu koju učenik računa iz lika (npr. DE = 5 dm − 2 dm) ne prenosi na ravnalo da je samo očita: pitanje je taj račun,
+  a lik je u zadatku. Mjerilo je za instrument koji postoji u zadatku, ne za zaobilaženje računa.
+- Instrument s kojeg se očitava (ljestvica: menzura, vaga, termometar) ne ide u zadatak (odgovor bi bio nacrtan), nego
+  očitanje postaje pitanje (mjerilo "procitaj"). Kad izvor ima dva očitanja (prije i poslije uranjanja), učenik barem jedno
+  očita sam, a rezultat iz njih (npr. volumen kamena kao razliku) uvijek računa sam.
 
 SADRŽAJ:
 - Sve što izvorno objašnjenje uči mora se naučiti: u pitanju, u „zasto“, u pomoći ili u „Zapamti“. Brojevi i rezultati
   moraju se slagati s izvornim zadatkom; smiješ prilagoditi pitanje widgetu, ali ne mijenjati fiziku ni rezultate.
+- Svaki broj iz REZULTATI učenik sam dobiva kao točan odgovor na pitanje (glavni put), u istoj jedinici kao u rezultatu.
+  Pomoć i blizanac vidi samo učenik koji griješi, pa rezultat koji je samo ondje većina nikad ne izračuna. Ako podzadatak ima
+  više rezultata (npr. 50 cm³ i 50 000 mm³, ili A i B), pitanje je praznina sa svim vrijednostima. Ne piši rezultat u tekst
+  sljedećeg pitanja prije nego ga je učenik izračunao. Praznina ima najviše 4 mjesta: kad rezultata ima više, u pitanje
+  stavi glavne vrijednosti (barem jednu iz svakog dijela rezultata), a ostale u „zasto“. Aplikacija to provjerava.
 - Za tipične greške piši „krivo“ s porukom baš za tu grešku (npr. „220 mL je završno očitanje, a ne volumen kamena“).
 - Piši kratko, laički i prirodno, za učenika kojem predmet ne ide. Novi pojam prvo svakodnevnim riječima, pa formula.
 - Matematiku piši u $…$ (KaTeX). Decimalni zarez u tekstu (1,5); u JSON brojevima točka (1.5).

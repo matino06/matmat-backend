@@ -26,7 +26,7 @@ class LessonUiTest {
 
     @Test
     void validLessonPasses() {
-        LessonUi.Check c = ui.check(VALID, "{\"a\":\"80 cm³\"}");
+        LessonUi.Check c = ui.check(VALID, "{\"a\":\"80 cm³\"}", null);
         assertEquals(List.of(), c.errors());
         assertTrue(c.ok());
     }
@@ -35,10 +35,37 @@ class LessonUiTest {
     void lookStepWithAnswerAndUnknownWidgetAreRejected() {
         String bad = VALID.replace("{\"tip\":\"pojam\",\"tekst\":\"Uronjeno tijelo istisne vode koliko samo zauzima.\"}",
                 "{\"tip\":\"pojam\",\"tekst\":\"x\",\"odgovor\":5},{\"tip\":\"zmaj\"}");
-        List<String> errors = ui.check(bad, null).errors();
+        List<String> errors = ui.check(bad, null, null).errors();
         assertTrue(errors.stream().anyMatch(e -> e.contains("ne smije imati polje „odgovor“")), errors.toString());
         assertTrue(errors.stream().anyMatch(e -> e.contains("zmaj")), errors.toString());
-        assertEquals(List.of("lekcija nije ispravan JSON"), ui.check("{", null).errors());
+        assertEquals(List.of("lekcija nije ispravan JSON"), ui.check("{", null, null).errors());
+    }
+
+    @Test
+    void everySourceResultMustBeAnAnswer() {
+        // litre samo u pomoći: većina učenika ih nikad ne izračuna
+        List<String> errors = ui.check(VALID, "{\"a\":\"0,08 l\"}", null).errors();
+        assertEquals(1, errors.size(), errors.toString());
+        assertTrue(errors.get(0).contains("0,08"), errors.toString());
+        // u lancu jedinica dovoljna je jedna izračunata vrijednost; ostale su upozorenje
+        LessonUi.Check chain = ui.check(VALID, "{\"a\":\"80 cm³ = 0,08 l\"}", null);
+        assertTrue(chain.ok(), chain.errors().toString());
+        assertTrue(chain.warnings().stream().anyMatch(w -> w.contains("0,08")), chain.warnings().toString());
+        // obrazloženje iza „jer“ ili „;“ nije rezultat
+        assertTrue(ui.check(VALID, "{\"a\":\"80 cm³, jer 220 − 140 = 80; razlika 2 očitanja\"}", null).ok());
+    }
+
+    @Test
+    void sourceSketchMustStayVisible() {
+        String figure = "{\"tip\":\"pravokutnik\",\"a\":4,\"b\":3,\"oznake\":{\"a\":\"4 dm\",\"b\":\"3 dm\"}}";
+        List<String> errors = ui.check(VALID, null, figure).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("ne vidi lik")), errors.toString());
+        // instrument smije postati pitanje „očitaj“ umjesto skice uz zadatak
+        String scale = "{\"tip\":\"ljestvica\",\"instrument\":\"menzura\",\"od\":0,\"do\":300,\"razmak\":10,\"jedinica\":\"mL\",\"vrijednosti\":[140,220]}";
+        assertFalse(ui.check(VALID, null, scale).ok());
+        String reading = VALID.replace("{\"tip\":\"broj\",\"tekst\":\"Koliki je volumen kamena?\",\"odgovor\":80,\"jedinica\":\"cm³\",",
+                "{\"tip\":\"mjerilo\",\"nacin\":\"procitaj\",\"instrument\":\"menzura\",\"od\":0,\"do\":300,\"razmak\":10,\"jedinica\":\"mL\",\"vrijednost\":80,\"tekst\":\"Očitaj.\",");
+        assertEquals(List.of(), ui.check(reading, null, scale).errors());
     }
 
     @Test
