@@ -38,6 +38,11 @@ public class LessonUi {
         return call("korisnickiPrompt", mapper.writeValueAsString(source)).asString();
     }
 
+    // lessonJson: lekcija 1. varijacije, predložak za lekciju varijacije 2–4 (dodaje se na korisnički prompt)
+    public synchronized String template(String lessonJson) {
+        return call("predlozakPrompt", lessonJson).asString();
+    }
+
     public synchronized String repair(List<String> errors) throws IOException {
         return call("popravakPrompt", mapper.writeValueAsString(errors)).asString();
     }

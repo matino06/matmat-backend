@@ -21,6 +21,7 @@ class LessonUiStepTest {
     private final BuildJobQueue queue = mock(BuildJobQueue.class);
     private final LessonUiStep step = new LessonUiStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"), new LessonUi(), queue, "sol");
     private final BuildJob job = new BuildJob(1, 5, 7, LessonUiStep.KIND, "ui1 11", 1, false, 1, LessonUiStep.input(11, 1));
+    private final BuildJob job2 = new BuildJob(2, 5, 7, LessonUiStep.KIND, "ui2 11", 0, false, 1, LessonUiStep.input(11, 2));
 
     private void task(String lessonUi) {
         Map<String, Object> row = new HashMap<>(Map.of("task_id", 30L, "task_text", "a) Kamen …", "explanation", "…", "results", "{\"a\":\"80 cm³\"}",
@@ -28,6 +29,12 @@ class LessonUiStepTest {
         row.put("sketch", null);
         row.put("lesson_ui", lessonUi);
         when(jdbc.queryForList(contains("FROM task t JOIN learning_objective"), any(SqlParameterSource.class))).thenReturn(List.of(row));
+    }
+
+    // lekcija 1. varijacije (predložak za varijacije 2–4), ili null ako je nema
+    private void firstLesson(String lesson) {
+        when(jdbc.queryForList(contains("variation = 1 AND lesson_ui"), any(SqlParameterSource.class), eq(String.class)))
+                .thenReturn(lesson == null ? List.of() : List.of(lesson));
     }
 
     private void answers(String... contents) {
@@ -46,6 +53,37 @@ class LessonUiStepTest {
         step.enqueueIfInteractive(job, 11, 1, true);
         verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui1 11"), eq(BuildJobQueue.PRIORITY_BACKGROUND), eq(false), contains("\"objectiveId\":11"));
         verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui1 11 #1"), anyInt(), eq(false), anyString());
+        // varijacije 2–4 nastaju dok netko predmet već uči, pa idu ispred izrade predmeta
+        step.enqueueIfInteractive(job, 11, 2, false);
+        verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui2 11"), eq(BuildJobQueue.PRIORITY_WAITED_ON), eq(false), contains("\"variation\":2"));
+    }
+
+    @Test
+    void laterVariationFollowsTheFirstVariationsLessonWithTheCheapModel() throws Exception {
+        task(null);
+        firstLesson(LessonUiTest.VALID);
+        answers(LessonUiTest.VALID);
+        assertEquals("spremljeno po predlošku", step.run(job2));
+        verify(llm).chat(eq(job2), eq("haiku"), contains("KATALOG WIDGETA"), contains("PREDLOŽAK"), any());
+        verify(llm, never()).chat(any(), eq("sol"), any(), any(), any());
+    }
+
+    @Test
+    void templateThatStaysInvalidFallsBackToTheWriter() throws Exception {
+        task(null);
+        firstLesson(LessonUiTest.VALID);
+        answers("{\"verzija\":1}", "{\"verzija\":1}", LessonUiTest.VALID);
+        assertEquals("spremljeno", step.run(job2));
+        verify(llm).chat(eq(job2), eq("sol"), any(), argThat((String u) -> !u.contains("PREDLOŽAK")), any());
+    }
+
+    @Test
+    void laterVariationWithoutAFirstLessonIsWrittenFromScratch() throws Exception {
+        task(null);
+        firstLesson(null);
+        answers(LessonUiTest.VALID);
+        assertEquals("spremljeno", step.run(job2));
+        verify(llm).chat(eq(job2), eq("sol"), any(), any(), any());
     }
 
     @Test

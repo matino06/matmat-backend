@@ -159,7 +159,7 @@ public class TaskVariationStep implements BuildStep {
     }
 
     // Kad sve lekcije imaju 1. varijaciju, predmet je spreman; ako je izrada išla preko batcha, kreator dobije e-mail.
-    // Interaktivni predmet uz 1. varijaciju dobiva i njezinu interaktivnu verziju (ne čeka je: tekst je dovoljan za učenje).
+    // Interaktivni predmet uz svaku varijaciju dobiva i njezinu interaktivnu verziju (ne čeka je: tekst je dovoljan za učenje).
     @Override
     public void afterComplete(BuildJob job) {
         interactiveVersion(job);
@@ -179,8 +179,7 @@ public class TaskVariationStep implements BuildStep {
     private void interactiveVersion(BuildJob job) {
         try {
             JsonNode in = mapper.readTree(job.input());
-            int variation = in.path("variation").asInt(1);
-            if (variation == 1) lessonUi.enqueueIfInteractive(job, in.path("objectiveId").asLong(), variation, in.path("replace").asBoolean(false));
+            lessonUi.enqueueIfInteractive(job, in.path("objectiveId").asLong(), in.path("variation").asInt(1), in.path("replace").asBoolean(false));
         } catch (Exception e) {
             // bez interaktivne verzije zadatak i dalje radi kao tekst
         }
