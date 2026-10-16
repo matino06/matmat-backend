@@ -1727,6 +1727,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   }
   function answerNumbers(spec) {
     if (!spec || !widget(spec)) return [];
+    if (spec.tip === "pretvorba_jedinica") return pretvorbaRezultati(spec).filter(isNum);
     if (spec.tip === "praznina") return (spec.praznine ?? []).flatMap((p) => isNum(p?.odgovor) ? [p.odgovor] : numbersIn(String(p?.odgovor ?? "")));
     const out = [];
     try {
