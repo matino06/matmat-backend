@@ -1664,6 +1664,11 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
           step(p.blizanac, `${at}.blizanac`, ODGOVOR);
           err(JSON.stringify(p.blizanac) !== JSON.stringify(p.pitanje), `${at}.blizanac je isti kao pitanje; treba nove brojeve ili novu situaciju`);
           warn(p.blizanac?.tip === p.pitanje?.tip, `${at}.blizanac je drugog tipa nego pitanje; blizanac provjerava istu vještinu`);
+          const isti = quantityAnswers(p.blizanac);
+          err(
+            !isti.length || !isti.every((b) => quantityAnswers(p.pitanje).some((a) => Math.abs(a - b) <= Math.max(1e-9, Math.abs(a) * 5e-3))),
+            `${at}.blizanac ima isti rezultat kao pitanje (${isti.map(formatNumber2).join("; ")}), pa bi ga učenik samo prepisao; odaberi brojeve s kojima i rezultat bude drukčiji`
+          );
         } else {
           warn(false, `${at} nema blizanca: nakon pomoći učenik ponovno rješava isto pitanje`);
         }
@@ -1738,6 +1743,12 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     }
     return out;
   }
+  function quantityAnswers(spec) {
+    if (spec?.tip === "pretvorba_jedinica") return answerNumbers(spec);
+    if (spec?.tip === "praznina") return (spec.praznine ?? []).filter((p) => p?.jedinica && isNum(p.odgovor)).map((p) => p.odgovor);
+    const a = spec?.jedinica && widget(spec) ? widget(spec).brojcaniOdgovor?.(spec) : null;
+    return isNum(a) ? [a] : [];
+  }
   function answerParts(r) {
     const bezObrazlozenja = (t) => t.split(/\bjer\b|\bzato\b|\(/i)[0];
     const [prvi, ...ostali] = r.split(";");
@@ -1804,6 +1815,8 @@ POMOĆ (kao riješeni primjer koji se postupno prepušta učeniku):
 - Prvi korak pomoći objasni ono što je učenik vjerojatno krivo shvatio („Pogledaj“): pojam, postupak, skica ili istraživanje.
 - Zatim prepusti učeniku mali korak („Tvoj red“), npr. samo očitanje ili samo pretvorbu, s porukama za tipične greške.
 - Najviše 4 koraka, kratko. Pomoć ne smije otkriti odgovor na blizanca.
+- Blizanac ima drukčiji rezultat od pitanja, a ne samo druge podatke (8 dm · 3 dm · 2 dm = 48 dm³ kao u pitanju učenik bi
+  samo prepisao). Isti smije ostati samo faktor bez jedinice („10 puta manja“). Aplikacija to provjerava.
 
 WIDGETI UMJESTO TEKSTA:
 - Učenik neka vještinu napravi sam u widgetu, a ne da samo upiše broj koji mu tekst već skoro daje. Ako izvorni podzadatak traži
