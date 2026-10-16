@@ -1509,6 +1509,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
         }
       });
     }
+    for (const oblik of genderForms(text)) err(false, `„${oblik}“: učeniku se obraćamo u muškom rodu („zbrojio si“), bez ženskih i dvojnih oblika`);
     if (Array.isArray(pz)) {
       sourceSketch(lekcija, parseMaybe(skica2), err);
       sourceResults(pz, rezultati, err, warn);
@@ -1569,6 +1570,13 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     const bezObrazlozenja = (t) => t.split(/\bjer\b|\bzato\b|\(/i)[0];
     const [prvi, ...ostali] = r.split(";");
     return [prvi, ...ostali.filter((t) => /^\s*(?:[^:\d]{1,30}:\s*)?-?\d/.test(t))].map(bezObrazlozenja);
+  }
+  function genderForms(text) {
+    const oblici = [
+      ...text.matchAll(/(?<![\p{L}\d])\p{Ll}{3,}\/\p{Ll}{2,}(?![\p{L}\d³²])/gu),
+      ...text.matchAll(/(?<!\p{L})si \p{L}+la(?!\p{L})|(?<!\p{L})\p{L}+la si(?!\p{L})/gu)
+    ].map((m) => m[0]);
+    return [...new Set(oblici)];
   }
   function parseMaybe(v) {
     if (typeof v !== "string") return v ?? null;
@@ -1652,6 +1660,8 @@ SADRŽAJ:
   stavi glavne vrijednosti (barem jednu iz svakog dijela rezultata), a ostale u „zasto“. Aplikacija to provjerava.
 - Za tipične greške piši „krivo“ s porukom baš za tu grešku (npr. „220 mL je završno očitanje, a ne volumen kamena“).
 - Piši kratko, laički i prirodno, za učenika kojem predmet ne ide. Novi pojam prvo svakodnevnim riječima, pa formula.
+- Učeniku se obraćaš u muškom rodu, kao cijela aplikacija: „Zbrojio si“, „Jesi li siguran?“. Nikad ženski rod
+  („provela si“) ni dvojni oblici („sam/sama“, „prebrojio/la“). Aplikacija to provjerava.
 - Matematiku piši u $…$ (KaTeX). Decimalni zarez u tekstu (1,5); u JSON brojevima točka (1.5).
 - Ne crtaj ništa znakovima; za crtež koristi skicu ili widget.
 

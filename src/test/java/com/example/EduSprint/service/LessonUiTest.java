@@ -69,6 +69,15 @@ class LessonUiTest {
     }
 
     @Test
+    void studentIsAddressedInMasculine() {
+        List<String> errors = ui.check(VALID.replace("Koliki je volumen kamena?", "Jesi li sam/sama izračunao?"), null, null).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("sam/sama")), errors.toString());
+        errors = ui.check(VALID.replace("To je završno očitanje.", "Podijelila si krivo."), null, null).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("Podijelila si")), errors.toString());
+        assertTrue(ui.check(VALID.replace("To je završno očitanje.", "Podijelio si krivo, 1 g/cm³."), null, null).ok());
+    }
+
+    @Test
     void promptsComeFromTheCatalog() throws Exception {
         assertTrue(ui.system().contains("### mjerilo"));
         Map<String, Object> source = new LinkedHashMap<>();
