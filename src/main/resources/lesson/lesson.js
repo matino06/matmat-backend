@@ -580,7 +580,7 @@ var MatMatLesson = (() => {
     if (n == null) return { tocno: false, poruka: "Upiši broj (decimalni zarez je u redu, npr. 1,5).", prazno: true };
     const t = tolerance(answer, tol);
     if (near(n, answer, t)) return { tocno: true };
-    const hit = (krivo ?? []).find((k) => near(n, k.vrijednost, Math.max(t, tolerance(k.vrijednost))));
+    const hit = (krivo ?? []).find((k) => near(n, k.vrijednost, tolerance(k.vrijednost, k.tolerancija)));
     if (hit) return { tocno: false, poruka: hit.poruka };
     return { tocno: false, poruka: savjet || "Nije točno. Provjeri račun i jedinicu." };
   }
@@ -644,6 +644,120 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
   function sketchProblems(spec, ctx, need) {
     const r = renderSketch(spec, ctx?.text ?? "");
     if (!r.svg) need(false, `skica se ne može nacrtati: ${r.checks.filter((c) => !c.ok).map((c) => c.text).join("; ") || "neispravan opis"}`);
+  }
+
+  // src/lib/lesson/core/units.js
+  var UNITS = {
+    duljina: [
+      ["km", 1e3],
+      ["m", 1],
+      ["dm", 0.1],
+      ["cm", 0.01],
+      ["mm", 1e-3]
+    ],
+    povrsina: [
+      ["km²", 1e6],
+      ["ha", 1e4],
+      ["a", 100],
+      ["m²", 1],
+      ["dm²", 0.01],
+      ["cm²", 1e-4],
+      ["mm²", 1e-6]
+    ],
+    volumen: [
+      ["m³", 1],
+      ["hL", 0.1],
+      ["dm³", 1e-3],
+      ["L", 1e-3],
+      ["dL", 1e-4],
+      ["cL", 1e-5],
+      ["cm³", 1e-6],
+      ["mL", 1e-6],
+      ["mm³", 1e-9]
+    ],
+    masa: [
+      ["t", 1e3],
+      ["kg", 1],
+      ["dag", 0.01],
+      ["g", 1e-3],
+      ["mg", 1e-6]
+    ],
+    vrijeme: [
+      ["h", 3600],
+      ["min", 60],
+      ["s", 1]
+    ],
+    gustoca: [
+      ["g/cm³", 1e3],
+      ["kg/dm³", 1e3],
+      ["kg/m³", 1]
+    ]
+  };
+  var ALIASES = { "m2": "m²", "cm2": "cm²", "mm2": "mm²", "dm2": "dm²", "km2": "km²", "m3": "m³", "cm3": "cm³", "dm3": "dm³", "mm3": "mm³", l: "L", ml: "mL", dl: "dL", cl: "cL", hl: "hL", "g/cm3": "g/cm³", "kg/m3": "kg/m³", "kg/dm3": "kg/dm³" };
+  var normUnit = (u) => typeof u === "string" ? ALIASES[u.trim()] ?? u.trim() : u;
+  function factor(velicina, unit) {
+    const row = UNITS[velicina]?.find(([u]) => u === normUnit(unit));
+    return row ? row[1] : null;
+  }
+  function convert(velicina, value, from, to) {
+    const a = factor(velicina, from);
+    const b = factor(velicina, to);
+    if (a == null || b == null) return null;
+    return value * a / b;
+  }
+  var unitIndex = (velicina, unit) => (UNITS[velicina] ?? []).findIndex(([u]) => u === normUnit(unit));
+  function toBase(velicina, values, units) {
+    const vs = [].concat(values);
+    const us = [].concat(units);
+    if (!vs.length || vs.length !== us.length) return null;
+    let sum = 0;
+    for (let i = 0; i < vs.length; i++) {
+      const f2 = factor(velicina, us[i]);
+      if (f2 == null || typeof vs[i] !== "number" || !Number.isFinite(vs[i])) return null;
+      sum += vs[i] * f2;
+    }
+    return sum;
+  }
+  function fromBase(velicina, base, unit) {
+    const f2 = factor(velicina, unit);
+    return f2 == null || base == null ? null : base / f2;
+  }
+  function parseQuantity(text) {
+    const t = String(text ?? "").trim().replace(/\$/g, "").replace(/\\text\{([^}]*)\}/g, "$1").replace(/\\[ ,;]/g, " ").replace(/\^2/g, "²").replace(/\^3/g, "³");
+    const re = /(-?\d+(?:[.,]\d+)?)\s*([^\s\d]+)/g;
+    const parts = [...t.matchAll(re)];
+    if (!parts.length || t.replace(re, "").trim()) return null;
+    const units = parts.map((m) => normUnit(m[2]));
+    const values = parts.map((m) => parseNumber(m[1]));
+    for (const velicina of Object.keys(UNITS)) {
+      const base = toBase(velicina, values, units);
+      if (base != null) return { velicina, base };
+    }
+    return null;
+  }
+  function staircase(velicina, from, to) {
+    const list = UNITS[velicina] ?? [];
+    const idx = [...[].concat(from), ...[].concat(to)].map((u) => unitIndex(velicina, u));
+    if (!idx.length || idx.some((i) => i < 0)) return [];
+    return list.slice(Math.min(...idx), Math.max(...idx) + 1).map(([u, f2]) => ({ jedinica: u, faktor: f2 }));
+  }
+  function typicalMistakes(velicina, value, from, to) {
+    const right = convert(velicina, value, from, to);
+    if (right == null || right === value) return [];
+    const out = [];
+    const ratio = right / value;
+    const wrongDir = value / ratio;
+    out.push({ vrijednost: wrongDir, poruka: `Pretvorba je u krivom smjeru. Iz ${from} u ${to} broj ${ratio > 1 ? "raste" : "pada"}, jer je ${ratio > 1 ? `${to} manja` : `${to} veća`} jedinica.` });
+    const power = { povrsina: 2, volumen: 3 }[velicina];
+    const special = ["L", "dL", "cL", "mL", "hL", "ha", "a"];
+    if (power && !special.includes(normUnit(from)) && !special.includes(normUnit(to))) {
+      const asLength = value * 10 ** (Math.log10(ratio) / power);
+      out.push({
+        vrijednost: asLength,
+        poruka: power === 2 ? "Ovo je pretvorba kao za duljinu. Kod površine svaki korak između susjednih jedinica množi se sa 100, ne s 10." : "Ovo je pretvorba kao za duljinu. Kod volumena svaki korak između susjednih jedinica množi se s 1000, ne s 10."
+      });
+    }
+    return out.filter((m) => Number.isFinite(m.vrijednost) && Math.abs(m.vrijednost - right) > 1e-9 * Math.max(1, Math.abs(right)));
   }
 
   // src/lib/lesson/katalog/pitanja.js
@@ -803,7 +917,8 @@ Tekstualni odgovor traži „opcije“ (učenik bira, ne tipka).`,
   var parovi = {
     tip: "parovi",
     uloga: () => ODGOVOR,
-    opis: `Spoji parove (3–5). Polja: tekst, parovi: [{lijevo, desno}] u točnom paru; desna strana se miješa. Npr. veličina ↔ jedinica.`,
+    opis: `Spoji parove (3–5). Polja: tekst, parovi: [{lijevo, desno}] u točnom paru; desna strana se miješa. Npr. veličina ↔ jedinica,
+ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "300 cm"; tada aplikacija provjeri da su parovi jednaki).`,
     primjer: {
       tip: "parovi",
       tekst: "Spoji veličinu s njezinom jedinicom.",
@@ -819,6 +934,11 @@ Tekstualni odgovor traži „opcije“ (učenik bira, ne tipka).`,
       if (need(Array.isArray(s.parovi) && s.parovi.length >= 3 && s.parovi.length <= 5, "parovi treba 3–5 parova")) {
         s.parovi.forEach((p, i) => need(isText(p?.lijevo) && isText(p?.desno), `parovi[${i}] treba „lijevo“ i „desno“`));
         need(new Set(s.parovi.map((p) => p?.desno)).size === s.parovi.length, "desne strane parova moraju biti različite");
+        const iznosi = s.parovi.map((p) => [parseQuantity(p?.lijevo), parseQuantity(p?.desno)]);
+        if (iznosi.every(([l, d]) => l && d)) {
+          iznosi.forEach(([l, d], i) => need(l.velicina === d.velicina && Math.abs(l.base - d.base) <= 1e-9 * Math.max(1, Math.abs(l.base)), `parovi[${i}]: „${s.parovi[i].lijevo}“ i „${s.parovi[i].desno}“ nisu jednaki iznosi`));
+          need(new Set(iznosi.map(([l]) => `${l.velicina}:${l.base.toPrecision(9)}`)).size === iznosi.length, "dva para imaju isti iznos, pa spajanje nije jednoznačno");
+        }
       }
       return list;
     },
@@ -1020,92 +1140,6 @@ Tekstualni odgovor traži „opcije“ (učenik bira, ne tipka).`,
     if (typeof src !== "string" || !src.trim()) throw new Error("izraz je prazan");
     const tree = parse(tokenize(src));
     return { fn: (vars = {}) => evaluate(tree, vars), vars: [...variables(tree)] };
-  }
-
-  // src/lib/lesson/core/units.js
-  var UNITS = {
-    duljina: [
-      ["km", 1e3],
-      ["m", 1],
-      ["dm", 0.1],
-      ["cm", 0.01],
-      ["mm", 1e-3]
-    ],
-    povrsina: [
-      ["km²", 1e6],
-      ["ha", 1e4],
-      ["a", 100],
-      ["m²", 1],
-      ["dm²", 0.01],
-      ["cm²", 1e-4],
-      ["mm²", 1e-6]
-    ],
-    volumen: [
-      ["m³", 1],
-      ["hL", 0.1],
-      ["dm³", 1e-3],
-      ["L", 1e-3],
-      ["dL", 1e-4],
-      ["cL", 1e-5],
-      ["cm³", 1e-6],
-      ["mL", 1e-6],
-      ["mm³", 1e-9]
-    ],
-    masa: [
-      ["t", 1e3],
-      ["kg", 1],
-      ["dag", 0.01],
-      ["g", 1e-3],
-      ["mg", 1e-6]
-    ],
-    vrijeme: [
-      ["h", 3600],
-      ["min", 60],
-      ["s", 1]
-    ],
-    gustoca: [
-      ["g/cm³", 1e3],
-      ["kg/dm³", 1e3],
-      ["kg/m³", 1]
-    ]
-  };
-  var ALIASES = { "m2": "m²", "cm2": "cm²", "mm2": "mm²", "dm2": "dm²", "km2": "km²", "m3": "m³", "cm3": "cm³", "dm3": "dm³", "mm3": "mm³", l: "L", ml: "mL", dl: "dL", cl: "cL", hl: "hL", "g/cm3": "g/cm³", "kg/m3": "kg/m³", "kg/dm3": "kg/dm³" };
-  var normUnit = (u) => typeof u === "string" ? ALIASES[u.trim()] ?? u.trim() : u;
-  function factor(velicina, unit) {
-    const row = UNITS[velicina]?.find(([u]) => u === normUnit(unit));
-    return row ? row[1] : null;
-  }
-  function convert(velicina, value, from, to) {
-    const a = factor(velicina, from);
-    const b = factor(velicina, to);
-    if (a == null || b == null) return null;
-    return value * a / b;
-  }
-  function staircase(velicina, from, to) {
-    const list = UNITS[velicina] ?? [];
-    const i = list.findIndex(([u]) => u === normUnit(from));
-    const j = list.findIndex(([u]) => u === normUnit(to));
-    if (i < 0 || j < 0) return [];
-    const [lo, hi] = i < j ? [i, j] : [j, i];
-    return list.slice(lo, hi + 1).map(([u, f2]) => ({ jedinica: u, faktor: f2 }));
-  }
-  function typicalMistakes(velicina, value, from, to) {
-    const right = convert(velicina, value, from, to);
-    if (right == null || right === value) return [];
-    const out = [];
-    const ratio = right / value;
-    const wrongDir = value / ratio;
-    out.push({ vrijednost: wrongDir, poruka: `Pretvorba je u krivom smjeru. Iz ${from} u ${to} broj ${ratio > 1 ? "raste" : "pada"}, jer je ${ratio > 1 ? `${to} manja` : `${to} veća`} jedinica.` });
-    const power = { povrsina: 2, volumen: 3 }[velicina];
-    const special = ["L", "dL", "cL", "mL", "hL", "ha", "a"];
-    if (power && !special.includes(normUnit(from)) && !special.includes(normUnit(to))) {
-      const asLength = value * 10 ** (Math.log10(ratio) / power);
-      out.push({
-        vrijednost: asLength,
-        poruka: power === 2 ? "Ovo je pretvorba kao za duljinu. Kod površine svaki korak između susjednih jedinica množi se sa 100, ne s 10." : "Ovo je pretvorba kao za duljinu. Kod volumena svaki korak između susjednih jedinica množi se s 1000, ne s 10."
-      });
-    }
-    return out.filter((m) => Number.isFinite(m.vrijednost) && Math.abs(m.vrijednost - right) > 1e-9 * Math.max(1, Math.abs(right)));
   }
 
   // src/lib/lesson/katalog/istrazivanje.js
@@ -1357,28 +1391,70 @@ tocke?: [{x, y, oznaka}] (istaknute točke), tekst, nacin:
     }
     return (a + b) / 2;
   }
+  var lanac = (s) => [].concat(s.do);
+  var izvor = (s) => ({ vrijednosti: [].concat(s.vrijednost), jedinice: [].concat(s.od).map(normUnit) });
+  var zapisIzvora = (s) => {
+    const { vrijednosti, jedinice } = izvor(s);
+    return vrijednosti.map((v, i) => withUnit(v, jedinice[i])).join(" ");
+  };
+  function pretvorbaRezultati(s) {
+    const { vrijednosti, jedinice } = izvor(s);
+    const base = toBase(s.velicina, vrijednosti, jedinice);
+    return lanac(s).map((u) => fromBase(s.velicina, base, u));
+  }
+  var prepisano = (velicina, od, cilj) => unitIndex(velicina, cilj) > unitIndex(velicina, od) ? `Prepisao si broj iz ${od}. Kad promijeniš jedinicu, mijenja se i broj: ${cilj} je manja jedinica, pa ih treba više.` : `Prepisao si broj iz ${od}. Kad promijeniš jedinicu, mijenja se i broj: ${cilj} je veća jedinica, pa ih treba manje.`;
+  function drugeJedinice(velicina, tocno, cilj) {
+    const base = toBase(velicina, tocno, cilj);
+    return UNITS[velicina].filter(([u]) => u !== cilj).map(([u]) => ({ vrijednost: fromBase(velicina, base, u), poruka: `To je isti iznos u ${u}, a ovdje ga treba zapisati u ${cilj}.` }));
+  }
   var pretvorba_jedinica = {
     tip: "pretvorba_jedinica",
     uloga: () => ODGOVOR,
     opis: `Pretvorba jedinica: velicina (${Object.keys(UNITS).join(" | ")}), vrijednost, od, do (jedinice, npr. "mm²" → "cm²"), tekst?, stube? (true: prikaži stube
 jedinica s faktorima – za korak pomoći, ne za prvi pokušaj). Točan rezultat i tipične greške (faktor kao za duljinu, krivi smjer) računa aplikacija.
+Lanac: do je popis 2–4 jedinice ("8 m = … dm = … cm = … mm": vrijednost 8, od "m", do ["dm", "cm", "mm"]); učenik upisuje svaku.
+Mješoviti zapis: vrijednost i od su popisi iste duljine, od veće jedinice prema manjoj ("2 m 7 dm": vrijednost [2, 7], od ["m", "dm"]).
 Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).join(", ")}`).join("; ")}.`,
     primjer: { tip: "pretvorba_jedinica", velicina: "povrsina", vrijednost: 3600, od: "mm²", do: "cm²", tekst: "Pretvori površinu papira u cm²." },
     validate(s) {
       const { list, need } = problems();
       if (!need(s.velicina in UNITS, `pretvorba_jedinica.velicina mora biti jedna od: ${Object.keys(UNITS).join(", ")}`)) return list;
       const names = UNITS[s.velicina].map(([u]) => u);
-      need(names.includes(normUnit(s.od)) && names.includes(normUnit(s.do)), `jedinice od/do moraju biti iz popisa za ${s.velicina}: ${names.join(", ")}`);
-      need(normUnit(s.od) !== normUnit(s.do), "od i do moraju biti različite jedinice");
-      need(isNum(s.vrijednost), "pretvorba_jedinica treba brojčanu vrijednost");
+      const { vrijednosti, jedinice } = izvor(s);
+      const cilj = lanac(s);
+      if (!need([...jedinice, ...cilj].every((u) => names.includes(normUnit(u))), `jedinice od/do moraju biti iz popisa za ${s.velicina}: ${names.join(", ")}`)) return list;
+      need(vrijednosti.length === jedinice.length, "kod mješovitog zapisa vrijednost i od moraju biti popisi iste duljine");
+      need(vrijednosti.every(isNum), "pretvorba_jedinica treba brojčanu vrijednost");
+      need(cilj.length >= 1 && cilj.length <= 4, "do je jedna jedinica ili lanac od 2–4 jedinice");
+      if (jedinice.length > 1) {
+        need(jedinice.length <= 3, "mješoviti zapis ima najviše 3 dijela");
+        need(jedinice.every((u, i) => i === 0 || unitIndex(s.velicina, u) > unitIndex(s.velicina, jedinice[i - 1])), "mješoviti zapis ide od veće jedinice prema manjoj (2 m 7 dm)");
+      }
+      const sve = [jedinice.length === 1 ? jedinice[0] : null, ...cilj.map(normUnit)].filter(Boolean);
+      need(new Set(sve).size === sve.length, "od i do moraju biti različite jedinice, a lanac bez ponavljanja");
       return list;
     },
+    // input: broj (jedna jedinica u „do“) ili popis brojeva (lanac)
     check(s, input) {
-      const answer = convert(s.velicina, s.vrijednost, s.od, s.do);
-      return checkNumber({ input, answer, unit: normUnit(s.do), krivo: [...s.krivo ?? [], ...typicalMistakes(s.velicina, s.vrijednost, s.od, s.do)], savjet: s.savjet || "Pogledaj koliko je koraka između jedinica i koliki je faktor svakog koraka." });
+      const cilj = lanac(s).map(normUnit);
+      const tocni = pretvorbaRezultati(s);
+      const unosi = cilj.length === 1 ? [Array.isArray(input) ? input[0] : input] : [].concat(input ?? []);
+      const { vrijednosti, jedinice } = izvor(s);
+      for (let i = 0; i < cilj.length; i++) {
+        const [prije, odJ] = i > 0 ? [tocni[i - 1], cilj[i - 1]] : jedinice.length === 1 ? [vrijednosti[0], jedinice[0]] : [null, null];
+        const krivo = [
+          ...i === cilj.length - 1 ? s.krivo ?? [] : [],
+          ...prije == null ? [] : typicalMistakes(s.velicina, prije, odJ, cilj[i]),
+          ...prije == null ? [] : [{ vrijednost: prije, poruka: prepisano(s.velicina, odJ, cilj[i]) }],
+          ...drugeJedinice(s.velicina, tocni[i], cilj[i])
+        ].filter((k) => Math.abs(k.vrijednost - tocni[i]) > 1e-9 * Math.max(1, Math.abs(tocni[i])));
+        const r = checkNumber({ input: unosi[i] ?? "", answer: tocni[i], unit: cilj[i], krivo, savjet: s.savjet || "Pogledaj koliko je koraka između jedinica i koliki je faktor svakog koraka." });
+        if (!r.tocno) return cilj.length > 1 ? { ...r, praznina: i, poruka: `${cilj[i]}: ${r.poruka}` } : r;
+      }
+      return { tocno: true };
     },
-    brojcaniOdgovor: (s) => convert(s.velicina, s.vrijednost, s.od, s.do),
-    tocanOdgovor: (s) => `${withUnit(s.vrijednost, normUnit(s.od))} = ${withUnit(convert(s.velicina, s.vrijednost, s.od, s.do), normUnit(s.do))}`,
+    brojcaniOdgovor: (s) => pretvorbaRezultati(s).at(-1),
+    tocanOdgovor: (s) => [zapisIzvora(s), ...pretvorbaRezultati(s).map((v, i) => withUnit(v, normUnit(lanac(s)[i])))].join(" = "),
     stube: (s) => staircase(s.velicina, s.od, s.do)
   };
   var STANJA = ["cvrsto", "tekuce", "plin"];
@@ -1457,6 +1533,100 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   var istrazuje = (spec) => uloga(spec) === POGLEDAJ && !!widget(spec)?.istrazi?.(spec);
   var tocanOdgovor = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
 
+  // src/lib/lesson/katalog/vjezba.js
+  var VJEZBA_OPIS = `vjezba (po želji, samo kad lekcija uči pretvaranje jedinica): {"velicina": "duljina" | "povrsina" | "volumen" | "masa" | "vrijeme",
+"jedinice": [2–7 jedinica iz lekcije i izvornog zadatka, npr. ["km", "m", "dm", "cm", "mm"]], "lanac"?: true (i lanci "8 m = … dm = … cm"),
+"mjesovito"?: true (i "2 m 7 dm = … cm")}. Zadatke s brojevima sastavlja aplikacija; ti ih ne pišeš.`;
+  var MIN_ZADATAKA = 4;
+  var MAX_ZADATAKA = 8;
+  function validateVjezba(v) {
+    const { list, need } = problems();
+    if (!need(v && typeof v === "object", "vjezba mora biti objekt")) return list;
+    if (!need(v.velicina in UNITS, `vjezba.velicina mora biti jedna od: ${Object.keys(UNITS).join(", ")}`)) return list;
+    const names = UNITS[v.velicina].map(([u]) => u);
+    if (!need(Array.isArray(v.jedinice) && v.jedinice.length >= 2 && v.jedinice.length <= 7, "vjezba.jedinice treba 2–7 jedinica")) return list;
+    need(v.jedinice.every((u) => names.includes(normUnit(u))), `vjezba.jedinice moraju biti iz popisa za ${v.velicina}: ${names.join(", ")}`);
+    need(new Set(v.jedinice.map(normUnit)).size === v.jedinice.length, "vjezba.jedinice se ne smiju ponavljati");
+    if (v.zadataka != null) need(Number.isInteger(v.zadataka) && v.zadataka >= MIN_ZADATAKA && v.zadataka <= MAX_ZADATAKA, `vjezba.zadataka je ${MIN_ZADATAKA}–${MAX_ZADATAKA}`);
+    if (v.tekst != null) need(isText(v.tekst), "vjezba.tekst mora biti tekst");
+    if (!list.length) {
+      const zadaci = generirajVjezbu(v, "provjera");
+      need(zadaci.length >= MIN_ZADATAKA, "od tih jedinica ne mogu se sastaviti zadaci; dodaj jedinice koje su susjedne na stubama");
+      for (const z of zadaci) for (const p of pretvorba_jedinica.validate(z)) need(false, `vjezba: ${p}`);
+    }
+    return list;
+  }
+  function rng(seed) {
+    let s = 2166136261;
+    for (const ch of String(seed)) s = Math.imul(s ^ ch.charCodeAt(0), 16777619);
+    s = s >>> 0 || 1;
+    return () => {
+      s ^= s << 13;
+      s ^= s >>> 17;
+      s ^= s << 5;
+      return (s >>> 0) / 4294967296;
+    };
+  }
+  function lijepBroj(rand) {
+    const r = rand();
+    if (r < 0.4) return 2 + Math.floor(rand() * 98);
+    if (r < 0.7) return Math.round((1 + rand() * 9) * 10) / 10;
+    return (1 + Math.floor(rand() * 99)) * 10 ** (1 + Math.floor(rand() * 2));
+  }
+  function lijepRezultat(x) {
+    if (!isNum(x) || x < 1e-3 || x > 1e6) return false;
+    return Math.abs(Number(x.toPrecision(4)) - x) <= 1e-9 * x;
+  }
+  function generirajVjezbu(v, seed) {
+    const rand = rng(`${seed}|${JSON.stringify(v)}`);
+    const jed = [...new Set((v.jedinice ?? []).map(normUnit))].filter((u) => unitIndex(v.velicina, u) >= 0).sort((a, b) => unitIndex(v.velicina, a) - unitIndex(v.velicina, b));
+    if (jed.length < 2) return [];
+    const n = Math.min(MAX_ZADATAKA, Math.max(MIN_ZADATAKA, v.zadataka ?? 6));
+    const vrste = ["jedna", "jedna", ...v.lanac && jed.length >= 3 ? ["lanac"] : [], ...v.mjesovito ? ["mjesovito"] : []];
+    const out = [];
+    const vidjeno = /* @__PURE__ */ new Set();
+    for (let pokusaj = 0; out.length < n && pokusaj < 400; pokusaj++) {
+      const vrsta = out.length < 2 ? "jedna" : vrste[Math.floor(rand() * vrste.length)];
+      const z = sastavi(v.velicina, jed, vrsta, rand);
+      if (!z) continue;
+      const kljuc = JSON.stringify([z.vrijednost, z.od, z.do]);
+      if (vidjeno.has(kljuc)) continue;
+      vidjeno.add(kljuc);
+      out.push({ tip: "pretvorba_jedinica", velicina: v.velicina, ...z, tekst: "" });
+    }
+    return out;
+  }
+  function sastavi(velicina, jed, vrsta, rand) {
+    const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+    if (vrsta === "lanac") {
+      const duljina = jed.length >= 4 && rand() < 0.5 ? 4 : 3;
+      const start = Math.floor(rand() * (jed.length - duljina + 1));
+      const niz = jed.slice(start, start + duljina);
+      if (rand() < 0.5) niz.reverse();
+      const vrijednost2 = lijepBroj(rand);
+      const base = toBase(velicina, vrijednost2, niz[0]);
+      const rez2 = niz.slice(1).map((u) => fromBase(velicina, base, u));
+      return rez2.every(lijepRezultat) ? { vrijednost: vrijednost2, od: niz[0], do: niz.slice(1) } : null;
+    }
+    if (vrsta === "mjesovito") {
+      const i2 = Math.floor(rand() * (jed.length - 1));
+      const [veca, manja] = [jed[i2], jed[i2 + 1]];
+      const omjer = Math.round(toBase(velicina, 1, veca) / toBase(velicina, 1, manja));
+      if (!(omjer >= 10 && omjer <= 1e3)) return null;
+      const a = 1 + Math.floor(rand() * 9);
+      const b = 1 + Math.floor(rand() * (omjer - 1));
+      const cilj2 = rand() < 0.6 || !jed[i2 + 2] ? manja : jed[i2 + 2];
+      const rez2 = fromBase(velicina, toBase(velicina, [a, b], [veca, manja]), cilj2);
+      return lijepRezultat(rez2) ? { vrijednost: [a, b], od: [veca, manja], do: cilj2 } : null;
+    }
+    const i = Math.floor(rand() * jed.length);
+    const cilj = pick(jed.filter((u, j) => j !== i && Math.abs(j - i) <= 2));
+    const od = jed[i];
+    const vrijednost = lijepBroj(rand);
+    const rez = fromBase(velicina, toBase(velicina, vrijednost, od), cilj);
+    return lijepRezultat(rez) ? { vrijednost, od, do: cilj } : null;
+  }
+
   // src/lib/lesson/validateLesson.js
   var VERZIJA = 1;
   var MAX_POMOC = 4;
@@ -1514,6 +1684,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
       sourceSketch(lekcija, parseMaybe(skica2), err);
       sourceResults(pz, rezultati, err, warn);
     }
+    if (lekcija.vjezba != null) for (const p of validateVjezba(lekcija.vjezba)) greske.push(p);
     if (err(Array.isArray(lekcija.zapamti) && lekcija.zapamti.length >= 1 && lekcija.zapamti.length <= 4, "zapamti treba 1–4 kratke natuknice")) {
       lekcija.zapamti.forEach((t, i) => err(isText(t), `zapamti[${i}] mora biti tekst`));
     }
@@ -1526,16 +1697,16 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     }
     return { greske, upozorenja };
   }
-  function sourceSketch(lekcija, izvor, err) {
-    if (!izvor?.tip || lekcija.zadatak?.skica) return;
+  function sourceSketch(lekcija, izvor2, err) {
+    if (!izvor2?.tip || lekcija.zadatak?.skica) return;
     const pitanja = lekcija.podzadaci.map((p) => p?.pitanje).filter(Boolean);
-    if (izvor.tip === "ljestvica") {
+    if (izvor2.tip === "ljestvica") {
       err(
-        pitanja.some((q) => q.tip === "mjerilo" && q.nacin !== "istrazi" && (!izvor.instrument || q.instrument === izvor.instrument)),
-        `izvorni zadatak očitava se s instrumenta (${izvor.instrument ?? "ljestvica"}), a lekcija ga ne prikazuje: neka očitanje bude pitanje (mjerilo "procitaj") ili stavi ljestvicu u zadatak.skica`
+        pitanja.some((q) => q.tip === "mjerilo" && q.nacin !== "istrazi" && (!izvor2.instrument || q.instrument === izvor2.instrument)),
+        `izvorni zadatak očitava se s instrumenta (${izvor2.instrument ?? "ljestvica"}), a lekcija ga ne prikazuje: neka očitanje bude pitanje (mjerilo "procitaj") ili stavi ljestvicu u zadatak.skica`
       );
-    } else if (!(izvor.tip === "graf" && pitanja.some((q) => q.tip === "ocitaj_graf"))) {
-      err(false, `izvorni zadatak ima skicu (${izvor.tip}), a lekcija je nema: učenik ne vidi lik. Stavi istu skicu u zadatak.skica (izostavi samo oznaku koju učenik treba izračunati)`);
+    } else if (!(izvor2.tip === "graf" && pitanja.some((q) => q.tip === "ocitaj_graf"))) {
+      err(false, `izvorni zadatak ima skicu (${izvor2.tip}), a lekcija je nema: učenik ne vidi lik. Stavi istu skicu u zadatak.skica (izostavi samo oznaku koju učenik treba izračunati)`);
     }
   }
   function sourceResults(pz, rezultati, err, warn) {
@@ -1556,6 +1727,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   }
   function answerNumbers(spec) {
     if (!spec || !widget(spec)) return [];
+    if (spec.tip === "pretvorba_jedinica") return pretvorbaRezultati(spec).filter(isNum);
     if (spec.tip === "praznina") return (spec.praznine ?? []).flatMap((p) => isNum(p?.odgovor) ? [p.odgovor] : numbersIn(String(p?.odgovor ?? "")));
     const out = [];
     try {
@@ -1617,7 +1789,8 @@ KAKO LEKCIJA RADI („zadatak prvo“):
   (1–2 rečenice), cijelo objašnjenje je skriveno iza gumba. Učenik koji zna sve gotov je s 3 odgovora.
 - Krivi odgovor: poruka baš za tu grešku, pa kratka pomoć (1–4 mala koraka) samo za taj podzadatak, pa ponovni pokušaj na
   blizancu (isto pitanje s drugim brojevima ili drugim tijelom). Gumb „Ne znam“ vodi ravno u pomoć.
-- Na kraju je „Zapamti“ (1–4 kratke natuknice).
+- Na kraju je „Zapamti“ (1–4 kratke natuknice), a u lekciji koja uči pretvaranje jedinica i „Vježbaj još“: neobavezni
+  zadaci pretvorbe koje aplikacija sama sastavi iz jedinica koje navedeš u „vjezba“.
 
 ULOGE KORAKA (vrlo važno):
 - Svaki korak ima jednu ulogu: „Pogledaj“ (objašnjenje, primjer ili istraživanje – ništa se ne pita) ili „Tvoj red“ (pitanje).
@@ -1635,7 +1808,8 @@ POMOĆ (kao riješeni primjer koji se postupno prepušta učeniku):
 WIDGETI UMJESTO TEKSTA:
 - Učenik neka vještinu napravi sam u widgetu, a ne da samo upiše broj koji mu tekst već skoro daje. Ako izvorni podzadatak traži
   očitavanje s instrumenta, grafa ili slike, pitanje JE to očitavanje (mjerilo "procitaj", ocitaj_graf "ocitaj", mreza "prebroji");
-  nikad ne piši očitanje u tekst („voda pokazuje 140 mL“). Pretvorba jedinica je pretvorba_jedinica, razvrstavanje razvrstaj,
+  nikad ne piši očitanje u tekst („voda pokazuje 140 mL“). Pretvorba jedinica je pretvorba_jedinica (i lanac „8 m = … dm =
+  … cm“ i mješoviti zapis „2 m 7 dm“), spajanje jednakih iznosa („27 dm“ ↔ „2 m 7 dm“) parovi, razvrstavanje razvrstaj,
   redoslijed koraka redoslijed, plivanje i tonjenje uronjeno, stanja tvari cestice.
 - Najviše 3 podzadatka (a, b, c), kao u izvornom zadatku. Kad podzadatak traži dva rezultata (npr. u g/cm³ i kg/m³), pitanje
   je praznina s dvije praznine, a ne novi podzadatak.
@@ -1673,8 +1847,14 @@ IZLAZ: samo JSON objekt, bez objašnjenja oko njega:
     {"id": "a", "naslov": "kratko", "pitanje": <korak Tvoj red>, "zasto": "…", "objasnjenje": "markdown",
      "pomoc": [<korak>, …], "blizanac": <korak Tvoj red>}
   ],
-  "zapamti": ["…"]
-}`;
+  "zapamti": ["…"],
+  "vjezba"?: {…}
+}
+
+${VJEZBA_OPIS}
+Dodaj je kad god lekcija uči pretvaranje jedinica neke veličine (i kad je pretvorba samo dio zadatka): navedi jedinice iz
+lekcije i susjedne koje izvorni zadatak ili razina koriste, uključi lanac i mješoviti zapis kad ih izvor spominje ili su
+prirodni za tu veličinu (duljina, masa). U lekciji bez pretvorbe jedinica izostavi „vjezba“.`;
   function sustavPrompt() {
     const katalog = Object.values(KATALOG).map((w) => {
       const uloge = new Set([void 0, "istrazi", "prikaz", "procitaj", "odaberi"].map((nacin) => w.uloga({ nacin })));
@@ -1689,18 +1869,18 @@ KATALOG WIDGETA:
 
 ${katalog}`;
   }
-  function korisnickiPrompt(izvor) {
+  function korisnickiPrompt(izvor2) {
     return [
-      `PREDMET: ${izvor.subject ?? "?"} · RAZINA: ${izvor.level === "os78" ? "7.–8. razred osnovne škole" : izvor.level === "ss" ? "srednja škola" : izvor.level ?? "?"}`,
-      `LEKCIJA: ${izvor.objective_name}`,
+      `PREDMET: ${izvor2.subject ?? "?"} · RAZINA: ${izvor2.level === "os78" ? "7.–8. razred osnovne škole" : izvor2.level === "ss" ? "srednja škola" : izvor2.level ?? "?"}`,
+      `LEKCIJA: ${izvor2.objective_name}`,
       `ZADATAK:
-${izvor.task_text}`,
-      izvor.sketch ? `SKICA UZ ZADATAK (JSON):
-${izvor.sketch}` : null,
+${izvor2.task_text}`,
+      izvor2.sketch ? `SKICA UZ ZADATAK (JSON):
+${izvor2.sketch}` : null,
       `REZULTATI:
-${izvor.results}`,
+${izvor2.results}`,
       `OBJAŠNJENJE:
-${izvor.explanation}`
+${izvor2.explanation}`
     ].filter(Boolean).join("\n\n");
   }
   function popravakPrompt(greske) {

@@ -78,6 +78,20 @@ class LessonUiTest {
     }
 
     @Test
+    void practiceAndUnitChainsAreChecked() {
+        String practice = VALID.replace("\"zapamti\":[", "\"vjezba\":{\"velicina\":\"duljina\",\"jedinice\":[\"m\",\"dm\",\"cm\",\"mm\"],\"lanac\":true,\"mjesovito\":true},\"zapamti\":[");
+        assertEquals(List.of(), ui.check(practice, null, null).errors());
+        List<String> errors = ui.check(practice.replace("\"mm\"]", "\"kg\"]"), null, null).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("vjezba.jedinice")), errors.toString());
+        // lanac: točni rezultati računaju se u kodu, pa „8000“ vrijedi kao odgovor na rezultat
+        String chain = VALID.replace("{\"tip\":\"broj\",\"tekst\":\"Koliki je volumen kamena?\",\"odgovor\":80,\"jedinica\":\"cm³\",",
+                "{\"tip\":\"pretvorba_jedinica\",\"velicina\":\"duljina\",\"vrijednost\":8,\"od\":\"m\",\"do\":[\"dm\",\"cm\",\"mm\"],");
+        assertNotEquals(VALID, chain);
+        assertEquals(List.of(), ui.check(chain, "{\"a\":\"8 m = 8000 mm\"}", null).errors());
+        assertTrue(ui.system().contains("vjezba"));
+    }
+
+    @Test
     void promptsComeFromTheCatalog() throws Exception {
         assertTrue(ui.system().contains("### mjerilo"));
         Map<String, Object> source = new LinkedHashMap<>();
