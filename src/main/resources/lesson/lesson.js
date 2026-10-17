@@ -1588,6 +1588,114 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     }
     return out.map((t) => t.v).join(" ");
   }
+  var NAREDBE = {
+    pi: " pi ",
+    infty: " inf ",
+    cdot: "*",
+    times: "*",
+    ast: "*",
+    div: "/",
+    exponentialE: " e ",
+    sin: " sin ",
+    cos: " cos ",
+    tan: " tan ",
+    tg: " tan ",
+    ln: " ln ",
+    log: " log ",
+    exp: " exp ",
+    vert: "|",
+    lvert: "|",
+    rvert: "|",
+    mid: "|",
+    ",": "",
+    ";": "",
+    ":": "",
+    "!": "",
+    " ": "",
+    quad: "",
+    qquad: ""
+  };
+  var OGRADE = { "(": "(", ")": ")", "[": "(", "]": ")", "|": "|", ".": "", "\\{": "(", "\\}": ")", "\\vert": "|", "\\lvert": "|", "\\rvert": "|", "\\langle": "(", "\\rangle": ")" };
+  function izLatexa(latex) {
+    const s = String(latex ?? "").replace(/\{,\}/g, ".");
+    let i = 0;
+    const naredba = () => {
+      const m = /^\\([A-Za-z]+|.)/.exec(s.slice(i));
+      i += m[0].length;
+      return m[1];
+    };
+    const grupa = () => {
+      while (s[i] === " ") i++;
+      if (s[i] === "{") {
+        let dubina = 0;
+        const od = ++i;
+        for (; i < s.length; i++) {
+          if (s[i] === "{") dubina++;
+          else if (s[i] === "}" && dubina-- === 0) break;
+        }
+        if (i >= s.length) throw new Error("nedostaje }");
+        return s.slice(od, i++);
+      }
+      if (s[i] === "\\") {
+        const od = i;
+        naredba();
+        return s.slice(od, i);
+      }
+      return s[i++] ?? "";
+    };
+    const ograda = () => {
+      while (s[i] === " ") i++;
+      for (const k of Object.keys(OGRADE).sort((a, b) => b.length - a.length)) {
+        if (s.startsWith(k, i) && !(k.length > 1 && /[A-Za-z]/.test(s[i + k.length] ?? ""))) {
+          i += k.length;
+          return OGRADE[k];
+        }
+      }
+      throw new Error("ne razumijem zagradu");
+    };
+    let out = "";
+    while (i < s.length) {
+      const c = s[i];
+      if (c === "\\") {
+        const n = naredba();
+        if (n === "frac" || n === "dfrac" || n === "tfrac") out += `((${izLatexa(grupa())})/(${izLatexa(grupa())}))`;
+        else if (n === "sqrt") {
+          let korijen = null;
+          if (s[i] === "[") {
+            const kraj2 = s.indexOf("]", i);
+            korijen = s.slice(i + 1, kraj2);
+            i = kraj2 + 1;
+          }
+          const pod = izLatexa(grupa());
+          out += korijen ? `((${pod})^(1/(${izLatexa(korijen)})))` : ` sqrt(${pod})`;
+        } else if (["left", "right", "mleft", "mright", "bigl", "bigr", "Bigl", "Bigr"].includes(n)) out += ograda();
+        else if (["operatorname", "mathrm", "text", "mathit", "textrm"].includes(n)) out += ` ${grupa()} `;
+        else if (n === "placeholder") throw new Error("dovrši izraz (ostalo je prazno mjesto)");
+        else if (n in NAREDBE) out += NAREDBE[n];
+        else throw new Error(`ne razumijem „\\${n}“`);
+      } else if (c === "^") {
+        i++;
+        out += `^(${izLatexa(grupa())})`;
+      } else if (c === "_") throw new Error("indeksi (npr. log s bazom) još nisu podržani");
+      else if (c === "{") out += `(${izLatexa(grupa())})`;
+      else {
+        out += c;
+        i++;
+      }
+    }
+    let otvoreno = false;
+    return out.replace(/\|/g, () => {
+      otvoreno = !otvoreno;
+      return otvoreno ? " abs(" : ")";
+    });
+  }
+  function ucitajLatex(latex, varijable = []) {
+    try {
+      return ucitaj(izLatexa(latex), varijable);
+    } catch (e) {
+      return { greska: e.message };
+    }
+  }
   function ucitaj(unos, varijable = []) {
     try {
       const izraz2 = pripremi(unos, varijable);
@@ -1753,8 +1861,8 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   function provjeriPolje(s, p, unos) {
     const vars = varijableIzraza(s);
     if (!String(unos ?? "").trim()) return { tocno: false, poruka: "Upiši odgovor.", prazno: true };
-    const u = ucitaj(unos, vars);
-    if (u.greska) return { tocno: false, poruka: `Ne mogu pročitati „${unos}“: ${u.greska}.`, prazno: true };
+    const u = ucitajLatex(unos, vars);
+    if (u.greska) return { tocno: false, poruka: `Ne mogu pročitati izraz: ${u.greska}.`, prazno: true };
     const tocan = poljeOdgovor(s, p);
     if (jednako(u, tocan, vars)) return { tocno: true };
     for (const k of p.krivo ?? []) {
@@ -1771,7 +1879,8 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     tip: "izraz",
     samoRucno: true,
     uloga: () => ODGOVOR,
-    opis: `Matematički odgovor koji učenik upisuje kao na papiru (π, √, razlomak, x², implicitno množenje). Polja: tekst, polja: [{oznaka
+    opis: `Matematički odgovor koji učenik upisuje u matematičko polje s tipkovnicom probne mature (razlomak, korijen, π, potencija
+se odmah iscrtavaju). Polja: tekst, polja: [{oznaka
 (markdown ispred polja, npr. "$x_1 =$"), iza? (markdown iza polja, npr. "$> 0$"), odgovor (izraz, npr. "pi/6", "2-sqrt(3)", "x^2-4*x+3"), krivo?: [{odgovor, poruka}], savjet?}] (1–4),
 varijable?: ["x"] (ako je odgovor izraz s varijablom), bilo_kojim_redom?: true (npr. dvije nultočke), priblizno?: true (prihvati decimalni
 zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve što ima istu vrijednost.`,
