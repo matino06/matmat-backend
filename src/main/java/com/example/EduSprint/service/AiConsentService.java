@@ -19,7 +19,10 @@ import java.util.Set;
 @Service
 public class AiConsentService {
 
-    public static final String MISSING_MESSAGE = "Za AI uključi dozvolu u Profilu.";
+    /** Where the student turns AI on: Profil in the app, Postavke on the web. */
+    public static String missingMessage(String client) {
+        return "ios".equalsIgnoreCase(client) ? "Za AI uključi dozvolu u Profilu." : "Za AI uključi dozvolu u Postavkama.";
+    }
     private static final Set<String> SOURCES = Set.of("ios", "web");
 
     private final NamedParameterJdbcTemplate jdbc;

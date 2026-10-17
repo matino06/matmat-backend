@@ -96,8 +96,8 @@ public class MockExamController {
         Map<String, MultipartFile> files = request.getFileMap();
 
         try {
-            // From iOS without AI consent, only multiple choice is graded.
-            boolean aiAllowed = !AiConsentInterceptor.enforcedFor(request) || aiConsentService.isGranted(account.getAccountId());
+            // Without AI consent only multiple choice is graded.
+            boolean aiAllowed = aiConsentService.isGranted(account.getAccountId());
             MockExamSubmitResponseDTO response = mockExamGradingService.submit(account, examId, body, files, aiAllowed);
             if ("pending".equals(response.getGradingStatus())) {
                 mockExamGradingService.triggerAsyncGradingForAttempt(response.getAttemptId());

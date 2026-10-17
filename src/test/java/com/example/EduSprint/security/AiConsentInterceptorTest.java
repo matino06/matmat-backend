@@ -65,7 +65,7 @@ class AiConsentInterceptorTest {
                 .andExpect(status().isForbidden());
         mvc.perform(post("/ai/chat").header(AiConsentInterceptor.CLIENT_HEADER, "ios"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message").value(AiConsentService.MISSING_MESSAGE));
+                .andExpect(jsonPath("$.message").value("Za AI uključi dozvolu u Profilu."));
     }
 
     @Test
@@ -75,8 +75,16 @@ class AiConsentInterceptorTest {
     }
 
     @Test
-    void theWebIsNotAffectedYet() throws Exception {
+    void theWebWithoutConsentIsRejectedAndToldToUsePostavke() throws Exception {
         when(consents.isGranted(43L)).thenReturn(false);
+        mvc.perform(post("/ai/chat"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Za AI uključi dozvolu u Postavkama."));
+    }
+
+    @Test
+    void theWebWithConsentGoesThrough() throws Exception {
+        when(consents.isGranted(43L)).thenReturn(true);
         mvc.perform(post("/ai/chat")).andExpect(status().isOk());
     }
 
