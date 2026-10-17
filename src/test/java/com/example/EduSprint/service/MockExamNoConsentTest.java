@@ -80,7 +80,7 @@ class MockExamNoConsentTest {
         assertEquals((short) 1, saved.get(0).getScoreAwarded());
         assertEquals(MockExamGradingService.STATUS_NO_CONSENT, saved.get(1).getAiGradingStatus());
         assertEquals((short) 0, saved.get(1).getScoreAwarded());
-        assertEquals("Za ocjenu uključi AI u Profilu.", saved.get(1).getAiFeedback());
+        assertEquals("Nije ocijenjeno jer dozvola za AI nije bila uključena.", saved.get(1).getAiFeedback());
         assertEquals("x = 3", saved.get(1).getAnswerText());
         verifyNoInteractions(ai);
     }

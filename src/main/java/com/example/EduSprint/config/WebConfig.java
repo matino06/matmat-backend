@@ -38,7 +38,7 @@ public class WebConfig {
         };
     }
 
-    /** Requests that send the student's data to the AI need AI consent (from iOS, for now). */
+    /** Requests that send the student's data to the AI need AI consent. */
     @Bean
     public WebMvcConfigurer aiConsentConfigurer(AiConsentInterceptor aiConsent) {
         return new WebMvcConfigurer() {

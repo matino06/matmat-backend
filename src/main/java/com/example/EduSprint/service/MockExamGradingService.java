@@ -100,7 +100,7 @@ public class MockExamGradingService {
 
     /**
      * Without AI consent ({@code aiAllowed} false) only multiple choice is graded; the other answers are kept,
-     * scored 0 and marked {@value #STATUS_NO_CONSENT} with a note saying how to get them graded.
+     * scored 0 and marked {@value #STATUS_NO_CONSENT} with a note saying why they were not graded.
      */
     public MockExamSubmitResponseDTO submit(Account account,
                                             Long examId,
@@ -312,7 +312,7 @@ public class MockExamGradingService {
     private static void markNoConsent(MockExamAnswer answer) {
         answer.setAiGradingStatus(STATUS_NO_CONSENT);
         answer.setScoreAwarded((short) 0);
-        answer.setAiFeedback("Za ocjenu uključi AI u Profilu.");
+        answer.setAiFeedback("Nije ocijenjeno jer dozvola za AI nije bila uključena.");
     }
 
     public void retryFailedAnswers(Long attemptId, Account account) {

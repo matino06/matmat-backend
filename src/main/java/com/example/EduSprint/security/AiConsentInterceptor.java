@@ -13,9 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Rejects AI requests (chat, own-course building, re-grading with AI) without AI consent: 403 {"message": …}.
- * For now only requests from the iOS app ({@code X-MatMat-Client: ios}); the web keeps working until it has its
- * own consent screen.
+ * Rejects AI requests (chat, own-course building, re-grading with AI) without AI consent: 403 {"message": …}, which
+ * says where to turn it on ({@code X-MatMat-Client: ios}: Profil; the web: Postavke).
  */
 @Component
 public class AiConsentInterceptor implements HandlerInterceptor {
@@ -30,19 +29,14 @@ public class AiConsentInterceptor implements HandlerInterceptor {
         this.consents = consents;
     }
 
-    /** The requests the consent applies to (see WebConfig for the paths). */
-    public static boolean enforcedFor(HttpServletRequest request) {
-        return "ios".equalsIgnoreCase(request.getHeader(CLIENT_HEADER));
-    }
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!enforcedFor(request) || "GET".equals(request.getMethod())) return true;
+        if ("GET".equals(request.getMethod())) return true;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof AuthPrincipal principal)) return true;
         Account account = accountService.getAccount(principal.getEmail());
         if (!consents.isGranted(account.getAccountId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, AiConsentService.MISSING_MESSAGE);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, AiConsentService.missingMessage(request.getHeader(CLIENT_HEADER)));
         }
         return true;
     }
