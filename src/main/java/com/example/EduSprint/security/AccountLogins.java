@@ -1,5 +1,6 @@
 package com.example.EduSprint.security;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,4 +15,7 @@ public interface AccountLogins {
 
     /** Links the login to the account; does nothing if the login is already linked. */
     void link(String subject, long accountId);
+
+    /** The logins linked to the account (empty if none are, or the table is missing). */
+    List<String> subjectsOf(long accountId);
 }

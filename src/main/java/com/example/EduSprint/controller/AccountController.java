@@ -1,5 +1,6 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.dto.AccountDeleteRequest;
 import com.example.EduSprint.dto.AiConsentDTO;
 import com.example.EduSprint.dto.AiConsentRequest;
 import com.example.EduSprint.entity.Account;
@@ -35,9 +36,11 @@ public class AccountController {
     public final EmailService emailService;
 
     private final AiConsentService aiConsentService;
+    private final AccountDeletionService accountDeletionService;
 
-    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService, AiConsentService aiConsentService) {
+    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService, AiConsentService aiConsentService, AccountDeletionService accountDeletionService) {
         this.aiConsentService = aiConsentService;
+        this.accountDeletionService = accountDeletionService;
         this.accountRepository = accountRepository;
         this.accountService = accountService;
         this.accountObjectiveService = accountObjectiveService;
@@ -200,6 +203,18 @@ public class AccountController {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
         return aiConsentService.set(accountId, request.granted(), request.version(), request.source());
+    }
+
+    /**
+     * "Obriši račun": deletes the account and everything of it for good, its Auth0 logins and (with a fresh Sign in
+     * with Apple code from the app) its Apple access, then emails a confirmation. Body optional:
+     * {"appleAuthorizationCode": "..."}.
+     */
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAccount(Authentication authentication, @RequestBody(required = false) AccountDeleteRequest request) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        accountDeletionService.delete(principal.getEmail(), principal.getSubject(), request == null ? null : request.appleAuthorizationCode());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/create")

@@ -97,6 +97,19 @@ public class MaterialStorage {
         if (prefix == null || !prefix.startsWith("own-courses/") || prefix.length() <= "own-courses/".length()) {
             throw new IllegalArgumentException("Smije se brisati samo mapa vlastitog predmeta: " + prefix);
         }
+        deleteAll(prefix);
+    }
+
+    // Deleting an account: its own courses' folder, and the photos of one mock exam attempt's answers.
+    public void deleteAccountFolder(long accountId) {
+        deleteAll("own-courses/" + accountId + "/");
+    }
+
+    public void deleteAnswerImages(long attemptId) {
+        deleteAll("mock-exam-answers/" + attemptId + "/");
+    }
+
+    private void deleteAll(String prefix) {
         ListObjectsV2Request request = new ListObjectsV2Request().withBucketName(bucket).withPrefix(prefix);
         ListObjectsV2Result result;
         do {

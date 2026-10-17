@@ -3,6 +3,7 @@ package com.example.EduSprint.security;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,6 +39,11 @@ class AccountResolverTest {
         @Override
         public void link(String subject, long accountId) {
             accountIdBySubject.putIfAbsent(subject, accountId);
+        }
+
+        @Override
+        public List<String> subjectsOf(long accountId) {
+            return accountIdBySubject.entrySet().stream().filter(e -> e.getValue() == accountId).map(Map.Entry::getKey).toList();
         }
     }
 
