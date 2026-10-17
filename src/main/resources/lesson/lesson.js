@@ -1550,7 +1550,9 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     [/(\d),(\d)/g, "$1.$2"],
     // „70°“: oznaka mjere (70), a unutar sin/cos/tg kut u stupnjevima (vidi pripremi)
     [/°/g, " ° "],
-    [/(\d+)\s*!/g, " fact($1)"]
+    [/(\d+)\s*!/g, " fact($1)"],
+    // hrvatski zapis tangensa: „tg x“
+    [/\btg/g, " tan "]
   ];
   function rastavi(rijec, poznato) {
     const out = [];
