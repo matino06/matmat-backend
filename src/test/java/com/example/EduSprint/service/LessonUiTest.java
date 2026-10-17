@@ -105,6 +105,8 @@ class LessonUiTest {
     @Test
     void promptsComeFromTheCatalog() throws Exception {
         assertTrue(ui.system().contains("### mjerilo"));
+        // widgeti za ručno pisane lekcije (matura) nisu u promptu za automatsku izradu
+        assertFalse(ui.system().contains("### graf_funkcije"), "samoRucno widget u promptu");
         Map<String, Object> source = new LinkedHashMap<>();
         source.put("subject", "fizika");
         source.put("level", "os78");
