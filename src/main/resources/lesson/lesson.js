@@ -29,7 +29,7 @@ var MatMatLesson = (() => {
     validateLesson: () => validateLesson
   });
 
-  // ../matmat-frontend/src/lib/sketch/taskSketch.js
+  // src/lib/sketch/taskSketch.js
   var W = 380;
   var H = 260;
   var PAD = 34;
@@ -508,7 +508,7 @@ var MatMatLesson = (() => {
     }
   }
 
-  // ../matmat-frontend/src/lib/lesson/core/number.js
+  // src/lib/lesson/core/number.js
   function parseNumber(input, unit = "") {
     if (typeof input === "number") return Number.isFinite(input) ? input : null;
     if (typeof input !== "string") return null;
@@ -551,7 +551,7 @@ var MatMatLesson = (() => {
   }
   var isNum = (v) => typeof v === "number" && Number.isFinite(v);
 
-  // ../matmat-frontend/src/lib/lesson/katalog/zajednicko.js
+  // src/lib/lesson/katalog/zajednicko.js
   var POGLEDAJ = "pogledaj";
   var ODGOVOR = "odgovor";
   var isText = (v) => typeof v === "string" && v.trim().length > 0;
@@ -588,7 +588,7 @@ var MatMatLesson = (() => {
   var KRIVO_OPIS = `krivo?: [{vrijednost, poruka}] – tipične krive vrijednosti i poruka baš za tu grešku (npr. 220 = „to je završno očitanje, a ne volumen tijela“)`;
   var withUnit = (n, unit) => `${formatNumber(n)}${unit ? ` ${unit}` : ""}`;
 
-  // ../matmat-frontend/src/lib/lesson/katalog/tekst.js
+  // src/lib/lesson/katalog/tekst.js
   var pojam = {
     tip: "pojam",
     uloga: () => POGLEDAJ,
@@ -647,7 +647,7 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
     if (!r.svg) need(false, `skica se ne može nacrtati: ${r.checks.filter((c) => !c.ok).map((c) => c.text).join("; ") || "neispravan opis"}`);
   }
 
-  // ../matmat-frontend/src/lib/lesson/core/units.js
+  // src/lib/lesson/core/units.js
   var UNITS = {
     duljina: [
       ["km", 1e3],
@@ -761,7 +761,7 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
     return out.filter((m) => Number.isFinite(m.vrijednost) && Math.abs(m.vrijednost - right) > 1e-9 * Math.max(1, Math.abs(right)));
   }
 
-  // ../matmat-frontend/src/lib/lesson/katalog/pitanja.js
+  // src/lib/lesson/katalog/pitanja.js
   var broj = {
     tip: "broj",
     uloga: () => ODGOVOR,
@@ -1010,7 +1010,7 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
     tocanOdgovor: (s) => s.kategorije.map((k, ki) => `**${k}:** ${s.stavke.filter((st) => st.kategorija === ki).map((st) => st.tekst).join(", ")}`).join("; ")
   };
 
-  // ../matmat-frontend/src/lib/lesson/core/expr.js
+  // src/lib/lesson/core/expr.js
   var FUNCS = {
     sqrt: Math.sqrt,
     abs: Math.abs,
@@ -1145,7 +1145,7 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
   var FUNKCIJE = Object.keys(FUNCS);
   var KONSTANTE = Object.keys(CONSTS);
 
-  // ../matmat-frontend/src/lib/lesson/katalog/istrazivanje.js
+  // src/lib/lesson/katalog/istrazivanje.js
   var ID = /^[A-Za-z_][A-Za-z_0-9]*$/;
   var NACIN_ISTRAZI = `nacin "istrazi" je korak za gledanje: učenik se igra, ništa se ne provjerava i nema polja s odgovorom`;
   var klizac = {
@@ -1527,7 +1527,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     tocanOdgovor: (s) => s.tijela.map((t) => `${t.naziv}: ${ishod(t.gustoca, s.tekucina.gustoca)}`).join("; ")
   };
 
-  // ../matmat-frontend/src/lib/lesson/core/izraz.js
+  // src/lib/lesson/core/izraz.js
   var ZNAKOVI = [
     [/[−–—]/g, "-"],
     [/[×·⋅∙]/g, "*"],
@@ -1538,7 +1538,9 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     [/³/g, "^3"],
     [/√\s*\(/g, " sqrt("],
     [/√\s*(\d+(?:[.,]\d+)?|[A-Za-z]+)/g, " sqrt($1)"],
-    [/(\d),(\d)/g, "$1.$2"]
+    [/(\d),(\d)/g, "$1.$2"],
+    // stupnjevi su samo oznaka mjere: „70°“ je 70
+    [/°/g, ""]
   ];
   function rastavi(rijec, poznato) {
     const out = [];
@@ -1613,7 +1615,9 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     "!": "",
     " ": "",
     quad: "",
-    qquad: ""
+    qquad: "",
+    degree: "",
+    "%": "/100"
   };
   var OGRADE = { "(": "(", ")": ")", "[": "(", "]": ")", "|": "|", ".": "", "\\{": "(", "\\}": ")", "\\vert": "|", "\\lvert": "|", "\\rvert": "|", "\\langle": "(", "\\rangle": ")" };
   function izLatexa(latex) {
@@ -1671,12 +1675,16 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
         } else if (["left", "right", "mleft", "mright", "bigl", "bigr", "Bigl", "Bigr"].includes(n)) out += ograda();
         else if (["operatorname", "mathrm", "text", "mathit", "textrm"].includes(n)) out += ` ${grupa()} `;
         else if (n === "placeholder") throw new Error("dovrši izraz (ostalo je prazno mjesto)");
-        else if (n in NAREDBE) out += NAREDBE[n];
+        else if (n === "log" && s[i] === "_") {
+          i++;
+          out += ` ((1)/(log(${izLatexa(grupa())})))*log `;
+        } else if (n in NAREDBE) out += NAREDBE[n];
         else throw new Error(`ne razumijem „\\${n}“`);
       } else if (c === "^") {
         i++;
-        out += `^(${izLatexa(grupa())})`;
-      } else if (c === "_") throw new Error("indeksi (npr. log s bazom) još nisu podržani");
+        const g = grupa();
+        if (g.trim() !== "\\circ") out += `^(${izLatexa(g)})`;
+      } else if (c === "_") throw new Error("indeks ovdje ne pripada (baza ide samo uz log)");
       else if (c === "{") out += `(${izLatexa(grupa())})`;
       else {
         out += c;
@@ -1780,7 +1788,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     return r.greska ? String(izraz2) : r.tex;
   }
 
-  // ../matmat-frontend/src/lib/lesson/core/skup.js
+  // src/lib/lesson/core/skup.js
   var EPS = 1e-9;
   var isti = (x, y) => x === y || Number.isFinite(x) && Number.isFinite(y) && Math.abs(x - y) <= EPS * Math.max(1, Math.abs(x));
   function kraj(t) {
@@ -1793,6 +1801,15 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   }
   function parseSkup(src) {
     const s = String(src ?? "").trim();
+    const op = [...s.matchAll(/\s*(\\|∖|∩)\s*/g)].at(-1);
+    if (op) {
+      const lijevo = parseSkup(s.slice(0, op.index));
+      const desno = parseSkup(s.slice(op.index + op[0].length));
+      return op[1] === "∩" ? presjek(lijevo, desno) : razlika(lijevo, desno);
+    }
+    return parseUnije(s);
+  }
+  function parseUnije(s) {
     if (/^(∅|\{\s*\}|prazan skup)$/i.test(s)) return [];
     if (/^(R|ℝ)$/.test(s)) return [{ a: -Infinity, b: Infinity, ua: false, ub: false, ta: "-\\infty", tb: "+\\infty" }];
     const dijelovi = s.split(/∪|\s+U\s+|\bU\b/).map((d) => d.trim());
@@ -1835,6 +1852,106 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     }
     return out;
   }
+  function komplement(skup) {
+    const out = [];
+    let a = { v: -Infinity, u: false, t: "-\\infty" };
+    for (const d of sredi(skup)) {
+      if (d.a > a.v || isti(d.a, a.v) && a.u && !d.ua && Number.isFinite(d.a)) out.push({ a: a.v, b: d.a, ua: a.u, ub: !d.ua, ta: a.t, tb: d.ta });
+      a = { v: d.b, u: !d.ub, t: d.tb };
+    }
+    if (a.v < Infinity) out.push({ a: a.v, b: Infinity, ua: a.u, ub: false, ta: a.t, tb: "+\\infty" });
+    return sredi(out.filter((d) => d.a < d.b || isti(d.a, d.b) && d.ua && d.ub));
+  }
+  function presjek(s1, s2) {
+    const out = [];
+    for (const x of s1) {
+      for (const y of s2) {
+        const [a, ua, ta] = x.a > y.a || isti(x.a, y.a) && !x.ua ? [x.a, x.ua, x.ta] : [y.a, y.ua, y.ta];
+        const [b, ub, tb] = x.b < y.b || isti(x.b, y.b) && !x.ub ? [x.b, x.ub, x.tb] : [y.b, y.ub, y.tb];
+        if (a < b - EPS || isti(a, b) && ua && ub) out.push({ a, b, ua, ub, ta, tb });
+      }
+    }
+    return sredi(out);
+  }
+  var razlika = (s1, s2) => presjek(s1, komplement(s2));
+  function tekstSkupaIzLatexa(latex) {
+    let s = String(latex ?? "").replace(/\{,\}/g, ".").replace(/\\(?:left|right|mleft|mright)\s*\./g, "").replace(/\\(?:left|right|mleft|mright|bigl|bigr|Bigl|Bigr)(?![A-Za-z])\s*/g, "").replace(/\\langle(?![A-Za-z])|⟨/g, "<").replace(/\\rangle(?![A-Za-z])|⟩/g, ">").replace(/\\lbrack(?![A-Za-z])/g, "[").replace(/\\rbrack(?![A-Za-z])/g, "]").replace(/\\lbrace(?![A-Za-z])|\\\{/g, "⦃").replace(/\\rbrace(?![A-Za-z])|\\\}/g, "⦄").replace(/\\cup(?![A-Za-z])|∪/g, "U").replace(/\\cap(?![A-Za-z])/g, "∩").replace(/\\setminus(?![A-Za-z])|\\backslash(?![A-Za-z])|\\smallsetminus(?![A-Za-z])/g, "∖").replace(/\\(?:emptyset|varnothing)(?![A-Za-z])/g, "∅").replace(/\\mathbb\{R\}|\\R(?![A-Za-z])|ℝ/g, "R").replace(/\\infty(?![A-Za-z])/g, "∞").replace(/^\s*x\s*\\in(?![A-Za-z])/, "").trim();
+    if (!s) throw new Error("upiši skup");
+    if (/\\placeholder/.test(s)) throw new Error("dovrši zapis (ostalo je prazno mjesto)");
+    let i = 0;
+    const kraj2 = (odvajaci) => {
+      let t = "";
+      let dub = 0;
+      let zag = 0;
+      while (i < s.length) {
+        const c = s[i];
+        if (s.startsWith("\\sqrt[", i)) {
+          const j = s.indexOf("]", i);
+          if (j < 0) throw new Error("nedostaje ] u korijenu");
+          t += s.slice(i, j + 1);
+          i = j + 1;
+          continue;
+        }
+        if (c === "{") dub++;
+        else if (c === "}") dub--;
+        else if (dub === 0) {
+          if (c === "(") zag++;
+          else if (c === ")" && zag > 0) zag--;
+          else if (zag === 0 && (odvajaci.includes(c) || ">])⦄".includes(c))) break;
+        }
+        t += c;
+        i++;
+      }
+      const k = t.trim();
+      if (!k) throw new Error("nedostaje kraj intervala");
+      if (/^[-+]?∞$/.test(k)) return k;
+      return izLatexa(odvajaci === ";" ? k.replace(/(\d),(\d)/g, "$1.$2") : k).replace(/\s+/g, "");
+    };
+    const odvajac = () => {
+      const zatvara = s.slice(i).search(/[>\])⦄]/);
+      return s.slice(i, zatvara < 0 ? void 0 : i + zatvara).includes(";") ? ";" : ",;";
+    };
+    let out = "";
+    while (i < s.length) {
+      const c = s[i];
+      if (c === " ") i++;
+      else if ("<[(".includes(c)) {
+        i++;
+        const od = odvajac();
+        const a = kraj2(od);
+        if (![",", ";"].includes(s[i])) throw new Error("odvoji krajeve intervala zarezom ili točkom-zarezom");
+        i++;
+        const b = kraj2(od);
+        const z = s[i++];
+        if (!z || !">])".includes(z)) throw new Error("zatvori interval s ⟩ ili ]");
+        out += `${c}${a};${b}${z}`;
+      } else if (c === "⦃") {
+        i++;
+        const od = odvajac();
+        const tocke = [kraj2(od)];
+        while ([",", ";"].includes(s[i])) {
+          i++;
+          tocke.push(kraj2(od));
+        }
+        if (s[i++] !== "⦄") throw new Error("zatvori skup točaka sa }");
+        out += `{${tocke.join(";")}}`;
+      } else if ("U∩∖".includes(c)) {
+        out += ` ${c} `;
+        i++;
+      } else if (c === "∅" || c === "R") {
+        out += c;
+        i++;
+      } else throw new Error(`ne razumijem „${c}“ (skup piši kao ⟨a, b⟩, [a, b], {a}, ∅ ili ℝ, a dijelove spoji s ∪)`);
+    }
+    return out;
+  }
+  function ucitajSkupLatex(latex) {
+    try {
+      return { skup: parseSkup(tekstSkupaIzLatexa(latex)) };
+    } catch (e) {
+      return { greska: e.message };
+    }
+  }
   function jednakiSkupovi(s1, s2) {
     if (s1.length !== s2.length) return false;
     return s1.every((x, i) => {
@@ -1851,7 +1968,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     return skup.map((d) => isti(d.a, d.b) ? `\\{${d.ta}\\}` : `${d.ua ? "\\left[" : "\\left\\langle"} ${d.ta},\\ ${d.tb} ${d.ub ? "\\right]" : "\\right\\rangle"}`).join(" \\cup ");
   }
 
-  // ../matmat-frontend/src/lib/lesson/katalog/matematika.js
+  // src/lib/lesson/katalog/matematika.js
   var ID2 = /^[A-Za-z_][A-Za-z_0-9]*$/;
   var PRIBLIZNO = 0.01;
   var varijableIzraza = (s) => s.varijable ?? [];
@@ -1861,7 +1978,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
   function provjeriPolje(s, p, unos) {
     const vars = varijableIzraza(s);
     if (!String(unos ?? "").trim()) return { tocno: false, poruka: "Upiši odgovor.", prazno: true };
-    const u = ucitajLatex(unos, vars);
+    const u = ucitajLatex(String(p.iza ?? "").includes("%") ? String(unos).replace(/\\%/g, "") : unos, vars);
     if (u.greska) return { tocno: false, poruka: `Ne mogu pročitati izraz: ${u.greska}.`, prazno: true };
     const tocan = poljeOdgovor(s, p);
     if (jednako(u, tocan, vars)) return { tocno: true };
@@ -1976,18 +2093,38 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     return { dijelovi: sredine.map((x) => sadrzi(skup, x)), tocke: t.map((x) => sadrzi(skup, x)) };
   }
   var skupOdgovora = (s) => parseSkup(s.odgovor);
+  function provjeriZapisSkupa(s, skup, latex) {
+    if (!String(latex ?? "").trim()) return { tocno: false, poruka: "Upiši skup.", prazno: true };
+    const u = ucitajSkupLatex(latex);
+    if (u.greska) return { tocno: false, poruka: `Ne mogu pročitati zapis: ${u.greska}.`, prazno: true };
+    const njegov = u.skup;
+    if (jednakiSkupovi(njegov, skup)) return { tocno: true };
+    for (const k of s.krivo ?? []) if (jednakiSkupovi(njegov, parseSkup(k.odgovor))) return { tocno: false, poruka: k.poruka };
+    const blizu = (x, y) => x === y || Math.abs(x - y) < 1e-9;
+    if (njegov.length === skup.length && njegov.every((d, i) => blizu(d.a, skup[i].a) && blizu(d.b, skup[i].b))) {
+      return { tocno: false, poruka: "Krajevi su dobri, ali zagrade nisu. ⟨ ⟩ znači da kraj nije u skupu (kod < i >, i uvijek uz ∞), a [ ] da jest (kod ≤ i ≥)." };
+    }
+    if (skup.length && jednakiSkupovi(njegov, komplement(skup))) {
+      return { tocno: false, poruka: "To je upravo suprotan dio pravca. Provjeri traži li se gdje je izraz veći ili manji od nule." };
+    }
+    return { tocno: false, poruka: s.savjet || "Nije točno. Provjeri krajeve: uvrsti po jedan broj iz svakog dijela i pogledaj vrijedi li uvjet." };
+  }
   var interval = {
     tip: "interval",
     samoRucno: true,
     uloga: (s) => s.nacin === "prikaz" ? POGLEDAJ : ODGOVOR,
-    opis: `Skup na brojevnom pravcu. Polja: tekst, tocke: [brojevi ili izrazi, npr. 1, "2-sqrt(3)"] (1–6 istaknutih točaka), nacin:
+    opis: `Skup na brojevnom pravcu ili zapis skupa. Polja: tekst, tocke: [brojevi ili izrazi, npr. 1, "2-sqrt(3)"] (1–6 istaknutih točaka), nacin:
 - "odaberi": učenik bira dijelove pravca i pune/prazne točke, a ispod vidi zapis; odgovor: "⟨-inf, 1⟩ U ⟨3, inf⟩" (⟨ ⟩ ili < > za otvoren, [ ]
-  za zatvoren kraj, U za uniju, {2} za točku, ∅, R); svaki konačni kraj mora biti među tockama; krivo?: [{odgovor (skup), poruka}];
+  za zatvoren kraj, U za uniju, {2} ili {1; 2} za točke, ∅, R, R \\ {-4} za razliku, ∩ za presjek); svaki konačni kraj mora biti među tockama;
+  krivo?: [{odgovor (skup), poruka}];
+- "upisi": učenik sam piše zapis skupa u matematičko polje (tipkovnica sa ⟨ ⟩ [ ] ∪ ∞ ℝ); oznaka? (ispred polja, zadano "$x \\in$"),
+  odgovor i krivo kao gore, tocke nisu potrebne; točan je svaki zapis istog skupa (npr. ℝ∖{-4} i ⟨-∞, -4⟩ ∪ ⟨-4, +∞⟩);
 - "prikaz": pokazuje skup (odgovor) bez pitanja: korak za gledanje.`,
     primjer: { tip: "interval", nacin: "odaberi", tekst: "Za koje je $x$ parabola iznad osi $x$?", tocke: [1, 3], odgovor: "<-inf, 1> U <3, inf>", krivo: [{ odgovor: "<1, 3>", poruka: "Između 1 i 3 parabola je ispod osi." }] },
     validate(s) {
       const { list, need } = problems();
-      need(["odaberi", "prikaz"].includes(s.nacin), "interval.nacin mora biti odaberi ili prikaz");
+      need(["odaberi", "upisi", "prikaz"].includes(s.nacin), "interval.nacin mora biti odaberi, upisi ili prikaz");
+      if (s.oznaka != null) need(isText(s.oznaka), "interval.oznaka mora biti tekst");
       need(isText(s.tekst), "interval treba „tekst“");
       const raw = s.tocke ?? [];
       const t = tockePravca(s);
@@ -1999,7 +2136,7 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
       } catch (e) {
         need(false, `odgovor: ${e.message}`);
       }
-      if (skup) {
+      if (skup && s.nacin !== "upisi") {
         const krajevi = skup.flatMap((d) => [d.a, d.b]).filter(Number.isFinite);
         const nema = krajevi.filter((k) => !t.some((x) => Math.abs(x.v - k) < 1e-9));
         need(!nema.length, `kraj ${nema[0]} nije među tockama, pa ga učenik ne može označiti`);
@@ -2018,6 +2155,7 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     },
     check(s, odabir) {
       const skup = skupOdgovora(s);
+      if (s.nacin === "upisi") return provjeriZapisSkupa(s, skup, odabir);
       const njegov = skupIzOdabira(s, odabir);
       if (jednakiSkupovi(njegov, skup)) return { tocno: true };
       for (const k of s.krivo ?? []) if (jednakiSkupovi(njegov, parseSkup(k.odgovor))) return { tocno: false, poruka: k.poruka };
@@ -2057,9 +2195,27 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
   function funkcijeGrafa(s, parametri = {}) {
     return (s.funkcije ?? []).map((fn) => {
       const c = compile2(fn.izraz);
-      return { ...fn, f: (x) => c.fn({ ...parametri, x }) };
+      const [od, d] = [fn.od != null ? vrijednost(String(fn.od)) : -Infinity, fn.do != null ? vrijednost(String(fn.do)) : Infinity];
+      return { ...fn, od, do: d, f: (x) => x < od - 1e-12 || x > d + 1e-12 ? NaN : c.fn({ ...parametri, x }) };
     });
   }
+  var KOSO = 0.5 * Math.SQRT1_2;
+  function tockaCrteza(t) {
+    if (!Array.isArray(t) || t.length !== 2 && t.length !== 3) return null;
+    const v = t.map((x) => vrijednost(String(x)));
+    if (v.some((x) => x == null)) return null;
+    return t.length === 2 ? v : [v[0] + KOSO * v[1], v[2] + KOSO * v[1]];
+  }
+  var tockaIzPolja = (t) => tockaCrteza(t?.z != null ? [t.x, t.y, t.z] : [t?.x, t?.y]);
+  var CRTEZ = { W: 400, rub: { L: 34, R: 14, T: 14, B: 26 }, rubBezOsi: { L: 14, R: 14, T: 14, B: 14 }, minH: 180, maxH: 380, maxHBezOsi: 460 };
+  function okvirCrteza(s) {
+    const rub = s.osi === false ? CRTEZ.rubBezOsi : CRTEZ.rub;
+    const sirina = CRTEZ.W - rub.L - rub.R;
+    const zeljena = sirina / (s.x[1] - s.x[0]) * (s.y[1] - s.y[0]) + rub.T + rub.B;
+    const H2 = Math.round(Math.min(s.osi === false ? CRTEZ.maxHBezOsi : CRTEZ.maxH, Math.max(CRTEZ.minH, zeljena)));
+    return { ...rub, W: CRTEZ.W, H: H2, jednako: Math.abs(H2 - zeljena) < 2 };
+  }
+  var ima = (s) => ["likovi", "duzine", "kruznice", "kutovi", "vektori", "tekstovi"].some((k) => (s[k] ?? []).length);
   var pocetniParametri = (s) => Object.fromEntries((s.klizaci ?? []).map((k) => [k.id, vrijednost(String(k.pocetak))]));
   var ciljniParametri = (s) => Object.fromEntries(Object.entries(s.cilj ?? {}).map(([id, v]) => [id, vrijednost(String(v))]));
   function istiGrafovi(s, p1, p2) {
@@ -2076,6 +2232,7 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     return n > 10;
   }
   var NACINI_GRAFA = ["prikaz", "istrazi", "poklopi"];
+  var POLOZAJI = ["gore", "dolje", "lijevo", "desno", "gore-desno", "gore-lijevo", "dolje-desno", "dolje-lijevo"];
   var graf_funkcije = {
     tip: "graf_funkcije",
     samoRucno: true,
@@ -2087,6 +2244,13 @@ crte?: [{y | x, oznaka?}] (vodoravna/okomita isprekidana crta), strelice?: [{od:
 istakni?: {znak: ">0" | "<0" | ">=0" | "<=0"} (dio grafa prve funkcije iznad/ispod osi i odgovarajući dio osi x),
 formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f(x) = {A:k}\\\\cos({B}x) + {D}"), klizaci?: [{id, oznaka, min, max, korak, pocetak} ili
 {id, oznaka, vrijednosti: ["pi/6", …], pocetak}] (1–4), nacin:
+Isti crtež crta i geometriju (točka je [x, y] ili [x, y, z] za tijelo u prostoru, z je visina, y dubina, kosa projekcija; koordinate
+smiju biti izrazi): osi?: false (bez osi i brojeva), mreza?: false (bez mreže), funkcije tada smiju biti 0, funkcija.od?/do? (graf samo na
+[od, do]), tocke[].z?, tocke[].polozaj? ("gore", "dolje", "lijevo", "desno", "gore-desno"…), tocke[].prazna? (prazan kružić),
+likovi?: [{tocke: [[x, y], …], ispuna?, isprekidano?}], duzine?: [{od, do, oznaka?, isprekidano?, istaknuto?, strana?: 1 | -1}],
+kruznice?: [{sredina: [x, y], r, isprekidano?, ispuna?}], kutovi?: [{vrh, od, do, oznaka?, pravi?}] (manji kut između krakova vrh→od i
+vrh→do), vektori?: [{od, do, oznaka?}], tekstovi?: [{x, y, z?, tekst}], os_x?, os_y? (imena osi, npr. "Re" i "Im"). Oznake na crtežu su kratak tekst (smije $\\alpha$, $\\sqrt{3}$,
+$x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (validator javi ako bi se krug izobličio).
 - "prikaz": samo graf (bez klizača); "istrazi": klizači mijenjaju graf (korak za gledanje);
 - "poklopi": učenik klizačima poklopi svoj graf s isprekidanim grafom iz zadatka: cilj: {id: vrijednost}; klizac.poruka? kad taj parametar ne valja.`,
     primjer: {
@@ -2123,8 +2287,11 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
         }
       });
       need(new Set(ids).size === ids.length, "id-jevi klizača moraju biti različiti");
-      if (need(Array.isArray(s.funkcije) && s.funkcije.length >= 1 && s.funkcije.length <= 3, "graf_funkcije treba 1–3 funkcije")) {
-        s.funkcije.forEach((fn, i) => {
+      const geometrija = ima(s);
+      const najmanje = geometrija && s.nacin === "prikaz" ? 0 : 1;
+      if (need(Array.isArray(s.funkcije ?? (najmanje ? null : [])) && (s.funkcije ?? []).length >= najmanje && (s.funkcije ?? []).length <= 3, `graf_funkcije treba ${najmanje}–3 funkcije`)) {
+        (s.funkcije ?? []).forEach((fn, i) => {
+          for (const k of ["od", "do"]) if (fn?.[k] != null) need(vrijednost(String(fn[k])) != null, `funkcije[${i}].${k} mora biti broj`);
           try {
             const c = compile2(fn?.izraz);
             const strane = c.vars.filter((v) => v !== "x" && !ids.includes(v));
@@ -2134,7 +2301,34 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
           }
         });
       }
-      for (const [i, t] of (s.tocke ?? []).entries()) need(vrijednost(String(t?.x)) != null && vrijednost(String(t?.y)) != null, `tocke[${i}] treba x i y (brojevi ili izrazi)`);
+      for (const [i, t] of (s.tocke ?? []).entries()) {
+        need(tockaIzPolja(t) != null, `tocke[${i}] treba x i y (i z za prostor), brojeve ili izraze`);
+        if (t?.polozaj != null) need(POLOZAJI.includes(t.polozaj), `tocke[${i}].polozaj mora biti jedno od: ${POLOZAJI.join(", ")}`);
+      }
+      for (const k of ["os_x", "os_y"]) if (s[k] != null) need(isText(s[k]), `${k} mora biti tekst`);
+      const tocka = (t, gdje) => need(tockaCrteza(t) != null, `${gdje} mora biti točka [x, y] ili [x, y, z]`);
+      for (const [i, l] of (s.likovi ?? []).entries()) {
+        if (need(Array.isArray(l?.tocke) && l.tocke.length >= 3, `likovi[${i}] treba barem 3 točke`)) l.tocke.forEach((t, j) => tocka(t, `likovi[${i}].tocke[${j}]`));
+      }
+      for (const [i, d] of (s.duzine ?? []).entries()) {
+        tocka(d?.od, `duzine[${i}].od`);
+        tocka(d?.do, `duzine[${i}].do`);
+        if (d?.strana != null) need(d.strana === 1 || d.strana === -1, `duzine[${i}].strana je 1 ili -1`);
+      }
+      for (const [i, k] of (s.kruznice ?? []).entries()) {
+        tocka(k?.sredina, `kruznice[${i}].sredina`);
+        need(vrijednost(String(k?.r)) > 0, `kruznice[${i}].r mora biti pozitivan broj`);
+      }
+      for (const [i, k] of (s.kutovi ?? []).entries()) for (const z of ["vrh", "od", "do"]) tocka(k?.[z], `kutovi[${i}].${z}`);
+      for (const [i, v] of (s.vektori ?? []).entries()) for (const z of ["od", "do"]) tocka(v?.[z], `vektori[${i}].${z}`);
+      for (const [i, t] of (s.tekstovi ?? []).entries()) need(tockaIzPolja(t) != null && isText(t?.tekst), `tekstovi[${i}] treba x, y i tekst`);
+      if (osi && (geometrija || s.osi === false)) {
+        const o = okvirCrteza(s);
+        if (!o.jednako) {
+          const omjer = (s.y[1] - s.y[0]) / (s.x[1] - s.x[0]);
+          need(false, `raspon x i y ne čuva omjer (y/x = ${omjer.toFixed(2)}), pa bi se krug ili kut izobličio: ${o.H >= (s.osi === false ? CRTEZ.maxHBezOsi : CRTEZ.maxH) ? "proširi x ili smanji y" : "proširi y ili smanji x"}`);
+        }
+      }
       for (const [i, c] of (s.crte ?? []).entries()) need("x" in (c ?? {}) !== "y" in (c ?? {}) && vrijednost(String(c.x ?? c.y)) != null, `crte[${i}] treba točno jedno od x ili y`);
       for (const [i, st] of (s.strelice ?? []).entries()) need([...st?.od ?? [], ...st?.do ?? []].length === 4 && [...st.od, ...st.do].every((v) => vrijednost(String(v)) != null), `strelice[${i}] treba od: [x, y] i do: [x, y]`);
       if (s.istakni != null) need([">0", "<0", ">=0", "<=0"].includes(s.istakni?.znak), "istakni.znak mora biti >0, <0, >=0 ili <=0");
@@ -2156,7 +2350,7 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
     kljucOdgovora: (s) => s.nacin === "poklopi" ? JSON.stringify(ciljniParametri(s)) + (s.funkcije?.[0]?.izraz ?? "") : null
   };
 
-  // ../matmat-frontend/src/lib/lesson/katalog/index.js
+  // src/lib/lesson/katalog/index.js
   var KATALOG = Object.fromEntries(
     [pojam, postupak, skica, klizac, broj, izbor, vise_tocnih, tocno_netocno, praznina, parovi, redoslijed, razvrstaj, mjerilo, mreza, ocitaj_graf, pretvorba_jedinica, cestice, uronjeno, izraz, interval, graf_funkcije].map((w) => [w.tip, w])
   );
@@ -2166,7 +2360,7 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
   var istrazuje = (spec) => uloga(spec) === POGLEDAJ && !!widget(spec)?.istrazi?.(spec);
   var tocanOdgovor = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
 
-  // ../matmat-frontend/src/lib/lesson/katalog/vjezba.js
+  // src/lib/lesson/katalog/vjezba.js
   var VJEZBA_OPIS = `vjezba (po želji, samo kad lekcija uči pretvaranje jedinica): {"velicina": "duljina" | "povrsina" | "volumen" | "masa" | "vrijeme",
 "jedinice": [2–7 jedinica iz lekcije i izvornog zadatka, npr. ["km", "m", "dm", "cm", "mm"]], "lanac"?: true (i lanci "8 m = … dm = … cm"),
 "mjesovito"?: true (i "2 m 7 dm = … cm")}. Zadatke s brojevima sastavlja aplikacija; ti ih ne pišeš.`;
@@ -2260,7 +2454,7 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
     return lijepRezultat(rez) ? { vrijednost: vrijednost2, od, do: cilj } : null;
   }
 
-  // ../matmat-frontend/src/lib/lesson/validateLesson.js
+  // src/lib/lesson/validateLesson.js
   var VERZIJA = 1;
   var MAX_POMOC = 4;
   function validateLesson(lekcija, { rezultati, skica: skica2 } = {}) {
@@ -2435,7 +2629,7 @@ formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f
     return out.join("\n");
   }
 
-  // ../matmat-frontend/src/lib/lesson/prompt.js
+  // src/lib/lesson/prompt.js
   var PRAVILA = `Pretvaraš zadatak i njegovo objašnjenje u interaktivnu lekciju za MatMat, aplikaciju u kojoj učenik uči kroz zadatke.
 Lekciju crta gotova aplikacija iz tvog JSON-a; smiješ koristiti samo widgete iz kataloga ispod, s točno opisanim poljima.
 
