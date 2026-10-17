@@ -581,10 +581,10 @@ var MatMatLesson = (() => {
     if (n == null) return { tocno: false, poruka: "Upiši broj (decimalni zarez je u redu, npr. 1,5).", prazno: true };
     const t = tolerance(answer, tol);
     if (near(n, answer, t)) return { tocno: true };
-    const decimalno = /^\s*[-−]?[1-9]\d{0,2}\.\d{3}\s*$/.test(String(input).replace(unit, "")) ? parseNumber(String(input).replace(".", ","), unit) : null;
-    if (decimalno != null && near(decimalno, answer, t)) return { tocno: true };
     const hit = (krivo ?? []).find((k) => near(n, k.vrijednost, tolerance(k.vrijednost, k.tolerancija)));
     if (hit) return { tocno: false, poruka: hit.poruka };
+    const decimalno = Number.isInteger(answer) ? null : /^\s*[-−]?[1-9]\d{0,2}\.\d{3}\s*$/.test(String(input).replace(unit, "")) ? parseNumber(String(input).replace(".", ","), unit) : null;
+    if (decimalno != null && near(decimalno, answer, t)) return { tocno: true };
     return { tocno: false, poruka: savjet || "Nije točno. Provjeri račun i jedinicu." };
   }
   var KRIVO_OPIS = `krivo?: [{vrijednost, poruka}] – tipične krive vrijednosti i poruka baš za tu grešku (npr. 220 = „to je završno očitanje, a ne volumen tijela“)`;
