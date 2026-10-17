@@ -1020,7 +1020,14 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
     ln: Math.log,
     log: Math.log10,
     exp: Math.exp,
-    round: Math.round
+    round: Math.round,
+    // n! (samo za prirodne brojeve i 0)
+    fact: (n) => {
+      if (!Number.isInteger(n) || n < 0 || n > 170) return NaN;
+      let f2 = 1;
+      for (let k = 2; k <= n; k++) f2 *= k;
+      return f2;
+    }
   };
   var CONSTS = { pi: Math.PI, e: Math.E };
   function tokenize(src) {
@@ -1540,7 +1547,8 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     [/√\s*(\d+(?:[.,]\d+)?|[A-Za-z]+)/g, " sqrt($1)"],
     [/(\d),(\d)/g, "$1.$2"],
     // stupnjevi su samo oznaka mjere: „70°“ je 70
-    [/°/g, ""]
+    [/°/g, ""],
+    [/(\d+)\s*!/g, " fact($1)"]
   ];
   function rastavi(rijec, poznato) {
     const out = [];
@@ -1675,7 +1683,10 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
         } else if (["left", "right", "mleft", "mright", "bigl", "bigr", "Bigl", "Bigr"].includes(n)) out += ograda();
         else if (["operatorname", "mathrm", "text", "mathit", "textrm"].includes(n)) out += ` ${grupa()} `;
         else if (n === "placeholder") throw new Error("dovrši izraz (ostalo je prazno mjesto)");
-        else if (n === "log" && s[i] === "_") {
+        else if (n === "binom" || n === "dbinom" || n === "tbinom") {
+          const [gore, dolje] = [izLatexa(grupa()), izLatexa(grupa())];
+          out += ` ((fact(${gore}))/((fact(${dolje}))*(fact((${gore})-(${dolje})))))`;
+        } else if (n === "log" && s[i] === "_") {
           i++;
           out += ` ((1)/(log(${izLatexa(grupa())})))*log `;
         } else if (n in NAREDBE) out += NAREDBE[n];
@@ -1684,6 +1695,19 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
         i++;
         const g = grupa();
         if (g.trim() !== "\\circ") out += `^(${izLatexa(g)})`;
+      } else if (c === "!") {
+        i++;
+        const t = out.trimEnd();
+        let od = t.length;
+        if (t.endsWith(")")) {
+          let dub = 0;
+          for (od = t.length - 1; od >= 0; od--) {
+            if (t[od] === ")") dub++;
+            else if (t[od] === "(" && --dub === 0) break;
+          }
+        } else od = t.search(/[A-Za-z0-9.]+$/);
+        if (od < 0 || od >= t.length) throw new Error("ispred ! treba broj ili zagrada");
+        out = `${t.slice(0, od)} fact(${t.slice(od)})`;
       } else if (c === "_") throw new Error("indeks ovdje ne pripada (baza ide samo uz log)");
       else if (c === "{") out += `(${izLatexa(grupa())})`;
       else {
@@ -1750,6 +1774,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     return t.replace(".", "{,}");
   }
   function pocinjeSlovom(n) {
+    if (n.fn === "fact") return razina(n.a) < 5 || pocinjeSlovom(n.a);
     if ("id" in n || n.fn) return true;
     if (n.op === "^") return pocinjeSlovom(n.a);
     if (n.op === "*") return pocinjeSlovom(n.a);
@@ -1761,6 +1786,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     if (n.fn) {
       if (n.fn === "sqrt") return `\\sqrt{${tex(n.a)}}`;
       if (n.fn === "abs") return `\\left|${tex(n.a)}\\right|`;
+      if (n.fn === "fact") return `${razina(n.a) < 5 ? zagrade(tex(n.a)) : tex(n.a)}!`;
       return `${TEX_FN[n.fn] ?? `\\mathrm{${n.fn}}`}${zagrade(tex(n.a))}`;
     }
     switch (n.op) {
@@ -2202,7 +2228,7 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
   var KOSO = 0.5 * Math.SQRT1_2;
   function tockaCrteza(t) {
     if (!Array.isArray(t) || t.length !== 2 && t.length !== 3) return null;
-    const v = t.map((x) => vrijednost(String(x)));
+    const v = t.map((x) => typeof x === "number" ? Number.isFinite(x) ? x : null : vrijednost(String(x)));
     if (v.some((x) => x == null)) return null;
     return t.length === 2 ? v : [v[0] + KOSO * v[1], v[2] + KOSO * v[1]];
   }
@@ -2215,7 +2241,9 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     const H2 = Math.round(Math.min(s.osi === false ? CRTEZ.maxHBezOsi : CRTEZ.maxH, Math.max(CRTEZ.minH, zeljena)));
     return { ...rub, W: CRTEZ.W, H: H2, jednako: Math.abs(H2 - zeljena) < 2 };
   }
-  var ima = (s) => ["likovi", "duzine", "kruznice", "kutovi", "vektori", "tekstovi"].some((k) => (s[k] ?? []).length);
+  var ima = (s, polja = ["tijela", "likovi", "duzine", "kruznice", "kutovi"]) => polja.some((k) => (s[k] ?? []).length);
+  var imaIstoMjerilo = (s) => ima(s);
+  var imaSadrzaj = (s) => ima(s, ["tijela", "likovi", "duzine", "kruznice", "kutovi", "vektori", "tekstovi", "tocke", "crte", "strelice"]);
   var pocetniParametri = (s) => Object.fromEntries((s.klizaci ?? []).map((k) => [k.id, vrijednost(String(k.pocetak))]));
   var ciljniParametri = (s) => Object.fromEntries(Object.entries(s.cilj ?? {}).map(([id, v]) => [id, vrijednost(String(v))]));
   function istiGrafovi(s, p1, p2) {
@@ -2248,8 +2276,10 @@ Isti crtež crta i geometriju (točka je [x, y] ili [x, y, z] za tijelo u prosto
 smiju biti izrazi): osi?: false (bez osi i brojeva), mreza?: false (bez mreže), funkcije tada smiju biti 0, funkcija.od?/do? (graf samo na
 [od, do]), tocke[].z?, tocke[].polozaj? ("gore", "dolje", "lijevo", "desno", "gore-desno"…), tocke[].prazna? (prazan kružić),
 likovi?: [{tocke: [[x, y], …], ispuna?, isprekidano?}], duzine?: [{od, do, oznaka?, isprekidano?, istaknuto?, strana?: 1 | -1}],
-kruznice?: [{sredina: [x, y], r, isprekidano?, ispuna?}], kutovi?: [{vrh, od, do, oznaka?, pravi?}] (manji kut između krakova vrh→od i
-vrh→do), vektori?: [{od, do, oznaka?}], tekstovi?: [{x, y, z?, tekst}], os_x?, os_y? (imena osi, npr. "Re" i "Im"). Oznake na crtežu su kratak tekst (smije $\\alpha$, $\\sqrt{3}$,
+kruznice?: [{sredina: [x, y] ili [x, y, z], r, isprekidano?, ispuna?}] (sa [x, y, z] vodoravna kružnica u prostoru, npr. baza valjka:
+elipsa sa stražnjom polovicom isprekidano; ispuna: baza vidljiva odozgo, cijela puna), kutovi?: [{vrh, od, do, oznaka?, pravi?}] (manji kut između krakova vrh→od i
+vrh→do), tijela?: [{vrsta: "valjak" | "stozac", sredina: [x, y, z] (središte donje baze), r, h}] (obris, baze i skriveni dio
+isprekidano, točno izračunati za kosu projekciju; visinu, polumjer i oznake dodaj kao duzine/tocke), vektori?: [{od, do, oznaka?}], tekstovi?: [{x, y, z?, tekst}], os_x?, os_y? (imena osi, npr. "Re" i "Im"). Oznake na crtežu su kratak tekst (smije $\\alpha$, $\\sqrt{3}$,
 $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (validator javi ako bi se krug izobličio).
 - "prikaz": samo graf (bez klizača); "istrazi": klizači mijenjaju graf (korak za gledanje);
 - "poklopi": učenik klizačima poklopi svoj graf s isprekidanim grafom iz zadatka: cilj: {id: vrijednost}; klizac.poruka? kad taj parametar ne valja.`,
@@ -2287,8 +2317,8 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
         }
       });
       need(new Set(ids).size === ids.length, "id-jevi klizača moraju biti različiti");
-      const geometrija = ima(s);
-      const najmanje = geometrija && s.nacin === "prikaz" ? 0 : 1;
+      const geometrija = imaIstoMjerilo(s);
+      const najmanje = imaSadrzaj(s) && s.nacin === "prikaz" ? 0 : 1;
       if (need(Array.isArray(s.funkcije ?? (najmanje ? null : [])) && (s.funkcije ?? []).length >= najmanje && (s.funkcije ?? []).length <= 3, `graf_funkcije treba ${najmanje}–3 funkcije`)) {
         (s.funkcije ?? []).forEach((fn, i) => {
           for (const k of ["od", "do"]) if (fn?.[k] != null) need(vrijednost(String(fn[k])) != null, `funkcije[${i}].${k} mora biti broj`);
@@ -2318,6 +2348,11 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
       for (const [i, k] of (s.kruznice ?? []).entries()) {
         tocka(k?.sredina, `kruznice[${i}].sredina`);
         need(vrijednost(String(k?.r)) > 0, `kruznice[${i}].r mora biti pozitivan broj`);
+      }
+      for (const [i, t] of (s.tijela ?? []).entries()) {
+        need(["valjak", "stozac"].includes(t?.vrsta), `tijela[${i}].vrsta je "valjak" ili "stozac"`);
+        need(Array.isArray(t?.sredina) && t.sredina.length === 3 && tockaCrteza(t.sredina) != null, `tijela[${i}].sredina je [x, y, z]`);
+        need(vrijednost(String(t?.r)) > 0 && vrijednost(String(t?.h)) > 0, `tijela[${i}] treba pozitivne r i h`);
       }
       for (const [i, k] of (s.kutovi ?? []).entries()) for (const z of ["vrh", "od", "do"]) tocka(k?.[z], `kutovi[${i}].${z}`);
       for (const [i, v] of (s.vektori ?? []).entries()) for (const z of ["od", "do"]) tocka(v?.[z], `vektori[${i}].${z}`);
