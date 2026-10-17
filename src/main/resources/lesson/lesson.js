@@ -29,7 +29,7 @@ var MatMatLesson = (() => {
     validateLesson: () => validateLesson
   });
 
-  // src/lib/sketch/taskSketch.js
+  // ../matmat-frontend/src/lib/sketch/taskSketch.js
   var W = 380;
   var H = 260;
   var PAD = 34;
@@ -269,10 +269,10 @@ var MatMatLesson = (() => {
     return { svg: svg(body), checks };
   }
   function cuboid(s, text) {
-    const { a, b, c, razina } = s;
+    const { a, b, c, razina: razina2 } = s;
     if (!positive(a, b, c)) return { checks: [fail("bridovi kvadra moraju biti pozitivni brojevi")] };
     const checks = [...numbersInText(Object.values(s.oznake ?? {}), text)];
-    if (razina != null) checks.push({ ok: razina > 0 && razina <= c, text: `razina ${num(razina)} ${razina <= c ? "≤" : ">"} visina ${num(c)}` });
+    if (razina2 != null) checks.push({ ok: razina2 > 0 && razina2 <= c, text: `razina ${num(razina2)} ${razina2 <= c ? "≤" : ">"} visina ${num(c)}` });
     if (checks.some((x) => !x.ok)) return { checks };
     const k = Math.SQRT1_2 * 0.5;
     const P = (x, y, z) => [x + y * k, z + y * k];
@@ -281,8 +281,8 @@ var MatMatLesson = (() => {
     const T = fit(corners, W, H, 40);
     const p = (x, y, z) => T(P(x, y, z));
     let body = "";
-    if (razina != null) {
-      const h = razina;
+    if (razina2 != null) {
+      const h = razina2;
       body += poly([p(0, 0, 0), p(a, 0, 0), p(a, b, 0), p(a, b, h), p(0, b, h), p(0, 0, h)], "liquid");
       body += poly([p(0, 0, h), p(a, 0, h), p(a, b, h), p(0, b, h)], "liquid top");
     }
@@ -302,7 +302,7 @@ var MatMatLesson = (() => {
     if (s.oznake?.a) body += label([mid(p(0, 0, 0), p(a, 0, 0))[0], mid(p(0, 0, 0), p(a, 0, 0))[1] + 16], s.oznake.a, "lbl dim-t");
     if (s.oznake?.b) body += label([mid(p(a, 0, 0), p(a, b, 0))[0] + 10, mid(p(a, 0, 0), p(a, b, 0))[1] + 6], s.oznake.b, "lbl dim-t", "start");
     if (s.oznake?.c) body += label([p(0, 0, c / 2)[0] - 8, p(0, 0, c / 2)[1]], s.oznake.c, "lbl dim-t", "end");
-    if (razina != null && s.oznake?.razina) body += label([p(a, 0, razina / 2)[0] - 8, p(a, 0, razina / 2)[1]], s.oznake.razina, "lbl acc-t", "end");
+    if (razina2 != null && s.oznake?.razina) body += label([p(a, 0, razina2 / 2)[0] - 8, p(a, 0, razina2 / 2)[1]], s.oznake.razina, "lbl acc-t", "end");
     return { svg: svg(body), checks };
   }
   function scale(s, text) {
@@ -508,7 +508,7 @@ var MatMatLesson = (() => {
     }
   }
 
-  // src/lib/lesson/core/number.js
+  // ../matmat-frontend/src/lib/lesson/core/number.js
   function parseNumber(input, unit = "") {
     if (typeof input === "number") return Number.isFinite(input) ? input : null;
     if (typeof input !== "string") return null;
@@ -551,7 +551,7 @@ var MatMatLesson = (() => {
   }
   var isNum = (v) => typeof v === "number" && Number.isFinite(v);
 
-  // src/lib/lesson/katalog/zajednicko.js
+  // ../matmat-frontend/src/lib/lesson/katalog/zajednicko.js
   var POGLEDAJ = "pogledaj";
   var ODGOVOR = "odgovor";
   var isText = (v) => typeof v === "string" && v.trim().length > 0;
@@ -588,7 +588,7 @@ var MatMatLesson = (() => {
   var KRIVO_OPIS = `krivo?: [{vrijednost, poruka}] – tipične krive vrijednosti i poruka baš za tu grešku (npr. 220 = „to je završno očitanje, a ne volumen tijela“)`;
   var withUnit = (n, unit) => `${formatNumber(n)}${unit ? ` ${unit}` : ""}`;
 
-  // src/lib/lesson/katalog/tekst.js
+  // ../matmat-frontend/src/lib/lesson/katalog/tekst.js
   var pojam = {
     tip: "pojam",
     uloga: () => POGLEDAJ,
@@ -647,7 +647,7 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
     if (!r.svg) need(false, `skica se ne može nacrtati: ${r.checks.filter((c) => !c.ok).map((c) => c.text).join("; ") || "neispravan opis"}`);
   }
 
-  // src/lib/lesson/core/units.js
+  // ../matmat-frontend/src/lib/lesson/core/units.js
   var UNITS = {
     duljina: [
       ["km", 1e3],
@@ -761,7 +761,7 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
     return out.filter((m) => Number.isFinite(m.vrijednost) && Math.abs(m.vrijednost - right) > 1e-9 * Math.max(1, Math.abs(right)));
   }
 
-  // src/lib/lesson/katalog/pitanja.js
+  // ../matmat-frontend/src/lib/lesson/katalog/pitanja.js
   var broj = {
     tip: "broj",
     uloga: () => ODGOVOR,
@@ -1010,7 +1010,7 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
     tocanOdgovor: (s) => s.kategorije.map((k, ki) => `**${k}:** ${s.stavke.filter((st) => st.kategorija === ki).map((st) => st.tekst).join(", ")}`).join("; ")
   };
 
-  // src/lib/lesson/core/expr.js
+  // ../matmat-frontend/src/lib/lesson/core/expr.js
   var FUNCS = {
     sqrt: Math.sqrt,
     abs: Math.abs,
@@ -1140,10 +1140,12 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
   function compile2(src) {
     if (typeof src !== "string" || !src.trim()) throw new Error("izraz je prazan");
     const tree = parse(tokenize(src));
-    return { fn: (vars = {}) => evaluate(tree, vars), vars: [...variables(tree)] };
+    return { fn: (vars = {}) => evaluate(tree, vars), vars: [...variables(tree)], tree };
   }
+  var FUNKCIJE = Object.keys(FUNCS);
+  var KONSTANTE = Object.keys(CONSTS);
 
-  // src/lib/lesson/katalog/istrazivanje.js
+  // ../matmat-frontend/src/lib/lesson/katalog/istrazivanje.js
   var ID = /^[A-Za-z_][A-Za-z_0-9]*$/;
   var NACIN_ISTRAZI = `nacin "istrazi" je korak za gledanje: učenik se igra, ništa se ne provjerava i nema polja s odgovorom`;
   var klizac = {
@@ -1525,16 +1527,537 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     tocanOdgovor: (s) => s.tijela.map((t) => `${t.naziv}: ${ishod(t.gustoca, s.tekucina.gustoca)}`).join("; ")
   };
 
-  // src/lib/lesson/katalog/index.js
+  // ../matmat-frontend/src/lib/lesson/core/izraz.js
+  var ZNAKOVI = [
+    [/[−–—]/g, "-"],
+    [/[×·⋅∙]/g, "*"],
+    [/[÷:]/g, "/"],
+    [/π/g, " pi "],
+    [/∞/g, " inf "],
+    [/²/g, "^2"],
+    [/³/g, "^3"],
+    [/√\s*\(/g, " sqrt("],
+    [/√\s*(\d+(?:[.,]\d+)?|[A-Za-z]+)/g, " sqrt($1)"],
+    [/(\d),(\d)/g, "$1.$2"]
+  ];
+  function rastavi(rijec, poznato) {
+    const out = [];
+    let i = 0;
+    while (i < rijec.length) {
+      const dio = poznato.filter((p) => rijec.startsWith(p, i)).sort((a, b) => b.length - a.length)[0];
+      if (!dio) return null;
+      out.push(dio);
+      i += dio.length;
+    }
+    return out;
+  }
+  function pripremi(unos, varijable = []) {
+    let s = String(unos ?? "");
+    for (const [re, z] of ZNAKOVI) s = s.replace(re, z);
+    const poznato = [...FUNKCIJE, ...KONSTANTE, ...varijable, "inf"];
+    const tokeni = [];
+    for (const m of s.matchAll(/\s*(?:(\d+(?:\.\d+)?)|([A-Za-z]+)|(\*\*|[-+*/^()]))|\s*(\S)/g)) {
+      if (m[4]) throw new Error(`ne razumijem znak „${m[4]}“`);
+      if (m[1]) tokeni.push({ t: "num", v: m[1] });
+      else if (m[2]) {
+        const dijelovi = poznato.includes(m[2]) ? [m[2]] : rastavi(m[2], poznato);
+        if (!dijelovi) throw new Error(`ne razumijem „${m[2]}“`);
+        for (const d of dijelovi) tokeni.push({ t: FUNKCIJE.includes(d) ? "fn" : "id", v: d });
+      } else if (m[3]) tokeni.push({ t: "op", v: m[3] });
+    }
+    if (!tokeni.length) throw new Error("upiši izraz");
+    const out = [];
+    for (let i = 0; i < tokeni.length; i++) {
+      const tk = tokeni[i];
+      const prev = out.at(-1);
+      const zavrsava = prev && (prev.t === "num" || prev.t === "id" || prev.v === ")");
+      const pocinje = tk.t === "num" || tk.t === "id" || tk.t === "fn" || tk.v === "(";
+      if (zavrsava && pocinje) out.push({ t: "op", v: "*" });
+      out.push(tk);
+      if (tk.t === "fn" && tokeni[i + 1]?.v !== "(") {
+        const arg = [];
+        while (tokeni[i + 1] && (tokeni[i + 1].t === "num" || tokeni[i + 1].t === "id") && arg.length < 2) arg.push(tokeni[++i]);
+        if (!arg.length) throw new Error(`iza „${tk.v}“ treba broj ili zagrada`);
+        out.push({ t: "op", v: "(" });
+        arg.forEach((a, k) => {
+          if (k) out.push({ t: "op", v: "*" });
+          out.push(a);
+        });
+        out.push({ t: "op", v: ")" });
+      }
+    }
+    return out.map((t) => t.v).join(" ");
+  }
+  function ucitaj(unos, varijable = []) {
+    try {
+      const izraz2 = pripremi(unos, varijable);
+      if (/\binf\b/.test(izraz2)) throw new Error("beskonačnost ovdje nije broj");
+      const c = compile2(izraz2);
+      const strane = c.vars.filter((v) => !varijable.includes(v));
+      if (strane.length) throw new Error(`ne razumijem „${strane[0]}“`);
+      return { izraz: izraz2, fn: c.fn, vars: c.vars, tex: tex(c.tree) };
+    } catch (e) {
+      return { greska: e.message };
+    }
+  }
+  var UZORCI = [0.731, -1.37, 2.19, 3.71, -0.43, 1.618, -2.9, 0.217];
+  function jednako(a, b, varijable = [], rel = 1e-9) {
+    const isto = (x, y) => Math.abs(x - y) <= rel * Math.max(1, Math.abs(x), Math.abs(y));
+    if (!varijable.length) {
+      const [x, y] = [a.fn({}), b.fn({})];
+      return Number.isFinite(x) && Number.isFinite(y) && isto(x, y);
+    }
+    let valjanih = 0;
+    for (let k = 0; k < UZORCI.length; k++) {
+      const v = Object.fromEntries(varijable.map((n, j) => [n, UZORCI[(k + 3 * j) % UZORCI.length] + j * 0.113]));
+      const [x, y] = [a.fn(v), b.fn(v)];
+      if (Number.isFinite(x) !== Number.isFinite(y)) return false;
+      if (!Number.isFinite(x)) continue;
+      if (!isto(x, y)) return false;
+      valjanih++;
+    }
+    return valjanih >= 3;
+  }
+  function vrijednost(izraz2) {
+    const r = ucitaj(String(izraz2));
+    if (r.greska || r.vars.length) return null;
+    const v = r.fn({});
+    return Number.isFinite(v) ? v : null;
+  }
+  var RAZINA = { "+": 1, "-": 1, "*": 2, "/": 2, neg: 3, "^": 4 };
+  var razina = (n) => n.op ? RAZINA[n.op] : 5;
+  var zagrade = (t) => `\\left(${t}\\right)`;
+  var omot = (n, min) => razina(n) < min ? zagrade(tex(n)) : tex(n);
+  var TEX_FN = { sin: "\\sin", cos: "\\cos", tan: "\\tan", ln: "\\ln", log: "\\log", exp: "\\exp" };
+  function broj2(n) {
+    const t = String(Number(n.toPrecision(12)));
+    return t.replace(".", "{,}");
+  }
+  function pocinjeSlovom(n) {
+    if ("id" in n || n.fn) return true;
+    if (n.op === "^") return pocinjeSlovom(n.a);
+    if (n.op === "*") return pocinjeSlovom(n.a);
+    return false;
+  }
+  function tex(n) {
+    if ("num" in n) return broj2(n.num);
+    if ("id" in n) return n.id === "pi" ? "\\pi " : n.id === "e" ? "e" : n.id.length > 1 ? `\\mathrm{${n.id}}` : n.id;
+    if (n.fn) {
+      if (n.fn === "sqrt") return `\\sqrt{${tex(n.a)}}`;
+      if (n.fn === "abs") return `\\left|${tex(n.a)}\\right|`;
+      return `${TEX_FN[n.fn] ?? `\\mathrm{${n.fn}}`}${zagrade(tex(n.a))}`;
+    }
+    switch (n.op) {
+      case "+":
+        return `${tex(n.a)} + ${n.b.op === "neg" ? zagrade(tex(n.b)) : tex(n.b)}`;
+      case "-":
+        return `${tex(n.a)} - ${n.b.op === "neg" ? zagrade(tex(n.b)) : omot(n.b, 2)}`;
+      case "*": {
+        const a = omot(n.a, 2);
+        const b = n.b.op === "neg" ? zagrade(tex(n.b)) : omot(n.b, 3);
+        const spoj = !("num" in n.b) && n.b.op !== "neg" && (pocinjeSlovom(n.b) || razina(n.b) < 3);
+        return spoj ? `${a}${b}` : `${a} \\cdot ${b}`;
+      }
+      case "/":
+        return `\\frac{${tex(n.a)}}{${tex(n.b)}}`;
+      case "^":
+        return `${razina(n.a) < 5 || n.a.fn ? zagrade(tex(n.a)) : tex(n.a)}^{${tex(n.b)}}`;
+      case "neg":
+        return `-${razina(n.a) < 3 && n.a.op !== "/" ? zagrade(tex(n.a)) : tex(n.a)}`;
+    }
+    return "";
+  }
+  function texIzraza(izraz2, varijable = []) {
+    const r = ucitaj(String(izraz2), varijable);
+    return r.greska ? String(izraz2) : r.tex;
+  }
+
+  // ../matmat-frontend/src/lib/lesson/core/skup.js
+  var EPS = 1e-9;
+  var isti = (x, y) => x === y || Number.isFinite(x) && Number.isFinite(y) && Math.abs(x - y) <= EPS * Math.max(1, Math.abs(x));
+  function kraj(t) {
+    const s = t.trim().replace(/[−–]/g, "-").replace(/\s+/g, "");
+    if (/^-(∞|inf)$/.test(s)) return { v: -Infinity, tex: "-\\infty" };
+    if (/^\+?(∞|inf)$/.test(s)) return { v: Infinity, tex: "+\\infty" };
+    const v = vrijednost(s);
+    if (v == null) throw new Error(`kraj intervala „${t.trim()}“ nije broj`);
+    return { v, tex: ucitaj(s).tex };
+  }
+  function parseSkup(src) {
+    const s = String(src ?? "").trim();
+    if (/^(∅|\{\s*\}|prazan skup)$/i.test(s)) return [];
+    if (/^(R|ℝ)$/.test(s)) return [{ a: -Infinity, b: Infinity, ua: false, ub: false, ta: "-\\infty", tb: "+\\infty" }];
+    const dijelovi = s.split(/∪|\s+U\s+|\bU\b/).map((d) => d.trim());
+    if (dijelovi.some((d) => !d)) throw new Error("prazan dio unije");
+    const out = [];
+    for (const d of dijelovi) {
+      if (d.startsWith("{")) {
+        if (!d.endsWith("}")) throw new Error(`„${d}“: skup točaka mora završiti s }`);
+        for (const t of d.slice(1, -1).split(";")) {
+          const k = kraj(t);
+          if (!Number.isFinite(k.v)) throw new Error("točka ne može biti beskonačna");
+          out.push({ a: k.v, b: k.v, ua: true, ub: true, ta: k.tex, tb: k.tex });
+        }
+        continue;
+      }
+      const [o, z] = [d[0], d.at(-1)];
+      if (!"<⟨([".includes(o) || !">⟩)]".includes(z)) throw new Error(`„${d}“: interval počinje s ⟨ ili [ i završava s ⟩ ili ]`);
+      const unutra = d.slice(1, -1);
+      const krajevi = unutra.includes(";") ? unutra.split(";") : unutra.split(",");
+      if (krajevi.length !== 2) throw new Error(`„${d}“: interval ima dva kraja odvojena zarezom`);
+      const [a, b] = krajevi.map(kraj);
+      const ua = o === "[";
+      const ub = z === "]";
+      if (!(a.v < b.v)) throw new Error(`„${d}“: lijevi kraj mora biti manji od desnog`);
+      if (ua && !Number.isFinite(a.v) || ub && !Number.isFinite(b.v)) throw new Error(`„${d}“: beskonačnost nikad nije uključena, uz nju ide ⟨ ili ⟩`);
+      out.push({ a: a.v, b: b.v, ua, ub, ta: a.tex, tb: b.tex });
+    }
+    return sredi(out);
+  }
+  function sredi(dijelovi) {
+    const d = dijelovi.map((x) => ({ ...x })).sort((x, y) => x.a - y.a || (x.ua === y.ua ? 0 : x.ua ? -1 : 1));
+    const out = [];
+    for (const x of d) {
+      const cur = out.at(-1);
+      if (cur && (x.a < cur.b - EPS || isti(x.a, cur.b) && (cur.ub || x.ua))) {
+        if (isti(x.a, cur.a)) cur.ua ||= x.ua;
+        if (x.b > cur.b + EPS) Object.assign(cur, { b: x.b, ub: x.ub, tb: x.tb });
+        else if (isti(x.b, cur.b)) cur.ub ||= x.ub;
+      } else out.push(x);
+    }
+    return out;
+  }
+  function jednakiSkupovi(s1, s2) {
+    if (s1.length !== s2.length) return false;
+    return s1.every((x, i) => {
+      const y = s2[i];
+      return isti(x.a, y.a) && isti(x.b, y.b) && (x.ua === y.ua || !Number.isFinite(x.a)) && (x.ub === y.ub || !Number.isFinite(x.b));
+    });
+  }
+  function sadrzi(skup, x) {
+    return skup.some((d) => (x > d.a || d.ua && isti(x, d.a)) && (x < d.b || d.ub && isti(x, d.b)));
+  }
+  function texSkupa(skup) {
+    if (!skup.length) return "\\emptyset";
+    if (skup.length === 1 && skup[0].a === -Infinity && skup[0].b === Infinity) return "\\mathbb{R}";
+    return skup.map((d) => isti(d.a, d.b) ? `\\{${d.ta}\\}` : `${d.ua ? "\\left[" : "\\left\\langle"} ${d.ta},\\ ${d.tb} ${d.ub ? "\\right]" : "\\right\\rangle"}`).join(" \\cup ");
+  }
+
+  // ../matmat-frontend/src/lib/lesson/katalog/matematika.js
+  var ID2 = /^[A-Za-z_][A-Za-z_0-9]*$/;
+  var PRIBLIZNO = 0.01;
+  var varijableIzraza = (s) => s.varijable ?? [];
+  function poljeOdgovor(s, p) {
+    return ucitaj(String(p.odgovor), varijableIzraza(s));
+  }
+  function provjeriPolje(s, p, unos) {
+    const vars = varijableIzraza(s);
+    if (!String(unos ?? "").trim()) return { tocno: false, poruka: "Upiši odgovor.", prazno: true };
+    const u = ucitaj(unos, vars);
+    if (u.greska) return { tocno: false, poruka: `Ne mogu pročitati „${unos}“: ${u.greska}.`, prazno: true };
+    const tocan = poljeOdgovor(s, p);
+    if (jednako(u, tocan, vars)) return { tocno: true };
+    for (const k of p.krivo ?? []) {
+      const kr = ucitaj(String(k.odgovor), vars);
+      if (!kr.greska && jednako(u, kr, vars)) return { tocno: false, poruka: k.poruka };
+    }
+    if (!vars.length && !s.priblizno && jednako(u, tocan, vars, PRIBLIZNO)) {
+      return { tocno: false, poruka: "To je približna vrijednost. Upiši točnu (npr. s π, korijenom ili razlomkom)." };
+    }
+    if (s.priblizno && jednako(u, tocan, vars, PRIBLIZNO / 2)) return { tocno: true };
+    return { tocno: false, poruka: p.savjet || s.savjet || "Nije točno." };
+  }
+  var izraz = {
+    tip: "izraz",
+    samoRucno: true,
+    uloga: () => ODGOVOR,
+    opis: `Matematički odgovor koji učenik upisuje kao na papiru (π, √, razlomak, x², implicitno množenje). Polja: tekst, polja: [{oznaka
+(markdown ispred polja, npr. "$x_1 =$"), iza? (markdown iza polja, npr. "$> 0$"), odgovor (izraz, npr. "pi/6", "2-sqrt(3)", "x^2-4*x+3"), krivo?: [{odgovor, poruka}], savjet?}] (1–4),
+varijable?: ["x"] (ako je odgovor izraz s varijablom), bilo_kojim_redom?: true (npr. dvije nultočke), priblizno?: true (prihvati decimalni
+zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve što ima istu vrijednost.`,
+    primjer: {
+      tip: "izraz",
+      tekst: "Koje su nultočke funkcije $f(x) = x^2 - 4x + 3$?",
+      polja: [
+        { oznaka: "$x_1 =$", odgovor: "1", krivo: [{ odgovor: "-1", poruka: "Pazi na predznak u formuli: $-b$ je $+4$." }] },
+        { oznaka: "$x_2 =$", odgovor: "3" }
+      ],
+      bilo_kojim_redom: true
+    },
+    validate(s) {
+      const { list, need } = problems();
+      need(isText(s.tekst), "izraz treba „tekst“ (pitanje)");
+      const vars = varijableIzraza(s);
+      need(Array.isArray(vars) && vars.every((v) => /^[a-z]$/.test(v) && v !== "e"), 'varijable su popis slova, npr. ["x"]');
+      if (s.graf != null) {
+        need(s.graf?.nacin === "prikaz", 'izraz.graf mora biti graf_funkcije s nacin "prikaz"');
+        for (const p of graf_funkcije.validate({ tip: "graf_funkcije", tekst: "-", ...s.graf, nacin: "prikaz" })) list.push(`graf: ${p}`);
+      }
+      if (!need(Array.isArray(s.polja) && s.polja.length >= 1 && s.polja.length <= 4, "izraz treba 1–4 polja")) return list;
+      const tocni = [];
+      s.polja.forEach((p, i) => {
+        if (p?.oznaka != null) need(isText(p.oznaka), `polja[${i}].oznaka mora biti tekst`);
+        if (p?.iza != null) need(isText(p.iza), `polja[${i}].iza mora biti tekst`);
+        const t = ucitaj(String(p?.odgovor ?? ""), vars);
+        if (!need(!t.greska && p?.odgovor != null, `polja[${i}].odgovor nije ispravan izraz: ${t.greska ?? "nedostaje"}`)) return;
+        if (!vars.length) need(Number.isFinite(t.fn({})), `polja[${i}].odgovor nema vrijednost`);
+        tocni.push(t);
+        for (const [j, k] of (p.krivo ?? []).entries()) {
+          const kr = ucitaj(String(k?.odgovor ?? ""), vars);
+          if (!need(!kr.greska, `polja[${i}].krivo[${j}].odgovor nije ispravan izraz`)) continue;
+          need(isText(k.poruka), `polja[${i}].krivo[${j}] treba „poruka“`);
+          need(!jednako(kr, t, vars), `polja[${i}].krivo[${j}] jednak je točnom odgovoru`);
+        }
+      });
+      if (s.bilo_kojim_redom && tocni.length > 1) need(new Set(tocni.map((t) => t.fn({ x: 0.731 }))).size === tocni.length, "uz bilo_kojim_redom odgovori moraju biti različiti");
+      return list;
+    },
+    check(s, unosi) {
+      const polja = s.polja;
+      const vals = polja.map((_, i) => unosi?.[i] ?? "");
+      const prazno = vals.findIndex((v) => !String(v).trim());
+      if (prazno >= 0) return { tocno: false, poruka: polja.length > 1 ? "Upiši sve odgovore." : "Upiši odgovor.", prazno: true, polje: prazno };
+      if (s.bilo_kojim_redom && polja.length > 1) {
+        const slobodna = polja.map((_, i) => i);
+        for (let i = 0; i < vals.length; i++) {
+          const k = slobodna.findIndex((j) => provjeriPolje(s, polja[j], vals[i]).tocno);
+          if (k >= 0) {
+            slobodna.splice(k, 1);
+            continue;
+          }
+          const r = slobodna.map((j) => provjeriPolje(s, polja[j], vals[i])).find((x) => x.poruka && !x.prazno && x.poruka !== (s.savjet || "Nije točno.")) ?? provjeriPolje(s, polja[slobodna[0]], vals[i]);
+          return { ...r, polje: i, poruka: `${polja.length > 1 ? `${i + 1}. odgovor: ` : ""}${r.poruka}` };
+        }
+        return { tocno: true };
+      }
+      for (let i = 0; i < polja.length; i++) {
+        const r = provjeriPolje(s, polja[i], vals[i]);
+        if (!r.tocno) return { ...r, polje: i, poruka: polja.length > 1 ? `${i + 1}. odgovor: ${r.poruka}` : r.poruka };
+      }
+      return { tocno: true };
+    },
+    tocanOdgovor: (s) => s.polja.map((p) => `${p.oznaka ? `${p.oznaka} ` : ""}$${texIzraza(p.odgovor, varijableIzraza(s))}$`).join(", "),
+    // ključ za usporedbu blizanca s pitanjem: iste vrijednosti = isti odgovor
+    kljucOdgovora: (s) => s.polja.map((p) => {
+      const t = poljeOdgovor(s, p);
+      return t.greska ? "?" : String(Number(t.fn({ x: 0.731, y: 1.37 }).toPrecision(9)));
+    }).sort().join("|")
+  };
+  function tockePravca(s) {
+    return (s.tocke ?? []).map((t) => ({ v: vrijednost(String(t)), tex: texIzraza(String(t)) })).filter((t) => t.v != null).sort((a, b) => a.v - b.v);
+  }
+  function skupIzOdabira(s, odabir) {
+    const t = tockePravca(s);
+    const out = [];
+    (odabir?.dijelovi ?? []).forEach((da, i) => {
+      if (!da) return;
+      const a = i === 0 ? { v: -Infinity, tex: "-\\infty" } : t[i - 1];
+      const b = i === t.length ? { v: Infinity, tex: "+\\infty" } : t[i];
+      out.push({ a: a.v, b: b.v, ua: false, ub: false, ta: a.tex, tb: b.tex });
+    });
+    (odabir?.tocke ?? []).forEach((da, i) => {
+      if (da && t[i]) out.push({ a: t[i].v, b: t[i].v, ua: true, ub: true, ta: t[i].tex, tb: t[i].tex });
+    });
+    return sredi(out);
+  }
+  function odabirIzSkupa(s, skup) {
+    const t = tockePravca(s).map((x) => x.v);
+    const sredine = [t.length ? t[0] - 1 : 0, ...t.slice(1).map((v, i) => (t[i] + v) / 2), t.length ? t.at(-1) + 1 : 0];
+    if (!t.length) return { dijelovi: [sadrzi(skup, 0)], tocke: [] };
+    return { dijelovi: sredine.map((x) => sadrzi(skup, x)), tocke: t.map((x) => sadrzi(skup, x)) };
+  }
+  var skupOdgovora = (s) => parseSkup(s.odgovor);
+  var interval = {
+    tip: "interval",
+    samoRucno: true,
+    uloga: (s) => s.nacin === "prikaz" ? POGLEDAJ : ODGOVOR,
+    opis: `Skup na brojevnom pravcu. Polja: tekst, tocke: [brojevi ili izrazi, npr. 1, "2-sqrt(3)"] (1–6 istaknutih točaka), nacin:
+- "odaberi": učenik bira dijelove pravca i pune/prazne točke, a ispod vidi zapis; odgovor: "⟨-inf, 1⟩ U ⟨3, inf⟩" (⟨ ⟩ ili < > za otvoren, [ ]
+  za zatvoren kraj, U za uniju, {2} za točku, ∅, R); svaki konačni kraj mora biti među tockama; krivo?: [{odgovor (skup), poruka}];
+- "prikaz": pokazuje skup (odgovor) bez pitanja: korak za gledanje.`,
+    primjer: { tip: "interval", nacin: "odaberi", tekst: "Za koje je $x$ parabola iznad osi $x$?", tocke: [1, 3], odgovor: "<-inf, 1> U <3, inf>", krivo: [{ odgovor: "<1, 3>", poruka: "Između 1 i 3 parabola je ispod osi." }] },
+    validate(s) {
+      const { list, need } = problems();
+      need(["odaberi", "prikaz"].includes(s.nacin), "interval.nacin mora biti odaberi ili prikaz");
+      need(isText(s.tekst), "interval treba „tekst“");
+      const raw = s.tocke ?? [];
+      const t = tockePravca(s);
+      need(Array.isArray(raw) && raw.length <= 6 && t.length === raw.length, "tocke su 0–6 brojeva ili izraza bez varijabli");
+      need(new Set(t.map((x) => x.v.toPrecision(9))).size === t.length, "tocke moraju biti različite");
+      let skup = null;
+      try {
+        skup = skupOdgovora(s);
+      } catch (e) {
+        need(false, `odgovor: ${e.message}`);
+      }
+      if (skup) {
+        const krajevi = skup.flatMap((d) => [d.a, d.b]).filter(Number.isFinite);
+        const nema = krajevi.filter((k) => !t.some((x) => Math.abs(x.v - k) < 1e-9));
+        need(!nema.length, `kraj ${nema[0]} nije među tockama, pa ga učenik ne može označiti`);
+      }
+      if (s.nacin === "prikaz") need(!("krivo" in s), 'interval "prikaz" je za gledanje, pa nema „krivo“');
+      for (const [j, k] of (s.krivo ?? []).entries()) {
+        try {
+          const kr = parseSkup(k?.odgovor);
+          need(isText(k?.poruka), `krivo[${j}] treba „poruka“`);
+          if (skup) need(!jednakiSkupovi(kr, skup), `krivo[${j}] jednak je točnom odgovoru`);
+        } catch (e) {
+          need(false, `krivo[${j}].odgovor: ${e.message}`);
+        }
+      }
+      return list;
+    },
+    check(s, odabir) {
+      const skup = skupOdgovora(s);
+      const njegov = skupIzOdabira(s, odabir);
+      if (jednakiSkupovi(njegov, skup)) return { tocno: true };
+      for (const k of s.krivo ?? []) if (jednakiSkupovi(njegov, parseSkup(k.odgovor))) return { tocno: false, poruka: k.poruka };
+      const tocan = odabirIzSkupa(s, skup);
+      const isti2 = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+      if (isti2(odabir.dijelovi, tocan.dijelovi)) {
+        return { tocno: false, poruka: "Dijelovi pravca su dobri, ali krajevi nisu. Kod < i > granica nije u rješenju (prazan kružić, ⟨ ⟩), a kod ≤ i ≥ jest (pun kružić, [ ])." };
+      }
+      if (tocan.dijelovi.length > 1 && isti2(odabir.dijelovi, tocan.dijelovi.map((x) => !x))) {
+        return { tocno: false, poruka: "Odabrao si upravo suprotne dijelove. Provjeri traži li se gdje je izraz veći ili manji od nule." };
+      }
+      return { tocno: false, poruka: s.savjet || "Nije točno. Za svaki dio pravca provjeri vrijedi li nejednakost (npr. uvrsti jedan broj iz tog dijela)." };
+    },
+    tocanOdgovor: (s) => `$${texSkupa(skupOdgovora(s))}$`,
+    kljucOdgovora: (s) => {
+      try {
+        return texSkupa(skupOdgovora(s)).replace(/\s+/g, "");
+      } catch {
+        return "?";
+      }
+    }
+  };
+  function vrijednostiKlizaca(k) {
+    if (Array.isArray(k.vrijednosti)) return k.vrijednosti.map((v) => ({ v: vrijednost(String(v)), tex: texIzraza(String(v)), izvor: v }));
+    const out = [];
+    if (![k.min, k.max, k.korak].every(isNum) || k.korak <= 0 || k.max <= k.min) return out;
+    for (let v = k.min; v <= k.max + k.korak * 1e-6 && out.length <= 400; v += k.korak) {
+      const r = Number((Math.round(v / k.korak) * k.korak).toPrecision(10));
+      out.push({ v: r, tex: texIzraza(String(r)), izvor: r });
+    }
+    return out;
+  }
+  var indeksVrijednosti = (k, v) => {
+    const x = vrijednost(String(v));
+    return vrijednostiKlizaca(k).findIndex((o) => x != null && Math.abs(o.v - x) < 1e-9);
+  };
+  function funkcijeGrafa(s, parametri = {}) {
+    return (s.funkcije ?? []).map((fn) => {
+      const c = compile2(fn.izraz);
+      return { ...fn, f: (x) => c.fn({ ...parametri, x }) };
+    });
+  }
+  var pocetniParametri = (s) => Object.fromEntries((s.klizaci ?? []).map((k) => [k.id, vrijednost(String(k.pocetak))]));
+  var ciljniParametri = (s) => Object.fromEntries(Object.entries(s.cilj ?? {}).map(([id, v]) => [id, vrijednost(String(v))]));
+  function istiGrafovi(s, p1, p2) {
+    const [f2] = funkcijeGrafa(s, p1);
+    const [g] = funkcijeGrafa(s, p2);
+    let n = 0;
+    for (let k = 0; k <= 60; k++) {
+      const x = s.x[0] + (s.x[1] - s.x[0]) * (k + 0.37) / 61;
+      const [a, b] = [f2.f(x), g.f(x)];
+      if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
+      if (Math.abs(a - b) > 1e-6 * Math.max(1, Math.abs(a))) return false;
+      n++;
+    }
+    return n > 10;
+  }
+  var NACINI_GRAFA = ["prikaz", "istrazi", "poklopi"];
+  var graf_funkcije = {
+    tip: "graf_funkcije",
+    samoRucno: true,
+    uloga: (s) => s.nacin === "poklopi" ? ODGOVOR : POGLEDAJ,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: `Graf funkcije u koordinatnom sustavu. Polja: tekst, x: [od, do], y: [od, do], korak_x?, korak_y? (mreža; inače 1), pi_x?: k (crtice na
+x-osi u koracima π/k), funkcije: [{izraz (u x i parametrima), oznaka?, isprekidano?}] (1–3), tocke?: [{x, y, oznaka?}],
+crte?: [{y | x, oznaka?}] (vodoravna/okomita isprekidana crta), strelice?: [{od: [x, y], do: [x, y], oznaka?}],
+istakni?: {znak: ">0" | "<0" | ">=0" | "<=0"} (dio grafa prve funkcije iznad/ispod osi i odgovarajući dio osi x),
+formula?: LaTeX s {id} parametara ({id:k} za koeficijent: 1 se ne piše; npr. "f(x) = {A:k}\\\\cos({B}x) + {D}"), klizaci?: [{id, oznaka, min, max, korak, pocetak} ili
+{id, oznaka, vrijednosti: ["pi/6", …], pocetak}] (1–4), nacin:
+- "prikaz": samo graf (bez klizača); "istrazi": klizači mijenjaju graf (korak za gledanje);
+- "poklopi": učenik klizačima poklopi svoj graf s isprekidanim grafom iz zadatka: cilj: {id: vrijednost}; klizac.poruka? kad taj parametar ne valja.`,
+    primjer: {
+      tip: "graf_funkcije",
+      nacin: "poklopi",
+      tekst: "Pomiči klizač dok se tvoj graf ne poklopi s isprekidanim.",
+      x: [-1, 13],
+      y: [-5, 3],
+      funkcije: [{ izraz: "A*cos(pi/6*x+pi/3)-1", oznaka: "f" }],
+      klizaci: [{ id: "A", oznaka: "$A$", min: -4, max: 4, korak: 1, pocetak: 1 }],
+      formula: "f(x) = {A:k}\\cos\\left(\\frac{\\pi}{6}x + \\frac{\\pi}{3}\\right) - 1",
+      cilj: { A: 3 }
+    },
+    validate(s) {
+      const { list, need } = problems();
+      need(NACINI_GRAFA.includes(s.nacin), `graf_funkcije.nacin mora biti ${NACINI_GRAFA.join(", ")}`);
+      need(isText(s.tekst), "graf_funkcije treba „tekst“");
+      const osi = need(Array.isArray(s.x) && Array.isArray(s.y) && [...s.x, ...s.y].every(isNum) && s.x[1] > s.x[0] && s.y[1] > s.y[0], "x i y su [od, do] uz od < do");
+      for (const k of ["korak_x", "korak_y"]) if (s[k] != null) need(isNum(s[k]) && s[k] > 0, `${k} mora biti pozitivan broj`);
+      if (osi) {
+        const kx = s.pi_x ? Math.PI / s.pi_x : s.korak_x ?? 1;
+        need((s.x[1] - s.x[0]) / kx <= 40 && (s.y[1] - s.y[0]) / (s.korak_y ?? 1) <= 40, "mreža ima previše crta (najviše 40 po osi): povećaj korak_x/korak_y");
+      }
+      const klizaci = s.klizaci ?? [];
+      const ids = klizaci.map((k) => k?.id);
+      if (s.nacin === "prikaz") need(!klizaci.length, "graf „prikaz“ nema klizače (za njih je „istrazi“ ili „poklopi“)");
+      else need(klizaci.length >= 1 && klizaci.length <= 4, `graf „${s.nacin}“ treba 1–4 klizača`);
+      klizaci.forEach((k, i) => {
+        need(ID2.test(k?.id ?? "") && k.id !== "x" && k.id !== "pi" && k.id !== "e", `klizaci[${i}].id mora biti ime parametra (ne x)`);
+        need(isText(k?.oznaka), `klizaci[${i}] treba „oznaka“`);
+        const v = vrijednostiKlizaca(k);
+        if (need(v.length >= 2 && v.every((o) => o.v != null), `klizaci[${i}] treba min, max, korak ili popis vrijednosti (barem 2)`)) {
+          need(indeksVrijednosti(k, k.pocetak) >= 0, `klizaci[${i}].pocetak mora biti jedna od vrijednosti klizača`);
+        }
+      });
+      need(new Set(ids).size === ids.length, "id-jevi klizača moraju biti različiti");
+      if (need(Array.isArray(s.funkcije) && s.funkcije.length >= 1 && s.funkcije.length <= 3, "graf_funkcije treba 1–3 funkcije")) {
+        s.funkcije.forEach((fn, i) => {
+          try {
+            const c = compile2(fn?.izraz);
+            const strane = c.vars.filter((v) => v !== "x" && !ids.includes(v));
+            need(!strane.length, `funkcije[${i}] koristi nepoznate parametre: ${strane.join(", ")}`);
+          } catch (e) {
+            need(false, `funkcije[${i}].izraz: ${e.message}`);
+          }
+        });
+      }
+      for (const [i, t] of (s.tocke ?? []).entries()) need(vrijednost(String(t?.x)) != null && vrijednost(String(t?.y)) != null, `tocke[${i}] treba x i y (brojevi ili izrazi)`);
+      for (const [i, c] of (s.crte ?? []).entries()) need("x" in (c ?? {}) !== "y" in (c ?? {}) && vrijednost(String(c.x ?? c.y)) != null, `crte[${i}] treba točno jedno od x ili y`);
+      for (const [i, st] of (s.strelice ?? []).entries()) need([...st?.od ?? [], ...st?.do ?? []].length === 4 && [...st.od, ...st.do].every((v) => vrijednost(String(v)) != null), `strelice[${i}] treba od: [x, y] i do: [x, y]`);
+      if (s.istakni != null) need([">0", "<0", ">=0", "<=0"].includes(s.istakni?.znak), "istakni.znak mora biti >0, <0, >=0 ili <=0");
+      if (s.nacin === "poklopi") {
+        if (need(s.cilj && typeof s.cilj === "object" && ids.every((id) => id in s.cilj), "„poklopi“ treba cilj s vrijednošću svakog klizača") && osi && !list.length) {
+          klizaci.forEach((k, i) => need(indeksVrijednosti(k, s.cilj[k.id]) >= 0, `cilj.${k.id} mora biti jedna od vrijednosti klizača ${i + 1}`));
+          need(!istiGrafovi(s, pocetniParametri(s), ciljniParametri(s)), "graf se na početku već poklapa s ciljem: promijeni pocetak klizača");
+        }
+      } else noAnswerFields(s, need);
+      return list;
+    },
+    check(s, parametri) {
+      if (istiGrafovi(s, parametri, ciljniParametri(s))) return { tocno: true };
+      const cilj = ciljniParametri(s);
+      const los = (s.klizaci ?? []).find((k) => Math.abs((parametri?.[k.id] ?? NaN) - cilj[k.id]) > 1e-9);
+      return { tocno: false, poruka: los?.poruka || "Grafovi se još ne poklapaju. Usporedi najviše i najniže točke i razmak između vrhova." };
+    },
+    tocanOdgovor: (s) => (s.klizaci ?? []).map((k) => `$${k.id} = ${texIzraza(String(s.cilj?.[k.id]))}$`).join(", "),
+    kljucOdgovora: (s) => s.nacin === "poklopi" ? JSON.stringify(ciljniParametri(s)) + (s.funkcije?.[0]?.izraz ?? "") : null
+  };
+
+  // ../matmat-frontend/src/lib/lesson/katalog/index.js
   var KATALOG = Object.fromEntries(
-    [pojam, postupak, skica, klizac, broj, izbor, vise_tocnih, tocno_netocno, praznina, parovi, redoslijed, razvrstaj, mjerilo, mreza, ocitaj_graf, pretvorba_jedinica, cestice, uronjeno].map((w) => [w.tip, w])
+    [pojam, postupak, skica, klizac, broj, izbor, vise_tocnih, tocno_netocno, praznina, parovi, redoslijed, razvrstaj, mjerilo, mreza, ocitaj_graf, pretvorba_jedinica, cestice, uronjeno, izraz, interval, graf_funkcije].map((w) => [w.tip, w])
   );
+  var ZA_PROMPT = Object.fromEntries(Object.entries(KATALOG).filter(([, w]) => !w.samoRucno));
   var widget = (spec) => KATALOG[spec?.tip];
   var uloga = (spec) => widget(spec)?.uloga(spec);
   var istrazuje = (spec) => uloga(spec) === POGLEDAJ && !!widget(spec)?.istrazi?.(spec);
   var tocanOdgovor = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
 
-  // src/lib/lesson/katalog/vjezba.js
+  // ../matmat-frontend/src/lib/lesson/katalog/vjezba.js
   var VJEZBA_OPIS = `vjezba (po želji, samo kad lekcija uči pretvaranje jedinica): {"velicina": "duljina" | "povrsina" | "volumen" | "masa" | "vrijeme",
 "jedinice": [2–7 jedinica iz lekcije i izvornog zadatka, npr. ["km", "m", "dm", "cm", "mm"]], "lanac"?: true (i lanci "8 m = … dm = … cm"),
 "mjesovito"?: true (i "2 m 7 dm = … cm")}. Zadatke s brojevima sastavlja aplikacija; ti ih ne pišeš.`;
@@ -1604,10 +2127,10 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
       const start = Math.floor(rand() * (jed.length - duljina + 1));
       const niz = jed.slice(start, start + duljina);
       if (rand() < 0.5) niz.reverse();
-      const vrijednost2 = lijepBroj(rand);
-      const base = toBase(velicina, vrijednost2, niz[0]);
+      const vrijednost3 = lijepBroj(rand);
+      const base = toBase(velicina, vrijednost3, niz[0]);
       const rez2 = niz.slice(1).map((u) => fromBase(velicina, base, u));
-      return rez2.every(lijepRezultat) ? { vrijednost: vrijednost2, od: niz[0], do: niz.slice(1) } : null;
+      return rez2.every(lijepRezultat) ? { vrijednost: vrijednost3, od: niz[0], do: niz.slice(1) } : null;
     }
     if (vrsta === "mjesovito") {
       const i2 = Math.floor(rand() * (jed.length - 1));
@@ -1623,12 +2146,12 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     const i = Math.floor(rand() * jed.length);
     const cilj = pick(jed.filter((u, j) => j !== i && Math.abs(j - i) <= 2));
     const od = jed[i];
-    const vrijednost = lijepBroj(rand);
-    const rez = fromBase(velicina, toBase(velicina, vrijednost, od), cilj);
-    return lijepRezultat(rez) ? { vrijednost, od, do: cilj } : null;
+    const vrijednost2 = lijepBroj(rand);
+    const rez = fromBase(velicina, toBase(velicina, vrijednost2, od), cilj);
+    return lijepRezultat(rez) ? { vrijednost: vrijednost2, od, do: cilj } : null;
   }
 
-  // src/lib/lesson/validateLesson.js
+  // ../matmat-frontend/src/lib/lesson/validateLesson.js
   var VERZIJA = 1;
   var MAX_POMOC = 4;
   function validateLesson(lekcija, { rezultati, skica: skica2 } = {}) {
@@ -1648,6 +2171,11 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     if (err(z && typeof z === "object", "nedostaje „zadatak“")) {
       err(isText(z.tekst), "zadatak.tekst mora opisati situaciju i podatke");
       if (z.skica != null) sketchProblems(z.skica, { text }, (ok, msg) => err(ok, `zadatak.skica: ${msg}`));
+      if (z.graf != null) {
+        if (err(z.graf?.tip === "graf_funkcije" && z.graf.nacin === "prikaz", 'zadatak.graf mora biti graf_funkcije s nacin "prikaz"')) {
+          for (const p of KATALOG.graf_funkcije.validate(z.graf)) greske.push(`zadatak.graf: ${p}`);
+        }
+      }
     }
     const pz = lekcija.podzadaci;
     if (err(Array.isArray(pz) && pz.length >= 1 && pz.length <= 3, "lekcija treba 1–3 podzadatka")) {
@@ -1665,10 +2193,14 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
           step(p.blizanac, `${at}.blizanac`, ODGOVOR);
           err(JSON.stringify(p.blizanac) !== JSON.stringify(p.pitanje), `${at}.blizanac je isti kao pitanje; treba nove brojeve ili novu situaciju`);
           warn(p.blizanac?.tip === p.pitanje?.tip, `${at}.blizanac je drugog tipa nego pitanje; blizanac provjerava istu vještinu`);
-          const isti = quantityAnswers(p.blizanac);
+          const kljuc = widget(p.blizanac)?.kljucOdgovora;
+          if (kljuc && p.blizanac.tip === p.pitanje?.tip) {
+            err(kljuc(p.blizanac) == null || kljuc(p.blizanac) !== kljuc(p.pitanje), `${at}.blizanac ima isti odgovor kao pitanje, pa bi ga učenik samo prepisao; odaberi brojeve s kojima i rezultat bude drukčiji`);
+          }
+          const isti2 = quantityAnswers(p.blizanac);
           err(
-            !isti.length || !isti.every((b) => quantityAnswers(p.pitanje).some((a) => Math.abs(a - b) <= Math.max(1e-9, Math.abs(a) * 5e-3))),
-            `${at}.blizanac ima isti rezultat kao pitanje (${isti.map(formatNumber2).join("; ")}), pa bi ga učenik samo prepisao; odaberi brojeve s kojima i rezultat bude drukčiji`
+            !isti2.length || !isti2.every((b) => quantityAnswers(p.pitanje).some((a) => Math.abs(a - b) <= Math.max(1e-9, Math.abs(a) * 5e-3))),
+            `${at}.blizanac ima isti rezultat kao pitanje (${isti2.map(formatNumber2).join("; ")}), pa bi ga učenik samo prepisao; odaberi brojeve s kojima i rezultat bude drukčiji`
           );
         } else {
           warn(false, `${at} nema blizanca: nakon pomoći učenik ponovno rješava isto pitanje`);
@@ -1695,7 +2227,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
       lekcija.zapamti.forEach((t, i) => err(isText(t), `zapamti[${i}] mora biti tekst`));
     }
     function step(spec, at, mora) {
-      if (!err(spec && typeof spec === "object" && KATALOG[spec.tip], `${at}: nepoznat ili nedostaje tip widgeta („${spec?.tip}“); dopušteni: ${Object.keys(KATALOG).join(", ")}`)) return;
+      if (!err(spec && typeof spec === "object" && KATALOG[spec.tip], `${at}: nepoznat ili nedostaje tip widgeta („${spec?.tip}“); dopušteni: ${Object.keys(ZA_PROMPT).join(", ")}`)) return;
       const role = uloga(spec);
       if (mora === ODGOVOR) err(role === ODGOVOR, `${at} mora biti korak s odgovorom („Tvoj red“), a ${spec.tip}${spec.nacin ? ` (${spec.nacin})` : ""} je korak za gledanje`);
       for (const p of KATALOG[spec.tip].validate(spec, { text })) greske.push(`${at} (${spec.tip}): ${p}`);
@@ -1791,7 +2323,7 @@ Jedinice: ${Object.entries(UNITS).map(([k, v]) => `${k}: ${v.map(([u]) => u).joi
     return out.join("\n");
   }
 
-  // src/lib/lesson/prompt.js
+  // ../matmat-frontend/src/lib/lesson/prompt.js
   var PRAVILA = `Pretvaraš zadatak i njegovo objašnjenje u interaktivnu lekciju za MatMat, aplikaciju u kojoj učenik uči kroz zadatke.
 Lekciju crta gotova aplikacija iz tvog JSON-a; smiješ koristiti samo widgete iz kataloga ispod, s točno opisanim poljima.
 
@@ -1870,7 +2402,7 @@ Dodaj je kad god lekcija uči pretvaranje jedinica neke veličine (i kad je pret
 lekcije i susjedne koje izvorni zadatak ili razina koriste, uključi lanac i mješoviti zapis kad ih izvor spominje ili su
 prirodni za tu veličinu (duljina, masa). U lekciji bez pretvorbe jedinica izostavi „vjezba“.`;
   function sustavPrompt() {
-    const katalog = Object.values(KATALOG).map((w) => {
+    const katalog = Object.values(ZA_PROMPT).map((w) => {
       const uloge = new Set([void 0, "istrazi", "prikaz", "procitaj", "odaberi"].map((nacin) => w.uloga({ nacin })));
       const uloga2 = uloge.size > 1 ? "ovisi o načinu" : uloge.has(ODGOVOR) ? "Tvoj red" : "Pogledaj";
       return `### ${w.tip} (${uloga2})
