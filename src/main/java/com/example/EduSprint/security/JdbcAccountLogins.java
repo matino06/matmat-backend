@@ -6,6 +6,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -52,6 +53,17 @@ public class JdbcAccountLogins implements AccountLogins {
                     ON CONFLICT (subject) DO NOTHING""", Map.of("subject", subject, "accountId", accountId));
         } catch (DataAccessException e) {
             log.warn("account_login link failed for account {}: {}", accountId, e.getMessage());
+        }
+    }
+
+    @Override
+    public List<String> subjectsOf(long accountId) {
+        try {
+            return jdbc.queryForList("SELECT subject FROM account_login WHERE account_id = :accountId",
+                    Map.of("accountId", accountId), String.class);
+        } catch (DataAccessException e) {
+            log.warn("account_login lookup failed for account {}: {}", accountId, e.getMessage());
+            return List.of();
         }
     }
 }

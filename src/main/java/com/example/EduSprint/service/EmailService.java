@@ -84,6 +84,31 @@ public class EmailService {
         }
     }
 
+    /** After "Obriši račun": confirms the account and its data are gone. Throws if Resend fails, so the caller logs it. */
+    public void sendAccountDeletedEmail(String to) {
+        CreateEmailOptions emailOptions = CreateEmailOptions.builder()
+                .from(FROM)
+                .to(to)
+                .subject("Tvoj MatMat račun je obrisan")
+                .html("""
+                    Bok,<br><br>
+
+                    tvoj <strong>MatMat</strong> račun je obrisan, zajedno sa svim podacima: napretkom, riješenim zadacima, razgovorima s AI asistentom, probnim ispitima i vlastitim predmetima s materijalima.<br><br>
+
+                    Ako se predomisliš, uvijek možeš napraviti novi račun na <a href="https://matmat.online">matmat.online</a>.<br><br>
+
+                    Ako račun nisi obrisao/la ti, javi se odgovorom na ovaj mail.<br><br>
+
+                    Lijep pozdrav
+                """)
+                .build();
+        try {
+            new Resend(RESEND_API_KEY).emails().send(emailOptions);
+        } catch (ResendException e) {
+            throw new IllegalStateException("Resend: " + e.getMessage(), e);
+        }
+    }
+
     // Once a day, each account with reminders on gets at most one engagement email,
     // chosen by how long it has been inactive (see EngagementEmailPlan).
     @Scheduled(cron = "0 0 18 * * *", zone = "Europe/Zagreb")

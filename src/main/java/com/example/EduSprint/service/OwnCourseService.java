@@ -114,6 +114,18 @@ public class OwnCourseService {
         deleteEverything(course);
     }
 
+    // Deleting an account: the rows of all its own courses. The caller deletes the account's whole S3 folder once
+    // the transaction is committed.
+    @Transactional
+    public void deleteRowsOfAllOwnedBy(long accountId) {
+        Long fallback = courseRepository.findFirstByOwnerAccountIdIsNullOrderByCourseIdAsc()
+                .map(Course::getCourseId).orElse(null);
+        for (Long courseId : jdbc.queryForList("SELECT course_id FROM course WHERE owner_account_id = :a",
+                new MapSqlParameterSource("a", accountId), Long.class)) {
+            deleteCourseData(courseId, fallback);
+        }
+    }
+
     private void deleteEverything(Course course) {
         Long fallback = courseRepository.findFirstByOwnerAccountIdIsNullOrderByCourseIdAsc()
                 .map(Course::getCourseId).orElse(null);
