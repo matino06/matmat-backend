@@ -59,6 +59,10 @@ public class AiMessage {
     @Column(name = "rating")
     private Short rating;
 
+    // Samo za pitanja o zadatku: je li učenik tada već otvorio rješenje (null ako frontend to ne šalje).
+    @Column(name = "solution_revealed")
+    private Boolean solutionRevealed;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -166,5 +170,13 @@ public class AiMessage {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Boolean getSolutionRevealed() {
+        return solutionRevealed;
+    }
+
+    public void setSolutionRevealed(Boolean solutionRevealed) {
+        this.solutionRevealed = solutionRevealed;
     }
 }
