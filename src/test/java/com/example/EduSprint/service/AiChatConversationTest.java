@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,6 +50,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +66,8 @@ class AiChatConversationTest {
     private AiMessageRepository messages;
     private MockExamAttemptRepository attempts;
     private MockExamQuestionRepository questions;
+    private ExplanationStepRepository steps;
+    private AiSettingsService settings;
     private AiChatService service;
     private Account account;
     private final List<AiMessage> savedMessages = new ArrayList<>();
@@ -73,7 +77,7 @@ class AiChatConversationTest {
     void setUp() throws Exception {
         openRouter = mock(OpenRouterClient.class);
         when(openRouter.stream(any())).thenReturn(Flux.just(chunk("Bok")));
-        AiSettingsService settings = mock(AiSettingsService.class);
+        settings = mock(AiSettingsService.class);
         when(settings.current()).thenReturn(new AiSettingsDTO("m", 1, 1000, null, "g", "g", 1000, null, null, null));
         TransactionTemplate tx = mock(TransactionTemplate.class);
         when(tx.execute(any())).thenAnswer(inv -> ((TransactionCallback<?>) inv.getArgument(0)).doInTransaction(null));
@@ -100,8 +104,9 @@ class AiChatConversationTest {
 
         attempts = mock(MockExamAttemptRepository.class);
         questions = mock(MockExamQuestionRepository.class);
+        steps = mock(ExplanationStepRepository.class);
         service = new AiChatService(openRouter, mock(AiPromptRepository.class), conversations, messages,
-                mock(TaskRepository.class), mock(ExplanationStepRepository.class), attempts, questions,
+                mock(TaskRepository.class), steps, attempts, questions,
                 mock(StorageService.class), tx, settings, null);
         account = mock(Account.class);
         when(account.getAccountId()).thenReturn(ACCOUNT_ID);
@@ -285,5 +290,71 @@ class AiChatConversationTest {
         assertEquals(1, usage.limit());
         assertEquals(1, usage.remaining());
         assertNull(usage.resetAt());
+    }
+
+    private Task taskWithExplanation() {
+        Task task = mock(Task.class);
+        when(task.getId()).thenReturn(9);
+        when(task.getTaskText()).thenReturn("Riješi \\(x + 1 = 3\\).");
+        when(task.getExplanation()).thenReturn("Oduzmi 1: \\(x = 2\\).");
+        return task;
+    }
+
+    private static AiChatRequestDTO taskRequest(Boolean solutionRevealed) {
+        return new AiChatRequestDTO(CONVERSATION_ID, 9L, solutionRevealed, "Zašto?", null, null, null, null);
+    }
+
+    @Test
+    void stepsAreLeftOutWhenTheAppShowsTheExplanation() {
+        existingConversation(taskWithExplanation());
+
+        ask(taskRequest(false));
+
+        verify(steps, never()).findByTaskOrderByStepNumberAsc(any());
+        assertTrue(systemPrompt().contains("OBJAŠNJENJE:\nOduzmi 1"));
+        assertFalse(systemPrompt().contains("KORACI OBJAŠNJENJA"));
+    }
+
+    @Test
+    void questionRemembersWhetherTheSolutionWasOpen() {
+        existingConversation(taskWithExplanation());
+
+        ask(taskRequest(true));
+
+        assertEquals(Boolean.TRUE, savedMessages.get(0).getSolutionRevealed());
+    }
+
+    @Test
+    void anthropicModelCachesInstructionsTaskAndHistory() {
+        when(settings.current()).thenReturn(new AiSettingsDTO("anthropic/claude-haiku-5.5", 1, 1000, null, "g", "g", 1000, null, null, null));
+        AiConversation conversation = existingConversation(null);
+        when(messages.findByConversation_ConversationIdAndStatusInOrderByCreatedAtAsc(eq(CONVERSATION_ID), anyList()))
+                .thenReturn(List.of(new AiMessage(conversation, AiMessage.ROLE_USER, "Prvo pitanje"),
+                        new AiMessage(conversation, AiMessage.ROLE_ASSISTANT, "Prvi odgovor")));
+
+        ask(request(CONVERSATION_ID, null, null, null, null));
+
+        ArgumentCaptor<ObjectNode> body = ArgumentCaptor.forClass(ObjectNode.class);
+        verify(openRouter).stream(body.capture());
+        JsonNode sent = body.getValue().path("messages");
+        JsonNode system = sent.path(0).path("content");
+        assertEquals(AiChatService.DEFAULT_BASE_PROMPT, system.path(0).path("text").asText());
+        assertEquals("ephemeral", system.path(0).path("cache_control").path("type").asText());
+        assertTrue(system.path(1).path("text").asText().contains("ne rješava konkretan zadatak"));
+        assertEquals("ephemeral", system.path(1).path("cache_control").path("type").asText());
+        // Starije poruke ostaju obične, zadnja nosi oznaku; ukupno najviše 4 oznake.
+        assertEquals("Prvo pitanje", sent.path(1).path("content").asText());
+        assertEquals("Prvi odgovor", sent.path(2).path("content").path(0).path("text").asText());
+        assertEquals("ephemeral", sent.path(2).path("content").path(0).path("cache_control").path("type").asText());
+        assertFalse(sent.path(3).path("content").path(0).has("cache_control"));
+    }
+
+    @Test
+    void otherModelsGetAPlainSystemPrompt() {
+        ask(request(null, null, null, null, null));
+
+        ArgumentCaptor<ObjectNode> body = ArgumentCaptor.forClass(ObjectNode.class);
+        verify(openRouter).stream(body.capture());
+        assertTrue(body.getValue().path("messages").path(0).path("content").isTextual());
     }
 }

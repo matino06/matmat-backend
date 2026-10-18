@@ -205,7 +205,10 @@ public class AiChatService {
         AiPrompt subjectPrompt = subject == null ? null
                 : aiPromptRepository.findFirstBySubjectAndIsActiveTrue(subject).orElse(null);
 
-        List<ExplanationStep> steps = task == null ? List.of() : explanationStepRepository.findByTaskOrderByStepNumberAsc(task);
+        // Aplikacija prikazuje korake samo kad zadatak nema objašnjenje, pa ih AI dobiva samo tada:
+        // inače bi se pozivao na tekst koji učenik ne vidi, a prompt bi bio dulji za cijeli postupak.
+        List<ExplanationStep> steps = task == null || !isBlank(task.getExplanation()) ? List.of()
+                : explanationStepRepository.findByTaskOrderByStepNumberAsc(task);
         // Kod probne mature razina ovisi o ispitu, a ne o tečaju koji učenik trenutno ima.
         // Vrsta razgovora vrijedi i za iduća pitanja, koja više nemaju citat s mature.
         boolean exam = conversation.isExam();
@@ -213,9 +216,9 @@ public class AiChatService {
         String level = exam ? null : courseLevel(course);
         // Vlastiti predmet nije matura, pa chat bez zadatka govori o gradivu tog predmeta.
         String ownCourseName = course != null && course.getOwnerAccountId() != null ? course.getCourseName() : null;
-        String systemPrompt = buildSystemPrompt(
-                basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT,
-                subjectPrompt != null ? subjectPrompt.getContent() : null,
+        String basePromptText = basePrompt != null ? basePrompt.getContent() : DEFAULT_BASE_PROMPT;
+        String subjectPromptText = subjectPrompt != null ? subjectPrompt.getContent() : null;
+        String systemPrompt = buildSystemPrompt(basePromptText, subjectPromptText,
                 level, task, steps, exam, req.solutionRevealed(), ownCourseName,
                 ownCourseName != null && task != null ? lessonItems(task) : List.of());
 
@@ -251,14 +254,27 @@ public class AiChatService {
         ObjectNode reasoning = body.putObject("reasoning").put("exclude", true);
         if (settings.chatReasoningEffort() != null) reasoning.put("effort", settings.chatReasoningEffort());
         ArrayNode messages = body.putArray("messages");
-        messages.addObject().put("role", "system").put("content", systemPrompt);
+        // Anthropic modeli keširaju prompt samo do oznaka cache_control: upute (iste za sve učenike),
+        // kontekst zadatka i povijest do zadnje poruke, koja se u sljedećem pitanju ponavlja nepromijenjena.
+        // Ostali provideri keširaju zajednički početak sami.
+        boolean markCache = settings.chatModel().startsWith("anthropic/");
+        ObjectNode system = messages.addObject().put("role", "system");
+        if (markCache) {
+            String head = systemPromptHead(basePromptText, subjectPromptText);
+            ArrayNode systemParts = system.putArray("content");
+            cachedText(systemParts, head);
+            cachedText(systemParts, systemPrompt.substring(head.length()));
+        } else {
+            system.put("content", systemPrompt);
+        }
 
+        ObjectNode lastHistory = null;
         if (newConversation && req.history() != null) {
             // Stari frontend za razgovore bez zadatka ne šalje conversationId, nego povijest.
             for (AiChatRequestDTO.HistoryMessage h : lastN(req.history(), MAX_HISTORY_MESSAGES)) {
                 if (h == null || h.content() == null || h.content().isBlank()) continue;
                 String role = AiMessage.ROLE_ASSISTANT.equals(h.role()) ? AiMessage.ROLE_ASSISTANT : AiMessage.ROLE_USER;
-                messages.addObject().put("role", role).put("content", truncate(h.content(), MAX_HISTORY_MESSAGE_CHARS));
+                lastHistory = messages.addObject().put("role", role).put("content", truncate(h.content(), MAX_HISTORY_MESSAGE_CHARS));
             }
         } else if (!newConversation) {
             // Zaustavljen odgovor ostaje u povijesti (učenik ga je vidio); pitanje koje je ostalo
@@ -269,8 +285,12 @@ public class AiChatService {
                 if (AiMessage.ROLE_USER.equals(m.getRole()) && !AiMessage.STATUS_OK.equals(m.getStatus())) continue;
                 // Starije prazne poruke asistenta spremljene su kao "ok"; provideri prazan sadržaj mogu odbiti.
                 if (m.getContent() == null || m.getContent().isBlank()) continue;
-                messages.addObject().put("role", m.getRole()).put("content", m.getContent());
+                lastHistory = messages.addObject().put("role", m.getRole()).put("content", m.getContent());
             }
+        }
+        if (markCache && lastHistory != null) {
+            String text = lastHistory.path("content").asText();
+            cachedText(lastHistory.putArray("content"), text);
         }
 
         ObjectNode userMessage = messages.addObject();
@@ -283,8 +303,10 @@ public class AiChatService {
             part.putObject("image_url").put("url", uri);
         }
 
-        Long userMessageId = aiMessageRepository.save(new AiMessage(conversation, AiMessage.ROLE_USER, userContent))
-                .getMessageId();
+        AiMessage asked = new AiMessage(conversation, AiMessage.ROLE_USER, userContent);
+        // Da se iz spremljenih razgovora vidi je li AI smio pokazati cijeli postupak.
+        if (task != null) asked.setSolutionRevealed(req.solutionRevealed());
+        Long userMessageId = aiMessageRepository.save(asked).getMessageId();
         conversation.setUpdatedAt(Instant.now());
 
         return new PreparedChat(
@@ -372,11 +394,11 @@ public class AiChatService {
     static String buildSystemPrompt(String basePrompt, String subjectPrompt, String level, Task task,
                                     List<ExplanationStep> steps, boolean exam, Boolean solutionRevealed,
                                     String ownCourseName, List<String> lessonItems) {
-        StringBuilder sb = new StringBuilder(basePrompt);
-        if (subjectPrompt != null) {
-            sb.append("\n\n").append(subjectPrompt);
-        }
+        StringBuilder sb = new StringBuilder(systemPromptHead(basePrompt, subjectPrompt));
         sb.append("\n\nTekst zadatka i objašnjenja zapisan je u LaTeX-u (MathJax) i može sadržavati HTML oznake.");
+        if (ownCourseName != null) {
+            sb.append("\n\nVLASTITI PREDMET: ").append(ownCourseName);
+        }
         if (level != null) {
             sb.append("\n\nRAZINA: ").append(level);
         }
@@ -411,6 +433,17 @@ public class AiChatService {
             sb.append("\n\nUčenik trenutno ne rješava konkretan zadatak — odgovaraj na općenita pitanja iz gradiva mature.");
         }
         return sb.toString();
+    }
+
+    /** Upute koje ne ovise o zadatku ni učeniku; s njima počinje system prompt, pa se keširaju za sve. */
+    static String systemPromptHead(String basePrompt, String subjectPrompt) {
+        return subjectPrompt == null ? basePrompt : basePrompt + "\n\n" + subjectPrompt;
+    }
+
+    private static void cachedText(ArrayNode parts, String text) {
+        ObjectNode part = parts.addObject();
+        part.put("type", "text").put("text", text);
+        part.putObject("cache_control").put("type", "ephemeral");
     }
 
     static String buildUserContent(String question, AiChatRequestDTO.Quote quote, String quoteText) {
@@ -692,6 +725,10 @@ public class AiChatService {
 
     private static String truncate(String s, int max) {
         return s.length() <= max ? s : s.substring(0, max);
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     private static String nullSafe(String s) {
