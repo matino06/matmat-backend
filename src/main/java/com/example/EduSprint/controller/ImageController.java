@@ -3,7 +3,8 @@ package com.example.EduSprint.controller;
 import com.example.EduSprint.storage.PrivateStorageKeys;
 import com.example.EduSprint.storage.StorageService;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +37,8 @@ public class ImageController {
             return ResponseEntity.notFound().build();
         }
 
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        // Without an explicit type Spring picks application/json, and then answers a browser's Range request for a video with 406.
+        MediaType type = MediaTypeFactory.getMediaType(imageName).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().contentType(type).body(resource);
     }
 }
