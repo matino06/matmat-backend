@@ -15,7 +15,6 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,7 +98,7 @@ public class FileSystemStorageService implements StorageService {
                             .withExpiration(new Date(System.currentTimeMillis() + 3600000));
 
             URL presignedUrl = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
-            return new UrlResource(presignedUrl);
+            return new S3ObjectResource(presignedUrl, amazonS3, bucketName, filename);
         } catch (Exception e) {
             throw new StorageFileNotFoundException("Could not read file: " + filename, e);
         }
