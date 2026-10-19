@@ -33,7 +33,7 @@ public class ImageController {
 
         Resource resource = storageService.loadAsResource(imageName);
 
-        if (resource == null) {
+        if (resource == null || !resource.exists()) {
             return ResponseEntity.notFound().build();
         }
 
