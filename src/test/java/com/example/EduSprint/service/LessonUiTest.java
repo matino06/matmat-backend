@@ -118,4 +118,24 @@ class LessonUiTest {
         assertTrue(user.contains("7.–8. razred") && user.contains("Mjerenje volumena"), user);
         assertTrue(ui.repair(List.of("prva greška")).contains("- prva greška"));
     }
+
+    // Zadatak bez a), b), c): učenik ga prvo rješava cijelog, podzadaci su koraci za onoga tko ne zna.
+    @Test
+    void wholeTaskFirstNeedsTwinAndAtLeastTwoSteps() {
+        String step = VALID.substring(VALID.indexOf("{\"id\":\"a\""), VALID.lastIndexOf(']', VALID.indexOf("\"zapamti\"")));
+        String twoSteps = VALID.replace(step, step + "," + step.replace("{\"id\":\"a\"", "{\"id\":\"b\""));
+        String whole = ",\"cijeli\":{\"pitanje\":{\"tip\":\"broj\",\"tekst\":\"Koliki je volumen kamena?\",\"odgovor\":80,\"jedinica\":\"cm³\"},"
+                + "\"blizanac\":{\"tip\":\"broj\",\"tekst\":\"Voda je s 160 mL porasla na 250 mL. Koliki je volumen tijela?\",\"odgovor\":90,\"jedinica\":\"cm³\"},"
+                + "\"blizanacRjesenje\":\"250 − 160 = 90, pa je volumen 90 cm³.\"}}";
+        String lesson = twoSteps.substring(0, twoSteps.lastIndexOf('}')) + whole;
+        LessonUi.Check ok = ui.check(lesson, null, null);
+        assertEquals(List.of(), ok.errors());
+
+        List<String> noTwin = ui.check(lesson.replaceAll(",\"blizanac\":\\{\"tip\":\"broj\",\"tekst\":\"Voda je s 160[^}]*},\"blizanacRjesenje\":\"[^\"]*\"", ""), null, null).errors();
+        assertTrue(noTwin.stream().anyMatch(e -> e.contains("cijeli treba „blizanac“")), noTwin.toString());
+
+        String oneStep = VALID.substring(0, VALID.lastIndexOf('}')) + whole;
+        List<String> errors = ui.check(oneStep, null, null).errors();
+        assertTrue(errors.stream().anyMatch(e -> e.contains("barem 2 podzadatka")), errors.toString());
+    }
 }
