@@ -21,7 +21,7 @@ class OwnCoursePlanEditServiceTest {
     private final CourseRepository courses = mock(CourseRepository.class);
     private final NamedParameterJdbcTemplate jdbc = mock(NamedParameterJdbcTemplate.class);
     private final PlanFlow flow = mock(PlanFlow.class);
-    private final OwnCoursePlanEditService service = new OwnCoursePlanEditService(courses, jdbc, mock(BuildJobQueue.class), flow);
+    private final OwnCoursePlanEditService service = new OwnCoursePlanEditService(courses, jdbc, mock(BuildJobQueue.class), flow, mock(OwnCourseAnthropic.class));
     private final Account creator = account();
 
     private static Account account() {
@@ -134,7 +134,7 @@ class OwnCoursePlanEditServiceTest {
     @Test
     void quickPrepQueuesApplicationLessonsAndModeIsChosenOnce() {
         BuildJobQueue queue = mock(BuildJobQueue.class);
-        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow);
+        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow, mock(OwnCourseAnthropic.class));
         course(PlanFinalizeStep.STATUS_DRAFT);
         conceptLessons(26);
         s.chooseLearningMode(creator, 5, OwnCoursePlanEditService.MODE_QUICK, java.time.LocalDate.now().plusDays(2));
@@ -159,7 +159,7 @@ class OwnCoursePlanEditServiceTest {
     @Test
     void seriousWarningsMustBeAcceptedBeforeConfirming() {
         BuildJobQueue queue = confirmable(10, 2);
-        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow);
+        OwnCoursePlanEditService s = new OwnCoursePlanEditService(courses, jdbc, queue, flow, mock(OwnCourseAnthropic.class));
         assertEquals(HttpStatus.BAD_REQUEST, status(() -> s.confirm(creator, 5, false)));
         verify(queue, never()).enqueue(anyLong(), anyLong(), anyString(), anyString(), anyInt(), anyBoolean(), any());
         verify(courses, never()).save(any());
@@ -168,7 +168,7 @@ class OwnCoursePlanEditServiceTest {
     @Test
     void smallPlanQueuesFirstVariationForEveryLessonFirstFiveWaitedOn() {
         BuildJobQueue queue = confirmable(12, 0);
-        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow, mock(OwnCourseAnthropic.class)).confirm(creator, 5, false);
         verify(queue, times(5)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), eq(BuildJobQueue.PRIORITY_WAITED_ON), eq(false), anyString());
         verify(queue, times(7)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), eq(BuildJobQueue.PRIORITY_BACKGROUND), eq(false), anyString());
         verify(queue, never()).enqueue(anyLong(), anyLong(), eq(VariationBatchStep.KIND), anyString(), anyInt(), anyBoolean(), any());
@@ -178,16 +178,26 @@ class OwnCoursePlanEditServiceTest {
     @Test
     void bigPlanQueuesFirstFiveAndSendsTheRestAsBatch() {
         BuildJobQueue queue = confirmable(60, 0);
-        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow, mock(OwnCourseAnthropic.class)).confirm(creator, 5, false);
         verify(queue, times(5)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), anyInt(), eq(false), anyString());
         verify(queue).enqueue(eq(5L), eq(7L), eq(VariationBatchStep.KIND), eq("v1"), anyInt(), eq(false),
                 argThat(in -> in.startsWith("{\"objectiveIds\":[106,") && in.endsWith("160]}")));
     }
 
     @Test
+    void bigPlanSkipsTheBatchWhileAnthropicCreditLasts() {
+        BuildJobQueue queue = confirmable(60, 0);
+        OwnCourseAnthropic anthropic = mock(OwnCourseAnthropic.class);
+        when(anthropic.available()).thenReturn(true);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow, anthropic).confirm(creator, 5, false);
+        verify(queue, times(60)).enqueue(eq(5L), eq(7L), eq(TaskVariationStep.KIND), anyString(), anyInt(), eq(false), anyString());
+        verify(queue, never()).enqueue(anyLong(), anyLong(), eq(VariationBatchStep.KIND), anyString(), anyInt(), anyBoolean(), any());
+    }
+
+    @Test
     void confirmingGivesTheCreatorReviewRowsAndDropsPrerequisitesThatComeLaterInThePlan() {
         BuildJobQueue queue = confirmable(8, 0);
-        new OwnCoursePlanEditService(courses, jdbc, queue, flow).confirm(creator, 5, false);
+        new OwnCoursePlanEditService(courses, jdbc, queue, flow, mock(OwnCourseAnthropic.class)).confirm(creator, 5, false);
         verify(jdbc).update(contains("DELETE FROM objective_prerequisite op USING course_objective"), any(SqlParameterSource.class));
         verify(jdbc).update(contains("INSERT INTO account_objective"), argThat((SqlParameterSource p) -> Long.valueOf(7L).equals(p.getValue("a"))));
     }

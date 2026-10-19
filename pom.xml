@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<!-- 2.18.1 (Spring Boot 3.4.0) ima grešku jackson-databind#4639 zbog koje Anthropic SDK odbija start -->
+		<jackson-bom.version>2.18.2</jackson-bom.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -55,6 +57,12 @@
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-s3</artifactId>
 			<version>1.12.118</version> <!-- Provjeri najnoviju verziju na Maven Central -->
+		</dependency>
+		<!-- Vlastiti predmeti: Anthropic API (kredit uz Claude Max) za korake koje inače radi Sol -->
+		<dependency>
+			<groupId>com.anthropic</groupId>
+			<artifactId>anthropic-java</artifactId>
+			<version>2.73.0</version>
 		</dependency>
 		<!-- Vlastiti predmeti: render stranica PDF-a u sliku i tekstni sloj za čitanje materijala -->
 		<dependency>

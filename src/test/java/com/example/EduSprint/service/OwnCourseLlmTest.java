@@ -16,7 +16,7 @@ class OwnCourseLlmTest {
 
     private final OpenRouterClient client = mock(OpenRouterClient.class);
     private final BuildJobQueue queue = mock(BuildJobQueue.class);
-    private final OwnCourseLlm llm = new OwnCourseLlm(client, queue);
+    private final OwnCourseLlm llm = new OwnCourseLlm(client, queue, mock(OwnCourseAnthropic.class));
     private final BuildJob job = new BuildJob(1, 2, 3, "read_page", "str. 1", 1, true, 1, null);
 
     @Test

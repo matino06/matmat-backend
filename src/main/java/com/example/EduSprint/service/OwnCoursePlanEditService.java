@@ -31,13 +31,15 @@ public class OwnCoursePlanEditService {
     private final NamedParameterJdbcTemplate jdbc;
     private final BuildJobQueue queue;
     private final PlanFlow flow;
+    private final OwnCourseAnthropic anthropic;
 
     public OwnCoursePlanEditService(CourseRepository courseRepository, NamedParameterJdbcTemplate jdbc,
-                                    BuildJobQueue queue, PlanFlow flow) {
+                                    BuildJobQueue queue, PlanFlow flow, OwnCourseAnthropic anthropic) {
         this.courseRepository = courseRepository;
         this.jdbc = jdbc;
         this.queue = queue;
         this.flow = flow;
+        this.anthropic = anthropic;
     }
 
     // --- lekcije ---
@@ -353,7 +355,8 @@ public class OwnCoursePlanEditService {
     public static final int MAX_LESSONS_WITHOUT_BATCH = 50;
 
     // Potvrda zaključava plan i pokreće izradu 1. varijacija (ne troše kvotu). Do 50 lekcija sve idu odmah,
-    // prvih 5 s prioritetom; iznad 50 prvih 5 odmah, a ostale kao batch.
+    // prvih 5 s prioritetom; iznad 50 prvih 5 odmah, a ostale kao batch. Dok ima Anthropic kredita sve idu odmah
+    // (Sonnet), jer batch postoji samo za OpenRouter.
     @Transactional
     public void confirm(Account account, long courseId, boolean seriousAccepted) {
         Course course = draft(account, courseId);
@@ -382,7 +385,7 @@ public class OwnCoursePlanEditService {
                 WHERE co.course_id = :c AND NOT EXISTS (
                     SELECT 1 FROM account_objective ao WHERE ao.account_id = :a AND ao.objective_id = co.objective_id)""",
                 new MapSqlParameterSource("c", courseId).addValue("a", account.getAccountId()));
-        boolean batch = lessons.size() > MAX_LESSONS_WITHOUT_BATCH;
+        boolean batch = lessons.size() > MAX_LESSONS_WITHOUT_BATCH && !anthropic.available();
         for (int i = 0; i < lessons.size(); i++) {
             if (batch && i >= FIRST_LESSONS_NOW) break;
             queue.enqueue(courseId, account.getAccountId(), TaskVariationStep.KIND, "v1 " + lessons.get(i),

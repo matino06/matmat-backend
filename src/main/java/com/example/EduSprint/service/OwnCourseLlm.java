@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Base64;
+import java.util.Optional;
 
 // Pozivi OpenRoutera za izradu vlastitih predmeta, preko zasebnog ključa s mjesečnim limitom.
 // Svaki poziv sprema stvarni trošak (usage.cost) uz posao, pa se iz njega računa kvota kreatora.
@@ -37,14 +38,22 @@ public class OwnCourseLlm {
 
     private final OpenRouterClient client;
     private final BuildJobQueue queue;
+    private final OwnCourseAnthropic anthropic;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public OwnCourseLlm(@Qualifier("ownCoursesOpenRouterClient") OpenRouterClient client, BuildJobQueue queue) {
+    public OwnCourseLlm(@Qualifier("ownCoursesOpenRouterClient") OpenRouterClient client, BuildJobQueue queue,
+                        OwnCourseAnthropic anthropic) {
         this.client = client;
         this.queue = queue;
+        this.anthropic = anthropic;
     }
 
+    // Dok na Anthropic kreditu ima dovoljno, poziv Sola ide na Sonnet; ako on ne uspije, ide na OpenRouter.
     public Result chat(BuildJob job, String model, String system, String user, Options options) {
+        if (anthropic.replaces(model)) {
+            Optional<Result> result = anthropic.chat(system, user, options, cost -> queue.recordCost(job, anthropic.model(), cost));
+            if (result.isPresent()) return result.get();
+        }
         return call(job, model, body(model, system, mapper.getNodeFactory().textNode(user), options));
     }
 
