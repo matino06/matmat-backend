@@ -119,4 +119,22 @@ public class SolvedTaskController {
         }
         return ResponseEntity.ok(intervals);
     }
+
+    // Is the task's objective already rated (a review) or new? An interactive lesson suggests a stricter rating on a
+    // review, where needing the steps means the student forgot.
+    @GetMapping("/review-state/{taskId}")
+    public ResponseEntity<Map<String, Boolean>> getReviewState(Authentication authentication, @PathVariable Long taskId) {
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(authPrincipal.getEmail());
+        if (account == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Task task = taskService.getTaskById(taskId);
+        if (task == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(Map.of("review", accountObjectiveService.isReview(account, task.getObjective())));
+    }
 }
