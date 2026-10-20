@@ -70,7 +70,7 @@ public class AccountObjectiveService {
         Instant newSolvedTaskEndTime = newSolvedTask.getEndTime();
 
         Course course = newSolvedTask.getCourse();
-        accountObjective.setI(capToExam(nextInterval(accountObjective, q, newSolvedTaskEndTime),
+        accountObjective.setI(capToExam(nextInterval(accountObjective, q, newSolvedTaskEndTime), q,
                 newSolvedTaskEndTime, course == null ? null : course.getExamDate()));
         if (q >= 3) {
             if (lastQ == null && q.equals((short)5)) {
@@ -113,21 +113,29 @@ public class AccountObjectiveService {
         Course course = account.getCurrentCourse();
         short[] intervals = new short[6];
         for (short q = 0; q <= 5; q++) {
-            intervals[q] = capToExam(nextInterval(accountObjective.get(), q, now), now, course == null ? null : course.getExamDate());
+            intervals[q] = capToExam(nextInterval(accountObjective.get(), q, now), q, now, course == null ? null : course.getExamDate());
         }
         return intervals;
     }
 
     /**
-     * Datum ispita: dok je ispit pred nama, sljedeće ponavljanje dolazi najkasnije dan prije ispita
-     * (sažeto ponavljanje). Bez datuma, na dan ispita i nakon njega SM-2 interval ostaje kakav jest.
+     * Datum ispita: dan prije ispita ponavlja se samo ono što bi inače bilo upitno na ispitu, ne sve lekcije.
+     * <ul>
+     *   <li>ponavljanje koje bi palo na dan ispita dolazi dan ranije, jer na dan ispita učenik možda ne stigne;</li>
+     *   <li>lekcija ocijenjena s 3 ili manje kojoj bi ponavljanje palo nakon ispita dolazi najkasnije dan prije ispita;</li>
+     *   <li>lekcija ocijenjena s 4 ili 5 kojoj ponavljanje pada nakon ispita zadržava SM-2 interval: po njemu je
+     *   učenik zna i na dan ispita.</li>
+     * </ul>
+     * Bez datuma, na dan ispita i nakon njega SM-2 interval ostaje kakav jest.
      */
-    static short capToExam(short interval, Instant solvedAt, LocalDate examDate) {
+    static short capToExam(short interval, short q, Instant solvedAt, LocalDate examDate) {
         if (examDate == null) return interval;
         LocalDate solvedDay = solvedAt.atZone(AppTime.ZONE).toLocalDate();
         if (!solvedDay.isBefore(examDate)) return interval;
-        long untilDayBefore = ChronoUnit.DAYS.between(solvedDay, examDate.minusDays(1));
-        return (short) Math.max(1, Math.min(interval, untilDayBefore));
+        long untilExam = ChronoUnit.DAYS.between(solvedDay, examDate);
+        if (interval < untilExam) return interval;
+        if (interval > untilExam && q > 3) return interval;
+        return (short) Math.max(1, untilExam - 1);
     }
 
     /** SM-2 interval (in days) the objective gets after being rated q at the given time. */
