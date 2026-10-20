@@ -117,8 +117,8 @@ var MatMatLesson = (() => {
     const B = [c, 0];
     const cx = (b * b + c * c - a * a) / (2 * c);
     const C = [cx, Math.sqrt(Math.max(0, b * b - cx * cx))];
-    const T = fit([A, B, C]);
-    const [pA, pB, pC] = [T(A), T(B), T(C)];
+    const T3 = fit([A, B, C]);
+    const [pA, pB, pC] = [T3(A), T3(B), T3(C)];
     const g = [(pA[0] + pB[0] + pC[0]) / 3, (pA[1] + pB[1] + pC[1]) / 3];
     let body = poly([pA, pB, pC], "shape");
     if (s.pravi_kut === "C") {
@@ -149,20 +149,20 @@ var MatMatLesson = (() => {
     if (L) checks.push({ ok: L <= 2 * r, text: `tetiva ${L} ${L <= 2 * r ? "≤" : ">"} promjer ${2 * r}` });
     checks.push(...numbersInText(Object.values(s.oznake ?? {}), text));
     if (checks.some((x) => !x.ok)) return { checks };
-    const T = fit([[-r, -r], [r, r]]);
-    const sc = T([1, 0])[0] - T([0, 0])[0];
-    const pS = T([0, 0]);
+    const T3 = fit([[-r, -r], [r, r]]);
+    const sc = T3([1, 0])[0] - T3([0, 0])[0];
+    const pS = T3([0, 0]);
     let body = `<circle class="shape" cx="${f(pS[0])}" cy="${f(pS[1])}" r="${f(r * sc)}"/>` + dot(pS) + label([pS[0], pS[1] - 14], "S");
     if (L) {
       const d = Math.sqrt(r * r - (L / 2) ** 2);
-      const [pA, pB, pM] = [T([-L / 2, -d]), T([L / 2, -d]), T([0, -d])];
+      const [pA, pB, pM] = [T3([-L / 2, -d]), T3([L / 2, -d]), T3([0, -d])];
       body += line(pA, pB, "ln acc") + line(pS, pA) + line(pS, pM, "ln dash") + dot(pA) + dot(pB);
       body += label(away(pA, pS), "A") + label(away(pB, pS), "B");
       if (s.oznake?.r) body += sideLabel(pS, pA, [pS[0] + 40, pS[1] + 40], `r = ${s.oznake.r}`, "lbl dim-t");
       if (s.oznake?.tetiva) body += label([pM[0], pM[1] + 16], `${s.oznake.tetiva}`, "lbl acc-t");
       if (s.oznake?.d) body += label([pS[0] + 8, (pS[1] + pM[1]) / 2], `d = ${s.oznake.d}`, "lbl dim-t", "start");
     } else {
-      const pR = T([r, 0]);
+      const pR = T3([r, 0]);
       body += line(pS, pR);
       if (s.oznake?.r) body += label([(pS[0] + pR[0]) / 2, pS[1] - 12], `r = ${s.oznake.r}`, "lbl dim-t");
     }
@@ -173,19 +173,19 @@ var MatMatLesson = (() => {
     if (!/^[0-9x+\-*/().,\s]*$/.test(js.replace(/\b(sqrt|sin|cos|abs)\b/g, ""))) throw new Error("izraz funkcije nije dopušten");
     return new Function("x", `const {sqrt, sin, cos, abs} = Math; return (${js.replace(/,/g, ".")});`);
   }
-  function axes(T, [x0, x1], [y0, y1], xName, yName) {
+  function axes(T3, [x0, x1], [y0, y1], xName, yName) {
     const sx = niceStep(x1 - x0);
     const sy = niceStep(y1 - y0);
     let body = "";
-    for (const x of ticks(x0, x1, sx)) body += line(T([x, y0]), T([x, y1]), "grid");
-    for (const y of ticks(y0, y1, sy)) body += line(T([x0, y]), T([x1, y]), "grid");
+    for (const x of ticks(x0, x1, sx)) body += line(T3([x, y0]), T3([x, y1]), "grid");
+    for (const y of ticks(y0, y1, sy)) body += line(T3([x0, y]), T3([x1, y]), "grid");
     const ox = x0 <= 0 && x1 >= 0 ? 0 : x0;
     const oy = y0 <= 0 && y1 >= 0 ? 0 : y0;
-    body += line(T([x0, oy]), T([x1, oy]), "axis") + line(T([ox, y0]), T([ox, y1]), "axis");
-    for (const x of ticks(x0, x1, sx)) if (x !== ox) body += label([T([x, oy])[0], T([x, oy])[1] + 12], num(x), "tick");
-    for (const y of ticks(y0, y1, sy)) if (y !== oy) body += label([T([ox, y])[0] - 8, T([ox, y])[1]], num(y), "tick", "end");
-    body += label([T([x1, oy])[0], T([x1, oy])[1] + 24], xName ?? "x", "tick", "end");
-    body += label([T([ox, y1])[0] + 8, T([ox, y1])[1] + 2], yName ?? "y", "tick", "start");
+    body += line(T3([x0, oy]), T3([x1, oy]), "axis") + line(T3([ox, y0]), T3([ox, y1]), "axis");
+    for (const x of ticks(x0, x1, sx)) if (x !== ox) body += label([T3([x, oy])[0], T3([x, oy])[1] + 12], num(x), "tick");
+    for (const y of ticks(y0, y1, sy)) if (y !== oy) body += label([T3([ox, y])[0] - 8, T3([ox, y])[1]], num(y), "tick", "end");
+    body += label([T3([x1, oy])[0], T3([x1, oy])[1] + 24], xName ?? "x", "tick", "end");
+    body += label([T3([ox, y1])[0] + 8, T3([ox, y1])[1] + 2], yName ?? "y", "tick", "start");
     return body;
   }
   function graph(s, text) {
@@ -201,14 +201,14 @@ var MatMatLesson = (() => {
     });
     checks.push(...numbersInText((s.tocke ?? []).filter((p) => p.zadana).map((p) => `${p.x} ${p.y}`), text));
     if (checks.some((x) => !x.ok)) return { checks };
-    const T = axesFit(s.x, s.y);
-    let body = axes(T, s.x, s.y, s.os_x, s.os_y);
+    const T3 = axesFit(s.x, s.y);
+    let body = axes(T3, s.x, s.y, s.os_x, s.os_y);
     fns.forEach((fn, i) => {
       const pts = [];
       for (let k = 0; k <= 240; k++) {
         const x = s.x[0] + (s.x[1] - s.x[0]) * k / 240;
         const y = fn.f(x);
-        if (isFinite(y) && y >= s.y[0] - 1e-9 && y <= s.y[1] + 1e-9) pts.push(T([x, y]));
+        if (isFinite(y) && y >= s.y[0] - 1e-9 && y <= s.y[1] + 1e-9) pts.push(T3([x, y]));
       }
       if (pts.length < 2) return;
       body += `<polyline class="curve c${i + 1}" points="${pts.map((p) => p.map(f).join(",")).join(" ")}"/>`;
@@ -216,7 +216,7 @@ var MatMatLesson = (() => {
       if (fn.oznaka) body += label([end[0] - 6, end[1] + (end[1] < 30 ? 14 : -10)], fn.oznaka, `lbl c${i + 1}-t`, "end");
     });
     for (const p of s.tocke ?? []) {
-      const q = T([p.x, p.y]);
+      const q = T3([p.x, p.y]);
       body += dot(q, "pt acc-f");
       if (p.oznaka) body += label([q[0] + 8, q[1] + (q[1] < 40 ? 12 : -12)], p.oznaka, "lbl small", "start");
     }
@@ -226,23 +226,23 @@ var MatMatLesson = (() => {
     if (!Array.isArray(s.x) || !Array.isArray(s.y) || !(s.x[1] > s.x[0]) || !(s.y[1] > s.y[0])) {
       return { checks: [fail("raspon osi mora biti [od, do] uz od < do")] };
     }
-    const P = Object.fromEntries((s.tocke ?? []).map((p) => [p.oznaka, p]));
+    const P2 = Object.fromEntries((s.tocke ?? []).map((p) => [p.oznaka, p]));
     const checks = [];
     for (const m of s.polovista ?? []) {
-      const [a, b] = (m.od ?? []).map((k) => P[k]);
-      const ok = !!(a && b && P[m.tocka]) && P[m.tocka].x === (a.x + b.x) / 2 && P[m.tocka].y === (a.y + b.y) / 2;
+      const [a, b] = (m.od ?? []).map((k) => P2[k]);
+      const ok = !!(a && b && P2[m.tocka]) && P2[m.tocka].x === (a.x + b.x) / 2 && P2[m.tocka].y === (a.y + b.y) / 2;
       checks.push({ ok, text: `${m.tocka} ${ok ? "jest" : "NIJE"} polovište dužine ${(m.od ?? []).join("")}` });
     }
     for (const [a, b] of s.duzine ?? []) {
-      if (!P[a] || !P[b]) checks.push(fail(`dužina ${a}${b} spaja točku koja ne postoji`));
+      if (!P2[a] || !P2[b]) checks.push(fail(`dužina ${a}${b} spaja točku koja ne postoji`));
     }
     checks.push(...numbersInText((s.tocke ?? []).filter((p) => p.zadana).map((p) => `${p.x} ${p.y}`), text));
     if (checks.some((x) => !x.ok)) return { checks };
-    const T = fit([[s.x[0], s.y[0]], [s.x[1], s.y[1]]]);
-    let body = axes(T, s.x, s.y, s.os_x, s.os_y);
-    for (const [a, b] of s.duzine ?? []) body += line(T([P[a].x, P[a].y]), T([P[b].x, P[b].y]), "ln acc");
+    const T3 = fit([[s.x[0], s.y[0]], [s.x[1], s.y[1]]]);
+    let body = axes(T3, s.x, s.y, s.os_x, s.os_y);
+    for (const [a, b] of s.duzine ?? []) body += line(T3([P2[a].x, P2[a].y]), T3([P2[b].x, P2[b].y]), "ln acc");
     for (const p of s.tocke ?? []) {
-      const q = T([p.x, p.y]);
+      const q = T3([p.x, p.y]);
       body += dot(q, p.zadana ? "pt" : "pt acc-f");
       body += label([q[0] + 6, q[1] - 13], `${p.oznaka}(${p.zadana ? `${num(p.x)}, ${num(p.y)}` : "?"})`, "lbl small", "start");
     }
@@ -257,32 +257,32 @@ var MatMatLesson = (() => {
       checks.push({ ok: positive(mreza3) && n <= 900, text: `mreža ${num(mreza3)}: ${Math.round(n)} polja (najviše 900)` });
     }
     if (checks.some((x) => !x.ok)) return { checks };
-    const T = fit([[0, 0], [a, b]], W, H, 52);
+    const T3 = fit([[0, 0], [a, b]], W, H, 52);
     let body = "";
     if (mreza3) {
-      for (let x = mreza3; x < a - 1e-9; x += mreza3) body += line(T([x, 0]), T([x, b]), "grid strong");
-      for (let y = mreza3; y < b - 1e-9; y += mreza3) body += line(T([0, y]), T([a, y]), "grid strong");
+      for (let x = mreza3; x < a - 1e-9; x += mreza3) body += line(T3([x, 0]), T3([x, b]), "grid strong");
+      for (let y = mreza3; y < b - 1e-9; y += mreza3) body += line(T3([0, y]), T3([a, y]), "grid strong");
     }
-    body = poly([T([0, 0]), T([a, 0]), T([a, b]), T([0, b])], "shape") + body + poly([T([0, 0]), T([a, 0]), T([a, b]), T([0, b])], "outline");
-    if (s.oznake?.a) body += label([T([a / 2, 0])[0], T([a / 2, 0])[1] + 16], s.oznake.a, "lbl dim-t");
-    if (s.oznake?.b) body += label([T([a, b / 2])[0] + 8, T([a, b / 2])[1]], s.oznake.b, "lbl dim-t", "start");
+    body = poly([T3([0, 0]), T3([a, 0]), T3([a, b]), T3([0, b])], "shape") + body + poly([T3([0, 0]), T3([a, 0]), T3([a, b]), T3([0, b])], "outline");
+    if (s.oznake?.a) body += label([T3([a / 2, 0])[0], T3([a / 2, 0])[1] + 16], s.oznake.a, "lbl dim-t");
+    if (s.oznake?.b) body += label([T3([a, b / 2])[0] + 8, T3([a, b / 2])[1]], s.oznake.b, "lbl dim-t", "start");
     return { svg: svg(body), checks };
   }
   function cuboid(s, text) {
-    const { a, b, c, razina: razina2 } = s;
+    const { a, b, c, razina: razina3 } = s;
     if (!positive(a, b, c)) return { checks: [fail("bridovi kvadra moraju biti pozitivni brojevi")] };
     const checks = [...numbersInText(Object.values(s.oznake ?? {}), text)];
-    if (razina2 != null) checks.push({ ok: razina2 > 0 && razina2 <= c, text: `razina ${num(razina2)} ${razina2 <= c ? "≤" : ">"} visina ${num(c)}` });
+    if (razina3 != null) checks.push({ ok: razina3 > 0 && razina3 <= c, text: `razina ${num(razina3)} ${razina3 <= c ? "≤" : ">"} visina ${num(c)}` });
     if (checks.some((x) => !x.ok)) return { checks };
     const k = Math.SQRT1_2 * 0.5;
-    const P = (x, y, z) => [x + y * k, z + y * k];
+    const P2 = (x, y, z) => [x + y * k, z + y * k];
     const corners = [];
-    for (const x of [0, a]) for (const y of [0, b]) for (const z of [0, c]) corners.push(P(x, y, z));
-    const T = fit(corners, W, H, 40);
-    const p = (x, y, z) => T(P(x, y, z));
+    for (const x of [0, a]) for (const y of [0, b]) for (const z of [0, c]) corners.push(P2(x, y, z));
+    const T3 = fit(corners, W, H, 40);
+    const p = (x, y, z) => T3(P2(x, y, z));
     let body = "";
-    if (razina2 != null) {
-      const h = razina2;
+    if (razina3 != null) {
+      const h = razina3;
       body += poly([p(0, 0, 0), p(a, 0, 0), p(a, b, 0), p(a, b, h), p(0, b, h), p(0, 0, h)], "liquid");
       body += poly([p(0, 0, h), p(a, 0, h), p(a, b, h), p(0, b, h)], "liquid top");
     }
@@ -302,7 +302,7 @@ var MatMatLesson = (() => {
     if (s.oznake?.a) body += label([mid(p(0, 0, 0), p(a, 0, 0))[0], mid(p(0, 0, 0), p(a, 0, 0))[1] + 16], s.oznake.a, "lbl dim-t");
     if (s.oznake?.b) body += label([mid(p(a, 0, 0), p(a, b, 0))[0] + 10, mid(p(a, 0, 0), p(a, b, 0))[1] + 6], s.oznake.b, "lbl dim-t", "start");
     if (s.oznake?.c) body += label([p(0, 0, c / 2)[0] - 8, p(0, 0, c / 2)[1]], s.oznake.c, "lbl dim-t", "end");
-    if (razina2 != null && s.oznake?.razina) body += label([p(a, 0, razina2 / 2)[0] - 8, p(a, 0, razina2 / 2)[1]], s.oznake.razina, "lbl acc-t", "end");
+    if (razina3 != null && s.oznake?.razina) body += label([p(a, 0, razina3 / 2)[0] - 8, p(a, 0, razina3 / 2)[1]], s.oznake.razina, "lbl acc-t", "end");
     return { svg: svg(body), checks };
   }
   function scale(s, text) {
@@ -381,12 +381,12 @@ var MatMatLesson = (() => {
   function forces(s, text) {
     const th = (s.podloga?.kut ?? 0) * Math.PI / 180;
     const flat = s.podloga?.vrsta === "vodoravna" || !s.podloga?.kut;
-    const G3 = (s.sile ?? []).find((x) => x.smjer === "dolje");
+    const G4 = (s.sile ?? []).find((x) => x.smjer === "dolje");
     const N = (s.sile ?? []).find((x) => x.smjer === "okomito_od_podloge");
     const checks = [];
     if (!(s.sile ?? []).length || !(s.sile ?? []).every((x) => positive(x.iznos))) checks.push(fail("svaka sila treba pozitivan iznos"));
-    if (G3 && N && !flat) {
-      const exp = G3.iznos * Math.cos(th);
+    if (G4 && N && !flat) {
+      const exp = G4.iznos * Math.cos(th);
       const ok = Math.abs(N.iznos - exp) <= 0.03 * exp;
       checks.push({ ok, text: `N = G·cos ${f(s.podloga.kut)}° = ${exp.toFixed(1)} N ${ok ? "slaže se s" : "NE slaže se s"} ${N.iznos} N` });
     }
@@ -432,9 +432,9 @@ var MatMatLesson = (() => {
       body += arrow(c, end, cls);
       body += label([end[0] + d[0] * 14 + (d[1] === 1 && d[0] === 0 ? 14 : 0), end[1] + d[1] * 14], x.oznaka, `lbl ${cls}-t`);
     });
-    if (s.rastav && G3 && !flat) {
-      const gp = G3.iznos * Math.sin(th);
-      const gn = G3.iznos * Math.cos(th);
+    if (s.rastav && G4 && !flat) {
+      const gp = G4.iznos * Math.sin(th);
+      const gn = G4.iznos * Math.cos(th);
       const e1 = [c[0] - along[0] * len2(gp), c[1] - along[1] * len2(gp)];
       const e2 = [c[0] - normal[0] * len2(gn), c[1] - normal[1] * len2(gn)];
       body += arrow(c, e1, "acc").replace('class="arr', 'class="arr dash') + label([e1[0] - along[0] * 16, e1[1] - along[1] * 16 - 6], "G∥", "lbl small acc-t");
@@ -706,7 +706,9 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
       ["m", 1],
       ["dm", 0.1],
       ["cm", 0.01],
-      ["mm", 1e-3]
+      ["mm", 1e-3],
+      ["µm", 1e-6],
+      ["nm", 1e-9]
     ],
     povrsina: [
       ["km²", 1e6],
@@ -858,6 +860,8 @@ ljestvica, sile, strujni_krug – isti format kao skica uz zadatak), tekst? (mar
     "kg/dm3": "kg/dm³",
     "km/hr": "km/h",
     kmh: "km/h",
+    μm: "µm",
+    um: "µm",
     μC: "µC",
     uC: "µC",
     μF: "µF",
@@ -1214,6 +1218,13 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
     sin: Math.sin,
     cos: Math.cos,
     tan: Math.tan,
+    // kutovi u stupnjevima (optika: Snellov zakon, granični i Brewsterov kut)
+    sind: (x) => Math.sin(x * Math.PI / 180),
+    cosd: (x) => Math.cos(x * Math.PI / 180),
+    tand: (x) => Math.tan(x * Math.PI / 180),
+    asind: (x) => Math.asin(x) * 180 / Math.PI,
+    acosd: (x) => Math.acos(x) * 180 / Math.PI,
+    atand: (x) => Math.atan(x) * 180 / Math.PI,
     ln: Math.log,
     log: Math.log10,
     exp: Math.exp,
@@ -1347,6 +1358,7 @@ ili jednaki iznosi u različitim jedinicama ("27 dm" ↔ "2 m 7 dm", "3 m" ↔ "
     return { fn: (vars = {}) => evaluate(tree, vars), vars: [...variables(tree)], tree };
   }
   var FUNKCIJE = Object.keys(FUNCS);
+  var FUNKCIJE_STUPNJEVI = ["sind", "cosd", "tand", "asind", "acosd", "atand"];
   var KONSTANTE = Object.keys(CONSTS);
 
   // src/lib/lesson/katalog/istrazivanje.js
@@ -1950,12 +1962,12 @@ tocke?: [{x, y, oznaka}] (istaknute točke), tekst, nacin:
     jedinice: [].concat(s.od).map(normUnit)
   });
   var zapisIzvora = (s) => {
-    const { vrijednosti: vrijednosti2, jedinice } = izvor(s);
-    return vrijednosti2.map((v, i) => withUnit(v, jedinice[i])).join(" ");
+    const { vrijednosti: vrijednosti3, jedinice } = izvor(s);
+    return vrijednosti3.map((v, i) => withUnit(v, jedinice[i])).join(" ");
   };
   function pretvorbaRezultati(s) {
-    const { vrijednosti: vrijednosti2, jedinice } = izvor(s);
-    const base = toBase(s.velicina, vrijednosti2, jedinice);
+    const { vrijednosti: vrijednosti3, jedinice } = izvor(s);
+    const base = toBase(s.velicina, vrijednosti3, jedinice);
     return lanac(s).map((u) => fromBase(s.velicina, base, u));
   }
   var prepisano = (velicina3, od, cilj) => unitIndex(velicina3, cilj) > unitIndex(velicina3, od) ? `Prepisao si broj iz ${od}. Kad promijeniš jedinicu, mijenja se i broj: ${cilj} je manja jedinica, pa ih treba više.` : `Prepisao si broj iz ${od}. Kad promijeniš jedinicu, mijenja se i broj: ${cilj} je veća jedinica, pa ih treba manje.`;
@@ -1998,7 +2010,7 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       ))
         return list;
       const names = UNITS[s.velicina].map(([u]) => u);
-      const { vrijednosti: vrijednosti2, jedinice } = izvor(s);
+      const { vrijednosti: vrijednosti3, jedinice } = izvor(s);
       const cilj = lanac(s);
       if (!need(
         [...jedinice, ...cilj].every((u) => names.includes(normUnit(u))),
@@ -2006,11 +2018,11 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       ))
         return list;
       need(
-        vrijednosti2.length === jedinice.length,
+        vrijednosti3.length === jedinice.length,
         "kod mješovitog zapisa vrijednost i od moraju biti popisi iste duljine"
       );
       need(
-        vrijednosti2.every(isNum),
+        vrijednosti3.every(isNum),
         "pretvorba_jedinica treba brojčanu vrijednost"
       );
       need(
@@ -2041,9 +2053,9 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       const cilj = lanac(s).map(normUnit);
       const tocni = pretvorbaRezultati(s);
       const unosi = cilj.length === 1 ? [Array.isArray(input) ? input[0] : input] : [].concat(input ?? []);
-      const { vrijednosti: vrijednosti2, jedinice } = izvor(s);
+      const { vrijednosti: vrijednosti3, jedinice } = izvor(s);
       for (let i = 0; i < cilj.length; i++) {
-        const [prije, odJ] = i > 0 ? [tocni[i - 1], cilj[i - 1]] : jedinice.length === 1 ? [vrijednosti2[0], jedinice[0]] : [null, null];
+        const [prije, odJ] = i > 0 ? [tocni[i - 1], cilj[i - 1]] : jedinice.length === 1 ? [vrijednosti3[0], jedinice[0]] : [null, null];
         const krivo = [
           ...i === cilj.length - 1 ? s.krivo ?? [] : [],
           ...prije == null ? [] : typicalMistakes(s.velicina, prije, odJ, cilj[i]),
@@ -2212,6 +2224,7 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
   };
 
   // src/lib/lesson/core/izraz.js
+  var FUNKCIJE2 = FUNKCIJE.filter((f2) => !FUNKCIJE_STUPNJEVI.includes(f2));
   var ZNAKOVI = [
     [/[−–—]/g, "-"],
     [/[×·⋅∙]/g, "*"],
@@ -2243,7 +2256,7 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
   function pripremi(unos, varijable2 = []) {
     let s = String(unos ?? "");
     for (const [re, z] of ZNAKOVI) s = s.replace(re, z);
-    const poznato = [...FUNKCIJE, ...KONSTANTE, ...varijable2, "inf"];
+    const poznato = [...FUNKCIJE2, ...KONSTANTE, ...varijable2, "inf"];
     const tokeni = [];
     const trig = /sin|cos|tan/.test(s);
     for (const m of s.matchAll(/\s*(?:(\d+(?:\.\d+)?)|([A-Za-z]+)|(\*\*|[-+*/^()]))|\s*(\S)/g)) {
@@ -2256,7 +2269,7 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       else if (m[2]) {
         const dijelovi2 = poznato.includes(m[2]) ? [m[2]] : rastavi(m[2], poznato);
         if (!dijelovi2) throw new Error(`ne razumijem „${m[2]}“`);
-        for (const d of dijelovi2) tokeni.push({ t: FUNKCIJE.includes(d) ? "fn" : "id", v: d });
+        for (const d of dijelovi2) tokeni.push({ t: FUNKCIJE2.includes(d) ? "fn" : "id", v: d });
       } else if (m[3]) tokeni.push({ t: "op", v: m[3] });
     }
     if (!tokeni.length) throw new Error("upiši izraz");
@@ -2455,8 +2468,8 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       const izraz2 = pripremi(unos, varijable2);
       if (/\binf\b/.test(izraz2)) throw new Error("beskonačnost ovdje nije broj");
       const c = compile2(izraz2);
-      const strane = c.vars.filter((v) => !varijable2.includes(v));
-      if (strane.length) throw new Error(`ne razumijem „${strane[0]}“`);
+      const strane2 = c.vars.filter((v) => !varijable2.includes(v));
+      if (strane2.length) throw new Error(`ne razumijem „${strane2[0]}“`);
       return { izraz: izraz2, fn: c.fn, vars: c.vars, tex: tex(c.tree) };
     } catch (e) {
       return { greska: e.message };
@@ -2575,9 +2588,9 @@ Jedinice: ${PROMPT_VELICINE.map((k) => `${k}: ${UNITS[k].map(([u]) => u).join(",
       const [o, z] = [d[0], d.at(-1)];
       if (!"<⟨([".includes(o) || !">⟩)]".includes(z)) throw new Error(`„${d}“: interval počinje s ⟨ ili [ i završava s ⟩ ili ]`);
       const unutra2 = d.slice(1, -1);
-      const krajevi2 = unutra2.includes(";") ? unutra2.split(";") : unutra2.split(",");
-      if (krajevi2.length !== 2) throw new Error(`„${d}“: interval ima dva kraja odvojena zarezom`);
-      const [a, b] = krajevi2.map(kraj);
+      const krajevi3 = unutra2.includes(";") ? unutra2.split(";") : unutra2.split(",");
+      if (krajevi3.length !== 2) throw new Error(`„${d}“: interval ima dva kraja odvojena zarezom`);
+      const [a, b] = krajevi3.map(kraj);
       const ua = o === "[";
       const ub = z === "]";
       if (!(a.v < b.v)) throw new Error(`„${d}“: lijevi kraj mora biti manji od desnog`);
@@ -2868,8 +2881,8 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     const njegov = u.skup;
     if (jednakiSkupovi(njegov, skup) || (s.jos_tocno ?? []).some((t) => jednakiSkupovi(njegov, parseSkup(t)))) return { tocno: true };
     for (const k of s.krivo ?? []) if (jednakiSkupovi(njegov, parseSkup(k.odgovor))) return { tocno: false, poruka: k.poruka };
-    const blizu2 = (x, y) => x === y || Math.abs(x - y) < 1e-9;
-    if (njegov.length === skup.length && njegov.every((d, i) => blizu2(d.a, skup[i].a) && blizu2(d.b, skup[i].b))) {
+    const blizu3 = (x, y) => x === y || Math.abs(x - y) < 1e-9;
+    if (njegov.length === skup.length && njegov.every((d, i) => blizu3(d.a, skup[i].a) && blizu3(d.b, skup[i].b))) {
       return { tocno: false, poruka: "Krajevi su dobri, ali zagrade nisu. ⟨ ⟩ znači da kraj nije u skupu (kod < i >, i uvijek uz ∞), a [ ] da jest (kod ≤ i ≥)." };
     }
     if (skup.length && jednakiSkupovi(njegov, komplement(skup))) {
@@ -2905,8 +2918,8 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
         need(false, `odgovor: ${e.message}`);
       }
       if (skup && s.nacin !== "upisi") {
-        const krajevi2 = skup.flatMap((d) => [d.a, d.b]).filter(Number.isFinite);
-        const nema = krajevi2.filter((k) => !t.some((x) => Math.abs(x.v - k) < 1e-9));
+        const krajevi3 = skup.flatMap((d) => [d.a, d.b]).filter(Number.isFinite);
+        const nema = krajevi3.filter((k) => !t.some((x) => Math.abs(x.v - k) < 1e-9));
         need(!nema.length, `kraj ${nema[0]} nije među tockama, pa ga učenik ne može označiti`);
       }
       if (s.nacin === "prikaz") need(!("krivo" in s), 'interval "prikaz" je za gledanje, pa nema „krivo“');
@@ -2967,11 +2980,11 @@ zapis), graf?: graf_funkcije "prikaz" koji se crta iznad polja. Točno je sve š
     const x = vrijednost(String(v));
     return vrijednostiKlizaca(k).findIndex((o) => x != null && Math.abs(o.v - x) < 1e-9);
   };
-  function funkcijeGrafa(s, parametri = {}) {
+  function funkcijeGrafa(s, parametri2 = {}) {
     return (s.funkcije ?? []).map((fn) => {
       const c = compile2(fn.izraz);
       const [od, d] = [fn.od != null ? vrijednost(String(fn.od)) : -Infinity, fn.do != null ? vrijednost(String(fn.do)) : Infinity];
-      return { ...fn, od, do: d, f: (x) => x < od - 1e-12 || x > d + 1e-12 ? NaN : c.fn({ ...parametri, x }) };
+      return { ...fn, od, do: d, f: (x) => x < od - 1e-12 || x > d + 1e-12 ? NaN : c.fn({ ...parametri2, x }) };
     });
   }
   var KOSO = 0.5 * Math.SQRT1_2;
@@ -3073,15 +3086,15 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
         }
       });
       need(new Set(ids).size === ids.length, "id-jevi klizača moraju biti različiti");
-      const geometrija = imaIstoMjerilo(s);
+      const geometrija2 = imaIstoMjerilo(s);
       const najmanje = imaSadrzaj(s) && s.nacin === "prikaz" ? 0 : 1;
       if (need(Array.isArray(s.funkcije ?? (najmanje ? null : [])) && (s.funkcije ?? []).length >= najmanje && (s.funkcije ?? []).length <= 3, `graf_funkcije treba ${najmanje}–3 funkcije`)) {
         (s.funkcije ?? []).forEach((fn, i) => {
           for (const k of ["od", "do"]) if (fn?.[k] != null) need(vrijednost(String(fn[k])) != null, `funkcije[${i}].${k} mora biti broj`);
           try {
             const c = compile2(fn?.izraz);
-            const strane = c.vars.filter((v) => v !== "x" && !ids.includes(v));
-            need(!strane.length, `funkcije[${i}] koristi nepoznate parametre: ${strane.join(", ")}`);
+            const strane2 = c.vars.filter((v) => v !== "x" && !ids.includes(v));
+            need(!strane2.length, `funkcije[${i}] koristi nepoznate parametre: ${strane2.join(", ")}`);
           } catch (e) {
             need(false, `funkcije[${i}].izraz: ${e.message}`);
           }
@@ -3113,7 +3126,7 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
       for (const [i, k] of (s.kutovi ?? []).entries()) for (const z of ["vrh", "od", "do"]) tocka3(k?.[z], `kutovi[${i}].${z}`);
       for (const [i, v] of (s.vektori ?? []).entries()) for (const z of ["od", "do"]) tocka3(v?.[z], `vektori[${i}].${z}`);
       for (const [i, t] of (s.tekstovi ?? []).entries()) need(tockaIzPolja(t) != null && isText(t?.tekst), `tekstovi[${i}] treba x, y i tekst`);
-      if (osi2 && (geometrija || s.osi === false)) {
+      if (osi2 && (geometrija2 || s.osi === false)) {
         const o = okvirCrteza(s);
         if (!o.jednako) {
           const omjer = (s.y[1] - s.y[0]) / (s.x[1] - s.x[0]);
@@ -3131,10 +3144,10 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
       } else noAnswerFields(s, need);
       return list;
     },
-    check(s, parametri) {
-      if (istiGrafovi(s, parametri, ciljniParametri(s))) return { tocno: true };
+    check(s, parametri2) {
+      if (istiGrafovi(s, parametri2, ciljniParametri(s))) return { tocno: true };
       const cilj = ciljniParametri(s);
-      const los = (s.klizaci ?? []).find((k) => Math.abs((parametri?.[k.id] ?? NaN) - cilj[k.id]) > 1e-9);
+      const los = (s.klizaci ?? []).find((k) => Math.abs((parametri2?.[k.id] ?? NaN) - cilj[k.id]) > 1e-9);
       return { tocno: false, poruka: los?.poruka || "Grafovi se još ne poklapaju. Usporedi najviše i najniže točke i razmak između vrhova." };
     },
     tocanOdgovor: (s) => (s.klizaci ?? []).map((k) => `$${k.id} = ${texIzraza(String(s.cilj?.[k.id]))}$`).join(", "),
@@ -3143,9 +3156,9 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
 
   // src/lib/lesson/katalog/fizika/_kinematika.js
   var ID3 = /^[A-Za-z_][A-Za-z_0-9]*$/;
-  function lijepKorak(raspon2, koliko = 6) {
-    if (!(raspon2 > 0)) return 1;
-    const sirovo = raspon2 / koliko;
+  function lijepKorak(raspon4, koliko = 6) {
+    if (!(raspon4 > 0)) return 1;
+    const sirovo = raspon4 / koliko;
     const p = Math.pow(10, Math.floor(Math.log10(sirovo)));
     for (const k of [1, 2, 2.5, 5, 10]) if (k * p >= sirovo * 0.999) return k * p;
     return 10 * p;
@@ -3178,14 +3191,14 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
     }
     return PREVEDENO.get(izraz2);
   }
-  function izracunaj(v, parametri = {}, zadano = NaN) {
+  function izracunaj(v, parametri2 = {}, zadano = NaN) {
     if (v == null) return zadano;
     if (isNum(v)) return v;
     if (typeof v !== "string") return NaN;
     const c = prevedi(v);
     if (c.greska) return NaN;
     try {
-      const r = c.fn(parametri);
+      const r = c.fn(parametri2);
       return Number.isFinite(r) ? r : NaN;
     } catch {
       return NaN;
@@ -3473,16 +3486,16 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
       vy0: vy
     };
   }
-  function modelGibanja(s, parametri = pocetniParametri2(s)) {
+  function modelGibanja(s, parametri2 = pocetniParametri2(s)) {
     const g = gOd(s);
     const tijela = (s.tijela ?? []).map(
-      (t) => ravnina(s) ? tijelo2D(t, parametri, g) : tijelo1D(t, s, parametri, g)
+      (t) => ravnina(s) ? tijelo2D(t, parametri2, g) : tijelo1D(t, s, parametri2, g)
     );
     let tKraj = isNum(s.t_kraj) ? s.t_kraj : null;
     let prirodno = true;
     if (tKraj == null) {
-      const krajevi2 = tijela.map((b) => b.kraj ?? b.krajDionica).filter((x) => Number.isFinite(x) && x > 0);
-      if (krajevi2.length) tKraj = Math.max(...krajevi2);
+      const krajevi3 = tijela.map((b) => b.kraj ?? b.krajDionica).filter((x) => Number.isFinite(x) && x > 0);
+      if (krajevi3.length) tKraj = Math.max(...krajevi3);
       else [tKraj, prirodno] = [10, false];
     }
     return { tijela, g, tKraj: Math.min(T_MAX, Math.max(1e-3, tKraj)), prirodno };
@@ -3514,22 +3527,22 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
     return out;
   }
   function rasponScene(s) {
-    const vrijednosti2 = { s: [0], x: [0], y: [0] };
+    const vrijednosti3 = { s: [0], x: [0], y: [0] };
     for (const p of mrezaParametara(s)) {
       const m = modelGibanja(s, p);
       for (const b of m.tijela) {
         for (let i = 0; i <= 160; i++) {
           const st = b.stanje(m.tKraj * i / 160);
           for (const k of ["s", "x", "y"])
-            if (Number.isFinite(st[k])) vrijednosti2[k].push(st[k]);
+            if (Number.isFinite(st[k])) vrijednosti3[k].push(st[k]);
         }
       }
     }
     for (const c of s.crte ?? [])
       for (const k of ["s", "x", "y"])
-        if (isNum(c?.[k])) vrijednosti2[k].push(c[k]);
+        if (isNum(c?.[k])) vrijednosti3[k].push(c[k]);
     const r = (k) => {
-      const [lo, hi] = [Math.min(...vrijednosti2[k]), Math.max(...vrijednosti2[k])];
+      const [lo, hi] = [Math.min(...vrijednosti3[k]), Math.max(...vrijednosti3[k])];
       return lijepRaspon(lo, hi + (k === "x" ? 0.02 : 0.06) * (hi - lo));
     };
     if (ravnina(s))
@@ -3543,8 +3556,8 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
     const b = m.tijela.find((x) => x.id === c.tijelo) ?? m.tijela[0];
     return (t) => b.stanje(t)[c.velicina] - (c.vrijednost ?? 0);
   }
-  function trenuciCilja(s, parametri = pocetniParametri2(s)) {
-    const m = modelGibanja(s, parametri);
+  function trenuciCilja(s, parametri2 = pocetniParametri2(s)) {
+    const m = modelGibanja(s, parametri2);
     if (!s.cilj) return [];
     if (s.cilj.velicina === "susret")
       return korijeni(funkcijaCilja(m, s.cilj), 0, m.tKraj).filter(
@@ -3570,9 +3583,9 @@ $x_1$, $\\vec{a}$, $90^\\circ$). Uz geometriju raspon x i y mora čuvati omjer (
     }
     return max;
   }
-  function ishodGibanja(s, parametri) {
+  function ishodGibanja(s, parametri2) {
     const c = s.cilj ?? {};
-    const m = modelGibanja(s, parametri);
+    const m = modelGibanja(s, parametri2);
     const b = m.tijela.find((x) => x.id === c.tijelo) ?? m.tijela[0];
     if (!b) return null;
     switch (c.velicina) {
@@ -5078,11 +5091,11 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
       );
       return false;
     }
-    const raspon2 = `${formatNumber(min)} – ${formatNumber(max)}`.replace("-Infinity", "−∞").replace("Infinity", "∞");
+    const raspon4 = `${formatNumber(min)} – ${formatNumber(max)}`.replace("-Infinity", "−∞").replace("Infinity", "∞");
     if (isNum(x))
       return need(
         x >= min && x <= max,
-        `${ime2} = ${formatNumber(x)} je izvan smislenih granica (${raspon2})`
+        `${ime2} = ${formatNumber(x)} je izvan smislenih granica (${raspon4})`
       );
     const k = klizacZa(s, x);
     if (!need(k, `${ime2} mora biti broj ili id klizača (nema klizača „${x}“)`))
@@ -5091,7 +5104,7 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
     const f2 = isNum(k.faktor) ? k.faktor : 1;
     return need(
       k.min * f2 >= min && k.max * f2 <= max,
-      `klizač „${k.id}“ za ${ime2} izlazi iz smislenih granica (${raspon2})`
+      `klizač „${k.id}“ za ${ime2} izlazi iz smislenih granica (${raspon4})`
     );
   }
   function validateKoristeniKlizaci(s, need, koristeni) {
@@ -5249,21 +5262,21 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
         fy2 += f2.F * Math.sin(rad(f2.kut));
       }
       if (Math.abs(fx2) < 1e-9) fx2 = 0;
-      const G3 = m * g;
-      const N = Math.max(0, G3 - fy2);
+      const G4 = m * g;
+      const N = Math.max(0, G4 - fy2);
       let tr = 0;
       if (mi > 0 && N > 0) {
         if (Math.abs(v) > 1e-9) tr = -Math.sign(v) * mi * N;
         else if (Math.abs(fx2) <= mi * N) tr = -fx2;
         else tr = -Math.sign(fx2) * mi * N;
       }
-      sila("G", "F_g", "Zemlja privlači", 270, G3);
+      sila("G", "F_g", "Zemlja privlači", 270, G4);
       sila("N", "N", "pod gura", 90, N);
       sila("F_tr", "F_{tr}", "trenje s podom", tr > 0 ? 0 : 180, Math.abs(tr));
       for (const f2 of vlastite) sila(f2.id, f2.oznaka ?? f2.id, f2.izvor, f2.kut, f2.F);
       Object.assign(vel, {
         m,
-        G: G3,
+        G: G4,
         N,
         F_tr: Math.abs(tr),
         F_rez: fx2 + tr,
@@ -5275,17 +5288,17 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
     if (s.scena === "dizalo") {
       const m = iznos2(s, s.masa, p);
       const a = iznos2(s, s.a ?? 0, p);
-      const G3 = m * g;
+      const G4 = m * g;
       const N = Math.max(0, m * (g + a));
-      sila("G", "F_g", "Zemlja privlači", 270, G3);
+      sila("G", "F_g", "Zemlja privlači", 270, G4);
       sila("N", "N", "vaga gura", 90, N);
       Object.assign(vel, {
         m,
-        G: G3,
+        G: G4,
         N,
         vaga: s.vaga === "kg" ? N / g : N,
         a,
-        F_rez: N - G3
+        F_rez: N - G4
       });
       return { sile, vel, a, g };
     }
@@ -5293,9 +5306,9 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
       const m = iznos2(s, s.masa, p);
       const kut = iznos2(s, s.kut, p);
       const mi = iznos2(s, s.mi ?? 0, p);
-      const G3 = m * g;
-      const Fpar = G3 * Math.sin(rad(kut));
-      const Fok = G3 * Math.cos(rad(kut));
+      const G4 = m * g;
+      const Fpar = G4 * Math.sin(rad(kut));
+      const Fok = G4 * Math.cos(rad(kut));
       const N = Fok;
       let tr = 0;
       let a = 0;
@@ -5304,10 +5317,10 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
       else tr = mi * N;
       a = (Fpar - tr) / m;
       if (Math.abs(a) < 1e-9) a = 0;
-      sila("G", "F_g", "Zemlja privlači", 270, G3);
+      sila("G", "F_g", "Zemlja privlači", 270, G4);
       sila("N", "N", "kosina gura", 90 - kut, N);
       sila("F_tr", "F_{tr}", "trenje s kosinom", 180 - kut, tr);
-      Object.assign(vel, { m, kut, G: G3, N, F_par: Fpar, F_okom: Fok, F_tr: tr, a });
+      Object.assign(vel, { m, kut, G: G4, N, F_par: Fpar, F_okom: Fok, F_tr: tr, a });
       return { sile, vel, a, g, kut };
     }
     if (s.scena === "kolotura") {
@@ -5317,23 +5330,23 @@ savjeti?: [tekst ili null po dionici] (dodaje se poruci kad je ta dionica kriva)
       const G1 = m1 * g;
       const G22 = m2 * g;
       let a = 0;
-      let T;
+      let T3;
       let tr;
       if (v > 1e-9 || G22 > mi * G1 + 1e-9) {
         a = (G22 - mi * G1) / (m1 + m2);
         tr = mi * G1;
-        T = m2 * (g - a);
+        T3 = m2 * (g - a);
       } else {
-        T = G22;
+        T3 = G22;
         tr = G22;
       }
       sila("G1", "F_{g1}", "Zemlja privlači", 270, G1, 0);
       sila("N", "N", "stol gura", 90, G1, 0);
-      sila("T1", "T", "nit vuče", 0, T, 0);
+      sila("T1", "T", "nit vuče", 0, T3, 0);
       sila("F_tr", "F_{tr}", "trenje sa stolom", 180, tr, 0);
       sila("G2", "F_{g2}", "Zemlja privlači", 270, G22, 1);
-      sila("T2", "T", "nit vuče", 90, T, 1);
-      Object.assign(vel, { m1, m2, a, T, G1, G2: G22, N: G1, F_tr: tr });
+      sila("T2", "T", "nit vuče", 90, T3, 1);
+      Object.assign(vel, { m1, m2, a, T: T3, G1, G2: G22, N: G1, F_tr: tr });
       return { sile, vel, a, g };
     }
     return { sile, vel, a: 0, g };
@@ -7280,39 +7293,39 @@ Načini:
   var clean = (x) => isNum(x) ? Number(x.toPrecision(12)) + 0 : x;
   var ime = (s, i) => s.tijela[i]?.oznaka ?? `tijelo ${i + 1}`;
   function sudarIshod(s) {
-    const T = s.tijela.map((b) => ({ m: b.m, v: isNum(b.v) ? b.v : 0 }));
+    const T3 = s.tijela.map((b) => ({ m: b.m, v: isNum(b.v) ? b.v : 0 }));
     const vrsta = s.vrsta;
     const zadan = s.tijela.findIndex((b) => isNum(b.v_poslije));
     let vp;
     if (s.zid) {
       const b = s.tijela[0];
       vp = [
-        isNum(b.v_poslije) ? b.v_poslije : vrsta === "savrseno_neelasticni" ? 0 : -(vrsta === "elasticni" ? 1 : s.e) * T[0].v
+        isNum(b.v_poslije) ? b.v_poslije : vrsta === "savrseno_neelasticni" ? 0 : -(vrsta === "elasticni" ? 1 : s.e) * T3[0].v
       ];
     } else if (vrsta === "razdvajanje") {
       const v0 = isNum(s.v0) ? s.v0 : 0;
-      T.forEach((t) => t.v = v0);
+      T3.forEach((t) => t.v = v0);
       const j = 1 - zadan;
       vp = [];
       vp[zadan] = s.tijela[zadan].v_poslije;
-      vp[j] = ((T[0].m + T[1].m) * v0 - T[zadan].m * vp[zadan]) / T[j].m;
+      vp[j] = ((T3[0].m + T3[1].m) * v0 - T3[zadan].m * vp[zadan]) / T3[j].m;
     } else {
-      const [a, b] = T;
-      const P = a.m * a.v + b.m * b.v;
+      const [a, b] = T3;
+      const P2 = a.m * a.v + b.m * b.v;
       const M = a.m + b.m;
-      if (vrsta === "savrseno_neelasticni") vp = [P / M, P / M];
+      if (vrsta === "savrseno_neelasticni") vp = [P2 / M, P2 / M];
       else if (vrsta === "neelasticni" && zadan >= 0) {
         const j = 1 - zadan;
         vp = [];
         vp[zadan] = s.tijela[zadan].v_poslije;
-        vp[j] = (P - T[zadan].m * vp[zadan]) / T[j].m;
+        vp[j] = (P2 - T3[zadan].m * vp[zadan]) / T3[j].m;
       } else {
         const e = vrsta === "elasticni" ? 1 : s.e;
-        vp = [(P + b.m * e * (b.v - a.v)) / M, (P + a.m * e * (a.v - b.v)) / M];
+        vp = [(P2 + b.m * e * (b.v - a.v)) / M, (P2 + a.m * e * (a.v - b.v)) / M];
       }
     }
     const dt = isNum(s.trajanje) && s.trajanje > 0 ? s.trajanje : null;
-    const tijela = T.map((t, i) => {
+    const tijela = T3.map((t, i) => {
       const v2 = clean(vp[i]);
       const p = clean(t.m * t.v);
       const pp = clean(t.m * v2);
@@ -7431,7 +7444,7 @@ Načini:
     const ans = sudarOdgovor(s);
     const K2 = [];
     const add2 = (vrijednost3, poruka2) => isNum(vrijednost3) && K2.push({ vrijednost: clean(vrijednost3), poruka: poruka2 });
-    const T = R2.tijela;
+    const T3 = R2.tijela;
     const smjer = "Iznos je dobar, ali predznak nije. Pozitivan smjer je udesno (→); brzina, količina gibanja i sila ulijevo imaju minus.";
     if (q.velicina === "v_poslije") {
       if (R2.zid) {
@@ -7440,7 +7453,7 @@ Načini:
           "Iznos je dobar, ali tijelo se nakon udara giba natrag, od zida: brzina mora imati minus."
         );
         add2(
-          T[0].v,
+          T3[0].v,
           "Tijelo se ne nastavlja gibati prema zidu istom brzinom: odbije se natrag."
         );
       } else if (R2.razdvajanje) {
@@ -7453,32 +7466,32 @@ Načini:
           );
         else add2(-ans, smjer);
         add2(
-          -(T[i].m * T[k].vp) / T[k].m,
+          -(T3[i].m * T3[k].vp) / T3[k].m,
           `Zamijenio si mase. Iz $m_1 v_1' + m_2 v_2' = 0$ brzina je $v' = -\\frac{m_{\\text{drugog}} \\cdot v_{\\text{drugog}}'}{m_{\\text{ovog}}}$: dijeli se masom tijela kojem tražiš brzinu.`
         );
         add2(
-          -(T[k].m * T[k].vp) / (T[0].m + T[1].m),
+          -(T3[k].m * T3[k].vp) / (T3[0].m + T3[1].m),
           `Podijelio si ukupnom masom. Nakon razdvajanja tijela se gibaju odvojeno, pa se dijeli samo masom tijela ${ime(s, i)}.`
         );
         add2(
-          -T[k].vp,
+          -T3[k].vp,
           "Tijela nemaju jednake brzine, nego jednake i suprotne količine gibanja: lakše tijelo je mnogo brže."
         );
         add2(
-          -Math.sign(T[k].vp) * Math.sqrt(T[k].m * T[k].vp ** 2 / T[i].m),
+          -Math.sign(T3[k].vp) * Math.sqrt(T3[k].m * T3[k].vp ** 2 / T3[i].m),
           "Izjednačio si kinetičke energije. Pri razdvajanju se čuva količina gibanja, a energija dolazi izvana (barut, opruga), pa se ne čuva."
         );
       } else {
         const j = 1 - i;
-        const M = T[0].m + T[1].m;
+        const M = T3[0].m + T3[1].m;
         add2(-ans, smjer);
         if (R2.spojeni) {
           add2(
-            R2.P / T[1].m,
+            R2.P / T3[1].m,
             `Podijelio si samo masom tijela ${ime(s, 1)}. Nakon sudara tijela se gibaju zajedno, kao jedno tijelo mase $m_1 + m_2$.`
           );
           add2(
-            R2.P / T[0].m,
+            R2.P / T3[0].m,
             `Podijelio si samo masom tijela ${ime(s, 0)}. Nakon sudara tijela se gibaju zajedno, kao jedno tijelo mase $m_1 + m_2$.`
           );
           add2(
@@ -7486,7 +7499,7 @@ Načini:
             "To je ukupna količina gibanja (kg·m/s), a ne brzina: podijeli je ukupnom masom."
           );
           add2(
-            T[0].v,
+            T3[0].v,
             "Brzina ne može ostati ista: isti zalet sad gura veću masu, pa je zajednička brzina manja."
           );
           add2(
@@ -7494,7 +7507,7 @@ Načini:
             "Izjednačio si kinetičke energije. Kad se tijela spoje, kinetička energija se ne čuva (dio ode u toplinu i deformaciju); čuva se količina gibanja."
           );
           add2(
-            (T[0].v + T[1].v) / 2,
+            (T3[0].v + T3[1].v) / 2,
             "Ne računa se prosjek brzina: teže tijelo više utječe. Izjednači količinu gibanja prije i poslije."
           );
         } else {
@@ -7503,18 +7516,18 @@ Načini:
             "To bi bila zajednička brzina da se tijela spoje. Ovdje se tijela odbiju i gibaju odvojeno."
           );
           add2(
-            T[i].v,
+            T3[i].v,
             `Brzina tijela ${ime(s, i)} se u sudaru promijeni; ne ostaje ista kao prije.`
           );
-          if (Math.abs(T[0].m - T[1].m) > 1e-9 * M)
-            add2(T[j].v, "Brzine se zamijene samo kad su mase jednake.");
+          if (Math.abs(T3[0].m - T3[1].m) > 1e-9 * M)
+            add2(T3[j].v, "Brzine se zamijene samo kad su mase jednake.");
           if (isNum(s.tijela[j]?.v_poslije)) {
             add2(
-              R2.P / T[i].m,
+              R2.P / T3[i].m,
               `Zaboravio si oduzeti količinu gibanja tijela ${ime(s, j)} poslije sudara: $m_i v_i' = p_{\\text{ukupno}} - m_j v_j'$.`
             );
             add2(
-              (R2.P + T[j].m * T[j].vp) / T[i].m,
+              (R2.P + T3[j].m * T3[j].vp) / T3[i].m,
               `Količinu gibanja tijela ${ime(s, j)} poslije sudara treba oduzeti od ukupne, a ne pribrojiti.`
             );
           }
@@ -7525,13 +7538,13 @@ Načini:
       const poslije = q.velicina === "p_poslije";
       add2(-ans, smjer);
       if (i == null && !R2.zid) {
-        const magn = T.reduce((a, t) => a + Math.abs(poslije ? t.pp : t.p), 0);
+        const magn = T3.reduce((a, t) => a + Math.abs(poslije ? t.pp : t.p), 0);
         add2(
           magn,
           "Količine gibanja zbrajaju se s predznakom: kad tijela idu na suprotne strane, oduzimaju se."
         );
       }
-      const tj = i == null ? null : T[i];
+      const tj = i == null ? null : T3[i];
       if (tj)
         add2(
           poslije ? tj.m * tj.vp ** 2 / 2 : tj.m * tj.v ** 2 / 2,
@@ -7539,7 +7552,7 @@ Načini:
         );
     }
     if (q.velicina === "dp" || q.velicina === "F") {
-      const tj = T[i];
+      const tj = T3[i];
       const dt = R2.dt ?? 1;
       const f2 = q.velicina === "F" ? 1 / dt : 1;
       const razlikaIznosa = tj.m * (Math.abs(tj.vp) - Math.abs(tj.v));
@@ -7571,7 +7584,7 @@ Načini:
     }
     if (q.velicina === "Ek_prije" || q.velicina === "Ek_poslije") {
       const poslije = q.velicina === "Ek_poslije";
-      const tj = i == null ? T : [T[i]];
+      const tj = i == null ? T3 : [T3[i]];
       const v = (t) => poslije ? t.vp : t.v;
       add2(
         tj.reduce((a, t) => a + t.m * v(t) ** 2, 0),
@@ -7588,7 +7601,7 @@ Načini:
         );
       if (poslije && R2.spojeni && i == null)
         add2(
-          T[0].m * T[0].vp ** 2 / 2,
+          T3[0].m * T3[0].vp ** 2 / 2,
           "Nakon sudara gibaju se oba tijela zajedno: uzmi ukupnu masu $m_1 + m_2$."
         );
     }
@@ -8125,9 +8138,9 @@ Načini:
   var EPS3 = 1e-9;
   var clean2 = (x) => Number(x.toPrecision(12)) + 0;
   var aligned2 = (v, step) => Math.abs(v / step - Math.round(v / step)) < 1e-6;
-  function lijepiKorak(raspon2) {
-    if (!(raspon2 > 0)) return 1;
-    const raw = raspon2 / 10;
+  function lijepiKorak(raspon4) {
+    if (!(raspon4 > 0)) return 1;
+    const raw = raspon4 / 10;
     const p = Math.pow(10, Math.floor(Math.log10(raw)));
     for (const k of [1, 2, 5, 10]) if (k * p >= raw - EPS3) return clean2(k * p);
     return clean2(10 * p);
@@ -9640,7 +9653,7 @@ dubina_vrha? (m), gustoca? (kg/m³)} (kocka u jedinoj posudi; strelice sila tlak
       ...krivoU(krivoSI(s), VELICINE2[v], jed2, answer),
       ...krivoJedinica(odgovorSI(s), VELICINE2[v], jed2)
     ];
-    const SAVJET2 = {
+    const SAVJET4 = {
       v2: "Protok je isti u oba dijela: S₁v₁ = S₂v₂, pa v₂ = v₁·S₁/S₂.",
       p2: "Bernoulli za vodoravnu cijev: p₁ + ρv₁²/2 = p₂ + ρv₂²/2. Najprije izračunaj v₂.",
       Q: "Protok je Q = S·v, s površinom u m².",
@@ -9654,7 +9667,7 @@ dubina_vrha? (m), gustoca? (kg/m³)} (kocka u jedinoj posudi; strelice sila tlak
       tol: tolOf2(s, answer),
       unit: jed2,
       krivo,
-      savjet: s.savjet || SAVJET2[v]
+      savjet: s.savjet || SAVJET4[v]
     });
   }
   var VODA_694 = {
@@ -9814,22 +9827,22 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
           stanje: stanje3
         });
     };
-    const prijelaz = (vrsta, T2, L, simbol) => out.push({
+    const prijelaz = (vrsta, T4, L, simbol) => out.push({
       vrsta,
       ravno: true,
-      T0: T2,
-      T1: T2,
+      T0: T4,
+      T1: T4,
       L,
       simbol,
       Q: isNum(m) && isNum(L) ? m * L : null
     });
     let st = stanjeOd(s);
     const kraj3 = stanjeDo(s);
-    let T = s.od;
+    let T3 = s.od;
     if (st === "kruto") {
       const Tk = kraj3 === "kruto" ? s.do : t.taliste;
-      grij("grije_kruto", t.c_kruto, T, Tk, "kruto");
-      T = Tk;
+      grij("grije_kruto", t.c_kruto, T3, Tk, "kruto");
+      T3 = Tk;
       if (kraj3 !== "kruto") {
         prijelaz("taljenje", t.taliste, t.lambda, "λ");
         st = "tekuce";
@@ -9837,14 +9850,14 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
     }
     if (st === "tekuce") {
       const Tk = kraj3 === "tekuce" ? s.do : t.vreliste;
-      grij("grije_tekuce", t.c_tekuce, T, Tk, "tekuce");
-      T = Tk;
+      grij("grije_tekuce", t.c_tekuce, T3, Tk, "tekuce");
+      T3 = Tk;
       if (kraj3 === "plin") {
         prijelaz("isparavanje", t.vreliste, t.r, "r");
         st = "plin";
       }
     }
-    if (st === "plin") grij("grije_plin", t.c_plin, T, s.do, "plin");
+    if (st === "plin") grij("grije_plin", t.c_plin, T3, s.do, "plin");
     let Q0 = 0;
     return out.map((d, i) => {
       const r = { ...d, br: i + 1, Q0 };
@@ -9942,9 +9955,9 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
     if (list.length) return;
     const { taliste: Tt, vreliste: Tv } = s.tvar;
     const moze = {
-      kruto: (T) => T <= Tt,
-      tekuce: (T) => T >= Tt && T <= Tv,
-      plin: (T) => T >= Tv
+      kruto: (T3) => T3 <= Tt,
+      tekuce: (T3) => T3 >= Tt && T3 <= Tv,
+      plin: (T3) => T3 >= Tv
     };
     need(
       moze[stanjeOd(s)](s.od),
@@ -10046,9 +10059,9 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
         );
     });
     if (v === "mijesanje" && !list.length) {
-      const T = s.tijela.map((t) => t.t0);
+      const T3 = s.tijela.map((t) => t.t0);
       need(
-        Math.max(...T) - Math.min(...T) >= 1,
+        Math.max(...T3) - Math.min(...T3) >= 1,
         "tijela trebaju različite početne temperature"
       );
     }
@@ -10156,22 +10169,22 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
     const v = vrstaOf(s);
     const out = [];
     if (v === "mijesanje") {
-      const T = s.tijela;
-      const sredina = T.reduce((a, t) => a + t.t0, 0) / T.length;
-      const isteMase = T.every((t) => Math.abs(t.m - T[0].m) < 1e-12);
-      const istiC = T.every((t) => t.c === T[0].c);
+      const T3 = s.tijela;
+      const sredina = T3.reduce((a, t) => a + t.t0, 0) / T3.length;
+      const isteMase = T3.every((t) => Math.abs(t.m - T3[0].m) < 1e-12);
+      const istiC = T3.every((t) => t.c === T3[0].c);
       out.push({
         si: sredina,
         poruka: isteMase ? "Aritmetička sredina vrijedi samo za istu tvar i iste mase. Ovdje se tvari razlikuju po c: uzmi u obzir m·c svakog tijela." : "Aritmetička sredina vrijedi samo za jednake mase. Smjesa je bliže temperaturi tijela kojeg ima više (veći m·c)."
       });
       if (!istiC)
         out.push({
-          si: T.reduce((a, t) => a + t.m * t.t0, 0) / T.reduce((a, t) => a + t.m, 0),
+          si: T3.reduce((a, t) => a + t.m * t.t0, 0) / T3.reduce((a, t) => a + t.m, 0),
           poruka: "Tvari su različite: uz masu u račun ide i specifični toplinski kapacitet c."
         });
       if (!isteMase)
         out.push({
-          si: T.reduce((a, t) => a + t.c * t.t0, 0) / T.reduce((a, t) => a + t.c, 0),
+          si: T3.reduce((a, t) => a + t.c * t.t0, 0) / T3.reduce((a, t) => a + t.c, 0),
           poruka: "Uz c u račun ide i masa svakog tijela."
         });
       return out;
@@ -10256,7 +10269,7 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
       ),
       ...vel === "temperatura" ? [] : krivoJedinica(odgovorSI2(s), vel, jed2)
     ];
-    const SAVJET2 = {
+    const SAVJET4 = {
       krivulja: "Na kosim dijelovima Q = m·c·Δt (c za stanje tvari na tom dijelu), na vodoravnima Q = m·λ (taljenje) ili Q = m·r (isparavanje).",
       mijesanje: "Toplina koju toplije tijelo preda jednaka je toplini koju hladnije primi: Σ m·c·(t − t₀) = 0.",
       grijac: "Grije se sve u posudi: Q = Σ m·c·Δt, a vrijeme na grijaču t = Q / P."
@@ -10267,7 +10280,7 @@ p1? (statički tlak u širem dijelu, Pa), rho? (1000 kg/m³), kanta?: {V (L)}, n
       tol: tolOf3(s, answer),
       unit: jed2,
       krivo,
-      savjet: s.savjet || SAVJET2[vrstaOf(s)]
+      savjet: s.savjet || SAVJET4[vrstaOf(s)]
     });
   }
   function tocanOdgovor2(s) {
@@ -10517,7 +10530,7 @@ grami, konačna temperatura umjesto Δt dodaju se same).`,
   }
   var celzij = (s) => jediniceOd(s).T === "°C";
   var uK = (s, t) => celzij(s) ? t + NULA_C : t;
-  var izK = (s, T) => celzij(s) ? T - NULA_C : T;
+  var izK = (s, T3) => celzij(s) ? T3 - NULA_C : T3;
   var energijaFaktor = (s) => P_JEDINICE[jediniceOd(s).p] * V_JEDINICE[jediniceOd(s).V];
   function konstanta(s) {
     if (isNum(s.n) && s.n > 0)
@@ -10534,8 +10547,8 @@ grami, konačna temperatura umjesto Δt dodaju se same).`,
   function izKoordinata(s, k, t) {
     const osi2 = osiOd(s);
     if (osi2.x === "V") return { p: t.p, V: t.V, T: t.p * t.V / k };
-    const T = uK(s, t.T);
-    return osi2.y === "V" ? { p: k * T / t.V, V: t.V, T } : { p: t.p, V: k * T / t.p, T };
+    const T3 = uK(s, t.T);
+    return osi2.y === "V" ? { p: k * T3 / t.V, V: t.V, T: T3 } : { p: t.p, V: k * T3 / t.p, T: T3 };
   }
   function punaStanja(s) {
     const { k } = konstanta(s);
@@ -11182,11 +11195,11 @@ prikazi?: ["p", "V", "T", "pV", "U", "W", "Q"] očitanja uživo (U = 3/2 pV), te
           procesi.forEach((pr, i) => {
             if (pr.vrsta !== "ravno") return;
             const k = koordinate(s, z.puna[(i + 1) % st.length]);
-            const naMrezi3 = (v, q) => Math.abs(
+            const naMrezi4 = (v, q) => Math.abs(
               (v - s[q][0]) / s.korak[q] - Math.round((v - s[q][0]) / s.korak[q])
             ) < 1e-6;
             need(
-              naMrezi3(k.x, osi2.x) && naMrezi3(k.y, osi2.y),
+              naMrezi4(k.x, osi2.x) && naMrezi4(k.y, osi2.y),
               `procesi[${i}] je ravna crta, pa njegov kraj mora biti na čvoru mreže`
             );
           });
@@ -11418,18 +11431,18 @@ prikazi?: ["p", "V", "T", "pV", "U", "W", "Q"] očitanja uživo (U = 3/2 pV), te
   function jediniceOd2(s) {
     return { p: s.jedinice?.p ?? "kPa", V: s.jedinice?.V ?? "L" };
   }
-  function stanje2(s, { n, V, T, M }) {
+  function stanje2(s, { n, V, T: T3, M }) {
     const j = jediniceOd2(s);
-    const pPa = n * R * T / (V * V_JEDINICE[j.V]);
+    const pPa = n * R * T3 / (V * V_JEDINICE[j.V]);
     return {
       n,
       V,
-      T,
+      T: T3,
       M,
       p: pPa / P_JEDINICE[j.p],
       N: n * NA,
-      Ek: 1.5 * KB * T,
-      vef: Math.sqrt(3 * R * T / (M / 1e3))
+      Ek: 1.5 * KB * T3,
+      vef: Math.sqrt(3 * R * T3 / (M / 1e3))
     };
   }
   function nakonPromjene(s, posuda, promjena3 = s.promjena ?? {}) {
@@ -12537,9 +12550,9 @@ sredstvo?: {er, naziv} (zadano zrak), tocke?: [{oznaka, x, y}] (istaknute točke
         const z = nulaInfo(s);
         if (!z) return "";
         const [a, b] = s.naboji;
-        const r12 = Math.abs(z.s);
+        const r14 = Math.abs(z.s);
         const r2 = Math.abs(z.d - z.s);
-        return `na pravcu kroz naboje, ${formatNumber(r12, 2)} cm od ${oznakaMd(a.oznaka)} i ${formatNumber(r2, 2)} cm od ${oznakaMd(b.oznaka)}${z.s > 0 && z.s < z.d ? " (između njih)" : ` (s vanjske strane naboja ${oznakaMd(r12 < r2 ? a.oznaka : b.oznaka)})`}`;
+        return `na pravcu kroz naboje, ${formatNumber(r14, 2)} cm od ${oznakaMd(a.oznaka)} i ${formatNumber(r2, 2)} cm od ${oznakaMd(b.oznaka)}${z.s > 0 && z.s < z.d ? " (između njih)" : ` (s vanjske strane naboja ${oznakaMd(r14 < r2 ? a.oznaka : b.oznaka)})`}`;
       }
       if (s.nacin === "dodir") {
         const t = nakonDodira(s.kugle);
@@ -12786,8 +12799,8 @@ sredstvo?: {er, naziv} (zadano zrak), tocke?: [{oznaka, x, y}] (istaknute točke
     const t = nakonDodira(s.kugle);
     const Q = q1 + q2;
     const tol2 = Math.max(0.01, 5e-3 * Math.max(Math.abs(q1), Math.abs(q2)));
-    const blizu2 = (x, y) => Math.abs(x - y) <= tol2;
-    const par = (a, b) => blizu2(unos[0], a) && blizu2(unos[1], b);
+    const blizu3 = (x, y) => Math.abs(x - y) <= tol2;
+    const par = (a, b) => blizu3(unos[0], a) && blizu3(unos[1], b);
     if (par(t[0], t[1])) return { tocno: true };
     const hit = (s.krivo ?? []).find(
       (k) => par(k.vrijednosti[0], k.vrijednosti[1])
@@ -12805,7 +12818,7 @@ sredstvo?: {er, naziv} (zadano zrak), tocke?: [{oznaka, x, y}] (istaknute točke
         poruka: "Kugle nisu samo zamijenile naboje. Dok se dodiruju, ponašaju se kao jedno tijelo i ukupni naboj se razmjesti po obje."
       };
     const zbroj2 = unos[0] + unos[1];
-    if (!blizu2(zbroj2, Q)) {
+    if (!blizu3(zbroj2, Q)) {
       const abs = (Math.abs(q1) + Math.abs(q2)) / 2;
       if (jednake && Math.abs(q1) !== Math.abs(q2) && par(abs, abs) && Math.sign(q1) !== Math.sign(q2))
         return {
@@ -13352,7 +13365,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
   }
   var zatvorena = (c, st) => st.sklopke?.[c.id] ?? c.zatvorena;
   var vrstaSkupine = (c, st) => st.spoj?.[c.key] ?? c.vrsta;
-  function rijesi(spec, st, T = stablo(spec.spoj)) {
+  function rijesi(spec, st, T3 = stablo(spec.spoj)) {
     const po = {};
     const Rc = {};
     const otpor = (c) => {
@@ -13390,13 +13403,13 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
           (d) => raspodijeli(d, Rc[d.key] === Infinity ? 0 : U / Rc[d.key], U)
         );
     };
-    const Rv = otpor(T.korijen);
+    const Rv = otpor(T3.korijen);
     const emf = st.emf;
     const r = st.r;
     const I = Rv === Infinity || Rv + r === 0 ? 0 : emf / (Rv + r);
     const Ut = Rv === Infinity ? emf : I * Rv;
-    raspodijeli(T.korijen, I, Ut);
-    return { po, I, Ut, Rv, emf, r, T };
+    raspodijeli(T3.korijen, I, Ut);
+    return { po, I, Ut, Rv, emf, r, T: T3 };
   }
   function velicineOd2(rez, element) {
     if (element === "ukupno")
@@ -13426,7 +13439,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
   var strana = (o) => o === "h" ? { ls: -1, bs: 1 } : { ls: 1, bs: -1 };
   var ocitanjeAmp = (o) => o === "h" ? MR + 4 + RH : MR + 6 + RW;
   var ocitanjeMosta = (o) => o === "h" ? MR + 4 + RH : MR + 6 + RW;
-  function rasporedi(spec, st, T, { linije, oznakaIzvora: oznakaIzvora2 }) {
+  function rasporedi(spec, st, T3, { linije, oznakaIzvora: oznakaIzvora2 }) {
     const mj = spec.mjerila ?? [];
     const imaMj = (vrsta, el) => mj.some((m) => m.vrsta === vrsta && m.element === el);
     const refMj = (vrsta, c) => c.id && imaMj(vrsta, c.id) ? c.id : null;
@@ -13447,7 +13460,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       );
       return { key: c.key, c, vrsta: v, djeca, A, V };
     };
-    let korijen = pripremi2(T.korijen);
+    let korijen = pripremi2(T3.korijen);
     let dolje = mj.find(
       (m) => m.vrsta === "A" && (m.element === "izvor" || m.element === "ukupno")
     )?.element ?? null;
@@ -13535,52 +13548,52 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     const zice = [];
     const elementi = [];
     const mjerila = [];
-    const cvorovi = [];
+    const cvorovi2 = [];
     const zica = (pts, kljucevi) => zice.push({ pts, kljucevi });
     const mjerilo2 = (vrsta, element, [x2, y], ocitanje) => mjerila.push({ vrsta, element, x: x2, y, ocitanje });
-    const ocitanjeUz = (o, P, u2, v, sgn) => o === "h" ? {
-      ...xy(P(u2, v + sgn * (MR + 4))),
+    const ocitanjeUz = (o, P2, u2, v, sgn) => o === "h" ? {
+      ...xy(P2(u2, v + sgn * (MR + 4))),
       anchor: "middle",
       baseline: sgn < 0 ? "auto" : "hanging"
     } : {
-      ...xy(P(u2, v + sgn * (MR + 6))),
+      ...xy(P2(u2, v + sgn * (MR + 6))),
       anchor: sgn > 0 ? "start" : "end",
       baseline: "central"
     };
-    const crtaj = (L, o, P, u0, v0) => {
+    const crtaj = (L, o, P2, u0, v0) => {
       const m = L.m;
       const { ls, bs } = strana(o);
       let u2 = u0;
       const kroz = [L.key];
       if (m.am) {
-        zica([P(u2, v0), P(u2 + AM, v0)], kroz);
+        zica([P2(u2, v0), P2(u2 + AM, v0)], kroz);
         mjerilo2(
           "A",
           L.A,
-          P(u2 + AM / 2, v0),
-          ocitanjeUz(o, P, u2 + AM / 2, v0, ls)
+          P2(u2 + AM / 2, v0),
+          ocitanjeUz(o, P2, u2 + AM / 2, v0, ls)
         );
         u2 += AM;
       }
       const most = (a, b, uc, d, ref) => {
-        zica([P(a, v0), P(a, v0 + bs * d), P(b, v0 + bs * d), P(b, v0)], null);
-        cvorovi.push(P(a, v0), P(b, v0));
+        zica([P2(a, v0), P2(a, v0 + bs * d), P2(b, v0 + bs * d), P2(b, v0)], null);
+        cvorovi2.push(P2(a, v0), P2(b, v0));
         mjerilo2(
           "V",
           ref,
-          P(uc, v0 + bs * d),
-          ocitanjeUz(o, P, uc, v0 + bs * d, bs)
+          P2(uc, v0 + bs * d),
+          ocitanjeUz(o, P2, uc, v0 + bs * d, bs)
         );
       };
       if (!L.djeca) {
         const [tl, th] = TIJELO2[L.vrsta];
         const uc = u2 + m.tijelo / 2;
         if (L.vrsta === "S") {
-          zica([P(u2, v0), P(uc - tl / 2, v0)], kroz);
-          zica([P(uc + tl / 2, v0), P(u2 + m.tijelo, v0)], kroz);
-        } else zica([P(u2, v0), P(u2 + m.tijelo, v0)], kroz);
-        const oz = o === "h" ? { ...xy(P(uc, v0 - (th + 6))), anchor: "middle", poravnaj: "dno" } : { ...xy(P(uc, v0 + th + 8)), anchor: "start", poravnaj: "sredina" };
-        elementi.push({ c: L.c, ...xy(P(uc, v0)), o, oznaka: oz, ls });
+          zica([P2(u2, v0), P2(uc - tl / 2, v0)], kroz);
+          zica([P2(uc + tl / 2, v0), P2(u2 + m.tijelo, v0)], kroz);
+        } else zica([P2(u2, v0), P2(u2 + m.tijelo, v0)], kroz);
+        const oz = o === "h" ? { ...xy(P2(uc, v0 - (th + 6))), anchor: "middle", poravnaj: "dno" } : { ...xy(P2(uc, v0 + th + 8)), anchor: "start", poravnaj: "sredina" };
+        elementi.push({ c: L.c, ...xy(P2(uc, v0)), o, oznaka: oz, ls });
         if (L.V) most(uc - tl / 2 - 5, uc + tl / 2 + 5, uc, m.dV, L.V);
         return;
       }
@@ -13588,10 +13601,10 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
         const start = u2;
         L.djeca.forEach((d, i) => {
           if (i) {
-            zica([P(u2, v0), P(u2 + GAP, v0)], kroz);
+            zica([P2(u2, v0), P2(u2 + GAP, v0)], kroz);
             u2 += GAP;
           }
-          crtaj(d, o, P, u2, v0);
+          crtaj(d, o, P2, u2, v0);
           u2 += d.m.len;
         });
         if (L.V) most(start, u2, (start + u2) / 2, m.dV, L.V);
@@ -13599,31 +13612,31 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       }
       const uA = u2 + RAIL;
       const uB = u0 + m.len - RAIL;
-      zica([P(u2, v0), P(uA, v0)], kroz);
-      zica([P(uB, v0), P(u0 + m.len, v0)], kroz);
+      zica([P2(u2, v0), P2(uA, v0)], kroz);
+      zica([P2(uB, v0), P2(u0 + m.len, v0)], kroz);
       const g = m.grane;
       g.forEach((gr, i) => {
         const v = v0 + gr.v;
         const us = uA + (uB - uA - gr.m.len) / 2;
         const kljucevi = gr.L ? [gr.L.key] : null;
-        zica([P(uA, v), P(us, v)], kljucevi);
-        zica([P(us + gr.m.len, v), P(uB, v)], kljucevi);
-        if (gr.L) crtaj(gr.L, o, P, us, v);
+        zica([P2(uA, v), P2(us, v)], kljucevi);
+        zica([P2(us + gr.m.len, v), P2(uB, v)], kljucevi);
+        if (gr.L) crtaj(gr.L, o, P2, us, v);
         else {
-          zica([P(us, v), P(us + gr.m.len, v)], null);
+          zica([P2(us, v), P2(us + gr.m.len, v)], null);
           mjerilo2(
             "V",
             gr.ref,
-            P(us + gr.m.len / 2, v),
-            ocitanjeUz(o, P, us + gr.m.len / 2, v, ls)
+            P2(us + gr.m.len / 2, v),
+            ocitanjeUz(o, P2, us + gr.m.len / 2, v, ls)
           );
         }
         if (i < g.length - 1) {
           const iza = g.slice(i + 1).filter((x2) => x2.L).map((x2) => x2.L.key);
           const vn = v0 + g[i + 1].v;
-          zica([P(uA, v), P(uA, vn)], iza.length ? iza : null);
-          zica([P(uB, vn), P(uB, v)], iza.length ? iza : null);
-          cvorovi.push(P(uA, v), P(uB, v));
+          zica([P2(uA, v), P2(uA, vn)], iza.length ? iza : null);
+          zica([P2(uB, vn), P2(uB, v)], iza.length ? iza : null);
+          cvorovi2.push(P2(uA, v), P2(uB, v));
         }
       });
     };
@@ -13748,7 +13761,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
             ],
             iza.length ? iza : null
           );
-          cvorovi.push([k.x, yTop], [k.x, yBot]);
+          cvorovi2.push([k.x, yTop], [k.x, yBot]);
         }
       });
     } else
@@ -13817,7 +13830,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
             ],
             null
           );
-          cvorovi.push([xs, yTop], [xs, yBot]);
+          cvorovi2.push([xs, yTop], [xs, yBot]);
           mjerilo2("V", lijevo, [xb, ym], {
             x: xb - MR - 6,
             y: ym,
@@ -13836,7 +13849,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
             ],
             null
           );
-          cvorovi.push([xs, a], [xs, b]);
+          cvorovi2.push([xs, a], [xs, b]);
           mjerilo2("V", naR, [xb, yr], {
             x: xb - MR - 6,
             y: yr,
@@ -13852,7 +13865,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       zice: zice.map((z) => ({ ...z, pts: z.pts.map(([px, py]) => [r1(px), r1(py)]) })).filter((z) => z.pts.length > 1 && duljina2(z.pts) > 0.5),
       elementi,
       mjerila,
-      cvorovi: cvorovi.map(([px, py]) => [r1(px), r1(py)]),
+      cvorovi: cvorovi2.map(([px, py]) => [r1(px), r1(py)]),
       izvor: izvor2,
       stezaljke: imaIzvor ? null : { x: xs, yTop, yBot },
       presjek: presjek2 ? { x: r1((xs + xNiz) / 2), y: yTop } : null,
@@ -13891,8 +13904,8 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
   var clean3 = (x) => Math.round(x * 1e9) / 1e9;
   var oznakaIzvora = (s) => s.izvor?.oznaka ?? (s.izvor?.r != null ? "ε" : "U");
   var rUnutra = (s) => !!s.izvor && (s.izvor.r > 0 || (s.klizaci ?? []).some((k) => k.element === "r"));
-  function fraza(T, v, el) {
-    const c = T.po[el];
+  function fraza(T3, v, el) {
+    const c = T3.po[el];
     const g = c?.djeca ? c.oznaka ?? c.id : null;
     const ime2 = c ? naziv2(c) : el;
     if (v === "I")
@@ -13904,7 +13917,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     return el === "izvor" ? "otpor cijelog kruga (s unutarnjim)" : el === "ukupno" ? "ukupni otpor" : el === "r" ? "unutarnji otpor" : g ? `otpor skupine ${g}` : `otpor ${ime2}`;
   }
   var veliko2 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-  var oznakaPitanja = (s, T, q) => q.oznaka ?? `${veliko2(fraza(T, q.velicina, q.element))} =`;
+  var oznakaPitanja = (s, T3, q) => q.oznaka ?? `${veliko2(fraza(T3, q.velicina, q.element))} =`;
   function pitanoNaShemi(s, c) {
     if (s.nacin !== "izracunaj" || !c.id) return [];
     const mj = s.mjerila ?? [];
@@ -13955,9 +13968,9 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       }
     };
   }
-  function grupaIzbora(s, T) {
-    if (s.spoj_izbor === true) return T.korijen.djeca ? T.korijen : null;
-    const c = typeof s.spoj_izbor === "string" ? T.po[s.spoj_izbor] : null;
+  function grupaIzbora(s, T3) {
+    if (s.spoj_izbor === true) return T3.korijen.djeca ? T3.korijen : null;
+    const c = typeof s.spoj_izbor === "string" ? T3.po[s.spoj_izbor] : null;
     return c?.djeca ? c : null;
   }
   function postaviVrijednost(st, el, v) {
@@ -13965,25 +13978,25 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     else if (el === "r") st.r = v;
     else st.R = { ...st.R, [el]: v };
   }
-  function pocetnaVrijednost(s, T, el) {
+  function pocetnaVrijednost(s, T3, el) {
     if (el === "izvor") return s.izvor?.emf;
     if (el === "r") return s.izvor?.r ?? 0;
-    return T.po[el]?.R;
+    return T3.po[el]?.R;
   }
-  function stanjeIz(s, T, odg) {
+  function stanjeIz(s, T3, odg) {
     const st = pocetnoStanje(s);
     for (const k of s.klizaci ?? []) {
       const v = odg?.klizaci?.[k.element];
       if (isNum(v)) postaviVrijednost(st, k.element, v);
     }
-    const g = grupaIzbora(s, T);
+    const g = grupaIzbora(s, T3);
     if (g && (odg?.spoj === "ser" || odg?.spoj === "par"))
       st.spoj = { [g.key]: odg.spoj };
     return st;
   }
   var tolCilja = (s) => isNum(s.cilj.tolerancija) ? s.cilj.tolerancija : Math.max(1e-9, Math.abs(s.cilj.vrijednost) * 0.01);
-  var ciljU = (s, T, odg) => vrijednost2(
-    rijesi(s, stanjeIz(s, T, odg), T),
+  var ciljU = (s, T3, odg) => vrijednost2(
+    rijesi(s, stanjeIz(s, T3, odg), T3),
     s.cilj.velicina,
     s.cilj.element
   );
@@ -13991,22 +14004,22 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     { length: Math.round((k.max - k.min) / k.korak) + 1 },
     (_, i) => clean3(k.min + i * k.korak)
   );
-  function pretrazi(s, T, samoSpoj) {
+  function pretrazi(s, T3, samoSpoj) {
     const ks = s.klizaci ?? [];
-    const g = grupaIzbora(s, T);
+    const g = grupaIzbora(s, T3);
     const spojevi = samoSpoj ? [samoSpoj] : g ? [g.vrsta, g.vrsta === "ser" ? "par" : "ser"] : [null];
-    let kombinacije = [{}];
+    let kombinacije2 = [{}];
     for (const k of ks)
-      kombinacije = kombinacije.flatMap(
+      kombinacije2 = kombinacije2.flatMap(
         (o) => mreza2(k).map((v) => ({ ...o, [k.element]: v }))
       );
     const rjesenja = [];
     let najblize = null;
     let imaKrivih = false;
     for (const spoj of spojevi) {
-      for (const klizaci of kombinacije) {
+      for (const klizaci of kombinacije2) {
         const odg = { klizaci, spoj };
-        const v = ciljU(s, T, odg);
+        const v = ciljU(s, T3, odg);
         if (!isNum(v)) {
           imaKrivih = true;
           continue;
@@ -14020,28 +14033,28 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     rjesenja.sort((a, b) => a.d - b.d);
     return { rjesenja, najblize, imaKrivih };
   }
-  function nazivKlizaca(s, T, k) {
+  function nazivKlizaca(s, T3, k) {
     if (k.oznaka) return k.oznaka;
     if (k.element === "izvor") return oznakaIzvora(s);
     if (k.element === "r") return "r";
-    return naziv2(T.po[k.element] ?? { id: k.element });
+    return naziv2(T3.po[k.element] ?? { id: k.element });
   }
   var jedinicaKlizaca = (k) => k.element === "izvor" ? "V" : "Ω";
-  function kandidati(s, T) {
+  function kandidati(s, T3) {
     if (Array.isArray(s.odaberi?.medju)) return s.odaberi.medju;
-    const zarulje = T.listovi.filter((c) => c.vrsta === "Z").map((c) => c.id);
+    const zarulje = T3.listovi.filter((c) => c.vrsta === "Z").map((c) => c.id);
     const k = s.odaberi?.kriterij;
     if (zarulje.length && (KRITERIJI[k]?.[2] || k in PROMJENE)) return zarulje;
-    return T.listovi.filter((c) => c.vrsta === "R" || c.vrsta === "Z").map((c) => c.id);
+    return T3.listovi.filter((c) => c.vrsta === "R" || c.vrsta === "Z").map((c) => c.id);
   }
-  function stanjePoslije(s, T) {
+  function stanjePoslije(s, T3) {
     const st = pocetnoStanje(s);
-    const c = T.po[s.odaberi?.sklopka];
+    const c = T3.po[s.odaberi?.sklopka];
     if (c?.vrsta === "S") st.sklopke = { [c.id]: !c.zatvorena };
     return st;
   }
-  var snage = (s, T, st, ids) => {
-    const rez = rijesi(s, st, T);
+  var snage = (s, T3, st, ids) => {
+    const rez = rijesi(s, st, T3);
     return ids.map((id) => vrijednost2(rez, "P", id));
   };
   function promjena2(pb, pa, skala2) {
@@ -14053,18 +14066,18 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     if (pa < pb * 0.99) return "slabije";
     return "ne_mijenja";
   }
-  function rjesenjeOdaberi(s, T) {
-    const ids = kandidati(s, T);
+  function rjesenjeOdaberi(s, T3) {
+    const ids = kandidati(s, T3);
     const k = s.odaberi.kriterij;
     if (k in PROMJENE) {
-      const pb = snage(s, T, pocetnoStanje(s), ids);
-      const pa = snage(s, T, stanjePoslije(s, T), ids);
+      const pb = snage(s, T3, pocetnoStanje(s), ids);
+      const pa = snage(s, T3, stanjePoslije(s, T3), ids);
       const skala3 = Math.max(1e-12, ...pb, ...pa);
       const opis = ids.map((id, i) => promjena2(pb[i], pa[i], skala3));
       return { ids, tocni: ids.filter((id, i) => opis[i] === k), opis, pb, pa };
     }
     const [vel, smjer] = KRITERIJI[k];
-    const rez = rijesi(s, pocetnoStanje(s), T);
+    const rez = rijesi(s, pocetnoStanje(s), T3);
     const vr = ids.map((id) => vrijednost2(rez, vel, id));
     const naj = smjer > 0 ? Math.max(...vr) : Math.min(...vr);
     const skala2 = Math.max(1e-12, ...vr.map(Math.abs));
@@ -14086,9 +14099,9 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       if (p.vrsta === "par" && p.djeca.length > 1) return true;
     return false;
   }
-  function autoKrivo(s, T, q) {
+  function autoKrivo(s, T3, q) {
     const st0 = pocetnoStanje(s);
-    const rez = rijesi(s, st0, T);
+    const rez = rijesi(s, st0, T3);
     const { velicina: v, element: el } = q;
     const tocno = vrijednost2(rez, v, el);
     const out = [];
@@ -14098,7 +14111,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
         return;
       out.push({ vrijednost: x, poruka: poruka2 });
     };
-    const c = T.po[el];
+    const c = T3.po[el];
     const list = c && !c.djeca ? c : null;
     const ime2 = c ? naziv2(c) : "";
     const oz = oznakaIzvora(s);
@@ -14165,7 +14178,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
         `Pomnožio si napon sa strujom iz izvora. Za snagu na ${ime2} treba struja baš kroz ${ime2}.`
       );
     if (v === "I" && (el === "izvor" || el === "ukupno")) {
-      for (const l of T.listovi)
+      for (const l of T3.listovi)
         if (l.vrsta !== "S")
           add2(
             rez.po[l.key].I,
@@ -14173,7 +14186,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
           );
     }
     if (v === "R") {
-      const g = el === "ukupno" ? T.korijen : c;
+      const g = el === "ukupno" ? T3.korijen : c;
       if (g?.djeca && g.vrsta === "par")
         add2(
           g.djeca.reduce((x, d) => x + 1 / rez.po[d.key].R, 0),
@@ -14182,17 +14195,17 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
     }
     if (s.izvor && st0.r > 0 && el !== "r")
       add2(
-        vrijednost2(rijesi(s, { ...st0, r: 0 }, T), v, el),
+        vrijednost2(rijesi(s, { ...st0, r: 0 }, T3), v, el),
         `Zaboravio si unutarnji otpor izvora. Struja u krugu je $I = \\frac{${oz === "ε" ? "\\varepsilon" : oz}}{R + r}$: i $r$ je u nazivniku.`
       );
-    for (const g of T.grupe) {
+    for (const g of T3.grupe) {
       if (g.djeca.length < 2) continue;
       add2(
         vrijednost2(
           rijesi(
             s,
             { ...st0, spoj: { [g.key]: g.vrsta === "ser" ? "par" : "ser" } },
-            T
+            T3
           ),
           v,
           el
@@ -14201,8 +14214,8 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       );
     }
     const drugi = [
-      ...T.listovi.filter((l) => l.vrsta !== "S" || v === "I" || v === "U").map((l) => l.id),
-      ...T.grupe.filter((g) => g.id).map((g) => g.id),
+      ...T3.listovi.filter((l) => l.vrsta !== "S" || v === "I" || v === "U").map((l) => l.id),
+      ...T3.grupe.filter((g) => g.id).map((g) => g.id),
       ...s.izvor ? ["ukupno"] : [],
       ...st0.r > 0 ? ["r"] : []
     ];
@@ -14210,7 +14223,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       if (d !== el)
         add2(
           vrijednost2(rez, v, d),
-          `To je ${fraza(T, v, d)}, a traži se ${fraza(T, v, el)}.`
+          `To je ${fraza(T3, v, d)}, a traži se ${fraza(T3, v, el)}.`
         );
     return out;
   }
@@ -14297,21 +14310,21 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       );
     return ok;
   }
-  function refOk(s, T, el) {
+  function refOk(s, T3, el) {
     if (typeof el !== "string") return false;
     if (el === "ukupno") return true;
     if (el === "izvor") return !!s.izvor;
     if (el === "r") return !!s.izvor && s.izvor.r != null;
-    return !!T.po[el];
+    return !!T3.po[el];
   }
   var REF_OPIS = `id elementa ili skupine, "izvor", "ukupno" ili "r"`;
-  function provjeriVelicinu(s, T, q, at, need) {
+  function provjeriVelicinu(s, T3, q, at, need) {
     const ok1 = need(
       VELICINE4.includes(q?.velicina),
       `${at}.velicina mora biti I, U, P ili R`
     );
     const ok2 = need(
-      refOk(s, T, q?.element),
+      refOk(s, T3, q?.element),
       `${at}.element mora biti ${REF_OPIS}`
     );
     if (!ok1 || !ok2) return false;
@@ -14320,7 +14333,7 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
         q.velicina === "R",
         `${at}: bez izvora se može pitati samo otpor (R)`
       );
-    const c = T.po[q.element];
+    const c = T3.po[q.element];
     if (c?.vrsta === "S")
       return need(
         q.velicina === "I" || q.velicina === "U",
@@ -14328,22 +14341,22 @@ cestica?: {vrsta: "proton" | "elektron", ulaz: "mirovanje" (kreće uz ploču ist
       );
     return true;
   }
-  function svaStanja(s, T) {
+  function svaStanja(s, T3) {
     const st0 = pocetnoStanje(s);
     const rk = (s.klizaci ?? []).find((k) => k.element === "r");
     if (rk) st0.r = rk.min;
     let stanja = [st0];
     if (s.nacin === "istrazi")
-      for (const c of T.listovi.filter((l) => l.vrsta === "S"))
+      for (const c of T3.listovi.filter((l) => l.vrsta === "S"))
         stanja = stanja.flatMap(
           (st) => [true, false].map((z) => ({
             ...st,
             sklopke: { ...st.sklopke, [c.id]: z }
           }))
         );
-    if (s.nacin === "odaberi" && T.po[s.odaberi?.sklopka]?.vrsta === "S")
-      stanja.push({ ...st0, sklopke: stanjePoslije(s, T).sklopke });
-    const g = grupaIzbora(s, T);
+    if (s.nacin === "odaberi" && T3.po[s.odaberi?.sklopka]?.vrsta === "S")
+      stanja.push({ ...st0, sklopke: stanjePoslije(s, T3).sklopke });
+    const g = grupaIzbora(s, T3);
     if (g)
       stanja = stanja.flatMap(
         (st) => ["ser", "par"].map((v) => ({ ...st, spoj: { [g.key]: v } }))
@@ -14581,7 +14594,7 @@ nacin:
       ))
         return list;
       if (!provjeriStablo(s.spoj, need) || list.length) return list;
-      const T = stablo(s.spoj);
+      const T3 = stablo(s.spoj);
       const nacin = s.nacin;
       if (s.mjerila != null && need(
         Array.isArray(s.mjerila) && s.mjerila.length <= 5,
@@ -14598,7 +14611,7 @@ nacin:
             `mjerila[${i}].vrsta mora biti "A" (ampermetar) ili "V" (voltmetar)`
           );
           need(
-            refOk(s, T, m?.element),
+            refOk(s, T3, m?.element),
             `mjerila[${i}].element mora biti ${REF_OPIS}`
           );
           if (m?.vrsta === "A")
@@ -14631,7 +14644,7 @@ nacin:
         )) {
           s.klizaci.forEach((k, i) => {
             const el = k?.element;
-            const c = T.po[el];
+            const c = T3.po[el];
             need(
               el === "izvor" || el === "r" ? !!s.izvor : c?.vrsta === "R",
               `klizaci[${i}].element mora biti id otpornika, "izvor" (ε) ili "r"`
@@ -14658,7 +14671,7 @@ nacin:
               el === "r" ? k.min >= 0 : k.min > 0,
               `klizaci[${i}].min mora biti pozitivan`
             );
-            const p = pocetnaVrijednost(s, T, el);
+            const p = pocetnaVrijednost(s, T3, el);
             if (isNum(p)) {
               need(
                 p >= k.min - 1e-9 && p <= k.max + 1e-9,
@@ -14682,7 +14695,7 @@ nacin:
           "spoj_izbor postoji samo u načinima istrazi i postavi"
         );
         need(
-          grupaIzbora(s, T)?.djeca.length >= 2,
+          grupaIzbora(s, T3)?.djeca.length >= 2,
           "spoj_izbor mora biti true (cijeli spoj je skupina) ili id skupine s barem 2 člana"
         );
       }
@@ -14701,14 +14714,14 @@ nacin:
           "podaci: 1–3 iznosa"
         ))
           s.podaci.forEach(
-            (q, i) => provjeriVelicinu(s, T, q, `podaci[${i}]`, need)
+            (q, i) => provjeriVelicinu(s, T3, q, `podaci[${i}]`, need)
           );
       }
       if (list.length) return list;
       if (s.izvor) {
-        for (const st of svaStanja(s, T))
+        for (const st of svaStanja(s, T3))
           if (!need(
-            rijesi(s, st, T).Rv + st.r > 1e-9,
+            rijesi(s, st, T3).Rv + st.r > 1e-9,
             "kratki spoj: u nekom stanju sklopki krug nema nikakav otpor (dodaj unutarnji otpor r ili otpornik u niz)"
           ))
             break;
@@ -14735,11 +14748,11 @@ nacin:
           Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
           "izracunaj treba pitaj: 1–3 tražene veličine"
         )) {
-          const rez = rijesi(s, pocetnoStanje(s), T);
+          const rez = rijesi(s, pocetnoStanje(s), T3);
           const vidjeno = /* @__PURE__ */ new Set();
           s.pitaj.forEach((q, i) => {
-            if (!provjeriVelicinu(s, T, q, `pitaj[${i}]`, need)) return;
-            const c = T.po[q.element];
+            if (!provjeriVelicinu(s, T3, q, `pitaj[${i}]`, need)) return;
+            const c = T3.po[q.element];
             if (c?.vrsta === "R")
               need(
                 q.velicina !== "R",
@@ -14782,7 +14795,7 @@ nacin:
         if (need(
           c && typeof c === "object",
           "postavi treba cilj: {velicina, element, vrijednost}"
-        ) && provjeriVelicinu(s, T, c, "cilj", need)) {
+        ) && provjeriVelicinu(s, T3, c, "cilj", need)) {
           need(isNum(c.vrijednost), "cilj.vrijednost mora biti broj");
           if (c.tolerancija != null)
             need(
@@ -14804,7 +14817,7 @@ nacin:
             n <= 4e4,
             "klizači zajedno imaju previše položaja (najviše 40 000)"
           ) && isNum(c.vrijednost) && !list.length) {
-            const { rjesenja, najblize, imaKrivih } = pretrazi(s, T);
+            const { rjesenja, najblize, imaKrivih } = pretrazi(s, T3);
             need(
               rjesenja.length > 0,
               `cilj se ne može postići ni na jednom položaju klizača${najblize ? ` (najbliže je ${withUnit(najblize.v, JEDINICA[c.velicina])})` : ""}`
@@ -14838,7 +14851,7 @@ nacin:
           const promjena3 = o.kriterij in PROMJENE;
           if (promjena3)
             need(
-              T.po[o.sklopka]?.vrsta === "S",
+              T3.po[o.sklopka]?.vrsta === "S",
               "odaberi.sklopka mora biti id sklopke koja se prebacuje"
             );
           else
@@ -14848,21 +14861,21 @@ nacin:
             );
           if (o.medju != null)
             need(
-              Array.isArray(o.medju) && o.medju.every((id) => ["R", "Z"].includes(T.po[id]?.vrsta)) && new Set(o.medju).size === o.medju.length,
+              Array.isArray(o.medju) && o.medju.every((id) => ["R", "Z"].includes(T3.po[id]?.vrsta)) && new Set(o.medju).size === o.medju.length,
               "odaberi.medju mora biti popis različitih id-jeva otpornika i žarulja"
             );
-          const ids = kandidati(s, T);
+          const ids = kandidati(s, T3);
           need(
             ids.length >= 2,
             "odaberi treba barem 2 elementa između kojih učenik bira"
           );
           if ((KRITERIJI[o.kriterij]?.[2] || promjena3) && !o.medju)
             need(
-              ids.every((id) => T.po[id]?.vrsta === "Z"),
+              ids.every((id) => T3.po[id]?.vrsta === "Z"),
               "za sjaj i promjenu sjaja kandidati moraju biti žarulje"
             );
           if (!list.length) {
-            const { tocni } = rjesenjeOdaberi(s, T);
+            const { tocni } = rjesenjeOdaberi(s, T3);
             if (promjena3)
               need(
                 tocni.length > 0,
@@ -14878,8 +14891,8 @@ nacin:
       }
       if (list.length) return list;
       const oz = oznakeZaRaspored(s);
-      for (const st of svaStanja(s, T).slice(0, 4)) {
-        const L = rasporedi(s, st, T, oz);
+      for (const st of svaStanja(s, T3).slice(0, 4)) {
+        const L = rasporedi(s, st, T3, oz);
         if (!need(
           L.w <= MAX_W && L.h <= MAX_H,
           `shema je prevelika za mobitel (${L.w}×${L.h}, najviše ${MAX_W}×${MAX_H}); smanji broj elemenata ili mjerila`
@@ -14889,10 +14902,10 @@ nacin:
       return list;
     },
     check(s, odgovor3) {
-      const T = stablo(s.spoj);
+      const T3 = stablo(s.spoj);
       if (s.nacin === "izracunaj") {
         const unosi = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
-        const rez = rijesi(s, pocetnoStanje(s), T);
+        const rez = rijesi(s, pocetnoStanje(s), T3);
         const vise = s.pitaj.length > 1;
         const polja = [];
         let prva = null;
@@ -14903,13 +14916,13 @@ nacin:
             answer: a,
             tol: tolPitanja(q, a),
             unit: JEDINICA[q.velicina],
-            krivo: [...q.krivo ?? [], ...autoKrivo(s, T, q)],
+            krivo: [...q.krivo ?? [], ...autoKrivo(s, T3, q)],
             savjet: s.savjet || SAVJET[q.velicina]
           });
           if (r.prazno)
             return {
               tocno: false,
-              poruka: vise ? `${oznakaPitanja(s, T, q)} upiši broj (decimalni zarez je u redu).` : r.poruka,
+              poruka: vise ? `${oznakaPitanja(s, T3, q)} upiši broj (decimalni zarez je u redu).` : r.poruka,
               prazno: true
             };
           polja.push(!!r.tocno);
@@ -14918,7 +14931,7 @@ nacin:
         if (!prva) return { tocno: true, polja };
         return {
           tocno: false,
-          poruka: vise ? `${oznakaPitanja(s, T, prva.q)} ${prva.poruka}` : prva.poruka,
+          poruka: vise ? `${oznakaPitanja(s, T3, prva.q)} ${prva.poruka}` : prva.poruka,
           polja
         };
       }
@@ -14926,15 +14939,15 @@ nacin:
         if (!odgovor3 || typeof odgovor3 !== "object")
           return { tocno: false, poruka: "Pomakni klizač.", prazno: true };
         const c = s.cilj;
-        const v = ciljU(s, T, odgovor3);
+        const v = ciljU(s, T3, odgovor3);
         const j = JEDINICA[c.velicina];
         if (isNum(v) && near(v, c.vrijednost, tolCilja(s)))
           return { tocno: true };
-        const opis = c.oznaka ?? fraza(T, c.velicina, c.element);
+        const opis = c.oznaka ?? fraza(T3, c.velicina, c.element);
         let poruka2 = `Sad je ${opis} = ${isNum(v) ? withUnit(v, j) : "?"}, a treba ${withUnit(c.vrijednost, j)}.`;
-        const g = grupaIzbora(s, T);
+        const g = grupaIzbora(s, T3);
         const spoj = odgovor3.spoj ?? g?.vrsta;
-        if (g && !pretrazi(s, T, spoj).rjesenja.length) {
+        if (g && !pretrazi(s, T3, spoj).rjesenja.length) {
           poruka2 += c.velicina === "R" ? " S ovim spojem to ne ide: serijski spoj uvijek daje više od najvećeg otpornika, a paralelni manje od najmanjeg." : " S ovim spojem cilj se ne može postići. Probaj drugi spoj.";
         } else if (isNum(v))
           poruka2 += v > c.vrijednost ? " Treba manje." : " Treba više.";
@@ -14949,15 +14962,15 @@ nacin:
             poruka: promjena3 ? "Dodirni žarulje za koje to vrijedi." : "Dodirni jedan element.",
             prazno: true
           };
-        const r = rjesenjeOdaberi(s, T);
-        const ime2 = (id2) => naziv2(T.po[id2]);
+        const r = rjesenjeOdaberi(s, T3);
+        const ime2 = (id2) => naziv2(T3.po[id2]);
         const visak = odabrano.filter((id2) => !r.tocni.includes(id2));
         const fali = r.tocni.filter((id2) => !odabrano.includes(id2));
         if (!visak.length && !fali.length) return { tocno: true };
         if (promjena3) {
           if (visak.length) {
             const i2 = r.ids.indexOf(visak[0]);
-            const sk = T.po[s.odaberi.sklopka];
+            const sk = T3.po[s.odaberi.sklopka];
             return {
               tocno: false,
               poruka: `${ime2(visak[0])} ${OPIS_PROMJENE2[r.opis[i2]] ?? "se mijenja drukčije"} kad se sklopka ${naziv2(sk)} ${sk.zatvorena ? "otvori" : "zatvori"}. Prati put struje: kroz koje žarulje struja ide i kroz sklopku?`
@@ -14972,11 +14985,11 @@ nacin:
         const i = r.ids.indexOf(id);
         const vel = r.vel;
         const k = s.odaberi.kriterij;
-        const c = T.po[id];
-        const t = r.tocni[0] ? T.po[r.tocni[0]] : null;
-        const iznos4 = isNum(r.vr[i]) ? withUnit(r.vr[i], JEDINICA[vel]) : "";
+        const c = T3.po[id];
+        const t = r.tocni[0] ? T3.po[r.tocni[0]] : null;
+        const iznos5 = isNum(r.vr[i]) ? withUnit(r.vr[i], JEDINICA[vel]) : "";
         if (KRITERIJI[k][2]) {
-          let poruka2 = `${ime2(id)} troši ${iznos4}, a jedna druga žarulja ${KRITERIJI[k][1] > 0 ? "više" : "manje"}. Sjaj ovisi o snazi koju žarulja stvarno troši ($P = U I$), a ne o tome što piše na njoj.`;
+          let poruka2 = `${ime2(id)} troši ${iznos5}, a jedna druga žarulja ${KRITERIJI[k][1] > 0 ? "više" : "manje"}. Sjaj ovisi o snazi koju žarulja stvarno troši ($P = U I$), a ne o tome što piše na njoj.`;
           if (c?.vrsta === "Z" && t?.vrsta === "Z" && (c.Pnaz - t.Pnaz) * KRITERIJI[k][1] > 0)
             poruka2 += " U serijskom spoju kroz obje teče ista struja, pa jače svijetli ona s većim otporom ($P = I^2 R$), a to je žarulja manje nazivne snage.";
           return { tocno: false, poruka: poruka2 };
@@ -14984,20 +14997,20 @@ nacin:
         const rijec = { I: "Kroz", U: "Na", P: "Na" }[vel];
         return {
           tocno: false,
-          poruka: `${rijec} ${ime2(id)} je ${{ I: "struja", U: "napon", P: "snaga" }[vel]} ${iznos4}, a na jednom drugom elementu ${KRITERIJI[k][1] > 0 ? "veća" : "manja"}.`
+          poruka: `${rijec} ${ime2(id)} je ${{ I: "struja", U: "napon", P: "snaga" }[vel]} ${iznos5}, a na jednom drugom elementu ${KRITERIJI[k][1] > 0 ? "veća" : "manja"}.`
         };
       }
       return { tocno: false, poruka: "Ovaj korak nema provjeru." };
     },
     tocanOdgovor(s) {
-      const T = stablo(s.spoj);
-      const rez = rijesi(s, pocetnoStanje(s), T);
+      const T3 = stablo(s.spoj);
+      const rez = rijesi(s, pocetnoStanje(s), T3);
       if (s.nacin === "izracunaj")
         return s.pitaj.map(
-          (q) => `${oznakaPitanja(s, T, q)} ${withUnit(vrijednost2(rez, q.velicina, q.element), JEDINICA[q.velicina])}`
+          (q) => `${oznakaPitanja(s, T3, q)} ${withUnit(vrijednost2(rez, q.velicina, q.element), JEDINICA[q.velicina])}`
         ).join(", ");
       if (s.nacin === "postavi") {
-        const best = pretrazi(s, T).rjesenja[0];
+        const best = pretrazi(s, T3).rjesenja[0];
         if (!best) return "";
         const dijelovi2 = [];
         if (best.odg.spoj)
@@ -15006,24 +15019,24 @@ nacin:
           );
         for (const k of s.klizaci ?? [])
           dijelovi2.push(
-            `${nazivKlizaca(s, T, k)} = ${withUnit(best.odg.klizaci[k.element], jedinicaKlizaca(k))}`
+            `${nazivKlizaca(s, T3, k)} = ${withUnit(best.odg.klizaci[k.element], jedinicaKlizaca(k))}`
           );
-        return `${dijelovi2.join(", ")} (tada je ${s.cilj.oznaka ?? fraza(T, s.cilj.velicina, s.cilj.element)} = ${withUnit(best.v, JEDINICA[s.cilj.velicina])})`;
+        return `${dijelovi2.join(", ")} (tada je ${s.cilj.oznaka ?? fraza(T3, s.cilj.velicina, s.cilj.element)} = ${withUnit(best.v, JEDINICA[s.cilj.velicina])})`;
       }
       if (s.nacin === "odaberi")
-        return rjesenjeOdaberi(s, T).tocni.map((id) => naziv2(T.po[id])).join(", ");
+        return rjesenjeOdaberi(s, T3).tocni.map((id) => naziv2(T3.po[id])).join(", ");
       return "";
     },
     brojcaniOdgovor(s) {
-      const T = stablo(s.spoj);
+      const T3 = stablo(s.spoj);
       if (s.nacin === "izracunaj" && s.pitaj.length === 1)
         return vrijednost2(
-          rijesi(s, pocetnoStanje(s), T),
+          rijesi(s, pocetnoStanje(s), T3),
           s.pitaj[0].velicina,
           s.pitaj[0].element
         );
       if (s.nacin === "postavi") {
-        const best = pretrazi(s, T).rjesenja[0];
+        const best = pretrazi(s, T3).rjesenja[0];
         return (s.klizaci ?? []).length === 1 && best ? best.odg.klizaci[s.klizaci[0].element] : s.cilj.vrijednost;
       }
       return null;
@@ -15983,7 +15996,7 @@ mijenja? (samo istrazi: koje zadane veličine učenik smije mijenjati).`,
   var TOK_JED = { Wb: 1, mWb: 1e-3, µWb: 1e-6, μWb: 1e-6 };
   var S_JED = { "m²": 1, "dm²": 0.01, "cm²": 1e-4, "mm²": 1e-6 };
   var L_JED = { m: 1, cm: 0.01, mm: 1e-3 };
-  var rad2 = (deg2) => deg2 * Math.PI / 180;
+  var rad2 = (deg4) => deg4 * Math.PI / 180;
   var povrsina2 = (s) => s.S * S_JED[s.jedinica_S ?? "m²"];
   var duljina3 = (s) => s.l * L_JED[s.jedinica_l ?? "m"];
   var naponPetlje = (s) => s.B * duljina3(s) * s.v;
@@ -16317,7 +16330,7 @@ Za "izracunaj" točan iznos i tipične krive vrijednosti (sinus umjesto kosinusa
         );
       const ist = s.nacin === "istrazi";
       if (ist) noAnswerFields(s, need);
-      const broj4 = (k, lo, hi, opis) => need(
+      const broj5 = (k, lo, hi, opis) => need(
         isNum(s[k]) && s[k] > lo && s[k] <= hi,
         `${k} mora biti broj (${opis})`
       );
@@ -16330,8 +16343,8 @@ Za "izracunaj" točan iznos i tipične krive vrijednosti (sinus umjesto kosinusa
           "u načinu izracunaj"
         );
       if (s.scena === "zakretanje") {
-        broj4("B", 0, 100, "T, veći od 0");
-        broj4("S", 0, 1e6, "površina, veća od 0");
+        broj5("B", 0, 100, "T, veći od 0");
+        broj5("S", 0, 1e6, "površina, veća od 0");
         if (s.jedinica_S != null)
           need(
             s.jedinica_S in S_JED,
@@ -16388,16 +16401,16 @@ Za "izracunaj" točan iznos i tipične krive vrijednosti (sinus umjesto kosinusa
         } else nepotrebno(["faze"], "u načinu smjer");
       }
       if (s.scena === "petlja_u_polje") {
-        broj4("B", 0, 100, "T, veći od 0");
+        broj5("B", 0, 100, "T, veći od 0");
         need(
           OKOMITO.includes(s.smjer_B),
           `smjer_B mora biti "u_papir" ili "iz_papira"`
         );
-        broj4("l", 0, 1e3, "duljina prednje stranice, veća od 0");
+        broj5("l", 0, 1e3, "duljina prednje stranice, veća od 0");
         if (s.jedinica_l != null)
           need(s.jedinica_l in L_JED, "jedinica_l mora biti m, cm ili mm");
-        broj4("v", 0, 1e4, "brzina u m/s, veća od 0");
-        if (s.R != null) broj4("R", 0, 1e6, "otpor petlje u Ω");
+        broj5("v", 0, 1e4, "brzina u m/s, veća od 0");
+        if (s.R != null) broj5("R", 0, 1e6, "otpor petlje u Ω");
         if (s.nacin === "smjer") {
           if (need(
             Array.isArray(s.faze) && s.faze.length >= 1 && s.faze.length <= 4,
@@ -16907,7 +16920,7 @@ nacin:
         );
       const ist = s.nacin === "istrazi";
       if (ist) noAnswerFields(s, need);
-      const broj4 = (k, lo, hi, opis) => need(
+      const broj5 = (k, lo, hi, opis) => need(
         isNum(s[k]) && s[k] > lo && s[k] <= hi,
         `${k} mora biti broj (${opis})`
       );
@@ -16922,8 +16935,8 @@ nacin:
             s.cestica && isNum(s.cestica.m) && s.cestica.m > 0 && isNum(s.cestica.q) && s.cestica.q !== 0,
             "cestica: {ime?, oznaka?, m (kg) > 0, q (C) ≠ 0}"
           );
-        broj4("v", 0, 3e8, "m/s, 0 < v < c");
-        broj4("B", 0, 100, "T, veći od 0");
+        broj5("v", 0, 3e8, "m/s, 0 < v < c");
+        broj5("B", 0, 100, "T, veći od 0");
         need(
           [...OKOMITO, "desno"].includes(s.smjer_B),
           `smjer_B mora biti "u_papir", "iz_papira" ili "desno"`
@@ -16939,9 +16952,9 @@ nacin:
             "uz polje u ravnini papira treba kut (0–180°) između brzine i silnica"
           );
       } else {
-        broj4("B", 0, 100, "T, veći od 0");
-        broj4("I", 0, 1e4, "A, veća od 0");
-        broj4("l", 0, 1e4, "duljina vodiča u polju");
+        broj5("B", 0, 100, "T, veći od 0");
+        broj5("I", 0, 1e4, "A, veća od 0");
+        broj5("l", 0, 1e4, "duljina vodiča u polju");
         if (s.jedinica_l != null)
           need(
             ["m", "cm", "mm"].includes(s.jedinica_l),
@@ -17029,7 +17042,7 @@ nacin:
           krug(s),
           "pogodi radi samo kad je polje okomito na papir (smjer_B u_papir ili iz_papira)"
         );
-        broj4("detektor", 0, 100, "udaljenost detektora od ulaza u m");
+        broj5("detektor", 0, 100, "udaljenost detektora od ulaza u m");
         if (need(
           ["B", "v"].includes(s.mijenja) && klizacOf(s, s.mijenja),
           `mijenja mora biti "B" ili "v", a klizač s tim id-jem mora postojati`
@@ -17135,8 +17148,11734 @@ nacin:
     uSI: (k, x) => x * faktor(k)
   };
 
+  // src/lib/lesson/katalog/fizika/titranje.js
+  var TIP4 = "titranje";
+  var G3 = 9.81;
+  var PI2 = 2 * Math.PI;
+  var SCENE6 = ["tocka", "opruga", "njihalo"];
+  var NACINI16 = [
+    "istrazi",
+    "zaustavi",
+    "odaberi_polozaj",
+    "postavi",
+    "izracunaj"
+  ];
+  var POLOZAJI2 = ["okomito", "vodoravno"];
+  var IKONE2 = ["kuglica", "ljuljacka"];
+  var GRAFOVI = ["y-t", "v-t", "a-t", "F-t", "E-t"];
+  var PRIKAZI6 = [
+    ...GRAFOVI,
+    "kruznica",
+    "Ep-x",
+    "stupci",
+    "stoperica",
+    "brojac_titraja"
+  ];
+  var STRELICE = ["v", "a", "F"];
+  var UVJETI = [
+    "y_max",
+    "y_min",
+    "ravnoteza",
+    "krajnji",
+    "v_max",
+    "a_max",
+    "Ek_jednako_Ep",
+    "put",
+    "t"
+  ];
+  var TRAZI = [
+    "v_max",
+    "v_nula",
+    "a_max",
+    "a_nula",
+    "F_max",
+    "Ek_max",
+    "Ep_max",
+    "Ek_jednako_Ep"
+  ];
+  var IZRACUNAJ_VEL = [
+    "y",
+    "v",
+    "a",
+    "F",
+    "Ep",
+    "Ek",
+    "E",
+    "T",
+    "f",
+    "omega",
+    "v0",
+    "a0",
+    "F0",
+    "k",
+    "l"
+  ];
+  var POSTAVI_X_VEL = ["F", "a", "Ep", "Ek", "v"];
+  var POSTAVI_VEL = ["T", "f", "omega", "n", "v0", "a0", "F0", "E", "k", "l"];
+  var PREDZNAK = /* @__PURE__ */ new Set(["y", "v", "a", "F"]);
+  var vodoravno = (s) => s.scena === "opruga" && s.polozaj === "vodoravno";
+  var bocno = (s) => s.scena === "njihalo" || vodoravno(s);
+  var ljuljacka = (s) => s.scena === "njihalo" && s.ikona === "ljuljacka";
+  var imaMasu = (s) => s.m != null;
+  var izvoriPerioda = (s) => ["omega", "T", "f", "mjerenje", "k", "l"].filter(
+    (f2) => s[f2] != null && (f2 !== "k" || s.scena === "opruga") && (f2 !== "l" || s.scena === "njihalo")
+  );
+  function modelTitranja(s, p = pocetneVrijednosti2(s)) {
+    const fA = s.jedinica_A === "cm" ? 0.01 : 1;
+    const A = iznos2(s, s.A, p) * fA;
+    const g = s.g != null ? iznos2(s, s.g, p) : G3;
+    const m = s.m != null ? iznos2(s, s.m, p) : NaN;
+    const izvor2 = izvoriPerioda(s)[0];
+    let omega = NaN;
+    if (izvor2 === "omega") omega = iznos2(s, s.omega, p);
+    else if (izvor2 === "T") omega = PI2 / iznos2(s, s.T, p);
+    else if (izvor2 === "f") omega = PI2 * iznos2(s, s.f, p);
+    else if (izvor2 === "mjerenje") omega = PI2 * s.mjerenje.n / s.mjerenje.t;
+    else if (izvor2 === "k") omega = Math.sqrt(iznos2(s, s.k, p) / m);
+    else if (izvor2 === "l") omega = Math.sqrt(g / iznos2(s, s.l, p));
+    const T3 = PI2 / omega;
+    const k = izvor2 === "k" ? iznos2(s, s.k, p) : m * omega * omega;
+    const l = izvor2 === "l" ? iznos2(s, s.l, p) : g / (omega * omega);
+    const phi0 = s.phi0 != null ? iznos2(s, s.phi0, p) : 0;
+    return {
+      A,
+      fA,
+      jedA: fA === 1 ? "m" : "cm",
+      omega,
+      T: T3,
+      f: 1 / T3,
+      phi0,
+      m,
+      g,
+      k,
+      l,
+      v0: A * omega,
+      a0: A * omega * omega,
+      F0: m * A * omega * omega,
+      E: 0.5 * k * A * A,
+      izvor: izvor2
+    };
+  }
+  function putFaze(fi) {
+    const k = Math.floor((fi + Math.PI / 2) / Math.PI);
+    const r = fi - (k * Math.PI - Math.PI / 2);
+    return 2 * k + 1 - Math.cos(r);
+  }
+  function casZaPut(M, P2) {
+    const G0 = putFaze(M.phi0) + P2;
+    const k = Math.floor(G0 / 2 + 1e-12);
+    const ost = Math.min(2, Math.max(0, G0 - 2 * k));
+    const fi = k * Math.PI - Math.PI / 2 + Math.acos(1 - ost);
+    return (fi - M.phi0) / M.omega;
+  }
+  function stanjeTitranja(M, t, { deg: deg4 = false } = {}) {
+    const fiPravi = M.omega * t + M.phi0;
+    const fi = deg4 ? fiPravi * Math.PI / 180 : fiPravi;
+    const y = M.A * Math.sin(fi);
+    const v = M.A * M.omega * Math.cos(fi);
+    const a = -M.omega * M.omega * y;
+    return {
+      t,
+      faza: fiPravi,
+      y,
+      v,
+      a,
+      F: M.m * a,
+      Ep: 0.5 * M.k * y * y,
+      Ek: 0.5 * M.k * (M.A * M.A - y * y),
+      E: M.E,
+      put: putFaze(fiPravi) - putFaze(M.phi0),
+      n: t / M.T
+    };
+  }
+  function stanjeUPolozaju(M, y) {
+    const yy = Math.max(-M.A, Math.min(M.A, y));
+    const a = -M.omega * M.omega * yy;
+    return {
+      t: NaN,
+      faza: NaN,
+      y: yy,
+      v: M.omega * Math.sqrt(Math.max(0, M.A * M.A - yy * yy)),
+      a,
+      F: M.m * a,
+      Ep: 0.5 * M.k * yy * yy,
+      Ek: 0.5 * M.k * (M.A * M.A - yy * yy),
+      E: M.E,
+      put: NaN,
+      n: NaN
+    };
+  }
+  function stalneVelicine(s, p = pocetneVrijednosti2(s)) {
+    const M = modelTitranja(s, p);
+    const out = {
+      T: M.T,
+      f: M.f,
+      omega: M.omega,
+      A: M.A,
+      v0: M.v0,
+      a0: M.a0,
+      l: M.l
+    };
+    if (imaMasu(s)) Object.assign(out, { m: M.m, F0: M.F0, E: M.E, k: M.k });
+    if (s.cilj && isNum(s.cilj.t)) out.n = s.cilj.t / M.T;
+    return out;
+  }
+  function velicineTitranja(s) {
+    const nj = s.scena === "njihalo";
+    const jedA = s.jedinica_A === "cm" ? "cm" : "m";
+    const out = {
+      t: { naziv: "vrijeme", oznaka: "t", jedinica: "s" },
+      y: {
+        naziv: "elongacija (odmak od ravnoteže)",
+        oznaka: vodoravno(s) ? "x" : "y",
+        jedinica: jedA
+      },
+      v: { naziv: "brzina", oznaka: "v", jedinica: "m/s" },
+      a: {
+        naziv: nj ? "povratna akceleracija" : "akceleracija",
+        oznaka: "a",
+        jedinica: "m/s²"
+      },
+      put: { naziv: "prijeđeni put", oznaka: "put", jedinica: "A" },
+      n: { naziv: "broj titraja", oznaka: "n", jedinica: "" },
+      T: { naziv: "period", oznaka: "T", jedinica: "s" },
+      f: { naziv: "frekvencija", oznaka: "f", jedinica: "Hz" },
+      omega: { naziv: "kružna frekvencija", oznaka: "ω", jedinica: "s⁻¹" },
+      A: { naziv: "amplituda", oznaka: "A", jedinica: jedA },
+      v0: { naziv: "najveća brzina", oznaka: "v_0", jedinica: "m/s" },
+      a0: { naziv: "najveća akceleracija", oznaka: "a_0", jedinica: "m/s²" }
+    };
+    if (nj) out.l = { naziv: "duljina niti", oznaka: "ℓ", jedinica: "m" };
+    if (imaMasu(s)) {
+      out.m = { naziv: "masa", oznaka: "m", jedinica: "kg" };
+      out.F = {
+        naziv: "sila prema ravnoteži (povratna sila)",
+        oznaka: "F",
+        jedinica: "N"
+      };
+      out.F0 = { naziv: "najveća povratna sila", oznaka: "F_0", jedinica: "N" };
+      if (!nj)
+        out.k = {
+          naziv: "konstanta opruge",
+          oznaka: "k",
+          jedinica: "N/m"
+        };
+      out.Ep = {
+        naziv: nj ? "potencijalna energija" : "elastična potencijalna energija",
+        oznaka: "E_p",
+        jedinica: "J"
+      };
+      out.Ek = { naziv: "kinetička energija", oznaka: "E_k", jedinica: "J" };
+      out.E = { naziv: "ukupna energija", oznaka: "E", jedinica: "J" };
+    }
+    return out;
+  }
+  var prikaziTitranja = (s) => Array.isArray(s.prikazi) ? s.prikazi : ["y-t"];
+  var grafoviTitranja = (s) => prikaziTitranja(s).filter((v) => GRAFOVI.includes(v));
+  var LIJEPI_GORE = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  function lijepoGore(x) {
+    if (!(x > 0)) return 1;
+    const e = 10 ** Math.floor(Math.log10(x));
+    const m = x / e;
+    return LIJEPI_GORE.find((q) => q >= m - 1e-9) * e;
+  }
+  function lijepKorakDolje(x) {
+    const e = 10 ** Math.floor(Math.log10(x));
+    const m = x / e;
+    return (m >= 5 ? 5 : m >= 2 ? 2 : 1) * e;
+  }
+  function trenuciCilja2(s, M = modelTitranja(s), tMax) {
+    const c = s.cilj ?? {};
+    const kraj3 = isNum(tMax) ? tMax : trajanjeTitranja(s);
+    const tol2 = tolerancijaZaustavi(M);
+    if (c.uvjet === "t") return isNum(c.vrijednost) ? [c.vrijednost] : [];
+    if (c.uvjet === "put")
+      return isNum(c.vrijednost) ? [casZaPut(M, c.vrijednost)] : [];
+    const [baza, korak] = {
+      y_max: [Math.PI / 2, PI2],
+      y_min: [3 * Math.PI / 2, PI2],
+      ravnoteza: [0, Math.PI],
+      v_max: [0, Math.PI],
+      krajnji: [Math.PI / 2, Math.PI],
+      a_max: [Math.PI / 2, Math.PI],
+      Ek_jednako_Ep: [Math.PI / 4, Math.PI / 2]
+    }[c.uvjet] ?? [NaN, NaN];
+    if (!isNum(baza) || !(M.omega > 0)) return [];
+    const out = [];
+    let j = Math.ceil((M.phi0 + M.omega * tol2 - baza) / korak);
+    for (let i = 0; i < 500; i++, j++) {
+      const t = (baza + j * korak - M.phi0) / M.omega;
+      if (t > kraj3 + 1e-9) break;
+      if (t > tol2) out.push(t);
+    }
+    return out;
+  }
+  var tolerancijaZaustavi = (M) => Math.max(0.01, 0.02 * M.T);
+  function trajanjeTitranja(s) {
+    if (isNum(s.t_kraj)) return s.t_kraj;
+    const M = modelTitranja(s);
+    if (!(M.T > 0)) return 1;
+    if (s.nacin === "postavi" && s.cilj?.velicina === "n" && isNum(s.cilj.t))
+      return s.cilj.t;
+    let tk = 3 * M.T;
+    if (s.nacin === "zaustavi") {
+      const ts = trenuciCilja2(s, M, 1e7);
+      if (ts.length) tk = Math.max(tk, ts[0] + M.T);
+    }
+    if (s.nacin === "izracunaj") {
+      for (const it of s.pitaj ?? [])
+        if (isNum(it?.t)) tk = Math.max(tk, it.t + M.T / 2);
+    }
+    return lijepoGore(tk);
+  }
+  var oznakaUdjela = (u) => {
+    if (Math.abs(u) < 1e-9) return "0";
+    const z = u > 0 ? "+" : "−";
+    const q = Math.abs(u);
+    if (Math.abs(q - 1) < 1e-9) return `${z}A`;
+    if (Math.abs(q - 0.5) < 1e-9) return `${z}A/2`;
+    return `${z}${formatNumber(q, 2)}A`;
+  };
+  var tockeOdabira = (s) => Array.isArray(s.tocke) ? s.tocke : [-1, -0.5, 0, 0.5, 1];
+  function pocetnoStanje2(s) {
+    if (s.nacin === "postavi" && s.mijenja === "x")
+      return { t: 0, x: isNum(s.pocetak_x) ? s.pocetak_x : 0 };
+    if (s.nacin === "izracunaj") {
+      const sx = (s.pitaj ?? []).find((it) => isNum(it?.x));
+      if (sx) return { t: 0, x: sx.x };
+    }
+    return { t: 0, x: null };
+  }
+  var tijeloIme = (s) => s.scena === "opruga" ? "uteg" : s.scena === "njihalo" ? ljuljacka(s) ? "dijete" : "kuglica" : "tijelo";
+  var veliko3 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  var bezLatexa = (t) => String(t ?? "").replace(/\\ell/g, "ℓ").replace(/\\omega/g, "ω").replace(/\\varphi/g, "φ").replace(/\\(text|mathrm)\{([^}]*)\}/g, "$2").replace(/[$\\{}]/g, "").replace(/_0/g, "₀").trim();
+  function strane(s) {
+    return bocno(s) ? {
+      plus: "udesno",
+      minus: "ulijevo",
+      krajPlus: "desni",
+      krajMinus: "lijevi",
+      odPlus: "desno od ravnoteže",
+      odMinus: "lijevo od ravnoteže"
+    } : {
+      plus: "prema gore",
+      minus: "prema dolje",
+      krajPlus: "gornji",
+      krajMinus: "donji",
+      odPlus: "iznad ravnoteže",
+      odMinus: "ispod ravnoteže"
+    };
+  }
+  var tFmt = (t) => withUnit(Math.round(t * 1e3) / 1e3, "s");
+  function opisPolozaja(s, M, st) {
+    const S = strane(s);
+    const u = st.y / M.A;
+    if (Math.abs(u) > 0.995)
+      return `u ${u > 0 ? S.krajPlus : S.krajMinus} krajnjem položaju`;
+    if (Math.abs(u) < 0.03) return "u ravnoteži";
+    return `${iznosJed(Math.abs(st.y) / M.fA, M.jedA)} ${u > 0 ? S.odPlus : S.odMinus} i giba se ${st.v > 0 ? S.plus : S.minus}`;
+  }
+  function checkZaustavi2(s, odgovor3) {
+    const t = isNum(odgovor3) ? odgovor3 : odgovor3?.t;
+    if (!isNum(t))
+      return {
+        tocno: false,
+        poruka: "Pusti titranje, zaustavi ga u pravom trenutku i pritisni Provjeri.",
+        prazno: true
+      };
+    const M = modelTitranja(s);
+    const c = s.cilj;
+    const ts = trenuciCilja2(s, M);
+    const tol2 = tolerancijaZaustavi(M);
+    const prvi = c.prvi !== false;
+    const i = ts.findIndex((r) => Math.abs(r - t) <= tol2);
+    if (i === 0 || i > 0 && !prvi) return { tocno: true };
+    const ime2 = tijeloIme(s);
+    if (i > 0)
+      return {
+        tocno: false,
+        poruka: `Tako je, ali to nije **prvi** put: ${ime2} je tu već ${i === 1 ? "bilo" : "bilo više puta"} prije. Vrati vrijeme na početak i zaustavi ranije.`
+      };
+    if (t < tol2)
+      return {
+        tocno: false,
+        poruka: "Titranje još nije ni krenulo: pritisni ▶ Pusti, pa zaustavi.",
+        prazno: true
+      };
+    const k = (s.krivo ?? []).find((q) => Math.abs(q.vrijednost - t) <= tol2);
+    if (k) return { tocno: false, poruka: k.poruka };
+    const st = stanjeTitranja(M, t);
+    const S = strane(s);
+    const fazaTol = PI2 * (tol2 / M.T);
+    const sn = Math.sin(st.faza);
+    const krajnji = Math.abs(sn) >= Math.cos(fazaTol);
+    const ravn = Math.abs(sn) <= Math.sin(fazaTol);
+    const sad = `U t = ${tFmt(t)} ${ime2} je ${opisPolozaja(s, M, st)}`;
+    const u = c.uvjet;
+    if (u === "y_min" && krajnji && sn > 0)
+      return {
+        tocno: false,
+        poruka: `To je **${S.krajPlus}** krajnji položaj (+A). Traži se ${S.krajMinus}, −A: tijelo je tada na drugoj strani ravnoteže, a minus u rezultatu znači baš tu stranu.`
+      };
+    if (u === "y_max" && krajnji && sn < 0)
+      return {
+        tocno: false,
+        poruka: `To je **${S.krajMinus}** krajnji položaj (−A). Traži se ${S.krajPlus}, +A, s druge strane ravnoteže.`
+      };
+    if ((u === "a_max" || u === "krajnji") && ravn)
+      return {
+        tocno: false,
+        poruka: `Ovdje je ${ime2} u ravnoteži: brzina je najveća, a akceleracija (i sila) **nula**. Akceleracija je najveća u krajnjem položaju, gdje opruga ili nit najjače vuče natrag.`
+      };
+    if ((u === "v_max" || u === "ravnoteza") && krajnji)
+      return {
+        tocno: false,
+        poruka: `U krajnjem položaju ${ime2} na trenutak **stane**: brzina je nula. Najbrže je kad prolazi kroz ravnotežu.`
+      };
+    if (u === "Ek_jednako_Ep" && (krajnji || ravn))
+      return {
+        tocno: false,
+        poruka: krajnji ? "U krajnjem položaju sva je energija potencijalna (E_k = 0). Jednake su između: kod y = ±A/√2 ≈ ±0,71 A." : "U ravnoteži sva je energija kinetička (E_p = 0). Jednake su između: kod y = ±A/√2 ≈ ±0,71 A."
+      };
+    if (u === "put") {
+      const dvaput = casZaPut(M, 2 * c.vrijednost);
+      if (Math.abs(dvaput - t) <= tol2)
+        return {
+          tocno: false,
+          poruka: `Tijelo je prešlo ${formatNumber(2 * c.vrijednost)} A, dvostruko previše. U jednom titraju put je **4A** (do jednog kraja, natrag kroz ravnotežu do drugog i opet u ravnotežu), a ne 2A: 2A je tek pola titraja.`
+        };
+      return {
+        tocno: false,
+        poruka: `U t = ${tFmt(t)} put je ${formatNumber(Math.round(st.put * 10) / 10, 1)} A, a traži se ${formatNumber(c.vrijednost)} A. ${st.put < c.vrijednost ? "Pusti malo dulje." : "Zaustavi ranije."}`
+      };
+    }
+    if (u === "t")
+      return {
+        tocno: false,
+        poruka: `Sad je t = ${tFmt(t)}, a treba ${tFmt(c.vrijednost)}. ${t < c.vrijednost ? "Pusti malo dulje" : "Vrati malo"} (koristi gumbe ± za fino pomicanje).`
+      };
+    const smjer = ts.length && t > ts[0] ? "Tijelo je to stanje već prošlo: zaustavi ranije." : "Pusti malo dulje.";
+    return { tocno: false, poruka: `${sad}. ${smjer}` };
+  }
+  var ZNAK_EKEP = 1 / Math.SQRT2;
+  function ispunjava(trazi, u) {
+    const q = Math.abs(u);
+    if (["v_max", "a_nula", "Ek_max"].includes(trazi)) return q < 1e-9;
+    if (["v_nula", "a_max", "F_max", "Ep_max"].includes(trazi))
+      return Math.abs(q - 1) < 1e-9;
+    if (trazi === "Ek_jednako_Ep") return Math.abs(q - ZNAK_EKEP) < 0.01;
+    return false;
+  }
+  var tocniPolozaji = (s, trazi) => tockeOdabira(s).filter((u) => ispunjava(trazi, u));
+  function opisTrazenog(s, trazi) {
+    const nj = s.scena === "njihalo";
+    return {
+      v_max: "brzina je najveća",
+      v_nula: "brzina je nula",
+      a_max: nj ? "povratna akceleracija je najveća" : "akceleracija je najveća",
+      a_nula: nj ? "povratna akceleracija je nula" : "akceleracija je nula",
+      F_max: "sila prema ravnoteži je najveća",
+      Ek_max: "kinetička energija je najveća",
+      Ep_max: "potencijalna energija je najveća",
+      Ek_jednako_Ep: "kinetička i potencijalna energija su jednake"
+    }[trazi];
+  }
+  function porukaPolozaja(s, trazi, krivi2, fale, odabrani) {
+    const ime2 = tijeloIme(s);
+    const nj = s.scena === "njihalo";
+    const akc = nj ? "povratna akceleracija" : "akceleracija";
+    if (krivi2.length) {
+      const u = krivi2[0];
+      const q = Math.abs(u);
+      if (q < 1e-9)
+        return {
+          a_max: `U ravnoteži je sila prema ravnoteži **nula**, pa je i ${akc} nula. Tu je najveća brzina.`,
+          F_max: "U ravnoteži je sila prema ravnoteži **nula**: tijelo je baš na mjestu kamo ga sila vuče.",
+          Ep_max: `U ravnoteži je potencijalna energija nula (${nj ? "najniža točka" : "opruga nije dodatno rastegnuta"}): sva je energija kinetička.`,
+          v_nula: `Kroz ravnotežu ${ime2} prolazi **najbrže**, ne stoji.`,
+          Ek_jednako_Ep: "U ravnoteži je sva energija kinetička (E_p = 0)."
+        }[trazi];
+      if (Math.abs(q - 1) < 1e-9)
+        return {
+          v_max: `U krajnjem položaju ${ime2} na trenutak **stane** (v = 0) i krene natrag. Brzina je najveća u ravnoteži.`,
+          Ek_max: `U krajnjem položaju ${ime2} na trenutak stane, pa je kinetička energija nula.`,
+          a_nula: `U krajnjem položaju sila prema ravnoteži je najveća, pa ${akc} nije nula, nego najveća.`,
+          Ek_jednako_Ep: "U krajnjem položaju sva je energija potencijalna (E_k = 0)."
+        }[trazi];
+      if (trazi === "Ek_jednako_Ep")
+        return `Kod ${oznakaUdjela(u)} nisu jednake: E_p raste s kvadratom odmaka (E_p = ½kx²). Na pola amplitude E_p je tek ¼ ukupne energije. Jednake su kod x = A/√2 ≈ 0,71 A.`;
+      return `Kod ${oznakaUdjela(u)} ništa nije ni najveće ni nula: ${trazi.startsWith("v") || trazi.startsWith("Ek") ? "brzina" : akc} je ovdje „negdje između“. Traži krajnji položaj ili ravnotežu.`;
+    }
+    if (fale.length && odabrani.length)
+      return `Dobro, ali nije sve: s druge strane ravnoteže je isto, **simetrično**. Dodirni i ${fale.map(oznakaUdjela).join(" i ")}.`;
+    return `Dodirni sve položaje u kojima ${opisTrazenog(s, trazi)}.`;
+  }
+  function checkOdaberi2(s, odgovor3) {
+    const pitanja2 = s.pitanja;
+    const odg = Array.isArray(odgovor3) ? odgovor3 : [];
+    if (pitanja2.every((_, i) => !(Array.isArray(odg[i]) && odg[i].length)))
+      return {
+        tocno: false,
+        poruka: "Dodirni položaje na crtežu.",
+        prazno: true
+      };
+    for (let i = 0; i < pitanja2.length; i++) {
+      const tr = pitanja2[i].trazi;
+      const odabrani = (Array.isArray(odg[i]) ? odg[i] : []).filter(isNum);
+      const tocni = tocniPolozaji(s, tr);
+      const blizu3 = (a, b) => Math.abs(a - b) < 1e-6;
+      const krivi2 = odabrani.filter((u) => !tocni.some((q) => blizu3(q, u)));
+      const fale = tocni.filter((q) => !odabrani.some((u) => blizu3(q, u)));
+      if (!krivi2.length && !fale.length) continue;
+      const p = porukaPolozaja(s, tr, krivi2, fale, odabrani);
+      const pref = pitanja2.length > 1 ? `U ${i + 1}. pitanju (${opisTrazenog(s, tr)}): ` : "";
+      return { tocno: false, poruka: `${pref}${p}`, prazno: !odabrani.length };
+    }
+    return { tocno: true };
+  }
+  function mrezaX(s) {
+    const k = korakX(s);
+    const n = Math.round(s.A / k);
+    return Array.from(
+      { length: 2 * n + 1 },
+      (_, i) => Number(((i - n) * k).toPrecision(12))
+    );
+  }
+  var korakX = (s) => isNum(s.korak_x) ? s.korak_x : lijepKorakDolje(s.A / 10);
+  function velicinaUX(s, M, xJed) {
+    const st = stanjeUPolozaju(M, xJed * M.fA);
+    const v = st[s.cilj.velicina];
+    return s.cilj.vrijednost >= 0 && PREDZNAK.has(s.cilj.velicina) ? Math.abs(v) : v;
+  }
+  function analizaX(s) {
+    const M = modelTitranja(s);
+    const mreza3 = mrezaX(s);
+    const cilj = s.cilj.vrijednost;
+    const d = mreza3.map((x) => velicinaUX(s, M, x) - cilj);
+    const korakPromjena = Math.max(
+      ...mreza3.slice(1).map(
+        (x, i) => Math.abs(velicinaUX(s, M, x) - velicinaUX(s, M, mreza3[i]))
+      )
+    );
+    const najbolji = Math.min(...d.map(Math.abs));
+    const tol2 = isNum(s.cilj.tolerancija) ? s.cilj.tolerancija : Math.max(
+      Math.abs(cilj) * 0.01,
+      Math.min(najbolji * 1.0001, korakPromjena * 0.5)
+    );
+    const ok = (x) => Math.abs(velicinaUX(s, M, x) - cilj) <= tol2 + 1e-12;
+    return { M, mreza: mreza3, tol: tol2, ok, tocni: mreza3.filter(ok) };
+  }
+  function analizaPostavi(s) {
+    const k = klizaciOd(s)[0];
+    const vel = (p) => stalneVelicine(s, p);
+    const a0 = analizaCilja(s, k, vel);
+    if (isNum(s.cilj.tolerancija)) return { ...a0, k };
+    const tol2 = Math.max(a0.tol, Math.abs(s.cilj.vrijednost) * 0.01);
+    return {
+      ...analizaCilja({ ...s, cilj: { ...s.cilj, tolerancija: tol2 } }, k, vel),
+      k
+    };
+  }
+  var poljeKlizaca = (s, id) => ["k", "l", "m", "A", "omega", "T", "f", "g"].find((f2) => s[f2] === id);
+  var FRAZE = {
+    k: ["opruga je premekana: povećaj k", "opruga je pretvrda: smanji k"],
+    l: ["nit je prekratka: produlji je", "nit je preduga: skrati je"],
+    m: ["uteg je prelagan: povećaj masu", "uteg je pretežak: smanji masu"],
+    A: ["amplituda je premala: povećaj je", "amplituda je prevelika: smanji je"]
+  };
+  function checkPostavi3(s, odgovor3) {
+    if (s.mijenja === "x") {
+      const x = isNum(odgovor3) ? odgovor3 : odgovor3?.x;
+      if (!isNum(x))
+        return {
+          tocno: false,
+          poruka: `Povuci ${tijeloIme(s)} na pravo mjesto i pritisni Provjeri.`,
+          prazno: true
+        };
+      const a2 = analizaX(s);
+      if (a2.ok(x)) return { tocno: true };
+      const kq = korakX(s);
+      const hit2 = (s.krivo ?? []).find(
+        (q3) => Math.abs(q3.vrijednost - x) <= kq / 2
+      );
+      if (hit2) return { tocno: false, poruka: hit2.poruka };
+      const meta2 = velicineTitranja(s)[s.cilj.velicina];
+      const q2 = velicinaUX(s, a2.M, x);
+      const cilj = s.cilj.vrijednost;
+      const raste = ["F", "a", "Ep"].includes(s.cilj.velicina);
+      const dalje = q2 < cilj === raste;
+      const ozX = velicineTitranja(s).y.oznaka;
+      return {
+        tocno: false,
+        poruka: `Na ${ozX} = ${withUnit(x, a2.M.jedA)} ${meta2.naziv} je ${iznosJed(q2, meta2.jedinica)}, a treba ${withUnit(cilj, meta2.jedinica)}: povuci ${dalje ? "dalje od ravnoteže" : "bliže ravnoteži"}.`
+      };
+    }
+    const k = klizaciOd(s)[0];
+    const v = isNum(odgovor3) ? odgovor3 : odgovor3?.[k.id];
+    if (!isNum(v))
+      return { tocno: false, poruka: "Pomakni klizač.", prazno: true };
+    const a = analizaPostavi(s);
+    if (a.ok(v)) return { tocno: true };
+    const hit = (s.krivo ?? []).find(
+      (q2) => Math.abs(q2.vrijednost - v) <= k.korak / 2
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const { q, t } = a.razlika(v);
+    const c = s.cilj;
+    const meta = velicineTitranja(s);
+    const ime2 = bezLatexa(k.oznaka);
+    const kl = `${veliko3(ime2)} = ${withUnit(v, k.jedinica)}`;
+    const sad = c.velicina === "n" ? `${kl}: ${tijeloIme(s)} u ${withUnit(c.t, "s")} napravi ${formatNumber(Math.round(q * 10) / 10, 1)} titraja, a treba ${formatNumber(t)}.` : `${kl}: ${meta[c.velicina].naziv} je ${iznosJed(q, meta[c.velicina].jedinica)}, a treba ${iznosJed(t, meta[c.velicina].jedinica)}.`;
+    const gore = a.razlika(Math.min(k.max, v + k.korak)).q;
+    const dolje = a.razlika(Math.max(k.min, v - k.korak)).q;
+    let savjet3 = "";
+    if (isNum(gore) && isNum(dolje) && Math.abs(gore - dolje) > 1e-12) {
+      const povecaj = gore > dolje === t > q;
+      const polje2 = poljeKlizaca(s, k.id);
+      const brzo = ["n", "f", "omega"].includes(c.velicina) ? q > t ? "Titra prebrzo" : "Titra presporo" : c.velicina === "T" ? q > t ? "Period je predug" : "Period je prekratak" : "";
+      const fraza2 = FRAZE[polje2]?.[povecaj ? 0 : 1];
+      savjet3 = fraza2 ? ` ${brzo ? `${brzo}, ${fraza2}` : veliko3(fraza2)}.` : ` ${brzo ? `${brzo}. ` : ""}${povecaj ? "Povećaj" : "Smanji"} ${ime2}.`;
+    }
+    return {
+      tocno: false,
+      poruka: `${sad}${savjet3}${s.savjet ? ` ${s.savjet}` : ""}`
+    };
+  }
+  function jedinicaStavke(s, it) {
+    if (it.velicina === "y")
+      return it.jedinica ?? (s.jedinica_A === "cm" ? "cm" : "m");
+    return {
+      v: "m/s",
+      a: "m/s²",
+      F: "N",
+      Ep: "J",
+      Ek: "J",
+      E: "J",
+      T: "s",
+      f: "Hz",
+      omega: "s⁻¹",
+      v0: "m/s",
+      a0: "m/s²",
+      F0: "N",
+      k: "N/m",
+      l: "m"
+    }[it.velicina];
+  }
+  var OZNAKE_STAVKE = {
+    y: "y",
+    v: "v",
+    a: "a",
+    F: "F",
+    Ep: "E_p",
+    Ek: "E_k",
+    E: "E",
+    T: "T",
+    f: "f",
+    omega: "\\omega",
+    v0: "v_0",
+    a0: "a_0",
+    F0: "F_0",
+    k: "k",
+    l: "\\ell"
+  };
+  function oznakaStavke(s, it) {
+    if (isText(it.oznaka)) return it.oznaka;
+    const o = it.velicina === "y" && vodoravno(s) ? "x" : OZNAKE_STAVKE[it.velicina];
+    return `$${o}$`;
+  }
+  function vrijednostStavke(s, M, it, { deg: deg4 = false } = {}) {
+    let st = null;
+    if (isNum(it.t)) st = stanjeTitranja(M, it.t, { deg: deg4 });
+    else if (isNum(it.x)) st = stanjeUPolozaju(M, it.x * M.fA);
+    const K2 = {
+      T: M.T,
+      f: M.f,
+      omega: M.omega,
+      v0: M.v0,
+      a0: M.a0,
+      F0: M.F0,
+      E: M.E,
+      k: M.k,
+      l: M.l
+    };
+    let v = it.velicina in K2 ? K2[it.velicina] : st?.[it.velicina];
+    if (it.velicina === "y" && jedinicaStavke(s, it) === "cm") v = v * 100;
+    return v;
+  }
+  var sPredznakom = (it) => PREDZNAK.has(it.velicina) && isNum(it.t) && it.predznak !== false;
+  function tocnoStavke(s, it) {
+    const v = vrijednostStavke(s, modelTitranja(s), it);
+    return PREDZNAK.has(it.velicina) && !sPredznakom(it) ? Math.abs(v) : v;
+  }
+  var tolStavke = (it, v) => isNum(it.tolerancija) ? it.tolerancija : Math.max(Math.abs(v) * 0.01, 1e-12);
+  var P = {
+    deg: "Kalkulator je bio u stupnjevima (DEG). ωt je kut u **radijanima**: prebaci kalkulator u RAD i izračunaj ponovno.",
+    cm: "Amplituda je u centimetrima: prije računa je pretvori u metre (npr. 5 cm = 0,05 m).",
+    amplituda: "To je amplituda, najveći odmak. Elongacija se mijenja: y = A·sin(ωt), pa uvrsti zadani t.",
+    v0: "To je najveća brzina v₀ = Aω, a tijelo baš sad ne prolazi kroz ravnotežu: v = v₀·cos(ωt).",
+    a0: "To je najveća akceleracija a₀, a ona je samo u krajnjem položaju. U tom trenutku a = −a₀·sin(ωt).",
+    F0: "To je najveća sila m·a₀. U tom trenutku F = m·a, gdje je a = −a₀·sin(ωt).",
+    piKv: "U formuli je **π²** (4π²), a ne π.",
+    TKv: "Period je u formuli na kvadrat (T²).",
+    faliMasa: "To je akceleracija. Sila je F = m·a.",
+    TfZamjena: "Zamijenio si T i f: period je T = 1/f, frekvencija f = 1/T.",
+    TOmega: "To je f = ω/2π. Period je T = 2π/ω.",
+    fOmega: "To je ω. Frekvencija je f = ω/2π.",
+    omegaFali2pi: "Fali 2π: ω = 2πf = 2π/T.",
+    nt: "Period je vrijeme podijeljeno brojem titraja: T = t/n (a ne n/t).",
+    g981: "U zadacima uzmi g = 10 m/s² (knjižica formula, str. 5).",
+    g10: "Ovdje je g = 9,81 m/s².",
+    bezPola: "Fali ½: E_p = ½kx² (i E = ½kA²).",
+    kvadratX: "Odmak je u formuli na kvadrat: E_p = ½kx².",
+    kvadratA: "Amplituda je u formuli na kvadrat: E = ½kA².",
+    EumjestoEp: "To je ukupna energija. U tom položaju samo je dio potencijalna: E_p = ½kx².",
+    EkJeE: "Zaboravio si oduzeti: E_k = E − E_p.",
+    EkJeEp: "To je potencijalna energija. Kinetička je ostatak: E_k = E − E_p.",
+    k2E: "Iz E = ½kA² slijedi k = 2E/A²: fali 2.",
+    kA: "Amplituda je na kvadrat: k = 2E/A².",
+    v0Fali2pi: "Fali 2π: v₀ = 2πA/T = Aω.",
+    a0JeV0: "To je najveća brzina v₀. Najveća akceleracija je a₀ = 4π²A/T² = Aω².",
+    kmFormula: "Masa ide u brojnik: T = 2π·√(m/k).",
+    lgFormula: "Duljina ide u brojnik: T = 2π·√(ℓ/g).",
+    kFKX: "To je E_p (½kx²). Sila opruge je F = k·x.",
+    aKX: "To je sila k·x. Akceleracija je a = F/m = −(k/m)·x."
+  };
+  var FORMULE = {
+    y: "y = A·sin(ωt + φ₀)",
+    v: "v = v₀·cos(ωt + φ₀), v₀ = Aω",
+    a: "a = −a₀·sin(ωt + φ₀) = −ω²·y",
+    F: "F = m·a",
+    Ep: "E_p = ½kx²",
+    Ek: "E_k = E − E_p",
+    E: "E = ½kA²",
+    T: "T = 2π/ω = 1/f",
+    f: "f = 1/T",
+    omega: "ω = 2π/T",
+    v0: "v₀ = 2πA/T",
+    a0: "a₀ = 4π²A/T²",
+    F0: "F₀ = m·a₀",
+    k: "T = 2π√(m/k), pa k = 4π²m/T²",
+    l: "T = 2π√(ℓ/g), pa ℓ = gT²/4π²"
+  };
+  function greskeStavke(s, it) {
+    const M = modelTitranja(s);
+    const tocno = tocnoStavke(s, it);
+    const v = it.velicina;
+    const out = [];
+    const dodaj = (vr, poruka2) => {
+      if (isNum(vr)) out.push({ vrijednost: vr, poruka: poruka2 });
+    };
+    const kod = (Mx, opc) => {
+      const q = vrijednostStavke(s, Mx, it, opc);
+      return PREDZNAK.has(v) && !sPredznakom(it) ? Math.abs(q) : q;
+    };
+    const vremenska = isNum(it.t) && ["y", "v", "a", "F", "Ep", "Ek"].includes(v);
+    if (vremenska) dodaj(kod(M, { deg: true }), P.deg);
+    if (s.jedinica_A === "cm" && !(v === "y" && jedinicaStavke(s, it) === "cm"))
+      dodaj(kod(modelTitranja({ ...s, jedinica_A: "m" })), P.cm);
+    if (s.mjerenje)
+      dodaj(
+        kod(
+          modelTitranja({ ...s, mjerenje: { n: s.mjerenje.t, t: s.mjerenje.n } })
+        ),
+        P.nt
+      );
+    if (s.scena === "njihalo" && (v === "l" || M.izvor === "l")) {
+      const gDrugi = Math.abs(M.g - 10) < 1e-9 ? 9.81 : 10;
+      dodaj(
+        kod(modelTitranja({ ...s, g: gDrugi })),
+        gDrugi === 9.81 ? P.g981 : P.g10
+      );
+    }
+    const yF = v === "y" && jedinicaStavke(s, it) === "cm" ? 100 : 1;
+    const sn = isNum(it.t) ? Math.sin(M.omega * it.t + M.phi0) : NaN;
+    const yX = isNum(it.x) ? it.x * M.fA : isNum(it.t) ? M.A * sn : NaN;
+    switch (v) {
+      case "y":
+        dodaj(M.A * yF, P.amplituda);
+        dodaj(-M.A * yF, P.amplituda);
+        break;
+      case "v":
+        if (isNum(it.t)) {
+          dodaj(M.v0, P.v0);
+          dodaj(-M.v0, P.v0);
+        }
+        break;
+      case "a":
+        if (isNum(it.t)) {
+          dodaj(M.a0, P.a0);
+          dodaj(-M.a0, P.a0);
+          dodaj(tocno / Math.PI, P.piKv);
+        } else if (imaMasu(s)) dodaj(-M.k * yX, P.aKX);
+        break;
+      case "F":
+        if (isNum(it.t)) {
+          dodaj(M.F0, P.F0);
+          dodaj(-M.F0, P.F0);
+          dodaj(tocno / Math.PI, P.piKv);
+        } else dodaj(0.5 * M.k * yX * yX, P.kFKX);
+        dodaj(tocno / M.m, P.faliMasa);
+        break;
+      case "Ep":
+        dodaj(2 * tocno, P.bezPola);
+        dodaj(M.E, P.EumjestoEp);
+        dodaj(0.5 * M.k * Math.abs(yX), P.kvadratX);
+        break;
+      case "Ek":
+        dodaj(M.E, P.EkJeE);
+        dodaj(0.5 * M.k * yX * yX, P.EkJeEp);
+        dodaj(M.E - M.k * yX * yX, P.bezPola);
+        break;
+      case "E":
+        dodaj(2 * M.E, P.bezPola);
+        dodaj(0.5 * M.k * M.A, P.kvadratA);
+        break;
+      case "T":
+        dodaj(M.f, P.TfZamjena);
+        if (M.izvor === "k") dodaj(PI2 * Math.sqrt(M.k / M.m), P.kmFormula);
+        if (M.izvor === "l") dodaj(PI2 * Math.sqrt(M.g / M.l), P.lgFormula);
+        break;
+      case "f":
+        dodaj(M.T, P.TfZamjena);
+        dodaj(M.omega, P.fOmega);
+        break;
+      case "omega":
+        dodaj(M.f, P.omegaFali2pi);
+        dodaj(1 / M.T, P.omegaFali2pi);
+        dodaj(PI2 * M.T, "ω = 2π/T: period je u nazivniku.");
+        break;
+      case "v0":
+        dodaj(M.v0 / PI2, P.v0Fali2pi);
+        break;
+      case "a0":
+        dodaj(M.a0 / Math.PI, P.piKv);
+        dodaj(M.a0 * M.T, P.TKv);
+        dodaj(M.v0, P.a0JeV0);
+        break;
+      case "F0":
+        dodaj(M.F0 / Math.PI, P.piKv);
+        dodaj(M.a0, P.faliMasa);
+        break;
+      case "k":
+        dodaj(M.k / Math.PI, P.piKv);
+        dodaj(M.k * M.T, P.TKv);
+        dodaj(M.k / 2, P.k2E);
+        dodaj(M.k * M.A, P.kA);
+        break;
+      case "l":
+        dodaj(M.l * Math.PI, P.piKv);
+        dodaj(M.l / M.T, P.TKv);
+        break;
+    }
+    const tol2 = tolStavke(it, tocno) * 1.5;
+    const jedinstvene = [];
+    for (const g of out) {
+      if (Math.abs(g.vrijednost - tocno) <= tol2) continue;
+      if (jedinstvene.some(
+        (q) => near(q.vrijednost, g.vrijednost, Math.abs(g.vrijednost) * 2e-3)
+      ))
+        continue;
+      jedinstvene.push(g);
+    }
+    return jedinstvene;
+  }
+  function porukaPredznaka(s, it, tocno) {
+    const S = strane(s);
+    if (it.velicina === "y")
+      return tocno < 0 ? `Iznos je dobar, ali fali **minus**: tijelo je ${S.odMinus}, na drugoj strani.` : `Iznos je dobar, ali bez minusa: tijelo je ${S.odPlus}.`;
+    if (it.velicina === "v")
+      return `Iznos je dobar, ali predznak nije: predznak brzine kaže kamo se tijelo giba (sad ${tocno < 0 ? S.minus : S.plus}).`;
+    const sto2 = it.velicina === "a" ? "akceleracija" : "sila";
+    return tocno < 0 ? `Iznos je dobar, ali fali **minus**: ${sto2} uvijek gleda prema ravnoteži, suprotno od elongacije. Minus znači: prema ravnoteži.` : `Iznos je dobar, ali predznak nije: tijelo je ${S.odMinus}, pa ${sto2} prema ravnoteži gleda ${S.plus} (pozitivno).`;
+  }
+  function provjeriStavku(s, i, unos) {
+    const it = s.pitaj[i];
+    const jed2 = jedinicaStavke(s, it);
+    const n = parseNumber(unos, jed2);
+    if (n == null) return { tocno: false, prazno: true };
+    const tocno = tocnoStavke(s, it);
+    const tol2 = tolStavke(it, tocno);
+    if (near(n, tocno, tol2)) return { tocno: true };
+    if (sPredznakom(it) && Math.abs(tocno) > 1e-12 && near(-n, tocno, tol2))
+      return { tocno: false, poruka: porukaPredznaka(s, it, tocno) };
+    const hit = (it.krivo ?? []).find(
+      (q) => near(
+        n,
+        q.vrijednost,
+        isNum(q.tolerancija) ? q.tolerancija : Math.abs(q.vrijednost) * 0.01
+      )
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const gr = greskeStavke(s, it).find(
+      (q) => near(n, q.vrijednost, Math.abs(q.vrijednost) * 0.01)
+    );
+    if (gr) return { tocno: false, poruka: gr.poruka };
+    return {
+      tocno: false,
+      poruka: it.savjet || `Nije točno. Pomoć: ${FORMULE[it.velicina]}.`
+    };
+  }
+  function checkIzracunaj(s, odgovor3) {
+    const unosi = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
+    const vise = s.pitaj.length > 1;
+    if (s.pitaj.every((_, i) => !String(unosi[i] ?? "").trim()))
+      return {
+        tocno: false,
+        poruka: "Upiši broj (decimalni zarez je u redu, npr. 1,5).",
+        prazno: true
+      };
+    for (let i = 0; i < s.pitaj.length; i++) {
+      const r = provjeriStavku(s, i, unosi[i] ?? "");
+      if (r.tocno) continue;
+      const pref = vise ? `U ${i + 1}. polju: ` : "";
+      if (r.prazno)
+        return {
+          tocno: false,
+          poruka: `${pref}upiši broj (decimalni zarez je u redu).`,
+          prazno: true
+        };
+      return { tocno: false, poruka: `${pref}${r.poruka}` };
+    }
+    return { tocno: true };
+  }
+  var OPIS4 = `Harmonijsko titranje (fizika, matura): y = A·sin(ωt + φ₀), crtež i grafovi uživo. tekst, nacin, scena:
+- "tocka": točka titra po osi y (čista jednadžba); uz prikazi "kruznica" crta se referentna kružnica s kutom ωt u rad i °.
+- "opruga": uteg na opruzi; polozaj? "okomito" (zadano; F je povratna sila oko ravnoteže) | "vodoravno" (bez trenja, oznaka x).
+- "njihalo": kuglica na niti, ikona? "kuglica" (zadano) | "ljuljacka" (dijete na ljuljački). Kut na crtežu je povećan.
+Polja (brojčano polje smije biti id klizača): A (> 0), jedinica_A? ("m" zadano | "cm"), točno jedan izvor perioda: omega (s⁻¹) | T (s) | f (Hz) | mjerenje {n, t} (n titraja u t s) | k (N/m, samo opruga, treba m) | l (m, samo njihalo); m? (kg, treba za F, F₀, k, energije), g? (zadano 9,81; u zadacima knjižice 10), phi0? (rad, zadano 0).
+Prikaz: prikazi? ⊂ ${PRIKAZI6.join(", ")} (najviše 3 grafa; zadano ["y-t"]; F-t, E-t, Ep-x i stupci trebaju m; kruznica samo uz scena "tocka"); brojaci? ⊂ t, y, v, a, F, Ep, Ek, E, n, put (put u amplitudama), T, f, omega, v0, a0, F0, k, l (zadano ["t", "y"], najviše 6; [] = bez očitanja); strelice? ⊂ v, a, F (zadano ["v", "a"]; v zelena, a/F plava, uvijek prema ravnoteži); ubrzanje? (simulirane sekunde u stvarnoj; zadano tako da jedan period traje 1,5–2,5 s); t_kraj? (duljina vremenske osi, s).
+Načini:
+- "istrazi" (pogledaj): ▶/⏸, premotavanje, „usporeno ×¼“; ${KLIZACI_OPIS} (do 3; id-jevi npr. A, m, k, l, g, omega, T, f). Kod njihala klizač m ne mijenja period (u formuli nema mase).
+- "zaustavi" (Tvoj red): učenik pusti titranje, zaustavi ga (ili premota) i pritisne Provjeri. cilj: {uvjet: y_max | y_min | ravnoteza | krajnji | v_max | a_max | Ek_jednako_Ep | put (vrijednost: put u amplitudama, cijeli broj ili polovica) | t (vrijednost: s), prvi? (zadano true)}. Trenutke računa aplikacija; tolerancija max(0,01 s; 2 % T). Poruke za y_max umjesto y_min, ravnotežu umjesto a_max, krajnji umjesto v_max, put 2A po titraju i drugi umjesto prvog prolaska dodaju se same. Graf se crta tek do kursora.
+- "odaberi_polozaj" (Tvoj red): titranje stoji, učenik dodiruje mete na putanji. tocke? (udjeli od A, zadano [-1, -0.5, 0, 0.5, 1]; za Ek_jednako_Ep dodaj ±0.71), pitanja: [{trazi}] (1–3) s trazi ∈ ${TRAZI.join(", ")}. Odgovor je skup položaja (oba krajnja!).
+- "postavi" (Tvoj red): mijenja: id jedinog klizača ili "x" (učenik vuče sam uteg; korak_x? u jedinici amplitude, pocetak_x? zadano 0). Uz klizač cilj {velicina ∈ ${POSTAVI_VEL.join(", ")}, vrijednost, t? (za n: broj titraja u t s), tolerancija?}; uz "x" cilj {velicina ∈ ${POSTAVI_X_VEL.join(", ")}, vrijednost (≥ 0 znači iznos)}. Zadana tolerancija: 1 % cilja, a bar pola koraka. skriveno?: true sakrije veličine vremena (T, f, ω, n) i grafove do provjere (štoperica i brojač titraja ostaju). Cilj i ono što ga odaje vide se tek nakon provjere. krivo?: [{vrijednost (klizača ili x), poruka}].
+- "izracunaj" (Tvoj red): pitaj: [{velicina ∈ ${IZRACUNAJ_VEL.join(", ")}, t? (s) | x? (u jedinici amplitude; y, v, a, F, Ep, Ek trebaju jedno od toga), jedinica? (samo za y: m | cm), oznaka?, predznak? (zadano true: y, v, a, F u trenutku t traže se s predznakom), tolerancija? (zadano 1 %), krivo?, savjet?}] (1–3). Do točnog odgovora crtež stoji na t = 0, a tražene vrijednosti su „?“. Automatske krive vrijednosti: kalkulator u DEG, cm nepretvoreni u m, amplituda umjesto elongacije, v₀/a₀/F₀ umjesto vrijednosti u trenutku, π nekvadriran, T nekvadriran, zamijenjeni T i f, T = n/t, g = 9,81 umjesto 10, E_p bez ½, E_k = E, krivi predznak.`;
+  var PRIMJER4 = {
+    tip: TIP4,
+    scena: "tocka",
+    nacin: "zaustavi",
+    tekst: "Pusti titranje $y = 5\\ \\text{cm} \\cdot \\sin(15{,}7\\ \\text{s}^{-1} \\cdot t)$ i zaustavi ga kad tijelo **prvi put** dođe u najniži položaj.",
+    A: 5,
+    jedinica_A: "cm",
+    omega: 15.7,
+    prikazi: ["y-t", "kruznica"],
+    brojaci: ["t", "y"],
+    ubrzanje: 0.25,
+    cilj: { uvjet: "y_min" }
+  };
+  var PRIMJERI4 = [
+    // 1080 a: što znači ωt (radijani)
+    {
+      tip: TIP4,
+      scena: "tocka",
+      nacin: "istrazi",
+      tekst: "Tijelo titra po jednadžbi $y = 5\\ \\text{cm} \\cdot \\sin(15{,}7\\ \\text{s}^{-1} \\cdot t)$. Gledaj kružnicu: kut $\\omega t$ raste, a točka na osi je njegova projekcija. Jedan krug je $2\\pi \\approx 6{,}28$ rad.",
+      A: 5,
+      jedinica_A: "cm",
+      omega: 15.7,
+      prikazi: ["y-t", "kruznica"],
+      brojaci: ["t", "y"],
+      ubrzanje: 0.25
+    },
+    // 1080 a: elongacija u trenutku (kalkulator u RAD)
+    {
+      tip: TIP4,
+      scena: "tocka",
+      nacin: "izracunaj",
+      tekst: "Tijelo titra po jednadžbi $y = 5\\ \\text{cm} \\cdot \\sin(15{,}7\\ \\text{s}^{-1} \\cdot t)$. Izračunaj period, frekvenciju i elongaciju u trenutku $t = 0{,}3$ s.",
+      A: 5,
+      jedinica_A: "cm",
+      omega: 15.7,
+      prikazi: ["y-t", "kruznica"],
+      brojaci: ["t", "y"],
+      ubrzanje: 0.25,
+      pitaj: [
+        { velicina: "T" },
+        { velicina: "f" },
+        { velicina: "y", t: 0.3, jedinica: "cm" }
+      ]
+    },
+    // 1080 b: put 6A
+    {
+      tip: TIP4,
+      scena: "tocka",
+      nacin: "zaustavi",
+      tekst: "Tijelo krene iz ravnoteže. Zaustavi ga kad prijeđe put od **6 amplituda**. Koliko je vremena prošlo?",
+      A: 3,
+      jedinica_A: "cm",
+      T: 8,
+      prikazi: ["y-t"],
+      brojaci: ["t", "put"],
+      cilj: { uvjet: "put", vrijednost: 6 }
+    },
+    // 1085: ljuljačka, istraživanje v i a
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      ikona: "ljuljacka",
+      nacin: "istrazi",
+      tekst: "Dijete se ljulja: najviše se odmakne 10 cm, a puni zamah traje 1,6 s. Prati strelice i grafove: gdje je brzina najveća, a gdje akceleracija?",
+      A: 10,
+      jedinica_A: "cm",
+      T: 1.6,
+      g: 10,
+      prikazi: ["y-t", "v-t", "a-t"],
+      brojaci: ["y", "v", "a"]
+    },
+    // 1085 a: položaji
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      ikona: "ljuljacka",
+      nacin: "odaberi_polozaj",
+      tekst: "Dodirni **sve** položaje u kojima je traženo najveće.",
+      A: 10,
+      jedinica_A: "cm",
+      T: 1.6,
+      g: 10,
+      pitanja: [{ trazi: "v_max" }, { trazi: "a_max" }]
+    },
+    // 1085 a: najveći iznosi
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      ikona: "ljuljacka",
+      nacin: "izracunaj",
+      tekst: "Od sredine se dijete najviše odmakne 10 cm, a puni zamah traje 1,6 s. Izračunaj najveću brzinu i najveću akceleraciju.",
+      A: 10,
+      jedinica_A: "cm",
+      T: 1.6,
+      g: 10,
+      prikazi: ["v-t", "a-t"],
+      brojaci: ["v", "a"],
+      pitaj: [{ velicina: "v0" }, { velicina: "a0" }]
+    },
+    // 1085 b: y, a, F u t = 0,2 s
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      ikona: "ljuljacka",
+      nacin: "izracunaj",
+      tekst: "Dijete mase 30 kg prođe kroz sredinu u $t = 0$. Koliki su odmak, akceleracija i sila $0{,}2$ s kasnije?",
+      A: 10,
+      jedinica_A: "cm",
+      T: 1.6,
+      g: 10,
+      m: 30,
+      prikazi: ["y-t", "a-t"],
+      brojaci: ["y", "a", "F"],
+      strelice: ["v", "F"],
+      pitaj: [
+        { velicina: "y", t: 0.2, jedinica: "m" },
+        { velicina: "a", t: 0.2 },
+        { velicina: "F", t: 0.2 }
+      ]
+    },
+    // 1090 a: graf E_p(x)
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "vodoravno",
+      nacin: "izracunaj",
+      tekst: "Na grafu je elastična potencijalna energija tijela na opruzi u ovisnosti o elongaciji. Kolika je ukupna energija titranja, a kolika konstanta opruge?",
+      A: 0.6,
+      k: 20,
+      m: 1,
+      prikazi: ["Ep-x"],
+      brojaci: ["y", "Ep", "Ek"],
+      pitaj: [{ velicina: "E" }, { velicina: "k" }]
+    },
+    // 1090 b: položaj u kojem je sila 10 N
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "vodoravno",
+      nacin: "postavi",
+      tekst: "Opruga ima $k = 20$ N/m, amplituda je $0{,}6$ m. Povuci uteg na mjesto gdje ga opruga vuče silom od **10 N**.",
+      A: 0.6,
+      k: 20,
+      m: 1,
+      mijenja: "x",
+      korak_x: 0.05,
+      prikazi: ["Ep-x", "stupci"],
+      brojaci: ["y", "F", "Ep", "Ek"],
+      cilj: { velicina: "F", vrijednost: 10 }
+    },
+    // 1090 b: E_p i E_k
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "vodoravno",
+      nacin: "izracunaj",
+      tekst: "Tijelo je na $x = 0{,}5$ m od ravnoteže ($k = 20$ N/m, $A = 0{,}6$ m). Kolike su tamo potencijalna i kinetička energija?",
+      A: 0.6,
+      k: 20,
+      m: 1,
+      prikazi: ["Ep-x", "stupci"],
+      brojaci: ["y", "Ep", "Ek"],
+      pitaj: [
+        { velicina: "Ep", x: 0.5 },
+        { velicina: "Ek", x: 0.5 }
+      ]
+    },
+    // energija: E_k = E_p
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "vodoravno",
+      nacin: "odaberi_polozaj",
+      tekst: "Dodirni položaje u kojima je kinetička energija jednaka potencijalnoj.",
+      A: 0.6,
+      k: 20,
+      m: 1,
+      tocke: [-1, -0.71, -0.5, 0, 0.5, 0.71, 1],
+      pitanja: [{ trazi: "Ek_jednako_Ep" }]
+    },
+    // 1095: opruga i njihalo, štoperica
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "okomito",
+      nacin: "istrazi",
+      tekst: "Mijenjaj masu utega i konstantu opruge. Štopericom i brojačem titraja izmjeri period: kako ovisi o $m$, a kako o $k$?",
+      A: 0.05,
+      m: "m",
+      k: "k",
+      klizaci: [
+        {
+          id: "m",
+          oznaka: "masa utega $m$",
+          min: 0.1,
+          max: 2,
+          korak: 0.1,
+          pocetak: 0.4,
+          jedinica: "kg"
+        },
+        {
+          id: "k",
+          oznaka: "konstanta opruge $k$",
+          min: 1,
+          max: 20,
+          korak: 0.5,
+          pocetak: 4,
+          jedinica: "N/m"
+        }
+      ],
+      prikazi: ["y-t", "stoperica", "brojac_titraja"],
+      brojaci: ["T"]
+    },
+    // 1095 a: namjesti oprugu
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "okomito",
+      nacin: "postavi",
+      tekst: "Namjesti oprugu tako da uteg od 0,4 kg napravi **30 titraja u 60 s**. Pusti štopericu i broji titraje.",
+      m: 0.4,
+      A: 0.05,
+      k: "k",
+      mijenja: "k",
+      klizaci: [
+        {
+          id: "k",
+          oznaka: "konstanta opruge $k$",
+          min: 1,
+          max: 10,
+          korak: 0.1,
+          pocetak: 8,
+          jedinica: "N/m"
+        }
+      ],
+      prikazi: ["stoperica", "brojac_titraja"],
+      brojaci: [],
+      ubrzanje: 4,
+      skriveno: true,
+      cilj: { velicina: "n", t: 60, vrijednost: 30 }
+    },
+    // 1095 b: njihalo, masa ne mijenja period
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      nacin: "istrazi",
+      tekst: "Mijenjaj duljinu niti i masu kuglice i mjeri period. Što od toga mijenja period?",
+      A: 0.1,
+      g: 10,
+      l: "l",
+      m: "m",
+      klizaci: [
+        {
+          id: "l",
+          oznaka: "duljina niti $\\ell$",
+          min: 0.5,
+          max: 5,
+          korak: 0.05,
+          pocetak: 1,
+          jedinica: "m"
+        },
+        {
+          id: "m",
+          oznaka: "masa kuglice $m$",
+          min: 0.1,
+          max: 2,
+          korak: 0.1,
+          pocetak: 0.5,
+          jedinica: "kg"
+        }
+      ],
+      prikazi: ["y-t", "stoperica", "brojac_titraja"],
+      brojaci: ["T"]
+    },
+    // 1095 b: namjesti nit
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      nacin: "postavi",
+      tekst: "Namjesti duljinu niti tako da kuglica napravi **10 titraja u 35 s** ($g = 10$ m/s²).",
+      A: 0.1,
+      g: 10,
+      l: "l",
+      mijenja: "l",
+      klizaci: [
+        {
+          id: "l",
+          oznaka: "duljina niti $\\ell$",
+          min: 0.5,
+          max: 5,
+          korak: 0.05,
+          pocetak: 1,
+          jedinica: "m"
+        }
+      ],
+      prikazi: ["stoperica", "brojac_titraja"],
+      brojaci: [],
+      skriveno: true,
+      cilj: { velicina: "n", t: 35, vrijednost: 10 }
+    },
+    // 1095: izračun k i ℓ iz mjerenja
+    {
+      tip: TIP4,
+      scena: "njihalo",
+      nacin: "izracunaj",
+      tekst: "Kuglica obješena na nit napravi 10 titraja u 35 s. Koliki su period i duljina niti? ($g = 10$ m/s²)",
+      A: 0.2,
+      g: 10,
+      mjerenje: { n: 10, t: 35 },
+      prikazi: ["stoperica", "brojac_titraja"],
+      pitaj: [{ velicina: "T" }, { velicina: "l" }]
+    },
+    // zaustavi: akceleracija najveća (okomita opruga)
+    {
+      tip: TIP4,
+      scena: "opruga",
+      polozaj: "okomito",
+      nacin: "zaustavi",
+      tekst: "Zaustavi titranje u trenutku kad je **akceleracija** utega najveća.",
+      A: 4,
+      jedinica_A: "cm",
+      T: 2,
+      m: 0.5,
+      prikazi: ["y-t", "a-t"],
+      brojaci: ["t", "y"],
+      strelice: ["v"],
+      cilj: { uvjet: "a_max" }
+    }
+  ];
+  function validateSpec(s) {
+    const { list, need } = problems();
+    need(
+      NACINI16.includes(s.nacin),
+      `titranje.nacin mora biti jedan od: ${NACINI16.join(", ")}`
+    );
+    need(isText(s.tekst), "titranje treba „tekst“");
+    if (!need(
+      SCENE6.includes(s.scena),
+      `titranje.scena mora biti jedna od: ${SCENE6.join(", ")}`
+    ))
+      return list;
+    if (s.polozaj != null)
+      need(
+        s.scena === "opruga" && POLOZAJI2.includes(s.polozaj),
+        `polozaj ("okomito" | "vodoravno") postoji samo uz scena "opruga"`
+      );
+    if (s.ikona != null)
+      need(
+        s.scena === "njihalo" && IKONE2.includes(s.ikona),
+        `ikona ("kuglica" | "ljuljacka") postoji samo uz scena "njihalo"`
+      );
+    if (s.jedinica_A != null)
+      need(
+        ["m", "cm"].includes(s.jedinica_A),
+        'jedinica_A mora biti "m" ili "cm"'
+      );
+    if (s.nacin === "istrazi") validateKlizaci(s, need, { najvise: 3 });
+    else if (s.nacin === "postavi" && s.mijenja !== "x")
+      validateKlizaci(s, need, { najmanje: 1, najvise: 1 });
+    else
+      need(
+        s.klizaci == null,
+        `${s.nacin === "postavi" ? 'postavi s mijenja "x"' : s.nacin} nema klizače: sve vrijednosti su brojevi`
+      );
+    const koristeni = [];
+    const polje2 = (ime2, o) => {
+      if (typeof s[ime2] === "string") koristeni.push(s[ime2]);
+      return validatePolje(s, need, ime2, o);
+    };
+    const fA = s.jedinica_A === "cm" ? 0.01 : 1;
+    polje2("A", {
+      min: 1e-4 / fA,
+      max: 10 / fA,
+      opis: `amplituda u ${s.jedinica_A === "cm" ? "cm" : "m"}`
+    });
+    const izv = izvoriPerioda(s);
+    need(
+      izv.length === 1,
+      `period se zadaje točno jednim od: omega, T, f, mjerenje {n, t}${s.scena === "opruga" ? ", k (uz m)" : ""}${s.scena === "njihalo" ? ", l (uz g)" : ""}${izv.length > 1 ? ` (sad ih je više: ${izv.join(", ")})` : ""}`
+    );
+    if (s.k != null && s.scena === "njihalo")
+      need(false, "njihalo nema k: period zadaj s l (duljina niti) ili T");
+    if (s.l != null && s.scena !== "njihalo")
+      need(false, "l (duljina niti) postoji samo uz scena njihalo");
+    if (s.k != null && s.scena === "tocka")
+      need(false, "točka nema oprugu (k): period zadaj s omega, T ili f");
+    if (s.omega != null)
+      polje2("omega", { min: 0.01, max: 1e3, opis: "kružna frekvencija u s⁻¹" });
+    if (s.T != null) polje2("T", { min: 0.01, max: 1e3, opis: "period u s" });
+    if (s.f != null)
+      polje2("f", { min: 1e-3, max: 100, opis: "frekvencija u Hz" });
+    if (s.k != null && s.scena === "opruga") {
+      polje2("k", { min: 0.01, max: 1e6, opis: "konstanta opruge u N/m" });
+      need(s.m != null, "uz k treba i masa m (period T = 2π√(m/k))");
+    }
+    if (s.l != null && s.scena === "njihalo")
+      polje2("l", { min: 0.01, max: 100, opis: "duljina niti u m" });
+    if (s.m != null) polje2("m", { min: 1e-3, max: 1e5, opis: "masa u kg" });
+    if (s.g != null) polje2("g", { min: 1, max: 30, opis: "g u m/s²" });
+    if (s.phi0 != null)
+      polje2("phi0", { min: -PI2, max: PI2, opis: "početna faza u rad" });
+    if (s.mjerenje != null)
+      need(
+        s.mjerenje && isNum(s.mjerenje.n) && isNum(s.mjerenje.t) && s.mjerenje.n > 0 && s.mjerenje.n <= 1e3 && s.mjerenje.t > 0 && s.mjerenje.t <= 1e4,
+        "mjerenje mora biti {n (broj titraja > 0), t (vrijeme u s > 0)}"
+      );
+    if (list.length) return list;
+    validateKoristeniKlizaci(s, need, koristeni);
+    if (list.length) return list;
+    for (const p of krajnjeKombinacije(s)) {
+      const M2 = modelTitranja(s, p);
+      if (!need(
+        isNum(M2.T) && M2.T > 0,
+        "period se ne može izračunati iz zadanih vrijednosti"
+      ))
+        return list;
+      if (s.scena === "njihalo" && !need(
+        M2.A / M2.l <= 0.35 + 1e-9,
+        `njihalo: A/ℓ = ${formatNumber(M2.A / M2.l, 2)} je prevelik (najviše 0,35): kod velikog otklona titranje nije harmonijsko`
+      ))
+        return list;
+    }
+    const M = modelTitranja(s);
+    const tKraj = trajanjeTitranja(s);
+    const meta = velicineTitranja(s);
+    const pr = prikaziTitranja(s);
+    if (s.prikazi != null) {
+      if (need(
+        Array.isArray(s.prikazi) && s.prikazi.every((v) => PRIKAZI6.includes(v)) && new Set(s.prikazi).size === s.prikazi.length,
+        `prikazi mora biti popis različitih vrijednosti iz: ${PRIKAZI6.join(", ")}`
+      )) {
+        need(grafoviTitranja(s).length <= 3, "prikazi: najviše 3 grafa");
+        need(
+          !pr.includes("kruznica") || s.scena === "tocka",
+          'kruznica (referentna kružnica) ide samo uz scena "tocka"'
+        );
+        for (const v of ["F-t", "E-t", "Ep-x", "stupci"])
+          need(
+            !pr.includes(v) || imaMasu(s),
+            `prikaz ${v} treba masu m (sila i energija)`
+          );
+      }
+    }
+    if (s.brojaci != null)
+      need(
+        Array.isArray(s.brojaci) && s.brojaci.length <= 6 && new Set(s.brojaci).size === s.brojaci.length && s.brojaci.every((k) => k in meta && k !== "A" && k !== "m"),
+        `brojaci: 0–6 različitih veličina iz: ${Object.keys(meta).filter((k) => k !== "A" && k !== "m").join(", ")} (F, energije, F0 i k trebaju m)`
+      );
+    if (s.strelice != null)
+      need(
+        Array.isArray(s.strelice) && s.strelice.length <= 2 && s.strelice.every((v) => STRELICE.includes(v)) && !(s.strelice.includes("a") && s.strelice.includes("F")) && (!s.strelice.includes("F") || imaMasu(s)),
+        'strelice: popis od najviše dvije iz v, a, F (a ili F, ne obje; F treba m), npr. ["v", "a"]'
+      );
+    if (s.ubrzanje != null)
+      need(
+        isNum(s.ubrzanje) && s.ubrzanje > 0 && s.ubrzanje <= 50,
+        "ubrzanje je mjerilo vremena animacije (0–50)"
+      );
+    if (s.t_kraj != null)
+      need(
+        isNum(s.t_kraj) && s.t_kraj > 0 && s.t_kraj <= 1e3 && s.t_kraj / M.T <= 200,
+        "t_kraj mora biti od 0 do 1000 s i najviše 200 perioda"
+      );
+    else
+      need(
+        tKraj / M.T <= 200,
+        "vremenska os bi imala više od 200 perioda: zadaj kraći t_kraj ili veći period"
+      );
+    const nacinPolja = [
+      "cilj",
+      "pitanja",
+      "pitaj",
+      "mijenja",
+      "skriveno",
+      "tocke",
+      "korak_x",
+      "pocetak_x"
+    ];
+    const dopustena = {
+      istrazi: [],
+      zaustavi: ["cilj"],
+      odaberi_polozaj: ["pitanja", "tocke"],
+      postavi: ["cilj", "mijenja", "skriveno", "korak_x", "pocetak_x"],
+      izracunaj: ["pitaj"]
+    }[s.nacin];
+    for (const f2 of nacinPolja)
+      need(
+        !(f2 in s) || dopustena.includes(f2),
+        `polje „${f2}“ ne postoji u načinu ${s.nacin}`
+      );
+    need(
+      !("krivo" in s) || ["zaustavi", "postavi"].includes(s.nacin),
+      "krivo na razini speca postoji samo u zaustavi i postavi (u izracunaj ide uz stavku pitaj)"
+    );
+    if (s.nacin === "istrazi") noAnswerFields(s, need);
+    if (s.nacin === "zaustavi") validateZaustavi2(s, need, M, tKraj);
+    if (s.nacin === "odaberi_polozaj") validateOdaberi(s, need);
+    if (s.nacin === "postavi") validatePostavi2(s, need, M, meta);
+    if (s.nacin === "izracunaj") validateIzracunaj(s, need, M);
+    return list;
+  }
+  function validateZaustavi2(s, need, M, tKraj) {
+    const c = s.cilj;
+    if (!need(
+      c && typeof c === "object" && UVJETI.includes(c.uvjet),
+      `zaustavi treba cilj: {uvjet: ${UVJETI.join(" | ")}}`
+    ))
+      return;
+    if (c.prvi != null)
+      need(typeof c.prvi === "boolean", "cilj.prvi mora biti true ili false");
+    if (c.uvjet === "put")
+      need(
+        isNum(c.vrijednost) && c.vrijednost > 0 && c.vrijednost <= 200 && Math.abs(c.vrijednost * 2 - Math.round(c.vrijednost * 2)) < 1e-9,
+        "uvjet put: cilj.vrijednost je put u amplitudama, cijeli broj ili polovica (npr. 6 ili 2,5)"
+      );
+    else if (c.uvjet === "t")
+      need(
+        isNum(c.vrijednost) && c.vrijednost > 0 && c.vrijednost <= tKraj,
+        `uvjet t: cilj.vrijednost je trenutak u s, od 0 do kraja osi (${formatNumber(tKraj)} s)`
+      );
+    else need(c.vrijednost == null, `uvjet ${c.uvjet} nema vrijednost`);
+    const ts = trenuciCilja2(s, M, tKraj);
+    need(
+      ts.length > 0 && ts[0] <= tKraj + 1e-9,
+      `uvjet se ne ispuni do kraja vremenske osi (${formatNumber(tKraj)} s): povećaj t_kraj`
+    );
+    validateKrivo(s.krivo, null, 0, need);
+    if (Array.isArray(s.krivo) && ts.length)
+      s.krivo.forEach(
+        (k, i) => need(
+          !(isNum(k?.vrijednost) && Math.abs(k.vrijednost - ts[0]) <= tolerancijaZaustavi(M)),
+          `krivo[${i}].vrijednost je točan trenutak`
+        )
+      );
+  }
+  function validateOdaberi(s, need) {
+    const tocke = tockeOdabira(s);
+    if (s.tocke != null)
+      need(
+        Array.isArray(s.tocke) && s.tocke.length >= 3 && s.tocke.length <= 9 && s.tocke.every((u) => isNum(u) && u >= -1 && u <= 1) && new Set(s.tocke).size === s.tocke.length && s.tocke.every((u, i) => i === 0 || u > s.tocke[i - 1]),
+        "tocke: 3–9 različitih udjela amplitude od −1 do 1, poredanih od najmanjeg (npr. [-1, -0.5, 0, 0.5, 1])"
+      );
+    if (!need(
+      Array.isArray(s.pitanja) && s.pitanja.length >= 1 && s.pitanja.length <= 3,
+      "odaberi_polozaj treba pitanja: [{trazi}] (1–3)"
+    ))
+      return;
+    const vidjeno = /* @__PURE__ */ new Set();
+    s.pitanja.forEach((q, i) => {
+      if (!need(
+        TRAZI.includes(q?.trazi),
+        `pitanja[${i}].trazi mora biti jedno od: ${TRAZI.join(", ")}`
+      ))
+        return;
+      need(!vidjeno.has(q.trazi), `pitanja[${i}]: „${q.trazi}“ se ponavlja`);
+      vidjeno.add(q.trazi);
+      need(
+        tocke.some((u) => ispunjava(q.trazi, u)),
+        q.trazi === "Ek_jednako_Ep" ? "za Ek_jednako_Ep tocke moraju sadržavati ±0.71 (A/√2)" : `pitanja[${i}]: nijedna točka ne ispunjava „${q.trazi}“ (dodaj 0 ili ±1 u tocke)`
+      );
+      need(
+        !tocke.every((u) => ispunjava(q.trazi, u)),
+        `pitanja[${i}]: sve točke su točne, pa pitanje ništa ne provjerava`
+      );
+    });
+  }
+  function validatePostavi2(s, need, M, meta) {
+    const c = s.cilj;
+    if (s.skriveno != null)
+      need(typeof s.skriveno === "boolean", "skriveno mora biti true ili false");
+    if (s.mijenja === "x") {
+      need(isNum(s.A), 'uz mijenja "x" amplituda A mora biti broj');
+      need(s.skriveno == null, 'skriveno ne postoji uz mijenja "x"');
+      if (!need(
+        c && POSTAVI_X_VEL.includes(c.velicina) && isNum(c.vrijednost),
+        `postavi s mijenja "x" treba cilj: {velicina: ${POSTAVI_X_VEL.join(" | ")}, vrijednost}`
+      ))
+        return;
+      need(
+        c.velicina === "v" || c.velicina === "a" || imaMasu(s),
+        `cilj ${c.velicina} treba masu m`
+      );
+      if (c.tolerancija != null)
+        need(
+          isNum(c.tolerancija) && c.tolerancija >= 0,
+          "cilj.tolerancija mora biti nenegativan broj"
+        );
+      need(c.t == null, "cilj.t postoji samo uz cilj n");
+      const kq = korakX(s);
+      if (!need(
+        isNum(kq) && kq > 0 && Math.abs(s.A / kq - Math.round(s.A / kq)) < 1e-6 && s.A / kq <= 200,
+        "korak_x mora dijeliti amplitudu A (najviše 200 koraka)"
+      ))
+        return;
+      const mreza3 = mrezaX(s);
+      if (s.pocetak_x != null)
+        need(
+          isNum(s.pocetak_x) && mreza3.some((x) => Math.abs(x - s.pocetak_x) < 1e-9),
+          "pocetak_x mora biti na mreži od −A do A s korakom korak_x"
+        );
+      const a2 = analizaX(s);
+      need(
+        a2.tocni.length > 0,
+        `cilj nije ostvariv na mreži položaja (korak ${formatNumber(kq)}): ${meta[c.velicina]?.naziv} ide od ${broj3(Math.min(...mreza3.map((x) => Math.abs(stanjeUPolozaju(M, x * M.fA)[c.velicina]))))} do ${broj3(Math.max(...mreza3.map((x) => Math.abs(stanjeUPolozaju(M, x * M.fA)[c.velicina]))))}`
+      );
+      need(
+        !a2.ok(pocetnoStanje2(s).x),
+        "tijelo na početku već ostvaruje cilj, pa bi Provjeri bez pomicanja bio točan"
+      );
+      validateKrivo(s.krivo, null, 0, need);
+      if (Array.isArray(s.krivo))
+        s.krivo.forEach(
+          (k2, i) => isNum(k2?.vrijednost) && need(
+            !a2.ok(k2.vrijednost),
+            `krivo[${i}].vrijednost ostvaruje cilj, a to je točan odgovor`
+          )
+        );
+      return;
+    }
+    const k = klizaciOd(s)[0];
+    if (!k) return;
+    need(
+      s.mijenja === k.id,
+      `mijenja mora biti "x" ili id jedinog klizača („${k.id}“)`
+    );
+    need(
+      s.korak_x == null && s.pocetak_x == null,
+      'korak_x i pocetak_x postoje samo uz mijenja "x"'
+    );
+    if (!need(
+      c && POSTAVI_VEL.includes(c.velicina) && isNum(c.vrijednost),
+      `postavi treba cilj: {velicina: ${POSTAVI_VEL.join(" | ")}, vrijednost (broj)}`
+    ))
+      return;
+    if (c.velicina === "n")
+      need(
+        isNum(c.t) && c.t > 0 && c.t <= 1e3,
+        "cilj n treba t: vrijeme u s u kojem se broje titraji"
+      );
+    else need(c.t == null, "cilj.t postoji samo uz cilj n");
+    if (!need(
+      c.velicina in stalneVelicine(s),
+      `cilj ${c.velicina} ne postoji u ovoj sceni (${["F0", "E", "k"].includes(c.velicina) ? "treba masu m" : c.velicina === "l" ? "samo njihalo" : ""})`
+    ))
+      return;
+    if (c.tolerancija != null)
+      need(
+        isNum(c.tolerancija) && c.tolerancija >= 0,
+        "cilj.tolerancija mora biti nenegativan broj"
+      );
+    let a;
+    try {
+      a = analizaPostavi(s);
+    } catch {
+      need(false, "cilj se ne može izračunati");
+      return;
+    }
+    need(
+      a.dostizno,
+      `cilj nije ostvariv klizačem „${k.id}“ (od ${formatNumber(k.min)} do ${formatNumber(k.max)}, korak ${formatNumber(k.korak)}): najbliže je ${formatNumber(a.best)}${k.jedinica ? ` ${k.jedinica}` : ""}`
+    );
+    need(
+      !a.ok(k.pocetak),
+      `klizač „${k.id}“ na početku (${formatNumber(k.pocetak)}) već ostvaruje cilj`
+    );
+    const ok = a.vrijednosti.filter((v) => a.ok(v));
+    need(
+      ok.length <= 4,
+      `cilj prihvaća previše položaja klizača (${ok.length}): smanji korak ili toleranciju`
+    );
+    validateKrivo(s.krivo, null, 0, need);
+    if (Array.isArray(s.krivo))
+      s.krivo.forEach(
+        (q, i) => isNum(q?.vrijednost) && need(
+          !a.ok(q.vrijednost),
+          `krivo[${i}].vrijednost ostvaruje cilj, a to je točan odgovor`
+        )
+      );
+  }
+  function validateIzracunaj(s, need, M) {
+    if (!need(
+      Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
+      "izracunaj treba pitaj: [{velicina, t? | x?, jedinica?}] (1–3)"
+    ))
+      return;
+    const meta = velicineTitranja(s);
+    s.pitaj.forEach((it, i) => {
+      const w = `pitaj[${i}]`;
+      if (!need(
+        it && IZRACUNAJ_VEL.includes(it.velicina),
+        `${w}.velicina mora biti jedna od: ${IZRACUNAJ_VEL.join(", ")}`
+      ))
+        return;
+      const v = it.velicina;
+      if (!need(
+        v in meta,
+        `${w}: ${v} ne postoji u ovoj sceni (${["F", "F0", "Ep", "Ek", "E", "k"].includes(v) ? "treba masu m" : v === "l" ? "samo njihalo" : v === "k" ? "njihalo nema k" : ""})`
+      ))
+        return;
+      const trenutna = ["y", "v", "a", "F", "Ep", "Ek"].includes(v);
+      if (trenutna) {
+        need(
+          it.t != null !== (it.x != null),
+          `${w}: ${v} treba točno jedno od t (trenutak u s) ili x (položaj)`
+        );
+        need(
+          v !== "y" || it.x == null,
+          `${w}: elongacija se traži u trenutku t, ne u položaju x`
+        );
+      } else
+        need(
+          it.t == null && it.x == null,
+          `${w}: ${v} je stalna veličina, bez t i x`
+        );
+      if (it.t != null)
+        need(
+          isNum(it.t) && it.t >= 0 && it.t <= 1e3,
+          `${w}.t mora biti trenutak od 0 do 1000 s`
+        );
+      if (it.x != null)
+        need(
+          isNum(it.x) && Math.abs(it.x * M.fA) <= M.A * (1 + 1e-9),
+          `${w}.x mora biti položaj od −A do A (u jedinici amplitude)`
+        );
+      if (it.jedinica != null)
+        need(
+          v === "y" ? ["m", "cm"].includes(it.jedinica) : it.jedinica === jedinicaStavke(s, { velicina: v }),
+          `${w}.jedinica: ${v === "y" ? '"m" ili "cm"' : `za ${v} je ${jedinicaStavke(s, { velicina: v })}`}`
+        );
+      if (it.predznak != null)
+        need(
+          typeof it.predznak === "boolean",
+          `${w}.predznak mora biti true ili false`
+        );
+      if (it.oznaka != null)
+        need(isText(it.oznaka), `${w}.oznaka mora biti tekst`);
+      if (it.tolerancija != null)
+        need(
+          isNum(it.tolerancija) && it.tolerancija >= 0,
+          `${w}.tolerancija mora biti nenegativan broj`
+        );
+      const tocno = tocnoStavke(s, it);
+      if (!need(isNum(tocno), `${w}: vrijednost se ne može izračunati`)) return;
+      validateKrivo(it.krivo, tocno, tolStavke(it, tocno), need, `${w}.krivo`);
+    });
+  }
+  function tocanOdgovor3(s) {
+    const M = modelTitranja(s);
+    if (s.nacin === "zaustavi") {
+      const t = trenuciCilja2(s, M)[0];
+      return isNum(t) ? `t = ${tFmt(t)}` : "";
+    }
+    if (s.nacin === "odaberi_polozaj")
+      return s.pitanja.map(
+        (q, i) => `${s.pitanja.length > 1 ? `${i + 1}. ` : ""}${opisTrazenog(s, q.trazi)}: ${tocniPolozaji(s, q.trazi).map(oznakaUdjela).join(" i ")}`
+      ).join("; ");
+    if (s.nacin === "postavi") {
+      if (s.mijenja === "x") {
+        const a2 = analizaX(s);
+        const poz = [...new Set(a2.tocni.map((x) => Math.abs(x)))];
+        const oz = velicineTitranja(s).y.oznaka;
+        return poz.map((x) => `${oz} = ${x === 0 ? "0" : "±"}${withUnit(x, a2.M.jedA)}`).join(" ili ");
+      }
+      const a = analizaPostavi(s);
+      return `${bezLatexa(a.k.oznaka)} = ${withUnit(a.best, a.k.jedinica)}`;
+    }
+    if (s.nacin === "izracunaj")
+      return s.pitaj.map((it) => {
+        const oz = bezLatexa(oznakaStavke(s, it)).replace(/_(\w)/, "$1");
+        return `${oz} = ${withUnit(Number(tocnoStavke(s, it).toPrecision(3)), jedinicaStavke(s, it))}`;
+      }).join("; ");
+    return "";
+  }
+  var titranje = {
+    tip: TIP4,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS4,
+    primjer: PRIMJER4,
+    primjeri: PRIMJERI4,
+    validate: validateSpec,
+    check(s, odgovor3) {
+      if (s.nacin === "zaustavi") return checkZaustavi2(s, odgovor3);
+      if (s.nacin === "odaberi_polozaj") return checkOdaberi2(s, odgovor3);
+      if (s.nacin === "postavi") return checkPostavi3(s, odgovor3);
+      if (s.nacin === "izracunaj") return checkIzracunaj(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor: tocanOdgovor3
+  };
+
+  // src/lib/lesson/katalog/fizika/val_uze.js
+  var TIP5 = "val_uze";
+  var SCENE7 = ["putujuci", "puls", "stojni"];
+  var NACINI17 = {
+    putujuci: ["istrazi", "zaustavi", "oznaci", "postavi", "izracunaj"],
+    puls: ["istrazi", "zaustavi", "predvidi", "izracunaj"],
+    stojni: ["istrazi", "oznaci", "postavi", "izracunaj"]
+  };
+  var KRAJEVI = ["ucvrscen", "slobodan", "bez_odbijanja"];
+  var OBLICI2 = ["brijeg", "dolina"];
+  var POCECI = ["brijeg", "dolina", "ravnoteza"];
+  var UVJETI2 = {
+    putujuci: ["ravnoteza", "brijeg", "dolina"],
+    puls: ["kraj", "povratak"]
+  };
+  var PRIKAZI7 = ["ravnalo", "y-t", "lambda", "tragovi", "cvorovi"];
+  var FAZA_POCETKA = {
+    brijeg: Math.PI / 2,
+    dolina: -Math.PI / 2,
+    ravnoteza: 0
+  };
+  var LIJEPI = [1, 2, 2.5, 5];
+  function lijepoDolje(x) {
+    if (!(x > 0)) return 0;
+    const e = Math.floor(Math.log10(x));
+    for (let i = LIJEPI.length - 1; i >= 0; i--) {
+      const c = LIJEPI[i] * 10 ** e;
+      if (c <= x * (1 + 1e-9)) return Number(c.toPrecision(6));
+    }
+    return Number((10 ** e).toPrecision(6));
+  }
+  function lijepoGore2(x) {
+    if (!(x > 0)) return 1;
+    const e = Math.floor(Math.log10(x));
+    for (const m of [...LIJEPI, 10]) {
+      const c = m * 10 ** e;
+      if (c >= x * (1 - 1e-9)) return Number(c.toPrecision(6));
+    }
+    return Number((10 ** (e + 1)).toPrecision(6));
+  }
+  var decimala = (korak) => {
+    const t = String(korak);
+    return t.includes(".") ? t.split(".")[1].length : 0;
+  };
+  var istaknute = (s) => Array.isArray(s.istaknute) ? s.istaknute : [];
+  function parametri(s, p = pocetneVrijednosti2(s)) {
+    const L = iznos2(s, s.L, p);
+    const P2 = { scena: s.scena, L };
+    if (s.napetost != null) {
+      P2.F = iznos2(s, s.napetost, p);
+      P2.mi = iznos2(s, s.mi, p);
+      P2.v = Math.sqrt(P2.F / P2.mi);
+    } else P2.v = iznos2(s, s.v, p);
+    if (s.scena === "putujuci") {
+      P2.f = s.f != null ? iznos2(s, s.f, p) : 1 / iznos2(s, s.T, p);
+      P2.T = 1 / P2.f;
+      P2.omega = 2 * Math.PI * P2.f;
+      P2.A = iznos2(s, s.A, p);
+      P2.lambda = P2.v / P2.f;
+      if (s.drugo_uze) {
+        P2.od = iznos2(s, s.drugo_uze.od, p);
+        P2.v2 = iznos2(s, s.drugo_uze.v, p);
+        P2.lambda2 = P2.v2 / P2.f;
+      }
+      P2.ustaljeno = s.ustaljeno ?? s.nacin !== "istrazi";
+      const xi = istaknute(s)[0];
+      P2.faza0 = P2.ustaljeno && xi != null ? FAZA_POCETKA[s.istaknuta_pocetak ?? "brijeg"] + P2.omega * kasnjenje(P2, xi) : 0;
+    } else if (s.scena === "puls") {
+      P2.A = iznos2(s, s.A, p);
+      P2.oblik = s.oblik ?? "brijeg";
+      P2.kraj = s.kraj ?? "ucvrscen";
+      P2.sigma = L / 22;
+      P2.t_kraj = L / P2.v;
+      P2.t_povratak = 2 * L / P2.v;
+    } else if (s.scena === "stojni") {
+      P2.f = iznos2(s, s.f, p);
+      P2.T = 1 / P2.f;
+      P2.lambda = P2.v / P2.f;
+      P2.f1 = P2.v / (2 * L);
+      P2.nTocno = P2.f / P2.f1;
+      const n = Math.round(P2.nTocno);
+      P2.n = n >= 1 && Math.abs(P2.nTocno - n) <= 0.015 * n + 1e-9 ? n : null;
+    }
+    return P2;
+  }
+  function kasnjenje(P2, x) {
+    if (P2.od == null || x <= P2.od) return x / P2.v;
+    return P2.od / P2.v + (x - P2.od) / P2.v2;
+  }
+  var cvorovi = (P2, n) => Array.from({ length: n + 1 }, (_, j) => j * P2.L / n);
+  var trbusi = (P2, n) => Array.from({ length: n }, (_, j) => (j + 0.5) * P2.L / n);
+  function trajanje(s) {
+    if (s.scena === "puls") return lijepoGore2(2.3 * parametri(s).t_kraj * 1);
+    if (s.scena !== "putujuci") return 0;
+    if (s.nacin === "istrazi") {
+      const kraj3 = krajnjeKombinacije(s).map((q) => parametri(s, q));
+      const najdulje = Math.max(...kraj3.map((P2) => kasnjenje(P2, P2.L) + 4 * P2.T));
+      return lijepoGore2(najdulje);
+    }
+    return lijepoGore2(2.6 * parametri(s).T);
+  }
+  function korakVremena(s) {
+    const P2 = parametri(s);
+    if (s.scena === "puls") return lijepoDolje(P2.t_povratak / 100);
+    const T3 = Math.min(...krajnjeKombinacije(s).map((q) => parametri(s, q).T));
+    return lijepoDolje(T3 / 40);
+  }
+  var decimaleVremena = (s) => decimala(korakVremena(s));
+  var normRad = (a) => (a % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  function fazaIstaknute(s, P2, t) {
+    return normRad(FAZA_POCETKA[s.istaknuta_pocetak ?? "brijeg"] + P2.omega * t);
+  }
+  function opisKuglice(s, P2, t) {
+    const psi = fazaIstaknute(s, P2, t);
+    const y = Math.sin(psi);
+    const gore = Math.cos(psi) > 0;
+    const blizu3 = (a) => Math.min(normRad(psi - a), normRad(a - psi)) < 0.12;
+    if (blizu3(Math.PI / 2)) return "na vrhu brijega";
+    if (blizu3(3 * Math.PI / 2)) return "na dnu doline";
+    if (blizu3(0) || blizu3(Math.PI))
+      return `u ravnotežnom položaju, giba se prema ${gore ? "gore" : "dolje"}`;
+    return `${y > 0 ? "iznad" : "ispod"} ravnotežnog položaja, giba se prema ${gore ? "gore" : "dolje"}`;
+  }
+  var KUT_UVJETA = {
+    brijeg: [Math.PI / 2],
+    dolina: [3 * Math.PI / 2],
+    ravnoteza: [0, Math.PI]
+  };
+  function trenuciUvjeta(s, P2, uvjet, tDo) {
+    const psi0 = FAZA_POCETKA[s.istaknuta_pocetak ?? "brijeg"];
+    const out = [];
+    for (const a of KUT_UVJETA[uvjet]) {
+      let t0 = normRad(a - psi0) / P2.omega;
+      if (t0 < 1e-9 * P2.T) t0 += P2.T;
+      for (let t = t0; t <= tDo + 1e-9; t += P2.T) out.push(t);
+    }
+    return out.sort((a, b) => a - b);
+  }
+  var META = {
+    f: { naziv: "frekvencija izvora", oznaka: "f", jedinica: "Hz" },
+    T: { naziv: "period", oznaka: "T", jedinica: "s" },
+    A: { naziv: "amplituda", oznaka: "A", jedinica: "m" },
+    v: { naziv: "brzina vala", oznaka: "v", jedinica: "m/s" },
+    lambda: { naziv: "valna duljina", oznaka: "λ", jedinica: "m" },
+    v2: { naziv: "brzina na drugom užetu", oznaka: "v_2", jedinica: "m/s" },
+    lambda2: {
+      naziv: "valna duljina na drugom užetu",
+      oznaka: "λ_2",
+      jedinica: "m"
+    },
+    F: { naziv: "napetost užeta", oznaka: "F", jedinica: "N" },
+    L: { naziv: "duljina užeta", oznaka: "ℓ", jedinica: "m" },
+    n: { naziv: "broj trbuha (harmonik)", oznaka: "n", jedinica: "" },
+    f1: { naziv: "osnovna frekvencija", oznaka: "f_1", jedinica: "Hz" }
+  };
+  function kljuceviScene(s) {
+    const k = ["L", "v"];
+    if (s.napetost != null) k.push("F");
+    if (s.scena === "putujuci") {
+      k.push("f", "T", "A", "lambda");
+      if (s.drugo_uze) k.push("v2", "lambda2");
+    }
+    if (s.scena === "puls") k.push("A");
+    if (s.scena === "stojni") k.push("f", "T", "lambda", "n", "f1");
+    return k;
+  }
+  function vrijednosti2(s, P2) {
+    const out = {};
+    for (const k of kljuceviScene(s))
+      out[k] = k === "n" ? P2.n ?? P2.nTocno : P2[k];
+    return out;
+  }
+  function dopustenaOcitanja(s) {
+    const sve = kljuceviScene(s);
+    if (s.nacin === "istrazi") return sve;
+    if (s.nacin === "zaustavi")
+      return sve.filter((k) => ["A", "lambda", "L", "lambda2"].includes(k));
+    if (s.nacin === "oznaci")
+      return s.scena === "stojni" ? sve.filter((k) => ["f", "v", "L", "F"].includes(k)) : sve.filter((k) => ["A", "L"].includes(k));
+    if (s.nacin === "postavi") {
+      const k = klizaciOd(s)[0];
+      if (!k) return [];
+      const p0 = pocetneVrijednosti2(s);
+      const a = vrijednosti2(s, parametri(s, { ...p0, [k.id]: k.min }));
+      const b = vrijednosti2(s, parametri(s, { ...p0, [k.id]: k.max }));
+      return sve.filter(
+        (q) => isNum(a[q]) && Math.abs(a[q] - b[q]) <= 1e-9 * Math.max(1, Math.abs(a[q])) && !["n", "f1"].includes(q)
+      );
+    }
+    return [];
+  }
+  function segmentUzeta(s, P2) {
+    if (P2.od == null) return [0, P2.L];
+    return s.uze === 2 ? [P2.od, P2.L] : [0, P2.od];
+  }
+  var tolZaustavi = (s, P2) => isNum(s.cilj?.tolerancija) ? s.cilj.tolerancija : s.scena === "puls" ? 0.02 * P2.t_povratak : Math.max(0.01, 0.02 * P2.T);
+  function tocniTrenuci(s) {
+    const P2 = parametri(s);
+    if (s.scena === "puls")
+      return [s.cilj.uvjet === "kraj" ? P2.t_kraj : P2.t_povratak];
+    const svi = trenuciUvjeta(s, P2, s.cilj.uvjet, trajanje(s));
+    return s.cilj.prvi === false ? svi : svi.slice(0, 1);
+  }
+  var OPIS_UVJETA = {
+    ravnoteza: "u ravnotežnom položaju",
+    brijeg: "na vrhu brijega",
+    dolina: "na dnu doline"
+  };
+  function checkZaustavi3(s, odgovor3) {
+    const t = isNum(odgovor3) ? odgovor3 : parseNumber(odgovor3);
+    if (!isNum(t) || t <= 0)
+      return {
+        tocno: false,
+        poruka: "Pokreni val (▶) pa ga zaustavi u pravom trenutku.",
+        prazno: true
+      };
+    const P2 = parametri(s);
+    const tol2 = tolZaustavi(s, P2);
+    const tocni = tocniTrenuci(s);
+    if (tocni.some((x) => near(t, x, tol2))) return { tocno: true };
+    const hit = (s.krivo ?? []).find(
+      (k) => near(t, k.vrijednost, isNum(k.tolerancija) ? k.tolerancija : tol2)
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const tt = formatNumber(Number(t.toFixed(decimaleVremena(s) + 1)));
+    if (s.scena === "puls") {
+      const kraj3 = P2.t_kraj;
+      const pov = P2.t_povratak;
+      if (s.cilj.uvjet === "povratak") {
+        if (near(t, kraj3, tol2))
+          return {
+            tocno: false,
+            poruka: "U tom trenutku puls je tek stigao do kraja užeta (prešao je samo ℓ). Pričekaj da se vrati do ruke."
+          };
+        if (t < kraj3)
+          return {
+            tocno: false,
+            poruka: `U t = ${tt} s puls još putuje prema kraju užeta.`
+          };
+        if (t < pov)
+          return {
+            tocno: false,
+            poruka: `U t = ${tt} s puls se vraća, ali još nije stigao do ruke.`
+          };
+        return {
+          tocno: false,
+          poruka: `U t = ${tt} s puls se već vratio i odbio od ruke. Vrati vrijeme unatrag.`
+        };
+      }
+      if (near(t, pov, tol2))
+        return {
+          tocno: false,
+          poruka: "To je trenutak povratka do ruke (put 2ℓ). Traži se trenutak kad puls stigne do kraja užeta."
+        };
+      return {
+        tocno: false,
+        poruka: t < kraj3 ? `U t = ${tt} s puls još nije stigao do kraja užeta.` : `U t = ${tt} s puls se već odbio od kraja i vraća se. Vrati vrijeme unatrag.`
+      };
+    }
+    const uvjet = s.cilj.uvjet;
+    const trazi = `Traži se trenutak kad je kuglica ${OPIS_UVJETA[uvjet]}${s.cilj.prvi === false ? "" : " **prvi put**"}.`;
+    const tMax = trajanje(s) + P2.T;
+    for (const u of ["ravnoteza", "brijeg", "dolina"]) {
+      const kada = trenuciUvjeta(s, P2, u, tMax);
+      const i = kada.findIndex((x) => near(t, x, tol2));
+      if (i < 0) continue;
+      if (u === uvjet)
+        return {
+          tocno: false,
+          poruka: `Kuglica je doista ${OPIS_UVJETA[u]}, ali ne prvi put: prije toga je već jednom bila ondje. Vrati vrijeme unatrag.`
+        };
+      const odBrijega = (s.istaknuta_pocetak ?? "brijeg") === "brijeg";
+      let zasto = "";
+      if (odBrijega && u === "dolina" && i === 0)
+        zasto = ": od brijega do doline prođe **pola perioda**, a ravnotežni položaj je na pola tog puta";
+      if (odBrijega && u === "brijeg" && i === 0)
+        zasto = ": prošao je **cijeli period**, kuglica je opet gdje je krenula";
+      return {
+        tocno: false,
+        poruka: `U t = ${tt} s kuglica je ${OPIS_UVJETA[u]}${zasto}. ${trazi}`
+      };
+    }
+    return {
+      tocno: false,
+      poruka: `U t = ${tt} s kuglica je ${opisKuglice(s, P2, t)}. ${trazi}`
+    };
+  }
+  function checkOznaciLambda(s, odgovor3) {
+    if (!Array.isArray(odgovor3) || odgovor3.length !== 2 || !odgovor3.every(isNum))
+      return {
+        tocno: false,
+        poruka: "Postavi obje oznake na uže.",
+        prazno: true
+      };
+    const P2 = parametri(s);
+    const [a, b] = segmentUzeta(s, P2);
+    const l = s.uze === 2 ? P2.lambda2 : P2.lambda;
+    const d = Math.abs(odgovor3[1] - odgovor3[0]);
+    if (P2.od != null && !odgovor3.every((x) => x >= a - 1e-9 && x <= b + 1e-9)) {
+      const druga = s.uze === 2 ? P2.lambda : P2.lambda2;
+      if (Math.abs(d - druga) <= 0.04 * druga)
+        return {
+          tocno: false,
+          poruka: `To je valna duljina na ${s.uze === 2 ? "prvom" : "drugom"} užetu. Traži se na ${s.uze === 2 ? "drugom (desno od spoja)" : "prvom (lijevo od spoja)"}.`
+        };
+      return {
+        tocno: false,
+        poruka: `Obje oznake stavi na ${s.uze === 2 ? "drugo uže (desno od spoja)" : "prvo uže (lijevo od spoja)"}.`
+      };
+    }
+    if (Math.abs(d - l) <= 0.04 * l) return { tocno: true };
+    const dx = `Δx = ${iznosJed(d, "m")}`;
+    if (d < 0.02 * l)
+      return { tocno: false, poruka: "Oznake su na istom mjestu. Razmakni ih." };
+    if (Math.abs(d - l / 2) <= 0.06 * l)
+      return {
+        tocno: false,
+        poruka: `${dx} je **pola valne duljine** (od brijega do doline). Valna duljina je razmak dvaju susjednih brjegova.`
+      };
+    for (const m of [2, 3, 4])
+      if (Math.abs(d - m * l) <= 0.04 * m * l)
+        return {
+          tocno: false,
+          poruka: `Između oznaka stanu ${m} vala. Valna duljina je razmak **susjednih** brjegova.`
+        };
+    return {
+      tocno: false,
+      poruka: `${dx}. Valna duljina je razmak dvaju susjednih brjegova (ili dviju susjednih dolina): stavi oznake na takve dvije točke.`
+    };
+  }
+  var rijecCvor = (k) => k % 10 === 1 && k % 100 !== 11 ? "čvor" : [2, 3, 4].includes(k % 10) && ![12, 13, 14].includes(k % 100) ? "čvora" : "čvorova";
+  var rijecTrbuh = (k) => k % 10 === 1 && k % 100 !== 11 ? "trbuh" : [2, 3, 4].includes(k % 10) && ![12, 13, 14].includes(k % 100) ? "trbuha" : "trbuha";
+  function checkOznaciStojni(s, odgovor3) {
+    if (!Array.isArray(odgovor3) || !odgovor3.length || !odgovor3.every(isNum))
+      return {
+        tocno: false,
+        poruka: `Dodirni nit na ${s.trazi === "cvorovi" ? "čvorovima" : "trbusima"}.`,
+        prazno: true
+      };
+    const P2 = parametri(s);
+    const n = P2.n;
+    const ciljevi = s.trazi === "cvorovi" ? cvorovi(P2, n) : trbusi(P2, n);
+    const drugi = s.trazi === "cvorovi" ? trbusi(P2, n) : cvorovi(P2, n);
+    const tol2 = P2.L / (4 * n);
+    const x = [...odgovor3].sort((a, b) => a - b);
+    const pogodeni = /* @__PURE__ */ new Set();
+    for (const xi of x) {
+      const j = ciljevi.findIndex(
+        (c, i) => !pogodeni.has(i) && Math.abs(c - xi) <= tol2
+      );
+      if (j >= 0) {
+        pogodeni.add(j);
+        continue;
+      }
+      const isti2 = ciljevi.findIndex((c) => Math.abs(c - xi) <= tol2);
+      const mj = iznosJed(xi, "m");
+      if (isti2 >= 0)
+        return {
+          tocno: false,
+          poruka: `Dvije oznake su na istom ${s.trazi === "cvorovi" ? "čvoru" : "trbuhu"}. Dodirni jednu da je makneš.`
+        };
+      if (drugi.some((c) => Math.abs(c - xi) <= tol2))
+        return {
+          tocno: false,
+          poruka: s.trazi === "cvorovi" ? `Na x = ${mj} nit najjače titra: to je **trbuh**, a ne čvor. Čvor je mjesto koje miruje.` : `Na x = ${mj} nit miruje: to je **čvor**, a ne trbuh. Trbuh je mjesto koje najjače titra.`
+        };
+      return {
+        tocno: false,
+        poruka: s.trazi === "cvorovi" ? `Na x = ${mj} nit titra, pa to nije čvor. Čvor je mjesto koje stalno miruje.` : `Na x = ${mj} nit ne titra najjače. Trbuh je sredina petlje.`
+      };
+    }
+    if (pogodeni.size === ciljevi.length) return { tocno: true };
+    const fale = ciljevi.length - pogodeni.size;
+    if (s.trazi === "cvorovi" && (!pogodeni.has(0) || !pogodeni.has(n)))
+      return {
+        tocno: false,
+        poruka: "Učvršćen kraj je uvijek čvor: on se ne može micati. Označi i oba kraja niti."
+      };
+    return {
+      tocno: false,
+      poruka: `Nedostaje još ${fale} ${s.trazi === "cvorovi" ? rijecCvor(fale) : rijecTrbuh(fale)}.`
+    };
+  }
+  var odbijeniOblik = (oblik, kraj3) => kraj3 === "bez_odbijanja" ? "nista" : kraj3 === "ucvrscen" ? oblik === "brijeg" ? "dolina" : "brijeg" : oblik;
+  var IZBORI_PREDVIDI = {
+    brijeg: "brijeg (neokrenut)",
+    dolina: "dolina (okrenut)",
+    nista: "ne vrati se"
+  };
+  var IME_KRAJA = {
+    ucvrscen: "učvršćen kraj",
+    slobodan: "slobodan kraj",
+    bez_odbijanja: "kraj bez odbijanja"
+  };
+  function checkPredvidi3(s, odgovor3) {
+    const pit = s.pitanja;
+    const o = Array.isArray(odgovor3) ? odgovor3 : [];
+    if (pit.some((_, i2) => !o[i2]))
+      return {
+        tocno: false,
+        poruka: pit.length > 1 ? "Odaberi oblik vraćenog pulsa za oba užeta." : "Odaberi oblik vraćenog pulsa.",
+        prazno: true
+      };
+    const oblik = s.oblik ?? "brijeg";
+    const polja = pit.map((q2, i2) => o[i2] === odbijeniOblik(oblik, q2.kraj));
+    const i = polja.indexOf(false);
+    if (i < 0) return { tocno: true, polja };
+    const q = pit[i];
+    const pref = pit.length > 1 ? `${IME_KRAJA[q.kraj][0].toUpperCase()}${IME_KRAJA[q.kraj].slice(1)}: ` : "";
+    const poruka2 = {
+      ucvrscen: "zid ne pušta kraj užeta da se digne, nego ga povuče na suprotnu stranu, pa se puls vrati **okrenut**: brijeg postane dolina (i obrnuto).",
+      slobodan: "prsten slobodno klizne po šipki do vrha i povuče uže za sobom, pa se puls vrati **neokrenut**: brijeg ostane brijeg.",
+      bez_odbijanja: "kad se puls ne odbija, nastavi dalje i ne vrati se."
+    }[q.kraj];
+    return { tocno: false, poruka: `${pref}${poruka2}`, polja };
+  }
+  var velicineZa = (s) => (p) => {
+    const P2 = parametri(s, p);
+    return { ...vrijednosti2(s, P2), n: P2.nTocno ?? NaN };
+  };
+  var ciljPostavi = (s) => s.cilj?.trbuha != null ? { ...s, cilj: { velicina: "n", vrijednost: s.cilj.trbuha } } : s;
+  function checkPostavi4(s, odgovor3) {
+    const k = klizaciOd(s)[0];
+    const v = isNum(odgovor3) ? odgovor3 : odgovor3?.[k.id];
+    if (!isNum(v))
+      return { tocno: false, poruka: "Pomakni klizač.", prazno: true };
+    const sc = ciljPostavi(s);
+    const a = analizaCilja(sc, k, velicineZa(s));
+    if (a.ok(v)) return { tocno: true };
+    const hit = (s.krivo ?? []).find((x) => near(v, x.vrijednost, k.korak * 0.5));
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const P2 = parametri(s, { ...pocetneVrijednosti2(s), [k.id]: v });
+    const ime2 = String(k.oznaka).replace(/\$/g, "");
+    const kl = `${ime2.charAt(0).toUpperCase()}${ime2.slice(1)} = ${withUnit(v, k.jedinica)}`;
+    if (s.cilj.trbuha != null) {
+      const n = s.cilj.trbuha;
+      const smjer = (vise) => {
+        if (k.id === s.f) return vise ? "viša frekvencija" : "niža frekvencija";
+        if (k.id === s.napetost) return vise ? "manja napetost" : "veća napetost";
+        if (k.id === s.L) return vise ? "dulja nit" : "kraća nit";
+        return vise ? "više" : "manje";
+      };
+      if (P2.n != null)
+        return {
+          tocno: false,
+          poruka: `${kl}: na niti ${P2.n === 1 ? "je 1 trbuh" : `su ${P2.n} trbuha`} (${P2.n}. harmonik), a treba ${n}: treba ${smjer(P2.n < n)}.`
+        };
+      return {
+        tocno: false,
+        poruka: `${kl}: stojni val ne nastaje: nit samo drhti. Stojni val nastaje samo kad na nit stane cijeli broj polovina valne duljine (ℓ = n·λ/2).`
+      };
+    }
+    const m = META[s.cilj.velicina];
+    return {
+      tocno: false,
+      poruka: `${kl}: ${m.naziv} je ${iznosJed(velicineZa(s)({ ...pocetneVrijednosti2(s), [k.id]: v })[s.cilj.velicina], m.jedinica)}, a treba ${iznosJed(s.cilj.vrijednost, m.jedinica)}.`
+    };
+  }
+  var VELICINE_IZRACUNA = {
+    putujuci: ["T", "f", "v", "lambda", "lambda2"],
+    puls: ["t_povratak", "t_kraj"],
+    stojni: ["lambda", "v", "f", "f1", "fn", "n_trbuha", "n_cvorova"]
+  };
+  var JEDINICE3 = {
+    T: { s: 1, ms: 1e-3 },
+    f: { Hz: 1, kHz: 1e3 },
+    v: { "m/s": 1 },
+    lambda: { m: 1, cm: 0.01 },
+    lambda2: { m: 1, cm: 0.01 },
+    t_povratak: { s: 1 },
+    t_kraj: { s: 1 },
+    f1: { Hz: 1, kHz: 1e3 },
+    fn: { Hz: 1, kHz: 1e3 },
+    n_trbuha: { "": 1 },
+    n_cvorova: { "": 1 }
+  };
+  var OZNAKE_IZRACUNA = {
+    T: "$T =$",
+    f: "$f =$",
+    v: "$v =$",
+    lambda: "$\\lambda =$",
+    lambda2: "$\\lambda_2 =$",
+    t_povratak: "$t =$",
+    t_kraj: "$t =$",
+    f1: "$f_1 =$",
+    fn: "$f_n =$",
+    n_trbuha: "broj trbuha:",
+    n_cvorova: "broj čvorova:"
+  };
+  var jedinicaPitanja = (q) => q.jedinica ?? Object.keys(JEDINICE3[q.velicina] ?? { "": 1 })[0];
+  var oznakaPitanja2 = (q) => q.oznaka ?? (q.velicina === "fn" ? `$f_{${q.n}} =$` : OZNAKE_IZRACUNA[q.velicina]);
+  function izracun3(s, q) {
+    const P2 = parametri(s);
+    const j = jedinicaPitanja(q);
+    const fk = JEDINICE3[q.velicina]?.[j] ?? 1;
+    const n = P2.n;
+    let a;
+    let k = [];
+    switch (q.velicina) {
+      case "T":
+        a = P2.T;
+        k = [
+          [
+            P2.T / 4,
+            "To je četvrtina perioda: od brijega do ravnoteže čestica napravi četvrtinu titraja, pa je T četiri puta dulji."
+          ],
+          [P2.T / 2, "To je pola perioda (od brijega do doline)."],
+          [P2.f, "To je frekvencija. Period je T = 1/f."]
+        ];
+        break;
+      case "f":
+        if (s.scena === "stojni") {
+          a = P2.f;
+          k = [[P2.f1, "To je osnovna frekvencija (jedan trbuh)."]];
+          break;
+        }
+        a = P2.f;
+        k = [
+          [
+            4 * P2.f,
+            "Uzeo si četvrtinu perioda kao cijeli period. Od brijega do ravnoteže je T/4, pa je T četiri puta dulji."
+          ],
+          [2 * P2.f, "Uzeo si pola perioda kao cijeli period."],
+          [P2.T, "To je period. Frekvencija je f = 1/T."]
+        ];
+        break;
+      case "v":
+        if (s.scena === "stojni") {
+          a = P2.v;
+          k = [
+            [
+              P2.f * P2.L / n,
+              "Uzeo si jednu petlju kao cijeli val. Petlja je pola valne duljine: λ = 2ℓ/n."
+            ],
+            [
+              P2.f * 2 * P2.L / (n + 1),
+              "Brojao si čvorove umjesto petlji (trbuha). Na niti je n petlji, a svaka je λ/2."
+            ],
+            [P2.f / P2.lambda, "Brzina vala je v = λ·f, a ne f/λ."]
+          ];
+          break;
+        }
+        a = P2.v;
+        k = [
+          [P2.lambda * P2.T, "Brzina je v = λ/T (ili λ·f), a ne λ·T."],
+          [
+            4 * P2.v,
+            "Period nije vrijeme od brijega do ravnoteže: to je tek T/4."
+          ],
+          [2 * P2.v, "Od brijega do ravnoteže je četvrtina perioda, a ne pola."]
+        ];
+        break;
+      case "lambda":
+        if (s.scena === "stojni") {
+          a = P2.lambda;
+          k = [
+            [
+              P2.L / n,
+              "Jedna petlja je **pola** valne duljine (brijeg ili dolina), a ne cijeli val: λ = 2ℓ/n."
+            ],
+            [2 * P2.L / (n + 1), "Brojao si čvorove umjesto petlji (trbuha)."],
+            [
+              P2.L / (2 * n),
+              "Petlja je pola valne duljine, pa je λ dvostruko dulja od petlje, a ne kraća."
+            ]
+          ];
+          break;
+        }
+        a = P2.lambda;
+        k = [[P2.v * P2.f, "Valna duljina je λ = v·T = v/f, a ne v·f."]];
+        break;
+      case "lambda2":
+        a = P2.lambda2;
+        k = [
+          [
+            P2.lambda,
+            "Valna duljina se pri prijelazu mijenja. Ista ostaje frekvencija (određuje je izvor), a brzina je druga, pa je i λ₂ = v₂·T druga."
+          ],
+          [
+            P2.lambda * P2.v / P2.v2,
+            "Omjer je obrnut: valna duljina mijenja se u **istom** omjeru kao brzina (λ₂/λ₁ = v₂/v₁)."
+          ],
+          [P2.v2 * P2.f, "Valna duljina je λ = v·T = v/f, a ne v·f."]
+        ];
+        break;
+      case "t_povratak":
+        a = P2.t_povratak;
+        k = [
+          [
+            P2.t_kraj,
+            "To je vrijeme samo do kraja užeta. Puls mora doći do kraja **i vratiti se**: put je 2ℓ."
+          ],
+          [P2.v / (2 * P2.L), "Vrijeme je t = s/v, a ne v/s."]
+        ];
+        break;
+      case "t_kraj":
+        a = P2.t_kraj;
+        k = [
+          [
+            P2.t_povratak,
+            "To je vrijeme do kraja i natrag. Do kraja je put samo ℓ."
+          ],
+          [P2.v / P2.L, "Vrijeme je t = s/v, a ne v/s."]
+        ];
+        break;
+      case "f1":
+        a = P2.f1;
+        k = [
+          [P2.f * n, "Osnovna frekvencija je **najniža**: f₁ = f/n, a ne f·n."],
+          [
+            P2.v / P2.L,
+            "Na niti s jednim trbuhom stane samo pola vala: λ₁ = 2ℓ, pa je f₁ = v/(2ℓ)."
+          ],
+          [P2.f, `To je frekvencija ${n}. harmonika (${n} trbuha), a ne osnovna.`],
+          [
+            P2.f / 2,
+            `Na niti je ${n} trbuha, pa je osnovna frekvencija ${n} puta manja.`
+          ]
+        ];
+        break;
+      case "fn":
+        a = q.n * P2.f1;
+        k = [
+          [P2.f1, "To je osnovna frekvencija (jedan trbuh)."],
+          [
+            q.n * P2.v / P2.L,
+            "Svaka petlja je pola valne duljine: λ = 2ℓ/n, pa je f = n·v/(2ℓ)."
+          ]
+        ];
+        break;
+      case "n_trbuha":
+        a = n;
+        k = [
+          [
+            n + 1,
+            "To je broj čvorova (s krajevima). Trbuha je jedan manje: svaki je sredina jedne petlje."
+          ],
+          [
+            n - 1,
+            "To je broj čvorova bez krajeva. Trbuh je sredina petlje: koliko petlji, toliko trbuha."
+          ]
+        ];
+        break;
+      case "n_cvorova":
+        a = n + 1;
+        k = [
+          [
+            n,
+            "To je broj trbuha (petlji). Čvorova je jedan više jer su i oba kraja čvorovi."
+          ],
+          [n - 1, "Zaboravio si krajeve: učvršćen kraj je uvijek čvor."]
+        ];
+        break;
+      default:
+        a = NaN;
+    }
+    const odg = a / fk;
+    const tol2 = isNum(q.tolerancija) ? q.tolerancija : Math.abs(odg) * 0.01;
+    const krivo = [];
+    for (const [vr, poruka2] of k) {
+      const x = vr / fk;
+      if (!isNum(x) || x <= 0) continue;
+      if (near(x, odg, Math.max(tol2, Math.abs(odg) * 0.02))) continue;
+      if (krivo.some((y) => near(y.vrijednost, x, Math.abs(x) * 0.01))) continue;
+      krivo.push({ vrijednost: x, poruka: poruka2 });
+    }
+    return { odgovor: odg, jedinica: j, tol: tol2, krivo };
+  }
+  var SAVJET2 = {
+    T: "Period je vrijeme jednog cijelog titraja.",
+    f: "Frekvencija je f = 1/T.",
+    v: "Brzina vala: v = λ/T = λ·f.",
+    lambda: "Valna duljina: λ = v·T = v/f.",
+    lambda2: "Frekvencija ostaje ista, pa je λ₂ = v₂·T.",
+    t_povratak: "Put pulsa je do kraja i natrag: s = 2ℓ, t = s/v.",
+    t_kraj: "Do kraja je put ℓ: t = ℓ/v.",
+    f1: "Osnovna frekvencija: f₁ = v/(2ℓ).",
+    fn: "Frekvencija n. harmonika: fₙ = n·v/(2ℓ).",
+    n_trbuha: "Prebroji petlje: svaka petlja ima jedan trbuh.",
+    n_cvorova: "Čvorovi su mjesta koja miruju, uključujući oba kraja."
+  };
+  function checkIzracunaj2(s, odgovor3) {
+    const unosi = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
+    const vise = s.pitaj.length > 1;
+    const polja = [];
+    let prva = null;
+    for (const [i, q] of s.pitaj.entries()) {
+      const r0 = izracun3(s, q);
+      const r = checkNumber({
+        input: unosi[i] ?? "",
+        answer: r0.odgovor,
+        tol: r0.tol,
+        unit: r0.jedinica,
+        krivo: [...q.krivo ?? [], ...r0.krivo],
+        savjet: s.savjet || SAVJET2[q.velicina]
+      });
+      if (r.prazno)
+        return {
+          tocno: false,
+          poruka: vise ? "Upiši sve odgovore." : r.poruka,
+          prazno: true
+        };
+      polja.push(!!r.tocno);
+      if (!r.tocno && !prva) prva = { ...r, q, i };
+    }
+    if (!prva) return { tocno: true, polja };
+    return {
+      tocno: false,
+      poruka: vise ? `U ${prva.i + 1}. polju: ${prva.poruka}` : prva.poruka,
+      polja
+    };
+  }
+  var OPIS5 = `Val na užetu (fizika, matura). tekst, scena, nacin, L (duljina užeta u m), v (brzina vala, m/s) ILI napetost (N) + mi (kg/m; v = √(F/μ)), ubrzanje? (usporenje animacije; zadano automatski), prikazi? (${PRIKAZI7.join(", ")}), brojaci? (veličine uživo: ${Object.keys(META).join(", ")}; u načinima s odgovorom samo one koje ne odaju odgovor).
+Brojčano polje smije biti id klizača. ${KLIZACI_OPIS}.
+Scene:
+- "putujuci": f (Hz) ILI T (s), A (amplituda, m), drugo_uze? {v, od (mjesto spoja u m)} (val prelazi na drugo uže: f ista, λ se mijenja; odbijeni dio na spoju se ne crta), istaknute? [x u m] (1–2 crvene kuglice), istaknuta_pocetak? ("brijeg" zadano | "dolina" | "ravnoteza": stanje prve crvene kuglice u t = 0), ustaljeno? (samo istrazi: val već ispunjava uže; zadano u istrazi val kreće iz izvora). Kuglice titraju samo okomito; "lambda" crta zagradu između susjednih brjegova, "y-t" graf y(t) crvene kuglice.
+- "puls": A (m), oblik? ("brijeg" zadano | "dolina"), kraj ("ucvrscen" zid | "slobodan" prsten na šipki | "bez_odbijanja"). Puls kreće od ruke u t = 0, kraj stigne u ℓ/v, natrag u 2ℓ/v; zid ga vrati okrenutog, prsten neokrenutog.
+- "stojni": f (Hz, broj ili klizač). Nit učvršćena na oba kraja, vibrator lijevo; na fₙ = n·v/(2ℓ) „zapleše“ s n trbuha, između harmonika samo drhti. "tragovi" crta ovojnicu, "cvorovi" (samo istrazi) označi čvorove i trbuhe.
+Načini (istrazi = POGLEDAJ, ostali = Tvoj red):
+- "istrazi" (sve scene): klizači (do 3, npr. f, A, napetost), ▶/⏸ i traka vremena; puls ima gumb za novi puls i izbor kraja. Bez polja s odgovorom.
+- "zaustavi" (putujuci, puls): učenik pokrene i zaustavi vrijeme (ili ga premota) pa provjeri. putujuci: cilj {uvjet: "ravnoteza" | "brijeg" | "dolina" (za prvu crvenu kuglicu, od istaknuta_pocetak), prvi? (zadano true), tolerancija? (s; zadano max(0,01 s, 2 % T))}; puls: cilj {uvjet: "kraj" | "povratak", tolerancija? (zadano 2 % od 2ℓ/v)}. Trenutke i poruke („to je dolina: pola perioda“, „puls je tek stigao do kraja“) računa aplikacija; krivo?: [{vrijednost (t u s), poruka}]. Bez klizača; T, f i v se ne prikazuju.
+- "oznaci": putujuci: trazi "lambda", uze? (1 | 2, uz drugo_uze): učenik povuče dvije oznake na zamrznutoj fotografiji užeta; točno je |Δx − λ| ≤ 4 % (bilo koje dvije točke iste faze). stojni: trazi "cvorovi" | "trbusi" (f mora biti harmonik): učenik dodirne nit na svim čvorovima (s krajevima) ili trbusima.
+- "predvidi" (puls): pitanja [{kraj}] (1–2 užeta): učenik za svako bira oblik vraćenog pulsa (brijeg / dolina, uz bez_odbijanja i „ne vrati se“); nakon odgovora animacija pokaže odbijanje.
+- "postavi" (putujuci, stojni): točno jedan klizač; cilj {trbuha: n} (stojni) ILI {velicina (${Object.keys(META).join(", ")}), vrijednost, tolerancija?}. Scena se ne mijenja dok učenik ne provjeri (vibrator miruje), osim uz uzivo: true. krivo?: [{vrijednost (klizača), poruka}].
+- "izracunaj": pitaj [{velicina, jedinica?, oznaka?, n? (za fn), tolerancija? (zadano 1 %), krivo?}] (1–3). Veličine: putujuci ${VELICINE_IZRACUNA.putujuci.join(", ")}; puls ${VELICINE_IZRACUNA.puls.join(", ")}; stojni ${VELICINE_IZRACUNA.stojni.join(", ")} (f mora biti harmonik). Scena se samo animira (bez sata, bez očitanja). Tipične krive vrijednosti (T/4 kao period, λ·T, λ₂ = λ₁, obrnut omjer, ℓ/v umjesto 2ℓ/v, petlja kao cijeli val, brojanje čvorova, f₁ = f·n, v/ℓ…) dodaju se same; ${KRIVO_OPIS}.`;
+  var PRIMJER5 = {
+    tip: TIP5,
+    scena: "putujuci",
+    nacin: "zaustavi",
+    tekst: "Crvena kuglica je na vrhu brijega. Pokreni val i zaustavi ga kad kuglica **prvi put** dođe u ravnotežni položaj.",
+    L: 4.8,
+    v: 3,
+    T: 0.4,
+    A: 0.15,
+    istaknute: [2.4],
+    istaknuta_pocetak: "brijeg",
+    cilj: { uvjet: "ravnoteza" }
+  };
+  var PRIMJERI5 = [
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "izracunaj",
+      tekst: "Valna duljina je 1,2 m, a crvenoj kuglici od vrha brijega do ravnotežnog položaja treba 0,1 s. Kolika je frekvencija izvora i kolika je brzina vala?",
+      L: 4.8,
+      v: 3,
+      T: 0.4,
+      A: 0.15,
+      istaknute: [2.4],
+      pitaj: [{ velicina: "f" }, { velicina: "v" }]
+    },
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "oznaci",
+      trazi: "lambda",
+      tekst: "Ovo je fotografija užeta u jednom trenutku. Povuci dvije oznake tako da između njih bude **jedna valna duljina**.",
+      L: 4.8,
+      v: 3,
+      T: 0.4,
+      A: 0.15
+    },
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "istrazi",
+      tekst: "Uže je na 3,6 m vezano za drugo uže, po kojem val ide upola sporije. Mijenjaj frekvenciju i amplitudu i gledaj valne duljine na oba užeta.",
+      L: 6,
+      v: 3,
+      f: "f",
+      A: "A",
+      drugo_uze: { v: 1.5, od: 3.6 },
+      klizaci: [
+        {
+          id: "f",
+          oznaka: "frekvencija izvora",
+          min: 1,
+          max: 3,
+          korak: 0.5,
+          pocetak: 2.5,
+          jedinica: "Hz"
+        },
+        {
+          id: "A",
+          oznaka: "amplituda",
+          min: 0.05,
+          max: 0.3,
+          korak: 0.05,
+          pocetak: 0.15,
+          jedinica: "m"
+        }
+      ]
+    },
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "istrazi",
+      tekst: "Što mijenja **brzinu** vala? Mijenjaj napetost užeta, frekvenciju i amplitudu i gledaj brzinu.",
+      L: 6,
+      napetost: "F",
+      mi: 0.05,
+      f: "f",
+      A: "A",
+      istaknute: [3],
+      ustaljeno: false,
+      klizaci: [
+        {
+          id: "F",
+          oznaka: "napetost užeta",
+          min: 0.2,
+          max: 1.8,
+          korak: 0.05,
+          pocetak: 0.45,
+          jedinica: "N"
+        },
+        {
+          id: "f",
+          oznaka: "frekvencija izvora",
+          min: 1,
+          max: 3,
+          korak: 0.5,
+          pocetak: 2.5,
+          jedinica: "Hz"
+        },
+        {
+          id: "A",
+          oznaka: "amplituda",
+          min: 0.05,
+          max: 0.3,
+          korak: 0.05,
+          pocetak: 0.15,
+          jedinica: "m"
+        }
+      ],
+      brojaci: ["v", "lambda", "f"]
+    },
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "izracunaj",
+      tekst: "Val (λ = 1,2 m, T = 0,4 s) prelazi na drugo uže, po kojem ide brzinom 1,5 m/s. Kolika je valna duljina na drugom užetu?",
+      L: 6,
+      v: 3,
+      T: 0.4,
+      A: 0.15,
+      drugo_uze: { v: 1.5, od: 3.6 },
+      pitaj: [{ velicina: "lambda2" }]
+    },
+    {
+      tip: TIP5,
+      scena: "putujuci",
+      nacin: "postavi",
+      tekst: "Val ide užetom brzinom 3 m/s. Namjesti frekvenciju izvora tako da valna duljina bude **1,5 m**, pa provjeri.",
+      L: 6,
+      v: 3,
+      f: "f",
+      A: 0.15,
+      klizaci: [
+        {
+          id: "f",
+          oznaka: "frekvencija izvora",
+          min: 0.5,
+          max: 5,
+          korak: 0.5,
+          pocetak: 3,
+          jedinica: "Hz"
+        }
+      ],
+      cilj: { velicina: "lambda", vrijednost: 1.5 }
+    },
+    {
+      tip: TIP5,
+      scena: "puls",
+      nacin: "predvidi",
+      tekst: "Puls (brijeg) putuje prema kraju užeta. Kako će izgledati kad se vrati, ako je kraj **učvršćen**, a kako ako je **slobodan**?",
+      L: 12,
+      v: 16,
+      A: 0.4,
+      oblik: "brijeg",
+      pitanja: [{ kraj: "ucvrscen" }, { kraj: "slobodan" }]
+    },
+    {
+      tip: TIP5,
+      scena: "puls",
+      nacin: "zaustavi",
+      tekst: "Pokreni puls i zaustavi vrijeme točno kad se **vrati do ruke**.",
+      L: 12,
+      v: 16,
+      A: 0.4,
+      kraj: "ucvrscen",
+      cilj: { uvjet: "povratak" }
+    },
+    {
+      tip: TIP5,
+      scena: "puls",
+      nacin: "istrazi",
+      tekst: "Napravi puls i gledaj kako se odbija. Promijeni kraj užeta: zid ili prsten koji klizi po šipki.",
+      L: 12,
+      v: 16,
+      A: 0.4,
+      kraj: "ucvrscen"
+    },
+    {
+      tip: TIP5,
+      scena: "puls",
+      nacin: "izracunaj",
+      tekst: "Uže je dugo 12 m, a puls njime putuje brzinom 16 m/s. Nakon kojeg se vremena puls vrati do ruke?",
+      L: 12,
+      v: 16,
+      A: 0.4,
+      kraj: "ucvrscen",
+      pitaj: [{ velicina: "t_povratak" }]
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "postavi",
+      tekst: "Na niti duljine 1,2 m val ide brzinom 432 m/s. Namjesti frekvenciju vibratora tako da nastane stojni val s **3 trbuha**, pa provjeri.",
+      L: 1.2,
+      v: 432,
+      f: "f",
+      klizaci: [
+        {
+          id: "f",
+          oznaka: "frekvencija vibratora",
+          min: 50,
+          max: 1e3,
+          korak: 10,
+          pocetak: 300,
+          jedinica: "Hz"
+        }
+      ],
+      cilj: { trbuha: 3 }
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "postavi",
+      tekst: "Ista nit (1,2 m, 432 m/s). Namjesti **najnižu** frekvenciju pri kojoj na niti nastaje stojni val.",
+      L: 1.2,
+      v: 432,
+      f: "f",
+      klizaci: [
+        {
+          id: "f",
+          oznaka: "frekvencija vibratora",
+          min: 50,
+          max: 1e3,
+          korak: 10,
+          pocetak: 300,
+          jedinica: "Hz"
+        }
+      ],
+      cilj: { trbuha: 1 }
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "istrazi",
+      tekst: "Polako mijenjaj frekvenciju vibratora. Kad nit „zapleše“, prebroji trbuhe.",
+      L: 1.2,
+      v: 432,
+      f: "f",
+      klizaci: [
+        {
+          id: "f",
+          oznaka: "frekvencija vibratora",
+          min: 50,
+          max: 1e3,
+          korak: 10,
+          pocetak: 300,
+          jedinica: "Hz"
+        }
+      ]
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "oznaci",
+      trazi: "cvorovi",
+      tekst: "Na niti je stojni val. Dodirni nit na **svim čvorovima** (mjestima koja stalno miruju).",
+      L: 1.2,
+      v: 432,
+      f: 540
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "oznaci",
+      trazi: "trbusi",
+      tekst: "Dodirni nit na **svim trbusima** (mjestima koja najjače titraju).",
+      L: 1,
+      v: 300,
+      f: 600
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "izracunaj",
+      tekst: "Nit duljine 1,2 m titra frekvencijom 540 Hz i na njoj su 3 trbuha. Kolika je valna duljina i kolika je brzina vala?",
+      L: 1.2,
+      v: 432,
+      f: 540,
+      pitaj: [{ velicina: "lambda" }, { velicina: "v" }]
+    },
+    {
+      tip: TIP5,
+      scena: "stojni",
+      nacin: "izracunaj",
+      tekst: "Na istoj niti (1,2 m, 3 trbuha pri 540 Hz) kolika je najniža frekvencija pri kojoj nastaje stojni val?",
+      L: 1.2,
+      v: 432,
+      f: 540,
+      pitaj: [{ velicina: "f1" }]
+    }
+  ];
+  var ZAJEDNICKA = [
+    "tip",
+    "scena",
+    "nacin",
+    "tekst",
+    "L",
+    "v",
+    "napetost",
+    "mi",
+    "klizaci",
+    "ubrzanje",
+    "brojaci",
+    "prikazi",
+    "savjet"
+  ];
+  var POLJA_SCENE = {
+    putujuci: [
+      "f",
+      "T",
+      "A",
+      "drugo_uze",
+      "istaknute",
+      "istaknuta_pocetak",
+      "ustaljeno"
+    ],
+    puls: ["A", "oblik", "kraj"],
+    stojni: ["f"]
+  };
+  var POLJA_NACINA = {
+    istrazi: [],
+    zaustavi: ["cilj", "krivo"],
+    oznaci: ["trazi", "uze"],
+    predvidi: ["pitanja"],
+    postavi: ["cilj", "krivo", "uzivo"],
+    izracunaj: ["pitaj"]
+  };
+  function validate4(s) {
+    const { list, need } = problems();
+    need(isText(s.tekst), "val_uze treba „tekst“");
+    if (!need(
+      SCENE7.includes(s.scena),
+      `val_uze.scena mora biti jedna od: ${SCENE7.join(", ")}`
+    ))
+      return list;
+    if (!need(
+      NACINI17[s.scena].includes(s.nacin),
+      `val_uze.nacin za scenu ${s.scena} mora biti jedan od: ${NACINI17[s.scena].join(", ")}`
+    ))
+      return list;
+    const dopustena = [
+      ...ZAJEDNICKA,
+      ...POLJA_SCENE[s.scena],
+      ...POLJA_NACINA[s.nacin]
+    ];
+    for (const f2 of Object.keys(s))
+      need(
+        dopustena.includes(f2),
+        `polje „${f2}“ ne postoji u sceni ${s.scena} (način ${s.nacin})`
+      );
+    if (s.nacin === "istrazi") validateKlizaci(s, need, { najvise: 3 });
+    else if (s.nacin === "postavi")
+      validateKlizaci(s, need, { najmanje: 1, najvise: 1 });
+    else
+      need(
+        s.klizaci == null,
+        `način ${s.nacin} nema klizače: sve vrijednosti su brojevi`
+      );
+    if (list.length) return list;
+    const koristeni = [];
+    const polje2 = (ime2, o, obj = s) => {
+      if (typeof obj[ime2] === "string") koristeni.push(obj[ime2]);
+      return validatePolje({ ...s, [ime2]: obj[ime2] }, need, ime2, o);
+    };
+    polje2("L", { min: 0.1, max: 100, opis: "duljina užeta u m" });
+    if (s.napetost != null || s.mi != null) {
+      need(s.v == null, "zadaj ili v ili napetost i mi, ne oboje");
+      polje2("napetost", { min: 1e-3, max: 1e5, opis: "napetost u N" });
+      polje2("mi", { min: 1e-6, max: 10, opis: "masa po duljini u kg/m" });
+    } else polje2("v", { min: 0.05, max: 5e3, opis: "brzina vala u m/s" });
+    if (s.scena === "putujuci") {
+      need(
+        s.f != null !== (s.T != null),
+        "putujuci treba točno jedno od: f (Hz) ili T (s)"
+      );
+      if (s.f != null)
+        polje2("f", { min: 0.05, max: 50, opis: "frekvencija u Hz" });
+      if (s.T != null) polje2("T", { min: 0.02, max: 20, opis: "period u s" });
+      polje2("A", { min: 1e-3, max: 5, opis: "amplituda u m" });
+      if (s.drugo_uze != null && need(
+        typeof s.drugo_uze === "object" && !Array.isArray(s.drugo_uze),
+        "drugo_uze mora biti {v, od}"
+      )) {
+        need(
+          Object.keys(s.drugo_uze).every((k) => ["v", "od"].includes(k)),
+          "drugo_uze ima samo v i od"
+        );
+        polje2(
+          "v",
+          { min: 0.05, max: 5e3, opis: "brzina na drugom užetu u m/s" },
+          s.drugo_uze
+        );
+        need(
+          isNum(s.drugo_uze.od),
+          "drugo_uze.od mora biti broj (mjesto spoja u m)"
+        );
+      }
+      if (s.istaknute != null)
+        need(
+          Array.isArray(s.istaknute) && s.istaknute.length >= 1 && s.istaknute.length <= 2 && s.istaknute.every((x) => isNum(x) && isNum(s.L) && x > 0 && x < s.L),
+          "istaknute mora biti 1–2 položaja kuglica (m) unutar užeta, 0 < x < L"
+        );
+      if (s.istaknuta_pocetak != null) {
+        need(
+          POCECI.includes(s.istaknuta_pocetak),
+          `istaknuta_pocetak mora biti: ${POCECI.join(", ")}`
+        );
+        need(istaknute(s).length > 0, "istaknuta_pocetak treba istaknute");
+      }
+      if (s.ustaljeno != null) {
+        need(typeof s.ustaljeno === "boolean", "ustaljeno je true ili false");
+        need(
+          s.nacin === "istrazi",
+          "ustaljeno postoji samo u istrazi (ostali načini su uvijek ustaljeni)"
+        );
+        need(
+          !(s.ustaljeno === false && s.istaknuta_pocetak != null),
+          "istaknuta_pocetak ima smisla samo kad val već ispunjava uže (ustaljeno)"
+        );
+      }
+      if (s.nacin === "istrazi" && s.ustaljeno !== true)
+        need(
+          s.istaknuta_pocetak == null,
+          "u istrazi val kreće iz izvora, pa istaknuta_pocetak treba ustaljeno: true"
+        );
+    }
+    if (s.scena === "puls") {
+      polje2("A", { min: 1e-3, max: 5, opis: "amplituda pulsa u m" });
+      if (s.oblik != null)
+        need(OBLICI2.includes(s.oblik), `oblik mora biti: ${OBLICI2.join(", ")}`);
+      if (s.nacin === "predvidi")
+        need(s.kraj == null, "predvidi nema kraj: krajevi su u pitanja");
+      else
+        need(KRAJEVI.includes(s.kraj), `puls treba kraj: ${KRAJEVI.join(", ")}`);
+    }
+    if (s.scena === "stojni")
+      polje2("f", { min: 1, max: 2e4, opis: "frekvencija u Hz" });
+    if (s.ubrzanje != null)
+      need(
+        isNum(s.ubrzanje) && s.ubrzanje > 0 && s.ubrzanje <= 1,
+        "ubrzanje mora biti broj iz (0, 1] (usporenje animacije)"
+      );
+    if (list.length) return list;
+    validateKoristeniKlizaci(s, need, koristeni);
+    if (list.length) return list;
+    let kraj3;
+    try {
+      kraj3 = krajnjeKombinacije(s).map((q) => parametri(s, q));
+    } catch {
+      need(false, "scena se ne može izračunati");
+      return list;
+    }
+    for (const P3 of kraj3) {
+      if (s.scena === "putujuci") {
+        if (P3.od != null) {
+          need(
+            P3.od >= 0.15 * P3.L && P3.od <= 0.85 * P3.L,
+            "drugo_uze.od mora biti između 15 % i 85 % duljine užeta"
+          );
+          need(
+            (P3.L - P3.od) / P3.lambda2 <= 12 && (P3.L - P3.od) / P3.lambda2 >= 0.5,
+            `na drugom užetu mora stati 0,5–12 valnih duljina (sad ${formatNumber((P3.L - P3.od) / P3.lambda2)})`
+          );
+        }
+        const l1 = P3.od ?? P3.L;
+        need(
+          l1 / P3.lambda <= 12 && P3.L / P3.lambda >= 0.5,
+          `na užetu mora stati 0,5–12 valnih duljina (sad ${formatNumber(l1 / P3.lambda)})`
+        );
+        need(
+          P3.A <= P3.L / 4,
+          "amplituda mora biti najviše četvrtina duljine užeta"
+        );
+      }
+      if (s.scena === "puls")
+        need(
+          P3.A <= P3.L / 4,
+          "amplituda pulsa mora biti najviše četvrtina duljine užeta"
+        );
+      if (s.scena === "stojni")
+        need(
+          P3.nTocno <= 15,
+          `na niti smije biti najviše 15 trbuha (sad do ${formatNumber(P3.nTocno)})`
+        );
+      if (list.length) return list;
+    }
+    const P2 = parametri(s);
+    if (s.prikazi != null && need(Array.isArray(s.prikazi), "prikazi mora biti popis")) {
+      for (const x of s.prikazi)
+        need(
+          PRIKAZI7.includes(x),
+          `prikazi: „${x}“ nije jedno od: ${PRIKAZI7.join(", ")}`
+        );
+      const pr = s.prikazi;
+      if (pr.includes("y-t"))
+        need(
+          s.scena === "putujuci" && istaknute(s).length > 0,
+          "y-t (graf crvene kuglice) treba scenu putujuci i istaknute"
+        );
+      if (pr.includes("lambda"))
+        need(s.scena === "putujuci", "lambda (zagrada) je samo za putujuci");
+      if (pr.includes("tragovi") || pr.includes("cvorovi"))
+        need(s.scena === "stojni", "tragovi i cvorovi su samo za stojni");
+      if (pr.includes("cvorovi"))
+        need(
+          s.nacin === "istrazi",
+          "cvorovi (oznake čvorova i trbuha) samo u istrazi: inače odaju odgovor"
+        );
+      if (pr.includes("lambda"))
+        need(
+          !["oznaci", "postavi"].includes(s.nacin),
+          "lambda (zagrada) odaje odgovor u oznaci/postavi"
+        );
+      if (s.nacin === "izracunaj") {
+        const pit = (s.pitaj ?? []).map((q) => q?.velicina);
+        if (pit.some((v) => ["lambda", "lambda2", "v"].includes(v)))
+          need(
+            !pr.includes("ravnalo") && !pr.includes("lambda"),
+            "izracunaj λ ili v: bez ravnala i zagrade λ (odale bi odgovor)"
+          );
+        if (pit.some((v) => ["T", "f"].includes(v)))
+          need(
+            !pr.includes("y-t"),
+            "izracunaj T ili f: bez grafa y-t (odaje period)"
+          );
+      }
+    }
+    if (s.brojaci != null && need(
+      Array.isArray(s.brojaci) && s.brojaci.length <= 5,
+      "brojaci mora biti popis do 5 veličina"
+    )) {
+      const smiju = dopustenaOcitanja(s);
+      for (const k of s.brojaci)
+        need(
+          smiju.includes(k),
+          `brojaci: „${k}“ ${kljuceviScene(s).includes(k) ? `bi u načinu ${s.nacin} odao odgovor (dopušteno: ${smiju.join(", ") || "ništa"})` : `nije veličina scene (${kljuceviScene(s).join(", ")})`}`
+        );
+    }
+    if (s.nacin === "istrazi") noAnswerFields(s, need);
+    if (s.nacin === "zaustavi") {
+      const c = s.cilj;
+      if (need(c && typeof c === "object", "zaustavi treba cilj: {uvjet}")) {
+        need(
+          UVJETI2[s.scena].includes(c.uvjet),
+          `cilj.uvjet za ${s.scena} mora biti: ${UVJETI2[s.scena].join(", ")}`
+        );
+        need(
+          Object.keys(c).every(
+            (k) => ["uvjet", "prvi", "tolerancija"].includes(k)
+          ),
+          "cilj ima samo uvjet, prvi? i tolerancija?"
+        );
+        if (c.prvi != null)
+          need(
+            typeof c.prvi === "boolean" && s.scena === "putujuci",
+            "cilj.prvi je true/false i samo za putujuci"
+          );
+        if (c.tolerancija != null)
+          need(
+            isNum(c.tolerancija) && c.tolerancija > 0,
+            "cilj.tolerancija je broj sekundi > 0"
+          );
+        if (s.scena === "putujuci") {
+          need(
+            istaknute(s).length === 1,
+            "zaustavi (putujuci) treba točno jednu istaknutu (crvenu) kuglicu"
+          );
+          if (!list.length && UVJETI2.putujuci.includes(c.uvjet))
+            need(
+              tocniTrenuci(s).length > 0,
+              "cilj se ne dogodi unutar trake vremena"
+            );
+        }
+        if (!list.length) {
+          const tocni = tocniTrenuci(s);
+          validateKrivo(s.krivo, null, 0, need);
+          (s.krivo ?? []).forEach(
+            (k, i) => isNum(k?.vrijednost) && need(
+              !tocni.some((x) => near(k.vrijednost, x, tolZaustavi(s, P2))),
+              `krivo[${i}].vrijednost je točan trenutak`
+            )
+          );
+        }
+      }
+    }
+    if (s.nacin === "oznaci") {
+      if (s.scena === "putujuci") {
+        need(s.trazi === "lambda", 'oznaci na putujućem valu: trazi "lambda"');
+        if (s.uze != null)
+          need(
+            [1, 2].includes(s.uze) && s.drugo_uze != null,
+            "uze (1 | 2) samo uz drugo_uze"
+          );
+        const [a, b] = segmentUzeta(s, P2);
+        const l = s.uze === 2 ? P2.lambda2 : P2.lambda;
+        need(
+          b - a >= 1.3 * l,
+          "na užetu (dijelu) za oznake moraju stati barem 1,3 valne duljine"
+        );
+      } else {
+        need(
+          ["cvorovi", "trbusi"].includes(s.trazi),
+          'oznaci na stojnom valu: trazi "cvorovi" ili "trbusi"'
+        );
+        need(s.uze == null, "uze je samo za putujuci");
+        need(
+          P2.n != null && Math.abs(P2.nTocno - P2.n) < 1e-6,
+          `oznaci treba f na harmoniku: f = n·v/(2ℓ), npr. ${formatNumber(P2.f1)}, ${formatNumber(2 * P2.f1)}, ${formatNumber(3 * P2.f1)} Hz (sad ${formatNumber(P2.nTocno)} polovina vala)`
+        );
+      }
+    }
+    if (s.nacin === "predvidi") {
+      if (need(
+        Array.isArray(s.pitanja) && s.pitanja.length >= 1 && s.pitanja.length <= 2,
+        "predvidi treba pitanja: [{kraj}] (1–2)"
+      ))
+        s.pitanja.forEach((q, i) => {
+          need(
+            KRAJEVI.includes(q?.kraj),
+            `pitanja[${i}].kraj mora biti: ${KRAJEVI.join(", ")}`
+          );
+          need(
+            Object.keys(q ?? {}).every((k) => k === "kraj"),
+            `pitanja[${i}] ima samo kraj`
+          );
+        });
+      if (Array.isArray(s.pitanja) && s.pitanja.length === 2)
+        need(
+          s.pitanja[0]?.kraj !== s.pitanja[1]?.kraj,
+          "dva pitanja moraju imati različite krajeve"
+        );
+    }
+    if (s.nacin === "postavi") {
+      need(s.scena !== "puls", "postavi nije za puls");
+      if (s.uzivo != null)
+        need(typeof s.uzivo === "boolean", "uzivo je true ili false");
+      const k = klizaciOd(s)[0];
+      const c = s.cilj;
+      if (need(
+        c && typeof c === "object",
+        "postavi treba cilj: {trbuha} ili {velicina, vrijednost}"
+      )) {
+        if (c.trbuha != null) {
+          need(s.scena === "stojni", "cilj.trbuha je samo za stojni");
+          need(
+            Number.isInteger(c.trbuha) && c.trbuha >= 1 && c.trbuha <= 15,
+            "cilj.trbuha je cijeli broj 1–15"
+          );
+          need(
+            Object.keys(c).every((x) => x === "trbuha"),
+            "cilj {trbuha} nema drugih polja"
+          );
+        } else {
+          need(
+            kljuceviScene(s).includes(c.velicina) && c.velicina !== "n",
+            `cilj.velicina mora biti jedna od: ${kljuceviScene(s).filter((x) => x !== "n").join(", ")}`
+          );
+          need(isNum(c.vrijednost), "cilj.vrijednost mora biti broj");
+          if (c.tolerancija != null)
+            need(
+              isNum(c.tolerancija) && c.tolerancija >= 0,
+              "cilj.tolerancija je nenegativan broj"
+            );
+          need(
+            Object.keys(c).every(
+              (x) => ["velicina", "vrijednost", "tolerancija"].includes(x)
+            ),
+            "cilj ima samo velicina, vrijednost, tolerancija?"
+          );
+        }
+        if (!list.length && k) {
+          const sc = ciljPostavi(s);
+          const a = analizaCilja(sc, k, velicineZa(s));
+          const vr = velicineZa(s)({ ...pocetneVrijednosti2(s), [k.id]: a.best })[sc.cilj.velicina];
+          need(
+            isNum(vr) && Math.abs(vr - sc.cilj.vrijednost) <= 0.01 * Math.abs(sc.cilj.vrijednost) + (c.tolerancija ?? 0),
+            `cilj nije ostvariv klizačem „${k.id}“ (najbliže: ${formatNumber(a.best)}${k.jedinica ? ` ${k.jedinica}` : ""} daje ${formatNumber(vr)})`
+          );
+          need(
+            !a.ok(k.pocetak),
+            `klizač „${k.id}“ na početku već ostvaruje cilj`
+          );
+          validateKrivo(s.krivo, null, 0, need);
+          (s.krivo ?? []).forEach(
+            (x, i) => isNum(x?.vrijednost) && need(
+              !a.ok(x.vrijednost),
+              `krivo[${i}].vrijednost ostvaruje cilj, a to je točan odgovor`
+            )
+          );
+        }
+      }
+    }
+    if (s.nacin === "izracunaj") {
+      if (need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
+        "izracunaj treba pitaj: [{velicina, ...}] (1–3)"
+      )) {
+        const dop = VELICINE_IZRACUNA[s.scena];
+        s.pitaj.forEach((q, i) => {
+          if (!need(
+            dop.includes(q?.velicina),
+            `pitaj[${i}].velicina za ${s.scena} mora biti: ${dop.join(", ")}`
+          ))
+            return;
+          need(
+            Object.keys(q).every(
+              (k) => [
+                "velicina",
+                "jedinica",
+                "oznaka",
+                "n",
+                "tolerancija",
+                "krivo"
+              ].includes(k)
+            ),
+            `pitaj[${i}] ima samo velicina, jedinica?, oznaka?, n?, tolerancija?, krivo?`
+          );
+          if (q.jedinica != null)
+            need(
+              q.jedinica in JEDINICE3[q.velicina],
+              `pitaj[${i}].jedinica za ${q.velicina} mora biti: ${Object.keys(JEDINICE3[q.velicina]).join(", ")}`
+            );
+          if (q.oznaka != null)
+            need(isText(q.oznaka), `pitaj[${i}].oznaka mora biti tekst`);
+          if (q.velicina === "fn")
+            need(
+              Number.isInteger(q.n) && q.n >= 1 && q.n <= 12,
+              `pitaj[${i}]: fn treba n (cijeli broj 1–12)`
+            );
+          else need(q.n == null, `pitaj[${i}].n je samo za fn`);
+          if (q.velicina === "lambda2")
+            need(s.drugo_uze != null, `pitaj[${i}]: lambda2 treba drugo_uze`);
+          if (q.tolerancija != null)
+            need(
+              isNum(q.tolerancija) && q.tolerancija >= 0,
+              `pitaj[${i}].tolerancija je nenegativan broj`
+            );
+          if (!list.length) {
+            const r = izracun3(s, q);
+            validateKrivo(q.krivo, r.odgovor, r.tol, need, `pitaj[${i}].krivo`);
+          }
+        });
+        if (s.scena === "stojni")
+          need(
+            P2.n != null && Math.abs(P2.nTocno - P2.n) < 1e-6,
+            `izracunaj na stojnom valu treba f na harmoniku (f = n·v/(2ℓ); sad ${formatNumber(P2.nTocno)} polovina vala)`
+          );
+        need(
+          new Set(s.pitaj.map((q) => `${q?.velicina}${q?.n ?? ""}`)).size === s.pitaj.length,
+          "pitaj: svaka veličina samo jednom"
+        );
+      }
+    }
+    return list;
+  }
+  var RAZLOMAK_T = { 0.25: "T/4", 0.5: "T/2", 0.75: "3T/4", 1: "T" };
+  function tocanOdgovor4(s) {
+    const P2 = parametri(s);
+    if (s.nacin === "zaustavi") {
+      const t = tocniTrenuci(s)[0];
+      if (s.scena === "puls")
+        return s.cilj.uvjet === "povratak" ? `t = 2ℓ/v = ${iznosJed(t, "s")}` : `t = ℓ/v = ${iznosJed(t, "s")}`;
+      const r = RAZLOMAK_T[Math.round(t / P2.T * 4) / 4];
+      return `t = ${iznosJed(t, "s")}${r ? ` (${r})` : ""}`;
+    }
+    if (s.nacin === "oznaci") {
+      if (s.scena === "putujuci")
+        return `dvije oznake razmaknute ${s.uze === 2 ? "λ₂" : "λ"} = ${iznosJed(s.uze === 2 ? P2.lambda2 : P2.lambda, "m")} (npr. dva susjedna brijega)`;
+      const x = s.trazi === "cvorovi" ? cvorovi(P2, P2.n) : trbusi(P2, P2.n);
+      return `${s.trazi === "cvorovi" ? "čvorovi" : "trbusi"} na x = ${x.map((q) => formatNumber(Number(q.toPrecision(6)))).join("; ")} m`;
+    }
+    if (s.nacin === "predvidi")
+      return s.pitanja.map(
+        (q) => `${IME_KRAJA[q.kraj]}: ${IZBORI_PREDVIDI[odbijeniOblik(s.oblik ?? "brijeg", q.kraj)]}`
+      ).join("; ");
+    if (s.nacin === "postavi") {
+      const k = klizaciOd(s)[0];
+      const a = analizaCilja(ciljPostavi(s), k, velicineZa(s));
+      return `${String(k.oznaka).replace(/\$/g, "")} = ${withUnit(a.best, k.jedinica)}`;
+    }
+    if (s.nacin === "izracunaj")
+      return s.pitaj.map((q) => {
+        const r = izracun3(s, q);
+        return `${oznakaPitanja2(q)} ${withUnit(Number(r.odgovor.toPrecision(6)), r.jedinica)}`;
+      }).join(", ");
+    return "";
+  }
+  var val_uze = {
+    tip: TIP5,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS5,
+    primjer: PRIMJER5,
+    primjeri: PRIMJERI5,
+    validate: validate4,
+    check(s, odgovor3) {
+      if (s.nacin === "zaustavi") return checkZaustavi3(s, odgovor3);
+      if (s.nacin === "oznaci")
+        return s.scena === "stojni" ? checkOznaciStojni(s, odgovor3) : checkOznaciLambda(s, odgovor3);
+      if (s.nacin === "predvidi") return checkPredvidi3(s, odgovor3);
+      if (s.nacin === "postavi") return checkPostavi4(s, odgovor3);
+      if (s.nacin === "izracunaj") return checkIzracunaj2(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor: tocanOdgovor4
+  };
+
+  // src/lib/lesson/katalog/fizika/valne_fronte.js
+  var TIP6 = "valne_fronte";
+  var SCENE8 = ["dva_izvora", "pokretni_izvor"];
+  var NACINI18 = {
+    dva_izvora: ["istrazi", "odaberi", "izracunaj", "postavi"],
+    pokretni_izvor: ["istrazi", "predvidi", "izracunaj", "postavi"]
+  };
+  var PRIKAZI8 = ["fronte", "cvorne_crte", "grafovi_P", "brojaci"];
+  var VELICINE5 = ["lambda", "ds", "omjer", "A_P", "A_jednaki"];
+  var JED_DULJINE = { m: 1, cm: 100, mm: 1e3 };
+  var JED_A = ["mm", "cm"];
+  var FAZE = ["priblizava", "udaljava", "miruje"];
+  var PROCJENE = ["visi", "isti", "nizi"];
+  var TON = { visi: "viši", isti: "isti", nizi: "niži" };
+  var V_ZVUKA = 340;
+  var IKONE3 = ["vozilo", "zvucnik"];
+  var VRSTE_CILJA = ["pojacanje", "ponistavanje"];
+  var VRSTA_TEKST = {
+    pojacanje: "pojačanje",
+    ponistavanje: "poništavanje",
+    djelomicno: "djelomično"
+  };
+  var FAZA_TEKST = {
+    priblizava: "dok se približava",
+    udaljava: "nakon što prođe",
+    miruje: "dok stoji"
+  };
+  var tocnije = (n) => broj3(n, 4);
+  function fizikaDvaIzvora(s, p = pocetneVrijednosti2(s)) {
+    const [i1, i2] = Array.isArray(s.izvori) ? s.izvori : [];
+    const v = iznos2(s, s.v, p);
+    const T3 = s.T != null ? iznos2(s, s.T, p) : 1 / iznos2(s, s.f, p);
+    return {
+      A1: iznos2(s, i1?.A, p),
+      A2: iznos2(s, i2?.A, p),
+      v,
+      T: T3,
+      f: 1 / T3,
+      lambda: v * T3,
+      faza: i2?.faza === 180 ? 180 : 0,
+      jedinica_A: s.jedinica_A ?? "mm"
+    };
+  }
+  function razmakIzvora(s) {
+    if (isNum(s.d)) return s.d;
+    const { s1, s2 } = s.tocka;
+    const ds = Math.abs(s2 - s1);
+    return ds + 0.3 * (s1 + s2 - ds);
+  }
+  function tockaIzPutova(d, s1, s2) {
+    const y = (s1 * s1 - s2 * s2) / (2 * d);
+    return { x: Math.sqrt(Math.max(0, s1 * s1 - (y + d / 2) ** 2)), y };
+  }
+  var OMJER_VODE = 1.5;
+  function rasporedDvaIzvora(s) {
+    const d = razmakIzvora(s);
+    const S1 = { x: 0, y: -d / 2 };
+    const S2 = { x: 0, y: d / 2 };
+    const P2 = tockaIzPutova(d, s.tocka.s1, s.tocka.s2);
+    const xmin = Math.min(0, P2.x);
+    const xmax = Math.max(0, P2.x);
+    const ymin = Math.min(S1.y, P2.y);
+    const ymax = Math.max(S2.y, P2.y);
+    const rub = 0.16 * Math.max(xmax - xmin, ymax - ymin);
+    let x0 = xmin - rub;
+    let x1 = xmax + rub;
+    let y0 = ymin - rub;
+    let y1 = ymax + rub;
+    if ((x1 - x0) / (y1 - y0) < OMJER_VODE) x1 = x0 + (y1 - y0) * OMJER_VODE;
+    else {
+      const h = (x1 - x0) / OMJER_VODE;
+      const c = (y0 + y1) / 2;
+      y0 = c - h / 2;
+      y1 = c + h / 2;
+    }
+    const okvir = { x0, y0, x1, y1 };
+    const doseg = Math.max(
+      ...[S1, S2].flatMap(
+        (S) => [
+          [x0, y0],
+          [x1, y0],
+          [x0, y1],
+          [x1, y1]
+        ].map(([x, y]) => Math.hypot(x - S.x, y - S.y))
+      )
+    );
+    return { d, S1, S2, P: P2, okvir, doseg };
+  }
+  function vrstaInterferencije(r, faza = 0, tol2 = 1e-6) {
+    const g = Math.abs(r) - faza / 360;
+    const e = Math.abs(g - Math.round(g));
+    if (e <= tol2) return "pojacanje";
+    if (Math.abs(e - 0.5) <= tol2) return "ponistavanje";
+    return "djelomicno";
+  }
+  function uPutovima(s, p, s1, s2) {
+    const fz = fizikaDvaIzvora(s, p);
+    const ds = s2 - s1;
+    const omjer = ds / fz.lambda;
+    const delta = fz.faza * Math.PI / 180 - 2 * Math.PI * omjer;
+    const A_P = Math.sqrt(
+      Math.max(0, fz.A1 ** 2 + fz.A2 ** 2 + 2 * fz.A1 * fz.A2 * Math.cos(delta))
+    );
+    return {
+      s1,
+      s2,
+      ds,
+      omjer,
+      A_P,
+      A_jednaki: fz.faza === 180 ? Math.abs(fz.A1 - fz.A2) : fz.A1 + fz.A2,
+      vrsta: vrstaInterferencije(omjer, fz.faza),
+      lambda: fz.lambda
+    };
+  }
+  function uTocki(s, p, P2, rs = rasporedDvaIzvora(s)) {
+    return uPutovima(
+      s,
+      p,
+      Math.hypot(P2.x - rs.S1.x, P2.y - rs.S1.y),
+      Math.hypot(P2.x - rs.S2.x, P2.y - rs.S2.y)
+    );
+  }
+  var zadatakDvaIzvora = (s) => uPutovima(s, pocetneVrijednosti2(s), s.tocka.s1, s.tocka.s2);
+  function linijaRazlike(rs, c, n = 56) {
+    const { d, okvir } = rs;
+    const a = Math.abs(c) / 2;
+    const h = d / 2;
+    if (a >= h) return [];
+    if (a < 1e-12)
+      return [
+        [okvir.x0, 0],
+        [okvir.x1, 0]
+      ];
+    const b = Math.sqrt(h * h - a * a);
+    const X = Math.max(Math.abs(okvir.x0), Math.abs(okvir.x1)) * 1.05;
+    const Y = Math.max(Math.abs(okvir.y0), Math.abs(okvir.y1)) * 1.05;
+    const U = Math.min(Math.asinh(X / b), Math.acosh(Math.max(1, Y / a)) + 0.05);
+    const pred = c > 0 ? -1 : 1;
+    const out = [];
+    for (let i = 0; i <= n; i++) {
+      const u = -U + 2 * U * i / n;
+      out.push([b * Math.sinh(u), pred * a * Math.cosh(u)]);
+    }
+    return out;
+  }
+  function ciljniOmjeri(s, p, rs = rasporedDvaIzvora(s)) {
+    const { lambda, faza } = fizikaDvaIzvora(s, p);
+    const cilj = s.cilj ?? {};
+    const pola = cilj.vrsta === "ponistavanje" !== (faza === 180);
+    if (isNum(cilj.red)) return [cilj.red + (pola ? 0.5 : 0)];
+    const out = [];
+    for (let k = pola ? 0.5 : 0; k * lambda < rs.d * 0.97; k++) out.push(k);
+    return out;
+  }
+  var TOL_POSTAVI = 0.1;
+  function ostvarujeCilj(s, p, r, rs) {
+    return ciljniOmjeri(s, p, rs).some(
+      (k) => Math.abs(Math.abs(r) - k) <= TOL_POSTAVI
+    );
+  }
+  function tockaZaCilj(s, odakle, p = pocetneVrijednosti2(s)) {
+    const rs = rasporedDvaIzvora(s);
+    const { lambda } = fizikaDvaIzvora(s, p);
+    const o = rs.okvir;
+    const mx = 0.05 * (o.x1 - o.x0);
+    const my = 0.05 * (o.y1 - o.y0);
+    const blizu3 = 0.6 * Math.min(lambda, rs.d);
+    let best = null;
+    for (const k of ciljniOmjeri(s, p, rs))
+      for (const c of k === 0 ? [0] : [k * lambda, -k * lambda]) {
+        const crta = Math.abs(c) < 1e-12 ? Array.from({ length: 61 }, (_, i) => [
+          o.x0 + (o.x1 - o.x0) * i / 60,
+          0
+        ]) : linijaRazlike(rs, c, 240);
+        for (const [x, y] of crta) {
+          if (x < o.x0 + mx || x > o.x1 - mx || y < o.y0 + my || y > o.y1 - my)
+            continue;
+          if (Math.hypot(x - rs.S1.x, y - rs.S1.y) < blizu3 || Math.hypot(x - rs.S2.x, y - rs.S2.y) < blizu3)
+            continue;
+          const dist = Math.hypot(x - odakle.x, y - odakle.y);
+          if (!best || dist < best.dist) best = { x, y, dist };
+        }
+      }
+    return best && { x: best.x, y: best.y };
+  }
+  function fizikaDopplera(s, p = pocetneVrijednosti2(s)) {
+    const f2 = iznos2(s, s.izvor?.f, p);
+    const vi = iznos2(s, s.izvor?.v, p);
+    const v = isNum(s.v_zvuka) ? s.v_zvuka : V_ZVUKA;
+    return {
+      f: f2,
+      vi,
+      v,
+      f_prije: f2 * v / (v - vi),
+      f_poslije: f2 * v / (v + vi),
+      lambda: v / f2,
+      lambda_ispred: (v - vi) / f2,
+      lambda_iza: (v + vi) / f2
+    };
+  }
+  var frekvencijaFaze = (fz, faza) => faza === "priblizava" ? fz.f_prije : faza === "udaljava" ? fz.f_poslije : fz.f;
+  var tocnaProcjena = (faza) => faza === "priblizava" ? "visi" : faza === "udaljava" ? "nizi" : "isti";
+  function ciljnaBrzina(s) {
+    const { f: f2, v } = fizikaDopplera(s);
+    const fp = s.cilj.f_p;
+    return s.cilj.faza === "priblizava" ? v * (1 - f2 / fp) : v * (f2 / fp - 1);
+  }
+  function tocanPolozajKlizaca(s) {
+    const k = klizaciOd(s)[0];
+    const x = ciljnaBrzina(s) / (k.faktor ?? 1);
+    const n = Math.round((x - k.min) / k.korak);
+    return Math.round((k.min + n * k.korak) * 1e9) / 1e9;
+  }
+  var filtrirajKrive = (krivo, tocno, tol2) => {
+    const out = [];
+    for (const k of krivo)
+      if (isNum(k.vrijednost) && !near(k.vrijednost, tocno, tol2) && !out.some(
+        (x) => near(x.vrijednost, k.vrijednost, 1e-9 + Math.abs(k.vrijednost) * 1e-6)
+      ))
+        out.push(k);
+    return out;
+  };
+  function izracunDvaIzvora(s, q) {
+    const fz = fizikaDvaIzvora(s);
+    const u = zadatakDvaIzvora(s);
+    const { s1, s2 } = s.tocka;
+    const jA = s.jedinica_A ?? "mm";
+    const ds = Math.abs(u.ds);
+    const jedinicaPuta = (krivo2, vrijednostM, jed2) => {
+      const k = JED_DULJINE[jed2];
+      for (const [j, f2] of Object.entries(JED_DULJINE))
+        if (j !== jed2)
+          krivo2.push({
+            vrijednost: vrijednostM * f2,
+            poruka: `Pazi na jedinicu: to je iznos u ${j}, a traži se u ${jed2}.`
+          });
+      return vrijednostM * k;
+    };
+    const krivo = [];
+    let vrijednost3;
+    let jedinica4 = "";
+    if (q.velicina === "lambda") {
+      jedinica4 = q.jedinica ?? "m";
+      const k = JED_DULJINE[jedinica4];
+      vrijednost3 = jedinicaPuta(krivo, fz.lambda, jedinica4);
+      krivo.push(
+        s.T != null ? {
+          vrijednost: fz.v / fz.T * k,
+          poruka: "Iz $v = \\frac{\\lambda}{T}$ slijedi $\\lambda = v \\cdot T$: brzinu **pomnoži** periodom."
+        } : {
+          vrijednost: fz.v * fz.f * k,
+          poruka: "Iz $v = \\lambda f$ slijedi $\\lambda = \\frac{v}{f}$: brzinu **podijeli** frekvencijom."
+        },
+        {
+          vrijednost: fz.T / fz.v * k,
+          poruka: "Obrnuto: $\\lambda = v \\cdot T$ (valna duljina je put koji val prijeđe za jedan period)."
+        }
+      );
+    } else if (q.velicina === "ds") {
+      jedinica4 = q.jedinica ?? "m";
+      vrijednost3 = jedinicaPuta(krivo, ds, jedinica4);
+      krivo.push({
+        vrijednost: (s1 + s2) * JED_DULJINE[jedinica4],
+        poruka: "Treba **razlika** putova (koliko jedan val kasni), a ne njihov zbroj."
+      });
+    } else if (q.velicina === "omjer") {
+      vrijednost3 = ds / fz.lambda;
+      krivo.push(
+        {
+          vrijednost: fz.lambda / ds,
+          poruka: "Obrnuto: dijeli razliku putova valnom duljinom, $\\frac{\\Delta s}{\\lambda}$."
+        },
+        {
+          vrijednost: (s1 + s2) / fz.lambda,
+          poruka: "U brojniku je **razlika** putova, a ne zbroj."
+        },
+        {
+          vrijednost: s2 / fz.lambda,
+          poruka: "To je samo jedan put u valnim duljinama. Treba razlika putova $\\Delta s = s_2 - s_1$."
+        },
+        {
+          vrijednost: s1 / fz.lambda,
+          poruka: "To je samo jedan put u valnim duljinama. Treba razlika putova $\\Delta s = s_2 - s_1$."
+        },
+        {
+          vrijednost: s.T != null ? ds / (fz.v / fz.T) : ds / (fz.v * fz.f),
+          poruka: "Provjeri valnu duljinu: $\\lambda = v \\cdot T = \\frac{v}{f}$."
+        },
+        {
+          vrijednost: ds * 100 / fz.lambda,
+          poruka: "Putove i valnu duljinu uvrsti u istoj jedinici (oboje u metrima)."
+        }
+      );
+    } else if (q.velicina === "A_P") {
+      jedinica4 = jA;
+      vrijednost3 = u.A_P;
+      const zbroj2 = fz.A1 + fz.A2;
+      const razlika2 = Math.abs(fz.A1 - fz.A2);
+      if (u.vrsta === "ponistavanje") {
+        krivo.push(
+          {
+            vrijednost: zbroj2,
+            poruka: "Zbroj amplituda vrijedi kad brijeg dolazi na brijeg. Ovdje je $\\frac{\\Delta s}{\\lambda}$ pola više od cijelog broja: jedan val kasni pola vala, pa brijeg dolazi na dolinu i amplitude se **oduzimaju**."
+          },
+          {
+            vrijednost: 0,
+            poruka: "Valovi se poništavaju, ali amplitude nisu jednake, pa ne nestane sve: ostane razlika amplituda."
+          }
+        );
+      } else {
+        krivo.push({
+          vrijednost: razlika2,
+          poruka: "Razlika amplituda vrijedi kad brijeg dolazi na dolinu. Ovdje je $\\frac{\\Delta s}{\\lambda}$ cijeli broj: valovi stižu u istom ritmu i amplitude se **zbrajaju**."
+        });
+      }
+      krivo.push(
+        {
+          vrijednost: zbroj2 / 2,
+          poruka: "Amplitude se ne usrednjavaju: otkloni se zbroje (brijeg na brijeg) ili oduzmu (brijeg na dolinu)."
+        },
+        {
+          vrijednost: fz.A1,
+          poruka: "To je amplituda samo prvog vala. U P stižu oba vala i njihovi otkloni se zbrajaju."
+        },
+        {
+          vrijednost: fz.A2,
+          poruka: "To je amplituda samo drugog vala. U P stižu oba vala i njihovi otkloni se zbrajaju."
+        }
+      );
+    } else if (q.velicina === "A_jednaki") {
+      jedinica4 = jA;
+      vrijednost3 = u.A_jednaki;
+      krivo.push(
+        {
+          vrijednost: fz.faza === 180 ? fz.A1 + fz.A2 : Math.abs(fz.A1 - fz.A2),
+          poruka: fz.faza === 180 ? "Izvori titraju u protufazi: uz jednake putove brijeg jednog vala stiže zajedno s dolinom drugog, pa se amplitude oduzimaju." : "Uz jednake putove nijedan val ne kasni: brijeg stiže na brijeg, pa se amplitude **zbrajaju**."
+        },
+        {
+          vrijednost: 0,
+          poruka: "Uz jednake putove valovi stižu u istom ritmu i pojačavaju se, a ne poništavaju."
+        }
+      );
+    }
+    return { vrijednost: vrijednost3, jedinica: jedinica4, krivo };
+  }
+  function izracunDopplera(s, q) {
+    const fz = fizikaDopplera(s);
+    const { f: f2, v, vi } = fz;
+    const pribl = q.faza === "priblizava";
+    const vrijednost3 = pribl ? fz.f_prije : fz.f_poslije;
+    const krivo = [
+      {
+        vrijednost: pribl ? fz.f_poslije : fz.f_prije,
+        poruka: pribl ? "Predznak je obrnut. Dok se izvor **približava**, fronte ispred njega su zgusnute i ton je viši: u nazivniku je $v - v_i$." : "Predznak je obrnut. Kad izvor **prođe** i udaljava se, fronte iza njega su razrijeđene i ton je niži: u nazivniku je $v + v_i$."
+      },
+      {
+        vrijednost: pribl ? f2 * (v + vi) / v : f2 * (v - vi) / v,
+        poruka: "To je formula za promatrača koji se giba ($v_p$ je u brojniku). Ovdje se giba **izvor**, a njegova brzina ide u nazivnik: $f_p = f_i \\frac{v}{v \\mp v_i}$."
+      },
+      {
+        vrijednost: pribl ? f2 * (v - vi) / v : f2 * (v + vi) / v,
+        poruka: "Brzina izvora ide u nazivnik, a brzina zvuka u brojnik: $f_p = f_i \\frac{v}{v \\mp v_i}$."
+      },
+      {
+        vrijednost: f2,
+        poruka: "To je frekvencija koju sirena ispušta. Dok se izvor giba, ti čuješ drukčiju frekvenciju."
+      },
+      {
+        vrijednost: vrijednost3 - f2,
+        poruka: "To je samo promjena frekvencije. Traži se cijela frekvencija koju čuješ."
+      },
+      {
+        vrijednost: f2 - vrijednost3,
+        poruka: "To je samo promjena frekvencije. Traži se cijela frekvencija koju čuješ."
+      }
+    ];
+    return { vrijednost: vrijednost3, jedinica: "Hz", krivo };
+  }
+  var tolDopplera = (x) => Math.max(0.51, Math.abs(x) * 7e-4);
+  function checkPolja(s, unosi, izracun5, tolZa) {
+    const pitaj = s.pitaj;
+    const vals = pitaj.map((_, i) => String(unosi?.[i] ?? ""));
+    const prazno = vals.findIndex((v) => !v.trim());
+    if (prazno >= 0)
+      return {
+        tocno: false,
+        poruka: pitaj.length > 1 ? "Upiši sve odgovore." : "Upiši odgovor.",
+        prazno: true,
+        polje: prazno
+      };
+    for (let i = 0; i < pitaj.length; i++) {
+      const q = pitaj[i];
+      const z = izracun5(s, q);
+      const tol2 = isNum(s.tolerancija) ? s.tolerancija : tolZa(z.vrijednost);
+      const krivo = filtrirajKrive(
+        [
+          ...Array.isArray(q.krivo) ? q.krivo : [],
+          ...z.krivo.map((k) => ({ ...k, tolerancija: tolZa(k.vrijednost) }))
+        ],
+        z.vrijednost,
+        tol2
+      );
+      const unos = q.velicina === "ds" ? vals[i].replace(/^\s*[-−]\s*/, "") : vals[i];
+      const r = checkNumber({
+        input: unos,
+        answer: z.vrijednost,
+        tol: tol2,
+        unit: z.jedinica,
+        krivo,
+        savjet: s.savjet
+      });
+      if (!r.tocno)
+        return {
+          ...r,
+          polje: i,
+          poruka: pitaj.length > 1 ? `U ${i + 1}. polju: ${r.poruka}` : r.poruka
+        };
+    }
+    return { tocno: true };
+  }
+  function checkPostaviDva(s, odg) {
+    if (!odg || !isNum(odg.x) || !isNum(odg.y))
+      return {
+        tocno: false,
+        poruka: "Povuci točku $P$, pa provjeri.",
+        prazno: true
+      };
+    const rs = rasporedDvaIzvora(s);
+    const p = pocetneVrijednosti2(s);
+    const u = uTocki(s, p, odg, rs);
+    const r = Math.abs(u.omjer);
+    if (ostvarujeCilj(s, p, r, rs)) return { tocno: true };
+    const { faza } = fizikaDvaIzvora(s, p);
+    const vrsta = vrstaInterferencije(r, faza, TOL_POSTAVI);
+    const rT = broj3(Math.round(r * 100) / 100);
+    const ciljV = s.cilj.vrsta;
+    if (isNum(s.cilj.red) && s.cilj.red === 0 && ciljV === "pojacanje" && faza === 0)
+      return {
+        tocno: false,
+        poruka: `Putovi nisu jednaki: razlika je ${iznosJed(Math.abs(u.ds), "m")}. Traži mjesto gdje je točka $P$ jednako udaljena od oba izvora.`
+      };
+    if (vrsta === ciljV)
+      return {
+        tocno: false,
+        poruka: `Ovdje je ${VRSTA_TEKST[vrsta]} ($\\Delta s = ${rT.replace(",", "{,}")}\\,\\lambda$), ali ne onog reda koji se traži. Pročitaj zadatak još jednom.`
+      };
+    if (vrsta !== "djelomicno")
+      return {
+        tocno: false,
+        poruka: `Ovdje je $\\Delta s = ${rT.replace(",", "{,}")}\\,\\lambda$, a to je ${VRSTA_TEKST[vrsta]}. Za ${VRSTA_TEKST[ciljV]} razlika putova mora biti ${ciljV === "pojacanje" === (faza === 0) ? "cijeli broj" : "pola više od cijelog broja"} valnih duljina.`
+      };
+    return {
+      tocno: false,
+      poruka: `Ovdje je $\\Delta s = ${rT.replace(",", "{,}")}\\,\\lambda$: ni cijeli ni polovični broj valnih duljina. Izračunaj $\\lambda = v \\cdot T$ i pomakni $P$ tako da razlika putova bude ${ciljV === "pojacanje" === (faza === 0) ? "cijeli broj" : "pola više od cijelog broja"} valnih duljina.`
+    };
+  }
+  function checkOdaberi3(s, odg) {
+    if (!VRSTE_CILJA.includes(odg))
+      return { tocno: false, poruka: "Odaberi jedan odgovor.", prazno: true };
+    const u = zadatakDvaIzvora(s);
+    if (odg === u.vrsta) return { tocno: true };
+    const { faza } = fizikaDvaIzvora(s);
+    return {
+      tocno: false,
+      poruka: `Izračunaj $\\lambda = v \\cdot T$ i razliku putova $\\Delta s = s_2 - s_1$, pa pogledaj koliko valnih duljina stane u $\\Delta s$: ${faza === 0 ? "cijeli broj znači pojačanje (brijeg na brijeg), a pola više od cijelog poništavanje (brijeg na dolinu)" : "izvori titraju u protufazi, pa cijeli broj znači poništavanje, a pola više od cijelog pojačanje"}.`
+    };
+  }
+  function checkPredvidi4(s, odg) {
+    const pit = s.pitanja;
+    if (!Array.isArray(odg) || pit.some((_, i2) => !PROCJENE.includes(odg[i2])))
+      return {
+        tocno: false,
+        poruka: pit.length > 1 ? "Odgovori na sva pitanja." : "Odaberi odgovor.",
+        prazno: true
+      };
+    const krivi2 = pit.map((q2, i2) => odg[i2] !== tocnaProcjena(q2.faza));
+    if (!krivi2.some(Boolean)) return { tocno: true };
+    const zamjena = pit.length > 1 && pit.every(
+      (q2, i2) => q2.faza === "priblizava" && odg[i2] === "nizi" || q2.faza === "udaljava" && odg[i2] === "visi" || q2.faza === "miruje" && odg[i2] === "isti"
+    );
+    if (zamjena)
+      return {
+        tocno: false,
+        poruka: "Zamijenjeno je. Ispred vozila fronte se zgušnjavaju (kraća valna duljina, **viši** ton), a iza njega razrjeđuju (dulja valna duljina, **niži** ton)."
+      };
+    const i = krivi2.findIndex(Boolean);
+    const q = pit[i];
+    const pre = pit.length > 1 ? `${i + 1}. pitanje: ` : "";
+    if (q.faza === "miruje")
+      return {
+        tocno: false,
+        poruka: `${pre}Kad vozilo stoji, fronte su koncentrične kružnice s jednakim razmakom u svim smjerovima, pa čuješ isti ton koji sirena svira.`
+      };
+    if (odg[i] === "isti")
+      return {
+        tocno: false,
+        poruka: `${pre}Sirena svira uvijek isti ton, ali ti ga ne čuješ istog: ${q.faza === "priblizava" ? "vozilo svaku novu frontu pošalje bliže tebi, pa stižu češće." : "vozilo svaku novu frontu pošalje dalje od tebe, pa stižu rjeđe."}`
+      };
+    return {
+      tocno: false,
+      poruka: `${pre}${q.faza === "priblizava" ? "Dok se vozilo približava, fronte ispred njega su zgusnute: kraća valna duljina, češće stižu do tebe, pa je ton **viši**." : "Kad vozilo prođe, iza njega su fronte razrijeđene: dulja valna duljina, rjeđe stižu do tebe, pa je ton **niži**."}`
+    };
+  }
+  function checkPostaviDoppler(s, odg) {
+    const k = klizaciOd(s)[0];
+    const x = odg?.[k.id];
+    if (!isNum(x))
+      return {
+        tocno: false,
+        poruka: "Pomakni klizač, pa provjeri.",
+        prazno: true
+      };
+    const vi = x * (k.faktor ?? 1);
+    const cilj = ciljnaBrzina(s);
+    const tol2 = isNum(s.tolerancija) ? s.tolerancija : k.korak * (k.faktor ?? 1) / 2 + 1e-9;
+    if (Math.abs(vi - cilj) <= tol2) return { tocno: true };
+    const { f: f2, v } = fizikaDopplera(s);
+    const fp = s.cilj.f_p;
+    const promatrac = s.cilj.faza === "priblizava" ? v * (fp / f2 - 1) : v * (1 - fp / f2);
+    if (Math.abs(vi - promatrac) <= tol2 && Math.abs(promatrac - cilj) > 2 * tol2)
+      return {
+        tocno: false,
+        poruka: "To je brzina iz formule za promatrača koji se giba. Ovdje se giba **izvor**: $f_p = f_i \\frac{v}{v \\mp v_i}$, pa izrazi $v_i$ iz te formule."
+      };
+    const sad = s.cilj.faza === "priblizava" ? f2 * v / (v - vi) : f2 * v / (v + vi);
+    const visok = sad > fp;
+    return {
+      tocno: false,
+      poruka: `Uz ${iznosJed(vi, "m/s")} čuo bi ${iznosJed(sad, "Hz")}, a to je ${visok ? "više" : "niže"} od ${iznosJed(fp, "Hz")}. Izrazi $v_i$ iz formule $f_p = f_i \\frac{v}{v ${s.cilj.faza === "priblizava" ? "-" : "+"} v_i}$.`
+    };
+  }
+  function raspon2(s, x) {
+    if (isNum(x)) return [x, x];
+    const k = klizacZa(s, x);
+    if (!k || ![k.min, k.max].every(isNum)) return null;
+    const f2 = isNum(k.faktor) ? k.faktor : 1;
+    return [Math.min(k.min * f2, k.max * f2), Math.max(k.min * f2, k.max * f2)];
+  }
+  function poljeURasponu(s, need, ime2, x, min, max, opis) {
+    if (typeof x === "string") {
+      if (!need(!!klizacZa(s, x), `${ime2}: „${x}“ nije id klizača`)) return false;
+    } else if (!need(isNum(x), `${ime2} mora biti broj (${opis})`)) return false;
+    const r = raspon2(s, x);
+    return need(
+      r && r[0] >= min && r[1] <= max,
+      `${ime2} mora biti od ${broj3(min)} do ${broj3(max)} (${opis})${typeof x === "string" ? " u cijelom rasponu klizača" : ""}`
+    );
+  }
+  var POLJA_SCENE2 = {
+    dva_izvora: ["izvori", "jedinica_A", "T", "f", "v", "tocka", "d", "prikazi"],
+    pokretni_izvor: ["izvor", "v_zvuka", "ikona", "udaljenost"]
+  };
+  var POLJA_NACINA2 = {
+    istrazi: ["klizaci"],
+    odaberi: [],
+    izracunaj: ["pitaj", "tolerancija", "savjet"],
+    postavi: ["cilj", "tolerancija", "savjet", "klizaci"],
+    predvidi: ["pitanja"]
+  };
+  var OSNOVNA = ["tip", "scena", "nacin", "tekst"];
+  function validateDvaIzvora(s, need, list) {
+    const koristeni = [];
+    const polje2 = (ime2, x, min, max, opis) => {
+      if (typeof x === "string") koristeni.push(x);
+      return poljeURasponu(s, need, ime2, x, min, max, opis);
+    };
+    if (need(
+      Array.isArray(s.izvori) && s.izvori.length === 2,
+      "izvori mora biti popis od točno 2 izvora: [{A}, {A, faza?}]"
+    )) {
+      s.izvori.forEach((iz, i) => {
+        if (!need(iz && typeof iz === "object", `izvori[${i}] mora biti objekt {A}`))
+          return;
+        polje2(
+          `izvori[${i}].A`,
+          iz.A,
+          0,
+          1e3,
+          `amplituda u ${s.jedinica_A ?? "mm"}`
+        );
+        need(
+          Object.keys(iz).every((k) => k === "A" || k === "faza" && i === 1),
+          `izvori[${i}] smije imati samo A${i === 1 ? " i faza" : ""}`
+        );
+        if (iz.faza != null)
+          need(
+            [0, 180].includes(iz.faza),
+            "izvori[1].faza mora biti 0 (u fazi) ili 180 (u protufazi)"
+          );
+      });
+      need(
+        s.izvori.every(
+          (iz) => typeof iz?.A === "string" || isNum(iz?.A) && iz.A > 0
+        ),
+        "zadane amplitude moraju biti veće od 0"
+      );
+    }
+    if (s.jedinica_A != null)
+      need(
+        JED_A.includes(s.jedinica_A),
+        `jedinica_A mora biti ${JED_A.join(" ili ")}`
+      );
+    need(
+      s.T != null !== (s.f != null),
+      "dva_izvora treba točno jedno od: T (period u s) ili f (frekvencija u Hz)"
+    );
+    if (s.T != null) polje2("T", s.T, 1e-3, 100, "period u s");
+    if (s.f != null) polje2("f", s.f, 0.01, 1e3, "frekvencija u Hz");
+    polje2("v", s.v, 1e-3, 1e3, "brzina vala u m/s");
+    if (need(
+      s.tocka && isNum(s.tocka.s1) && isNum(s.tocka.s2) && Object.keys(s.tocka).length === 2,
+      "tocka mora biti {s1, s2}: putovi od izvora do P u m"
+    )) {
+      need(
+        s.tocka.s1 > 0 && s.tocka.s2 > 0 && s.tocka.s1 <= 1e3 && s.tocka.s2 <= 1e3,
+        "tocka.s1 i tocka.s2 moraju biti od 0 do 1000 m"
+      );
+      if (s.d != null && need(
+        isNum(s.d) && s.d > 0,
+        "d (razmak izvora u m) mora biti pozitivan broj"
+      ))
+        need(
+          s.d > Math.abs(s.tocka.s2 - s.tocka.s1) * 1.02 && s.d < (s.tocka.s1 + s.tocka.s2) * 0.98,
+          "d: s takvim razmakom izvora točka P ne postoji (mora biti |s₂ − s₁| < d < s₁ + s₂, s malo zalihe)"
+        );
+    }
+    if (s.prikazi != null)
+      need(
+        Array.isArray(s.prikazi) && s.prikazi.length >= 1 && s.prikazi.every((x) => PRIKAZI8.includes(x)) && new Set(s.prikazi).size === s.prikazi.length,
+        `prikazi mora biti popis različitih od: ${PRIKAZI8.join(", ")}`
+      );
+    if (s.nacin === "istrazi") validateKlizaci(s, need, { najvise: 3 });
+    else
+      need(
+        s.klizaci == null,
+        `dva_izvora (${s.nacin}) nema klizače: sve vrijednosti su brojevi`
+      );
+    if (list.length) return;
+    for (const k of klizaciOd(s))
+      need(
+        koristeni.includes(k.id),
+        `klizač „${k.id}“ se ne koristi ni u jednom polju (izvori[i].A, T, f, v)`
+      );
+    const rs = rasporedDvaIzvora(s);
+    const lam = klizaciOd(s).length ? Math.min(...kombinacije(s).map((p) => fizikaDvaIzvora(s, p).lambda)) : fizikaDvaIzvora(s).lambda;
+    const lamMax = klizaciOd(s).length ? Math.max(...kombinacije(s).map((p) => fizikaDvaIzvora(s, p).lambda)) : lam;
+    need(
+      rs.doseg / lam <= 40,
+      `valna duljina je premala za crtež: na vodu stane ${Math.round(rs.doseg / lam)} valnih duljina (najviše 40)`
+    );
+    need(
+      rs.d / lam <= 12,
+      `izvori su predaleko u valnim duljinama (d/λ = ${broj3(rs.d / lam)}, najviše 12): previše čvornih crta`
+    );
+    need(
+      Math.max(s.tocka.s1, s.tocka.s2) / lamMax >= 0.5,
+      "valna duljina je prevelika: P mora biti barem pola valne duljine od izvora"
+    );
+    const u = zadatakDvaIzvora(s);
+    if (s.nacin === "istrazi") {
+      noAnswerFields(s, need);
+      need(s.pitaj == null && s.pitanja == null, "istrazi nema pitaj ni pitanja");
+    }
+    if (s.nacin === "odaberi")
+      need(
+        u.vrsta !== "djelomicno",
+        `odaberi: Δs/λ = ${broj3(u.omjer)} nije ni cijeli ni polovični broj, pa u P nije ni pojačanje ni poništavanje`
+      );
+    if (s.nacin === "izracunaj") {
+      if (need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 4,
+        `izracunaj treba pitaj: 1–4 stavke {velicina: ${VELICINE5.join(" | ")}, jedinica?, oznaka?, krivo?}`
+      )) {
+        s.pitaj.forEach((q, i) => {
+          if (!need(
+            VELICINE5.includes(q?.velicina),
+            `pitaj[${i}].velicina mora biti jedna od: ${VELICINE5.join(", ")}`
+          ))
+            return;
+          need(
+            Object.keys(q).every(
+              (k) => ["velicina", "jedinica", "oznaka", "krivo"].includes(k)
+            ),
+            `pitaj[${i}] smije imati samo velicina, jedinica, oznaka, krivo`
+          );
+          if (q.oznaka != null)
+            need(isText(q.oznaka), `pitaj[${i}].oznaka mora biti tekst`);
+          if (q.jedinica != null) {
+            if (["lambda", "ds"].includes(q.velicina))
+              need(
+                q.jedinica in JED_DULJINE,
+                `pitaj[${i}].jedinica mora biti m, cm ili mm`
+              );
+            else if (q.velicina === "omjer")
+              need(false, `pitaj[${i}]: omjer Δs/λ nema jedinicu`);
+            else
+              need(
+                q.jedinica === (s.jedinica_A ?? "mm"),
+                `pitaj[${i}].jedinica za amplitudu mora biti jedinica_A (${s.jedinica_A ?? "mm"})`
+              );
+          }
+          if (q.velicina === "A_P")
+            need(
+              u.vrsta !== "djelomicno",
+              `pitaj[${i}]: A_P se na maturi računa samo za pojačanje i poništavanje, a Δs/λ = ${broj3(u.omjer)} nije cijeli ni polovični broj`
+            );
+          if (["ds", "omjer"].includes(q.velicina))
+            need(
+              Math.abs(u.ds) > 1e-9,
+              `pitaj[${i}]: putovi su jednaki, razlika je 0`
+            );
+          const z = izracunDvaIzvora(s, q);
+          validateKrivo(
+            q.krivo,
+            z.vrijednost,
+            isNum(s.tolerancija) ? s.tolerancija : tolerance(z.vrijednost),
+            need,
+            `pitaj[${i}].krivo`
+          );
+        });
+        need(
+          new Set(s.pitaj.map((q) => q?.velicina)).size === s.pitaj.length,
+          "pitaj: svaka veličina smije biti samo jednom"
+        );
+      }
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija >= 0,
+          "tolerancija mora biti broj ≥ 0"
+        );
+    }
+    if (s.nacin === "postavi") {
+      const c = s.cilj;
+      if (need(
+        c && VRSTE_CILJA.includes(c.vrsta) && Object.keys(c).every((k) => ["vrsta", "red"].includes(k)),
+        `postavi treba cilj: {vrsta: ${VRSTE_CILJA.join(" | ")}, red?}`
+      )) {
+        if (c.red != null)
+          need(
+            Number.isInteger(c.red) && c.red >= 0 && c.red <= 20,
+            "cilj.red mora biti cijeli broj 0–20"
+          );
+        if (list.length) return;
+        const p = pocetneVrijednosti2(s);
+        need(
+          ciljniOmjeri(s, p, rs).every((k) => k * u.lambda < rs.d * 0.97) && ciljniOmjeri(s, p, rs).length > 0,
+          "cilj: takva crta ne postoji (razlika putova mora biti manja od razmaka izvora d)"
+        );
+        need(
+          !!tockaZaCilj(s, rs.P),
+          "cilj: crta koja ostvaruje cilj ne prolazi kroz prikazanu vodu (promijeni d ili red)"
+        );
+        need(
+          !ostvarujeCilj(s, p, u.omjer, rs),
+          "postavi: početni položaj P već ostvaruje cilj; zadaj drugu tocka"
+        );
+      }
+      need(
+        s.tolerancija == null,
+        "dva_izvora postavi nema toleranciju (točno je ±0,1 λ)"
+      );
+    }
+  }
+  function kombinacije(s) {
+    const ks = klizaciOd(s);
+    let out = [{}];
+    for (const k of ks)
+      out = out.flatMap((p) => [
+        { ...p, [k.id]: k.min },
+        { ...p, [k.id]: k.max }
+      ]);
+    return out;
+  }
+  function validatePokretni(s, need, list) {
+    const koristeni = [];
+    const polje2 = (ime2, x, min, max, opis) => {
+      if (typeof x === "string") koristeni.push(x);
+      return poljeURasponu(s, need, ime2, x, min, max, opis);
+    };
+    const v = isNum(s.v_zvuka) ? s.v_zvuka : V_ZVUKA;
+    if (s.v_zvuka != null)
+      need(
+        isNum(s.v_zvuka) && s.v_zvuka >= 100 && s.v_zvuka <= 2e3,
+        "v_zvuka mora biti od 100 do 2000 m/s"
+      );
+    if (s.ikona != null)
+      need(IKONE3.includes(s.ikona), `ikona mora biti ${IKONE3.join(" ili ")}`);
+    if (s.udaljenost != null)
+      need(
+        isNum(s.udaljenost) && s.udaljenost >= 3 && s.udaljenost <= 25,
+        "udaljenost (promatrača od sredine ceste) mora biti od 3 do 25 m"
+      );
+    if (need(
+      s.izvor && typeof s.izvor === "object",
+      "pokretni_izvor treba izvor: {f (Hz), v (m/s)}"
+    )) {
+      need(
+        Object.keys(s.izvor).every((k) => ["f", "v"].includes(k)),
+        "izvor ima samo f i v"
+      );
+      polje2("izvor.f", s.izvor.f, 20, 2e4, "frekvencija sirene u Hz");
+      polje2(
+        "izvor.v",
+        s.izvor.v,
+        0,
+        0.8 * v,
+        `brzina izvora u m/s, manja od 0,8 brzine zvuka (nadzvučno nije u opsegu)`
+      );
+    }
+    if (s.nacin === "istrazi") validateKlizaci(s, need, { najvise: 2 });
+    else if (s.nacin === "postavi")
+      validateKlizaci(s, need, { najmanje: 1, najvise: 1 });
+    else need(s.klizaci == null, `pokretni_izvor (${s.nacin}) nema klizače`);
+    if (list.length) return;
+    for (const k of klizaciOd(s))
+      need(
+        koristeni.includes(k.id),
+        `klizač „${k.id}“ se ne koristi (izvor.f ili izvor.v)`
+      );
+    if (s.nacin === "istrazi") {
+      noAnswerFields(s, need);
+      need(s.pitaj == null && s.pitanja == null, "istrazi nema pitaj ni pitanja");
+    }
+    if (s.nacin === "predvidi") {
+      if (need(
+        Array.isArray(s.pitanja) && s.pitanja.length >= 1 && s.pitanja.length <= 3,
+        `predvidi treba pitanja: 1–3 stavke {faza: ${FAZE.join(" | ")}}`
+      )) {
+        s.pitanja.forEach((q, i) => {
+          need(
+            FAZE.includes(q?.faza),
+            `pitanja[${i}].faza mora biti jedna od: ${FAZE.join(", ")}`
+          );
+          need(
+            Object.keys(q ?? {}).every((k) => ["faza", "tekst"].includes(k)),
+            `pitanja[${i}] smije imati samo faza i tekst`
+          );
+          if (q?.tekst != null)
+            need(isText(q.tekst), `pitanja[${i}].tekst mora biti tekst`);
+        });
+        need(
+          new Set(s.pitanja.map((q) => q?.faza)).size === s.pitanja.length,
+          "pitanja: svaka faza smije biti samo jednom"
+        );
+      }
+      need(
+        typeof s.izvor.v === "number" && s.izvor.v > 0,
+        "predvidi: izvor.v mora biti broj veći od 0"
+      );
+    }
+    if (s.nacin === "izracunaj") {
+      need(
+        typeof s.izvor.v === "number" && s.izvor.v > 0 && typeof s.izvor.f === "number",
+        "izracunaj: izvor.f i izvor.v moraju biti brojevi (v > 0)"
+      );
+      if (need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 2,
+        "izracunaj treba pitaj: 1–2 stavke {faza: priblizava | udaljava, oznaka?, krivo?}"
+      )) {
+        s.pitaj.forEach((q, i) => {
+          need(
+            ["priblizava", "udaljava"].includes(q?.faza),
+            `pitaj[${i}].faza mora biti priblizava ili udaljava`
+          );
+          need(
+            Object.keys(q ?? {}).every(
+              (k) => ["faza", "oznaka", "krivo"].includes(k)
+            ),
+            `pitaj[${i}] smije imati samo faza, oznaka, krivo`
+          );
+          if (q?.oznaka != null)
+            need(isText(q.oznaka), `pitaj[${i}].oznaka mora biti tekst`);
+          if (["priblizava", "udaljava"].includes(q?.faza) && !list.length) {
+            const z = izracunDopplera(s, q);
+            validateKrivo(
+              q.krivo,
+              z.vrijednost,
+              isNum(s.tolerancija) ? s.tolerancija : tolDopplera(z.vrijednost),
+              need,
+              `pitaj[${i}].krivo`
+            );
+          }
+        });
+        need(
+          new Set(s.pitaj.map((q) => q?.faza)).size === s.pitaj.length,
+          "pitaj: svaka faza smije biti samo jednom"
+        );
+      }
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija >= 0,
+          "tolerancija mora biti broj ≥ 0 (Hz)"
+        );
+    }
+    if (s.nacin === "postavi") {
+      const k = klizaciOd(s)[0];
+      need(
+        s.izvor.v === k.id,
+        "postavi: klizač mora biti brzina izvora (izvor.v = id klizača)"
+      );
+      need(typeof s.izvor.f === "number", "postavi: izvor.f mora biti broj");
+      const c = s.cilj;
+      if (need(
+        c && ["priblizava", "udaljava"].includes(c.faza) && isNum(c.f_p) && Object.keys(c).every((x) => ["faza", "f_p"].includes(x)),
+        "postavi treba cilj: {faza: priblizava | udaljava, f_p (Hz)}"
+      ) && !list.length) {
+        const f2 = s.izvor.f;
+        need(
+          c.faza === "priblizava" ? c.f_p > f2 : c.f_p < f2,
+          c.faza === "priblizava" ? "cilj.f_p mora biti veća od frekvencije sirene (približavanje)" : "cilj.f_p mora biti manja od frekvencije sirene (udaljavanje)"
+        );
+        if (!list.length) {
+          const vi = ciljnaBrzina(s);
+          const r = raspon2(s, k.id);
+          need(
+            vi >= r[0] && vi <= r[1],
+            `cilj: potrebna brzina ${iznosJed(vi, "m/s")} nije na klizaču (${broj3(r[0])}–${broj3(r[1])} m/s)`
+          );
+          const tol2 = isNum(s.tolerancija) ? s.tolerancija : k.korak * (k.faktor ?? 1) / 2 + 1e-9;
+          need(
+            Math.abs(k.pocetak * (k.faktor ?? 1) - vi) > tol2,
+            "postavi: početni položaj klizača već je točan odgovor"
+          );
+        }
+      }
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija > 0,
+          "tolerancija mora biti broj > 0 (m/s)"
+        );
+    }
+  }
+  var OPIS6 = `Valovi odozgo (fizika, matura): interferencija dvaju izvora i Dopplerov efekt. tekst, scena, nacin. Svi brojevi, crtež i provjera računaju se iz speca; u načinima s odgovorom crtež ne odaje odgovor dok učenik ne odgovori točno (ili „pokaži“).
+Scena "dva_izvora" (voda odozgo; izvori S₁ i S₂, točka P, dužine s₁ i s₂, fronte: brijeg puna crta, dolina tanka; uz P mali grafovi titranja od svakog vala i zbroja; čvorne crte):
+- izvori: [{A}, {A, faza?}] (amplitude u jedinica_A, "mm" zadano ili "cm"; faza drugog 0 = u fazi, 180 = u protufazi), T (s) ili f (Hz), v (m/s), tocka: {s1, s2} (putovi do P u m; aplikacija sama smjesti P), d? (razmak izvora u m; zadano automatski), prikazi? (od "fronte", "cvorne_crte", "grafovi_P", "brojaci"; zadano sve).
+- "istrazi": učenik vuče P (lijepi se na cijeli i polovični Δs/λ) i gleda λ, Δs = n·λ, A_P, grafove u P i čvorne crte. klizaci? (najviše 3; izvori[i].A, T, f, v smiju biti id klizača).
+- "odaberi" (Tvoj red): pojačanje ili poništavanje u P. Δs/λ mora biti cijeli ili polovični broj.
+- "izracunaj" (Tvoj red): pitaj: 1–4 od [{velicina: "lambda" | "ds" | "omjer" | "A_P" | "A_jednaki" (amplituda uz jednake putove), jedinica? (lambda, ds: m | cm | mm), oznaka?, krivo?}]. Tipične greške (λ = v/T, zbroj umjesto razlike putova, A₁ + A₂ kod poništavanja, 0 kod nejednakih amplituda, prosjek amplituda, jedinice) dodaje aplikacija. tolerancija? (zadano 0,5 %).
+- "postavi" (Tvoj red): učenik dovuče P; cilj: {vrsta: "pojacanje" | "ponistavanje", red?} (red k: |Δs| = kλ za pojačanje, (k + ½)λ za poništavanje uz izvore u fazi; bez reda bilo koji). Točno ±0,1 λ. Početni P (tocka) ne smije ostvarivati cilj. Prije provjere vide se samo s₁, s₂ i Δs.
+Scena "pokretni_izvor" (cesta odozgo; vozilo sa sirenom vozi slijeva nadesno kraj promatrača; fronte ispred gušće, iza rjeđe; razmak fronti nije u mjerilu, omjer brzina jest; graf frekvencije koju promatrač čuje; zvuk po želji):
+- izvor: {f (Hz), v (brzina izvora u m/s, < 0,8 brzine zvuka)}, v_zvuka? (zadano 340), ikona? ("vozilo" | "zvucnik"), udaljenost? (promatrača od sredine ceste u m, zadano 6). Formula iz knjižice: f_p = f·v/(v ∓ vᵢ) (promatrač miruje).
+- "istrazi": klizaci? (najviše 2; izvor.f, izvor.v smiju biti id klizača); uživo f koju čuješ i graf.
+- "predvidi" (Tvoj red): pitanja: [{faza: "priblizava" | "udaljava" | "miruje", tekst?}] → za svako viši / isti / niži ton od sirene. Prije odgovora vozilo stoji; poslije prođe.
+- "izracunaj" (Tvoj red): pitaj: 1–2 od [{faza: "priblizava" | "udaljava", oznaka?, krivo?}] (Hz). Greške (zamijenjeni predznaci, formula za pokretnog promatrača, frekvencija sirene, samo Δf) dodaje aplikacija. tolerancija? (Hz; zadano 0,07 %, najmanje 0,51 Hz: zaokruženo na cijeli Hz prolazi).
+- "postavi" (Tvoj red): jedan klizač za izvor.v; cilj: {faza, f_p}. Točan je položaj klizača najbliži potrebnoj brzini.
+${KRIVO_OPIS} (u stavci pitaj).`;
+  var PRIMJER6 = {
+    tip: TIP6,
+    scena: "dva_izvora",
+    nacin: "izracunaj",
+    tekst: "Dva izvora na površini vode titraju jednako, s periodom $0{,}2$ s, a valovi se šire brzinom $0{,}5$ m/s. Do točke $P$ prvi val prijeđe $0{,}6$ m, a drugi $0{,}85$ m. Amplitude su im $5$ mm i $3$ mm. Kolika je amplituda vala u $P$, a kolika bi bila da su putovi jednaki?",
+    izvori: [{ A: 5 }, { A: 3 }],
+    T: 0.2,
+    v: 0.5,
+    tocka: { s1: 0.6, s2: 0.85 },
+    pitaj: [
+      { velicina: "A_P", oznaka: "$A_P =$" },
+      { velicina: "A_jednaki", oznaka: "uz jednake putove $A =$" }
+    ]
+  };
+  var PRIMJERI6 = [
+    {
+      tip: TIP6,
+      scena: "dva_izvora",
+      nacin: "istrazi",
+      tekst: "Dva izvora titraju jednako ($A_1 = 4$ mm, $A_2 = 1$ mm). **Vuci točku $P$** i gledaj koliko valnih duljina iznosi razlika putova i što se događa s titranjem u $P$. Promijeni i period.",
+      izvori: [{ A: 4 }, { A: "A2" }],
+      T: "T",
+      v: 0.8,
+      tocka: { s1: 0.9, s2: 1.2 },
+      klizaci: [
+        {
+          id: "T",
+          oznaka: "period $T$",
+          min: 0.15,
+          max: 0.4,
+          korak: 0.05,
+          pocetak: 0.25,
+          jedinica: "s"
+        },
+        {
+          id: "A2",
+          oznaka: "amplituda $A_2$",
+          min: 0,
+          max: 4,
+          korak: 0.5,
+          pocetak: 1,
+          jedinica: "mm"
+        }
+      ]
+    },
+    {
+      tip: TIP6,
+      scena: "dva_izvora",
+      nacin: "odaberi",
+      tekst: "Izvori titraju jednako, s periodom $0{,}4$ s, a valovi se šire brzinom $0{,}3$ m/s. Do točke $P$ prvi val prijeđe $0{,}7$ m, a drugi $1{,}12$ m. Je li val u $P$ pojačan ili prigušen?",
+      izvori: [{ A: 7 }, { A: 2 }],
+      T: 0.4,
+      v: 0.3,
+      tocka: { s1: 0.7, s2: 1.12 }
+    },
+    {
+      tip: TIP6,
+      scena: "dva_izvora",
+      nacin: "izracunaj",
+      tekst: "Period je $0{,}5$ s, a brzina valova $0{,}6$ m/s. Do točke $P$ prvi val prijeđe $0{,}4$ m, a drugi $1{,}75$ m. Izračunaj valnu duljinu, razliku putova i koliko valnih duljina stane u tu razliku.",
+      izvori: [{ A: 9 }, { A: 5 }],
+      T: 0.5,
+      v: 0.6,
+      tocka: { s1: 0.4, s2: 1.75 },
+      pitaj: [
+        { velicina: "lambda", oznaka: "$\\lambda =$" },
+        { velicina: "ds", oznaka: "$\\Delta s =$" },
+        { velicina: "omjer", oznaka: "$\\dfrac{\\Delta s}{\\lambda} =$" }
+      ]
+    },
+    {
+      tip: TIP6,
+      scena: "dva_izvora",
+      nacin: "postavi",
+      tekst: "Pomakni točku $P$ na mjesto gdje su **putovi od oba izvora jednaki**. Kolika je tamo amplituda?",
+      izvori: [{ A: 5 }, { A: 3 }],
+      T: 0.2,
+      v: 0.5,
+      tocka: { s1: 0.6, s2: 0.85 },
+      cilj: { vrsta: "pojacanje", red: 0 }
+    },
+    {
+      tip: TIP6,
+      scena: "dva_izvora",
+      nacin: "postavi",
+      tekst: "Period je $0{,}8$ s, a brzina valova $0{,}2$ m/s. Pomakni $P$ na bilo koje mjesto gdje se valovi **pojačavaju**, ali ne na sredinu između izvora: razlika putova mora biti $1\\lambda$.",
+      izvori: [{ A: 11 }, { A: 4 }],
+      T: 0.8,
+      v: 0.2,
+      tocka: { s1: 1.1, s2: 1.18 },
+      cilj: { vrsta: "pojacanje", red: 1 }
+    },
+    {
+      tip: TIP6,
+      scena: "pokretni_izvor",
+      nacin: "istrazi",
+      tekst: "Sirena svira $800$ Hz. **Mijenjaj brzinu vozila** i gledaj fronte ispred i iza njega i frekvenciju koju čuješ. Uključi i zvuk.",
+      izvor: { f: 800, v: "vi" },
+      ikona: "vozilo",
+      klizaci: [
+        {
+          id: "vi",
+          oznaka: "brzina vozila $v_i$",
+          min: 0,
+          max: 150,
+          korak: 5,
+          pocetak: 20,
+          jedinica: "m/s"
+        }
+      ]
+    },
+    {
+      tip: TIP6,
+      scena: "pokretni_izvor",
+      nacin: "predvidi",
+      tekst: "Vozilo sa sirenom od $600$ Hz vozi brzinom $40$ m/s i prolazi kraj tebe. Kakav ton čuješ?",
+      izvor: { f: 600, v: 40 },
+      pitanja: [{ faza: "priblizava" }, { faza: "udaljava" }]
+    },
+    {
+      tip: TIP6,
+      scena: "pokretni_izvor",
+      nacin: "izracunaj",
+      tekst: "Vozilo sa sirenom koja ispušta ton frekvencije $800$ Hz vozi se cestom brzinom $20$ m/s i prolazi kraj tebe. Koju frekvenciju čuješ dok ti se približava, a koju nakon što prođe? Brzina zvuka u zraku je $340$ m/s.",
+      izvor: { f: 800, v: 20 },
+      v_zvuka: 340,
+      pitaj: [
+        { faza: "priblizava", oznaka: "$f_{\\text{prije}} =$" },
+        { faza: "udaljava", oznaka: "$f_{\\text{poslije}} =$" }
+      ]
+    },
+    {
+      tip: TIP6,
+      scena: "pokretni_izvor",
+      nacin: "postavi",
+      tekst: "Sirena svira $800$ Hz. Namjesti brzinu vozila tako da, dok ti se približava, čuješ $850$ Hz. Brzina zvuka je $340$ m/s.",
+      izvor: { f: 800, v: "vi" },
+      v_zvuka: 340,
+      klizaci: [
+        {
+          id: "vi",
+          oznaka: "brzina vozila $v_i$",
+          min: 0,
+          max: 60,
+          korak: 1,
+          pocetak: 5,
+          jedinica: "m/s"
+        }
+      ],
+      cilj: { faza: "priblizava", f_p: 850 }
+    }
+  ];
+  var valne_fronte = {
+    tip: TIP6,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS6,
+    primjer: PRIMJER6,
+    primjeri: PRIMJERI6,
+    validate(s) {
+      const { list, need } = problems();
+      need(isText(s.tekst), "valne_fronte treba „tekst“");
+      if (!need(
+        SCENE8.includes(s.scena),
+        `valne_fronte.scena mora biti jedna od: ${SCENE8.join(", ")}`
+      ))
+        return list;
+      if (!need(
+        NACINI18[s.scena].includes(s.nacin),
+        `nacin u sceni ${s.scena} mora biti jedan od: ${NACINI18[s.scena].join(", ")}`
+      ))
+        return list;
+      const dopustena = [
+        ...OSNOVNA,
+        ...POLJA_SCENE2[s.scena],
+        ...POLJA_NACINA2[s.nacin]
+      ];
+      for (const k of Object.keys(s))
+        need(
+          dopustena.includes(k),
+          `polje „${k}“ ne postoji u sceni ${s.scena} (način ${s.nacin})`
+        );
+      if (list.length) return list;
+      if (s.scena === "dva_izvora") validateDvaIzvora(s, need, list);
+      else validatePokretni(s, need, list);
+      return list;
+    },
+    check(s, odgovor3) {
+      if (s.scena === "dva_izvora") {
+        if (s.nacin === "odaberi") return checkOdaberi3(s, odgovor3);
+        if (s.nacin === "izracunaj")
+          return checkPolja(s, odgovor3, izracunDvaIzvora, (x) => tolerance(x));
+        if (s.nacin === "postavi") return checkPostaviDva(s, odgovor3);
+      } else {
+        if (s.nacin === "predvidi") return checkPredvidi4(s, odgovor3);
+        if (s.nacin === "izracunaj")
+          return checkPolja(s, odgovor3, izracunDopplera, tolDopplera);
+        if (s.nacin === "postavi") return checkPostaviDoppler(s, odgovor3);
+      }
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.scena === "dva_izvora") {
+        const u = zadatakDvaIzvora(s);
+        const r = broj3(Math.abs(u.omjer));
+        if (s.nacin === "odaberi")
+          return `${VRSTA_TEKST[u.vrsta]} ($\\Delta s = ${r.replace(",", "{,}")}\\,\\lambda$)`;
+        if (s.nacin === "izracunaj") {
+          const ozn = {
+            lambda: "λ",
+            ds: "Δs",
+            omjer: "Δs/λ",
+            A_P: "A_P",
+            A_jednaki: "A (jednaki putovi)"
+          };
+          return s.pitaj.map((q) => {
+            const z = izracunDvaIzvora(s, q);
+            return `${ozn[q.velicina]} = ${iznosJed(z.vrijednost, z.jedinica)}`;
+          }).join(", ");
+        }
+        if (s.nacin === "postavi") {
+          const ks = ciljniOmjeri(s);
+          if (ks.length === 1 && ks[0] === 0)
+            return "bilo koja točka jednako udaljena od oba izvora (simetrala između njih)";
+          return `bilo koja točka na kojoj je |Δs| = ${ks.map((k) => `${broj3(k)} λ`).join(" ili ")} (${VRSTA_TEKST[s.cilj.vrsta]})`;
+        }
+        return "";
+      }
+      if (s.nacin === "predvidi")
+        return s.pitanja.map((q) => `${FAZA_TEKST[q.faza]}: ${TON[tocnaProcjena(q.faza)]} ton`).join("; ");
+      if (s.nacin === "izracunaj") {
+        const fz = fizikaDopplera(s);
+        return s.pitaj.map(
+          (q) => `${FAZA_TEKST[q.faza]}: ${tocnije(frekvencijaFaze(fz, q.faza))} Hz`
+        ).join(", ");
+      }
+      if (s.nacin === "postavi") {
+        const k = klizaciOd(s)[0];
+        return `v_i = ${iznosJed(tocanPolozajKlizaca(s), k.jedinica ?? "m/s")}`;
+      }
+      return "";
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/razina_zvuka.js
+  var TIP7 = "razina_zvuka";
+  var I0 = 1e-12;
+  var NACINI19 = ["istrazi", "postavi", "predvidi", "izracunaj"];
+  var JEDINICE_P = { W: 1, mW: 1e-3 };
+  var JEDINICE_R = { m: 1, cm: 0.01 };
+  var JEDINICE_S = { "m²": 1, "cm²": 1e-4 };
+  var IKONE4 = ["uho", "mikrofon"];
+  var VELICINE_IZR = ["S", "I", "L", "dL"];
+  var VELICINE_CILJ = ["L", "I", "dL"];
+  var VELICINE_PROMJENE = ["r", "P", "N"];
+  var PITAJ_PREDVIDI = ["I", "dL", "L"];
+  var L_MAX = 130;
+  var N_MAX = 20;
+  var fP = (s) => JEDINICE_P[s.jedinica_P ?? "W"] ?? 1;
+  var fR = (s) => JEDINICE_R[s.jedinica_r ?? "m"] ?? 1;
+  var jedinicaP = (s) => s.jedinica_P ?? "W";
+  var jedinicaR = (s) => s.jedinica_r ?? "m";
+  var prijamniciOd = (s) => Array.isArray(s.prijamnici) ? s.prijamnici : [];
+  var klizaciOd2 = (s) => Array.isArray(s.klizaci) ? s.klizaci : [];
+  var klizacZa2 = (s, polje2) => typeof s[polje2] === "string" ? klizaciOd2(s).find((k) => k?.id === s[polje2]) : null;
+  var cist = (x) => Number(x.toFixed(10));
+  var SUB2 = ["₁", "₂"];
+  var razina2 = (I) => 10 * Math.log10(I / I0);
+  var intenzitetIzRazine = (L) => I0 * 10 ** (L / 10);
+  function pocetnoStanje3(s) {
+    const val = (polje2, zadano) => {
+      if (typeof s[polje2] === "string") {
+        const k = klizacZa2(s, polje2);
+        return k ? isNum(k.pocetak) ? k.pocetak : k.min : zadano;
+      }
+      return isNum(s[polje2]) ? s[polje2] : zadano;
+    };
+    return {
+      P: val("P", 1),
+      N: val("N", 1),
+      r: prijamniciOd(s).map((p) => p?.r)
+    };
+  }
+  function fizikaZvuka(s, st = pocetnoStanje3(s)) {
+    const P2 = st.P * fP(s);
+    const N = st.N ?? 1;
+    const prijamnici = st.r.map((r) => {
+      const rm = r * fR(s);
+      const S = 4 * Math.PI * rm * rm;
+      const I = N * P2 / S;
+      return { r, rm, S, I, L: razina2(I) };
+    });
+    const dL = prijamnici.length === 2 ? Math.abs(prijamnici[0].L - prijamnici[1].L) : null;
+    return { P: P2, N, prijamnici, dL };
+  }
+  var dB = (L) => `${formatNumber(Math.round(L * 100) / 100, 2)} dB`;
+  var dBpredznak = (L) => `${L > 0 ? "+" : ""}${formatNumber(Math.round(L * 100) / 100, 2)} dB`;
+  var tekstR = (s, r) => withUnit(r, jedinicaR(s));
+  var tekstP = (s, P2) => withUnit(P2, jedinicaP(s));
+  function tekstOmjera(k) {
+    if (k >= 1) return formatNumber(Math.round(k * 1e3) / 1e3);
+    const inv = 1 / k;
+    if (Math.abs(inv - Math.round(inv)) < 1e-9) return `1/${Math.round(inv)}`;
+    return formatNumber(Math.round(k * 1e4) / 1e4);
+  }
+  var oznakaPrijamnika = (s, i) => prijamniciOd(s)[i]?.oznaka ?? (s.ikona === "mikrofon" ? "mikrofon" : "uho");
+  var sub2 = (s, i) => prijamniciOd(s).length > 1 ? SUB2[i] : "";
+  function lijepoGore3(x) {
+    const e = 10 ** Math.floor(Math.log10(x));
+    const m = x / e;
+    return cist(
+      [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((v) => v >= m - 1e-9) * e
+    );
+  }
+  function lijepoDolje2(x) {
+    const e = 10 ** Math.floor(Math.log10(x));
+    const m = x / e;
+    return cist([5, 2, 1].find((v) => v <= m + 1e-9) * e);
+  }
+  function potrebneUdaljenosti(s) {
+    const r = prijamniciOd(s).map((p) => p?.r).filter(isNum);
+    if (s.nacin === "predvidi" && s.promjena?.velicina === "r")
+      r.push(...r.map((x) => x * s.promjena.faktor));
+    if (s.nacin === "postavi" && s.mijenja !== "P") {
+      try {
+        r.push(...rjesenjaPostavi(s, { bezRavnala: true }));
+      } catch {
+      }
+    }
+    return r.filter((x) => isNum(x) && x > 0);
+  }
+  function ravnaloZvuka(s) {
+    const r = potrebneUdaljenosti(s);
+    const rMax = isNum(s.r_max) ? s.r_max : lijepoGore3(Math.max(1e-6, ...r) * 1.25);
+    const korak = isNum(s.korak_r) ? s.korak_r : lijepoDolje2(rMax / 160);
+    return { rMax, korak };
+  }
+  var mijenjaPrijamnik = (s) => s.mijenja === "P" ? null : isNum(s.mijenja) ? s.mijenja : 0;
+  var ciljniPrijamnik = (s) => isNum(s.cilj?.prijamnik) ? s.cilj.prijamnik : mijenjaPrijamnik(s) ?? 0;
+  var tolPostavi = (s) => isNum(s.tolerancija) ? s.tolerancija : s.cilj?.velicina === "I" ? Math.abs(s.cilj.vrijednost) * 0.02 : 0.3;
+  function ciljnaVelicina(s, x) {
+    const st = pocetnoStanje3(s);
+    if (s.mijenja === "P") st.P = x;
+    else st.r = st.r.map((r, i) => i === mijenjaPrijamnik(s) ? x : r);
+    const f2 = fizikaZvuka(s, st);
+    if (s.cilj.velicina === "dL") {
+      const j = mijenjaPrijamnik(s);
+      return f2.prijamnici[1 - j].L - f2.prijamnici[j].L;
+    }
+    return f2.prijamnici[ciljniPrijamnik(s)][s.cilj.velicina];
+  }
+  function rjesenjaPostavi(s, { bezRavnala = false } = {}) {
+    const c = s.cilj;
+    const st = pocetnoStanje3(s);
+    const N = st.N ?? 1;
+    if (s.mijenja === "P") {
+      const rm = st.r[ciljniPrijamnik(s)] * fR(s);
+      const I = c.velicina === "L" ? intenzitetIzRazine(c.vrijednost) : c.vrijednost;
+      return [I * 4 * Math.PI * rm * rm / N / fP(s)];
+    }
+    const j = mijenjaPrijamnik(s);
+    let r;
+    if (c.velicina === "dL") {
+      r = [st.r[1 - j] * 10 ** (c.vrijednost / 20)];
+    } else {
+      const I = c.velicina === "L" ? intenzitetIzRazine(c.vrijednost) : c.vrijednost;
+      r = [Math.sqrt(N * st.P * fP(s) / (4 * Math.PI * I)) / fR(s)];
+    }
+    if (bezRavnala) return r;
+    const { korak, rMax } = ravnaloZvuka(s);
+    return r.filter((x) => x >= korak - 1e-12 && x <= rMax + 1e-12);
+  }
+  function korakKontrole(s) {
+    if (s.mijenja === "P") return klizacZa2(s, "P")?.korak ?? 0;
+    return ravnaloZvuka(s).korak;
+  }
+  function postaviTocno(s, x) {
+    const v = ciljnaVelicina(s, x);
+    if (Math.abs(v - s.cilj.vrijednost) <= tolPostavi(s) + 1e-12) return true;
+    const k = korakKontrole(s);
+    return rjesenjaPostavi(s).some((r) => Math.abs(x - r) <= k / 2 + 1e-9);
+  }
+  function kriviPostavi(s) {
+    const c = s.cilj;
+    const st = pocetnoStanje3(s);
+    const N = st.N ?? 1;
+    const out = [];
+    if (s.mijenja === "P") {
+      const rm = st.r[ciljniPrijamnik(s)] * fR(s);
+      const I2 = c.velicina === "L" ? intenzitetIzRazine(c.vrijednost) : c.vrijednost;
+      const P3 = (x) => x / N / fP(s);
+      out.push({
+        vrijednost: P3(I2 * Math.PI * rm * rm),
+        poruka: "To je snaga za plohu πr² (krug). Zvuk se širi na sve strane, pa se snaga razmaže po plohi kugle S = 4πr²."
+      });
+      out.push({
+        vrijednost: P3(I2 * 4 * Math.PI * rm),
+        poruka: "U plohi kugle polumjer je na kvadrat: S = 4πr², pa P = I·4πr²."
+      });
+      if (c.velicina === "L")
+        out.push({
+          vrijednost: P3(I0 * 10 ** c.vrijednost * 4 * Math.PI * rm * rm),
+          poruka: "Iz decibela: I = I₀·10^(L/10). Eksponent je L/10, a ne L."
+        });
+      return out;
+    }
+    const j = mijenjaPrijamnik(s);
+    if (c.velicina === "dL") {
+      const drugi = st.r[1 - j];
+      out.push({
+        vrijednost: drugi * 10 ** (c.vrijednost / 10),
+        poruka: `Intenzitet pada s r², pa je ΔL = 20 log(r₂/r₁). Za ${dB(Math.abs(c.vrijednost))} omjer udaljenosti je 10^(ΔL/20), a ne 10^(ΔL/10).`
+      });
+      out.push({
+        vrijednost: drugi * 10 ** (-c.vrijednost / 20),
+        poruka: `Razlika je dobra, ali na krivu stranu: ovdje je ${oznakaPrijamnika(s, j)} ${c.vrijednost > 0 ? "glasnije" : "tiše"} od drugog uha, a treba biti ${c.vrijednost > 0 ? "tiše" : "glasnije"}.`
+      });
+      return out;
+    }
+    const I = c.velicina === "L" ? intenzitetIzRazine(c.vrijednost) : c.vrijednost;
+    const P2 = N * st.P * fP(s);
+    out.push({
+      vrijednost: Math.sqrt(P2 / (Math.PI * I)) / fR(s),
+      poruka: "Ovo je mjesto za plohu πr² (krug). Snaga se razmaže po plohi kugle 4πr², pa je to mjesto dvostruko bliže."
+    });
+    if (fP(s) !== 1)
+      out.push({
+        vrijednost: Math.sqrt(N * st.P / (4 * Math.PI * I)) / fR(s),
+        poruka: `Snagu pretvori u vate: ${tekstP(s, st.P)} = ${formatSci(st.P * fP(s))} W.`
+      });
+    if (c.velicina === "L")
+      out.push({
+        vrijednost: Math.sqrt(P2 / (4 * Math.PI * I0 * 10 ** c.vrijednost)) / fR(s),
+        poruka: "Iz decibela: I = I₀·10^(L/10). Eksponent je L/10, a ne L."
+      });
+    return out;
+  }
+  function checkPostavi5(s, x) {
+    if (!isNum(x))
+      return {
+        tocno: false,
+        poruka: s.mijenja === "P" ? "Namjesti snagu izvora klizačem." : "Povuci uho (mikrofon) na mjesto.",
+        prazno: true
+      };
+    if (postaviTocno(s, x)) return { tocno: true };
+    const k = korakKontrole(s);
+    const blizu3 = (v2, t) => Math.abs(x - v2) <= Math.max(k / 2 + 1e-9, Math.abs(v2) * 0.02, t ?? 0);
+    const iz = [...s.krivo ?? [], ...kriviPostavi(s)].find(
+      (w) => isNum(w.vrijednost) && !postaviTocno(s, w.vrijednost) && blizu3(w.vrijednost)
+    );
+    if (iz) return { tocno: false, poruka: iz.poruka };
+    const v = ciljnaVelicina(s, x);
+    const vise = v > s.cilj.vrijednost;
+    const sto2 = { L: "razina zvuka", I: "intenzitet", dL: "razlika razina" }[s.cilj.velicina];
+    if (s.mijenja === "P")
+      return {
+        tocno: false,
+        poruka: `Nije još: uz tu snagu ${sto2} je ${vise ? "veća" : "manja"} od tražene. ${vise ? "Smanji" : "Povećaj"} snagu. Pomoć: I = P/(4πr²), a I iz decibela je I₀·10^(L/10).`
+      };
+    if (s.cilj.velicina === "dL")
+      return {
+        tocno: false,
+        poruka: `Nije još: ${oznakaPrijamnika(s, mijenjaPrijamnik(s))} je ${vise ? "pretiho" : "preglasno"} u odnosu na drugo uho. ${vise ? "Primakni ga bliže izvoru" : "Odmakni ga dalje od izvora"}. Pomoć: ΔL = 20 log(r₂/r₁).`
+      };
+    return {
+      tocno: false,
+      poruka: `Nije još: ondje je ${vise ? "preglasno" : "pretiho"}. ${vise ? "Odmakni" : "Primakni"} ${oznakaPrijamnika(s, mijenjaPrijamnik(s))} ${vise ? "dalje od" : "bliže"} izvor${vise ? "a" : "u"}. Pomoć: iz L izračunaj I = I₀·10^(L/10), pa r iz I = P/(4πr²).`
+    };
+  }
+  function predvidiStanja(s) {
+    const prije = pocetnoStanje3(s);
+    const { velicina: velicina3, faktor: faktor2 } = s.promjena;
+    const poslije = {
+      ...prije,
+      r: velicina3 === "r" ? prije.r.map((r) => cist(r * faktor2)) : prije.r,
+      P: velicina3 === "P" ? cist(prije.P * faktor2) : prije.P,
+      N: velicina3 === "N" ? Math.round(prije.N * faktor2) : prije.N
+    };
+    return { prije, poslije };
+  }
+  function odgovoriPredvidi(s) {
+    const { prije, poslije } = predvidiStanja(s);
+    const a = fizikaZvuka(s, prije).prijamnici[0];
+    const b = fizikaZvuka(s, poslije).prijamnici[0];
+    return { I: b.I / a.I, dL: b.L - a.L, L: b.L, L0: a.L };
+  }
+  var OZNAKE_PREDVIDI = {
+    I: {
+      oznaka: "I′ : I",
+      naslov: "Omjer intenziteta",
+      opis: "novi intenzitet podijeljen starim (npr. 1/4)",
+      jedinica: ""
+    },
+    dL: {
+      oznaka: "ΔL",
+      naslov: "Promjena razine",
+      opis: "za koliko se promijeni razina (minus = tiše)",
+      jedinica: "dB"
+    },
+    L: {
+      oznaka: "L′",
+      naslov: "Nova razina",
+      opis: "razina zvuka nakon promjene",
+      jedinica: "dB"
+    }
+  };
+  var pitajPredvidi = (s) => Array.isArray(s.pitaj) ? s.pitaj : ["I", "dL"];
+  function kriviPredvidi(s, v) {
+    const { velicina: velicina3, faktor: f2 } = s.promjena;
+    const o = odgovoriPredvidi(s);
+    const out = [];
+    const add2 = (vrijednost3, poruka2, tolerancija) => isNum(vrijednost3) && out.push({ vrijednost: vrijednost3, poruka: poruka2, tolerancija });
+    const dalje = velicina3 === "r";
+    if (v === "I") {
+      if (dalje) {
+        add2(
+          1 / f2,
+          "Intenzitet ne pada s r nego s r²: ploha balona je 4πr². Dvaput dalje → četiri puta veća ploha → četvrtina intenziteta."
+        );
+        add2(
+          f2 * f2,
+          f2 > 1 ? "Uho je dalje, pa je intenzitet manji: omjer novog i starog je manji od 1." : "Uho je bliže, pa je intenzitet veći: omjer je veći od 1."
+        );
+        add2(f2, "Intenzitet je obrnuto razmjeran s r²: I′/I = (r/r′)².");
+      } else {
+        add2(
+          1 / f2,
+          "Veća snaga daje veći intenzitet: I je razmjeran snazi (i broju izvora), pa je omjer jednak faktoru promjene."
+        );
+        add2(
+          f2 * f2,
+          "Snaga (broj izvora) ulazi u I = N·P/(4πr²) linearno, bez kvadrata."
+        );
+      }
+      return out;
+    }
+    const d = o.dL;
+    if (v === "dL") {
+      add2(
+        -d,
+        d < 0 ? "Pazi na predznak: zvuk je tiši, pa je promjena razine negativna." : "Pazi na predznak: zvuk je jači, pa je promjena razine pozitivna."
+      );
+      if (dalje)
+        add2(
+          d / 2,
+          "Intenzitet pada s r², pa se razina mijenja za 20 log(r/r′), a ne za 10 log(r/r′)."
+        );
+      add2(
+        o.L0 * (o.I - 1),
+        "Decibeli nisu razmjerni intenzitetu: kad se I promijeni k puta, razina se promijeni za 10 log k decibela."
+      );
+      add2(
+        d * Math.LN10,
+        "Upotrijebio si ln. Ovdje treba dekadski logaritam (log)."
+      );
+      return out;
+    }
+    add2(
+      o.L0 - d,
+      "Pazi na smjer: provjeri je li zvuk tiši ili jači, pa dodaj ili oduzmi promjenu."
+    );
+    if (dalje)
+      add2(
+        o.L0 + d / 2,
+        "Intenzitet pada s r², pa se razina mijenja za 20 log(r/r′), a ne za 10 log(r/r′)."
+      );
+    add2(
+      o.L0 * o.I,
+      "Decibeli nisu razmjerni intenzitetu: nova razina je L + 10 log(I′/I), a ne L·(I′/I)."
+    );
+    return out;
+  }
+  var tolPredvidi = (v, o) => v === "I" ? Math.abs(o.I) * 0.01 : 0.1;
+  function checkPredvidi5(s, odg) {
+    const o = odgovoriPredvidi(s);
+    const pitaj = pitajPredvidi(s);
+    const vals = pitaj.map((v) => odg?.[v] ?? "");
+    const prazno = vals.findIndex((x) => !String(x).trim());
+    if (prazno >= 0)
+      return {
+        tocno: false,
+        poruka: pitaj.length > 1 ? "Upiši sve odgovore." : "Upiši odgovor.",
+        prazno: true,
+        polje: prazno
+      };
+    for (let i = 0; i < pitaj.length; i++) {
+      const v = pitaj[i];
+      const r = checkNumber({
+        input: vals[i],
+        answer: o[v],
+        tol: tolPredvidi(v, o),
+        unit: OZNAKE_PREDVIDI[v].jedinica,
+        krivo: bezTocnog(kriviPredvidi(s, v), o[v], tolPredvidi(v, o)),
+        savjet: v === "I" ? "Nije točno. Intenzitet: I = N·P/(4πr²). Usporedi novi i stari: I′ : I." : "Nije točno. Razina se promijeni za ΔL = 10 log(I′/I)."
+      });
+      if (!r.tocno)
+        return {
+          ...r,
+          polje: i,
+          poruka: pitaj.length > 1 ? `**${OZNAKE_PREDVIDI[v].naslov}**: ${r.poruka}` : r.poruka
+        };
+    }
+    return { tocno: true };
+  }
+  var prijamnikPitanja = (s, p) => isNum(p.prijamnik) ? p.prijamnik : 0;
+  function oznakaPitanja3(s, p) {
+    if (p.velicina === "dL")
+      return { oznaka: "ΔL", opis: "razlika razina", jedinica: "dB" };
+    const i = prijamnikPitanja(s, p);
+    const ime2 = oznakaPrijamnika(s, i);
+    const opis = {
+      S: `ploha balona do: ${ime2}`,
+      I: `intenzitet (${ime2})`,
+      L: `razina zvuka (${ime2})`
+    }[p.velicina];
+    const jedinica4 = { S: p.jedinica ?? "m²", I: "W/m²", L: "dB" }[p.velicina];
+    return { oznaka: `${p.velicina}${sub2(s, i)}`, opis, jedinica: jedinica4 };
+  }
+  var bezTocnog = (krivo, a, tol2) => krivo.filter(
+    (k) => isNum(k.vrijednost) && Math.abs(k.vrijednost - a) > Math.max(tol2 * 1.5, Math.abs(k.vrijednost) * 1e-6)
+  );
+  function izracunPitanja(s, p) {
+    const st = pocetnoStanje3(s);
+    const f2 = fizikaZvuka(s, st);
+    const { oznaka, jedinica: jedinica4 } = oznakaPitanja3(s, p);
+    const k = [];
+    const add2 = (vrijednost3, poruka2, tolerancija) => isNum(vrijednost3) && k.push({ vrijednost: vrijednost3, poruka: poruka2, tolerancija });
+    const P2 = f2.P;
+    const N = f2.N;
+    const Praw = st.P;
+    const pretvoriR = fR(s) !== 1;
+    const pretvoriP = fP(s) !== 1;
+    const porukaR = (r) => `Udaljenost pretvori u metre prije računa: ${tekstR(s, r)} = ${withUnit(r * fR(s), "m")}.`;
+    const porukaP = `Snagu pretvori u vate: ${tekstP(s, Praw)} = ${formatSci(P2)} W.`;
+    if (p.velicina === "dL") {
+      const addDb = (v, poruka2) => add2(v, poruka2, Math.max(0.01, Math.abs(v) * 0.03));
+      const [a, b] = f2.prijamnici;
+      const omjer = Math.max(a.rm, b.rm) / Math.min(a.rm, b.rm);
+      const dL = f2.dL;
+      addDb(
+        10 * Math.log10(omjer),
+        "Intenzitet ovisi o r², pa je ΔL = 10 log(r₂²/r₁²) = 20 log(r₂/r₁). Ti si izostavio kvadrat."
+      );
+      addDb(
+        10 * Math.log10(Math.abs(a.I - b.I) / I0),
+        "Decibeli se ne računaju iz razlike intenziteta. Izračunaj L₁ i L₂ posebno pa ih oduzmi."
+      );
+      addDb(
+        20 * Math.log(omjer),
+        "Upotrijebio si ln. U L = 10 log(I/I₀) je dekadski logaritam (tipka log)."
+      );
+      add2(
+        Math.max(a.I, b.I) / Math.min(a.I, b.I),
+        "To je omjer intenziteta I₁/I₂. Razlika razina u decibelima je 10 log(I₁/I₂), odnosno L₁ − L₂."
+      );
+      addDb(
+        -dL,
+        "Razlika razina je pozitivan broj: od veće razine (bliže uho) oduzmi manju."
+      );
+      const tol3 = isNum(p.tolerancija) ? p.tolerancija : Math.max(0.01, dL * 0.02);
+      const krivo2 = bezTocnog(k, dL, tol3);
+      krivo2.push({
+        vrijednost: dL,
+        tolerancija: Math.max(0.1, dL * 0.15),
+        poruka: "Blizu, ali prerano si zaokružio. Razlika je mala, pa L₁ i L₂ računaj s dvije decimale (ili izravno ΔL = 20 log(r₂/r₁))."
+      });
+      return {
+        vrijednost: dL,
+        jedinica: jedinica4,
+        oznaka,
+        tol: tol3,
+        krivo: [...p.krivo ?? [], ...krivo2]
+      };
+    }
+    const pr = f2.prijamnici[prijamnikPitanja(s, p)];
+    const rm = pr.rm;
+    const rraw = pr.r;
+    if (p.velicina === "S") {
+      const fs = 1 / JEDINICE_S[jedinica4];
+      add2(
+        Math.PI * rm * rm * fs,
+        "To je površina kruga πr². Zvuk se širi na sve strane, pa je ploha balona (kugle) S = 4πr²."
+      );
+      add2(4 * Math.PI * rm * fs, "Polumjer treba kvadrirati: S = 4πr².");
+      add2(
+        4 / 3 * Math.PI * rm ** 3 * fs,
+        "To je obujam kugle. Treba ploha (oplošje) kugle: S = 4πr²."
+      );
+      add2(
+        2 * Math.PI * rm * fs,
+        "To je opseg kružnice. Treba ploha kugle: S = 4πr²."
+      );
+      if (pretvoriR && jedinica4 === "m²")
+        add2(4 * Math.PI * rraw * rraw, porukaR(rraw));
+      const tol3 = isNum(p.tolerancija) ? p.tolerancija : pr.S * fs * 0.01;
+      return {
+        vrijednost: pr.S * fs,
+        jedinica: jedinica4,
+        oznaka,
+        tol: tol3,
+        krivo: [...p.krivo ?? [], ...bezTocnog(k, pr.S * fs, tol3)]
+      };
+    }
+    const krivoI = [];
+    const addI = (I, poruka2) => krivoI.push({ I, poruka: poruka2 });
+    addI(
+      N * P2 / (Math.PI * rm * rm),
+      "Uzeo si πr² (krug). Zvuk se širi na sve strane, pa je ploha balona 4πr²."
+    );
+    addI(
+      N * P2 / (4 * Math.PI * rm),
+      "U nazivniku polumjer treba kvadrirati: I = P/(4πr²)."
+    );
+    if (pretvoriR) addI(N * P2 / (4 * Math.PI * rraw * rraw), porukaR(rraw));
+    if (pretvoriP) addI(N * Praw / (4 * Math.PI * rm * rm), porukaP);
+    if (pretvoriR && pretvoriP)
+      addI(
+        N * Praw / (4 * Math.PI * rraw * rraw),
+        "Pretvori snagu u vate i udaljenost u metre prije računa."
+      );
+    if (N > 1)
+      addI(
+        P2 / (4 * Math.PI * rm * rm),
+        `Izvora je ${N}: njihovi se intenziteti zbrajaju, I = N·P/(4πr²).`
+      );
+    if (p.velicina === "I") {
+      krivoI.forEach((x) => add2(x.I, x.poruka));
+      const tol3 = isNum(p.tolerancija) ? p.tolerancija : pr.I * 0.01;
+      const krivo2 = bezTocnog(k, pr.I, tol3);
+      krivo2.push({
+        vrijednost: pr.I,
+        tolerancija: pr.I * 0.05,
+        poruka: "Blizu, ali prerano si zaokružio. Zaokruži tek rezultat, na tri značajne znamenke."
+      });
+      return {
+        vrijednost: pr.I,
+        jedinica: jedinica4,
+        oznaka,
+        tol: tol3,
+        krivo: [...p.krivo ?? [], ...krivo2]
+      };
+    }
+    const L = pr.L;
+    const add0 = add2;
+    const addL = (v, poruka2) => add0(v, poruka2, 0.1);
+    krivoI.forEach((x) => addL(razina2(x.I), x.poruka));
+    addL(
+      10 * Math.log(pr.I / I0),
+      "Upotrijebio si ln. U L = 10 log(I/I₀) je dekadski logaritam (tipka log)."
+    );
+    addL(
+      Math.log10(pr.I / I0),
+      "Zaboravio si pomnožiti s 10: log(I/I₀) daje bele, a decibel je deseti dio bela, L = 10 log(I/I₀)."
+    );
+    addL(
+      10 * Math.log10(pr.I),
+      "Intenzitet prvo podijeli pragom čujnosti I₀ = 10⁻¹² W/m², pa tek onda logaritmiraj."
+    );
+    addL(
+      20 * Math.log10(pr.I / I0),
+      "Za intenzitet je faktor 10, a ne 20: L = 10 log(I/I₀)."
+    );
+    addL(-L, "Razlomak je obrnut: L = 10 log(I/I₀), intenzitet je u brojniku.");
+    const tol2 = isNum(p.tolerancija) ? p.tolerancija : 0.05;
+    const krivo = bezTocnog(k, L, tol2);
+    krivo.push({
+      vrijednost: L,
+      tolerancija: 0.3,
+      poruka: "Blizu, ali prerano si zaokružio. Intenzitet uzmi s tri značajne znamenke, a razinu zaokruži na dvije decimale."
+    });
+    return {
+      vrijednost: L,
+      jedinica: jedinica4,
+      oznaka,
+      tol: tol2,
+      krivo: [...p.krivo ?? [], ...krivo]
+    };
+  }
+  function checkIzracunaj3(s, odg) {
+    const pitaj = s.pitaj;
+    const vals = pitaj.map((_, i) => Array.isArray(odg) ? odg[i] ?? "" : "");
+    const prazno = vals.findIndex((x) => !String(x).trim());
+    if (prazno >= 0)
+      return {
+        tocno: false,
+        poruka: pitaj.length > 1 ? "Upiši sve odgovore." : "Upiši odgovor.",
+        prazno: true,
+        polje: prazno
+      };
+    for (let i = 0; i < pitaj.length; i++) {
+      const r = izracunPitanja(s, pitaj[i]);
+      const ch = checkNumber({
+        input: vals[i],
+        answer: r.vrijednost,
+        tol: r.tol,
+        unit: r.jedinica,
+        krivo: r.krivo,
+        savjet: {
+          S: "Nije točno. Ploha balona (kugle) je S = 4πr², r u metrima.",
+          I: "Nije točno. I = P/(4πr²): snaga u vatima, r u metrima.",
+          L: "Nije točno. L = 10 log(I/I₀), uz I₀ = 10⁻¹² W/m².",
+          dL: "Nije točno. ΔL = L₁ − L₂ (veća razina minus manja)."
+        }[pitaj[i].velicina]
+      });
+      if (!ch.tocno)
+        return {
+          ...ch,
+          polje: i,
+          poruka: pitaj.length > 1 ? `**${r.oznaka}**: ${ch.poruka}` : ch.poruka
+        };
+    }
+    return { tocno: true };
+  }
+  var zapisVrijednosti = (v, jedinica4) => jedinica4 === "dB" ? dB(v) : `${formatSci(v)}${jedinica4 ? ` ${jedinica4}` : ""}`;
+  var OPIS7 = `Razina zvuka točkastog izvora (fizika, matura): izvor u središtu „balona“ (kugle) S = 4πr², I = N·P/S, L = 10 log(I/I₀), I₀ = 10⁻¹² W/m² (log je dekadski). Uživo S, I i L za jedno ili dva uha / mikrofona i dB-ljestvica s poznatim zvukovima (šapat 20, razgovor 60, promet 80, prag boli 120 dB).
+Polja: tekst, nacin, P (snaga jednog izvora, broj ili id klizača), jedinica_P? ("W" zadano | "mW"), N? (broj jednakih izvora, zadano 1; broj ili id klizača), prijamnici: [{oznaka (kratko, npr. "bliže uho"), r}] (1–2; r u jedinica_r), jedinica_r? ("m" zadano | "cm"), ikona? ("uho" zadano | "mikrofon"), r_max? (duljina ravnala; zadano oko 1,25 × najveća udaljenost), korak_r? (korak vučenja; zadano r_max/160 zaokruženo).
+Razina u svakom prijamniku mora biti 0–130 dB (I od 10⁻¹² do 10 W/m²).
+Načini:
+- "istrazi" (Istraži): uši se vuku po zrakama, klizači? [{id (iz P ili N), oznaka?, min, max, korak, pocetak?}] (najviše 2). Uvid: ΔL između dvaju ušiju ne ovisi o snazi izvora.
+- "postavi" (Tvoj red): mijenja? (0 | 1 = indeks uha koje se vuče, zadano 0; "P" = klizač snage, tada P je id klizača), cilj: {velicina: "L" | "I" | "dL", vrijednost (dB ili W/m²), prijamnik? (indeks; zadano uho koje se vuče)}; "dL" traži dva uha i vučenje uha (ne ovisi o P), a vrijednost je za koliko je uho koje se vuče tiše od drugoga (minus = glasnije). Tražena veličina i ono iz čega se odmah dobije (S, I, L tog uha, ΔL) skriveni su do točnog odgovora. Točno: unutar tolerancija? (zadano 0,3 dB, za I 2 %) ili pola koraka od rješenja. Poruke za πr², mW nepretvorene, I = I₀·10^L i 10^(ΔL/10) dodaju se same; krivo?: [{vrijednost (r u jedinica_r ili P), poruka}].
+- "predvidi" (Tvoj red): jedno uho; promjena: {velicina: "r" | "P" | "N", faktor} (npr. r × 2); pitaj? ⊂ ["I", "dL", "L"] (zadano ["I", "dL"]): I = omjer I′ : I (npr. 1/4), dL = promjena razine u dB s predznakom (−6,02), L = nova razina. Vidi se stanje prije; stanje poslije je skriveno do točnog odgovora. Automatske poruke: I ∝ 1/r umjesto 1/r², predznak, „decibeli razmjerni intenzitetu“, 10 log umjesto 20 log, ln.
+- "izracunaj" (Tvoj red): pitaj: [{velicina: "S" | "I" | "L" | "dL", prijamnik? (indeks, obavezan uz dva uha osim za dL), jedinica? (za S: "m²" | "cm²"), tolerancija?, krivo?}] (1–3). Svi izvedeni iznosi su skriveni do točnog odgovora. Tolerancija: L 0,05 dB, ΔL 0,01 dB ili 2 %, S i I 1 %. Automatske krive vrijednosti: πr² (+6 dB), 4πr, obujam kugle, cm i mW nepretvoreni (−40 / +30 dB), ln, bez faktora 10, bez I₀, 20 log, ΔL bez kvadrata (10 log(r₂/r₁)), ΔL iz razlike intenziteta, prerano zaokruženo.`;
+  var PRIMJER7 = {
+    tip: TIP7,
+    nacin: "izracunaj",
+    tekst: "Točkasti izvor zvuka ima snagu 2 mW. Jedno uho je 50 cm od izvora, a drugo 54 cm. Kolike su razine zvuka kod ušiju i kolika je razlika među njima?",
+    P: 2,
+    jedinica_P: "mW",
+    jedinica_r: "cm",
+    prijamnici: [
+      { oznaka: "bliže uho", r: 50 },
+      { oznaka: "dalje uho", r: 54 }
+    ],
+    pitaj: [
+      { velicina: "L", prijamnik: 0 },
+      { velicina: "L", prijamnik: 1 },
+      { velicina: "dL" }
+    ]
+  };
+  var PRIMJERI7 = [
+    {
+      tip: TIP7,
+      nacin: "istrazi",
+      tekst: "Izvor snage 4 mW, uši na 60 cm i 63 cm (zadatak 1116). **Mijenjaj snagu** i gledaj obje razine i razliku ΔL. Zatim povuci uši bliže ili dalje.",
+      P: "P",
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [
+        { oznaka: "bliže uho", r: 60 },
+        { oznaka: "dalje uho", r: 63 }
+      ],
+      klizaci: [
+        {
+          id: "P",
+          oznaka: "snaga izvora $P$",
+          min: 0.5,
+          max: 20,
+          korak: 0.5,
+          pocetak: 4,
+          jedinica: "mW"
+        }
+      ]
+    },
+    {
+      tip: TIP7,
+      nacin: "izracunaj",
+      tekst: "Izvor snage 1,6 mW, uši na 45 cm i 48 cm (zadatak 1117). Koliki je intenzitet zvuka kod svakog uha?",
+      P: 1.6,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [
+        { oznaka: "bliže uho", r: 45 },
+        { oznaka: "dalje uho", r: 48 }
+      ],
+      pitaj: [
+        { velicina: "I", prijamnik: 0 },
+        { velicina: "I", prijamnik: 1 }
+      ]
+    },
+    {
+      tip: TIP7,
+      nacin: "izracunaj",
+      tekst: "Izvor snage 3,2 mW, uho je 70 cm od njega (zadatak 1118). Kolika je ploha balona kroz koji prolazi zvuk do uha i kolika je razina zvuka kod uha?",
+      P: 3.2,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [{ oznaka: "uho", r: 70 }],
+      pitaj: [
+        { velicina: "S", prijamnik: 0 },
+        { velicina: "L", prijamnik: 0 }
+      ]
+    },
+    {
+      tip: TIP7,
+      nacin: "izracunaj",
+      tekst: "Izvor snage 2,5 mW, uši na 80 cm i 86 cm (zadatak 1119). Kolika je razlika razina zvuka među ušima?",
+      P: 2.5,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [
+        { oznaka: "bliže uho", r: 80 },
+        { oznaka: "dalje uho", r: 86 }
+      ],
+      pitaj: [{ velicina: "dL" }]
+    },
+    {
+      tip: TIP7,
+      nacin: "predvidi",
+      tekst: "Izvor snage 2 mW, uho je 50 cm od njega. Osoba se **odmakne na 100 cm**. Koliko se puta promijeni intenzitet, za koliko razina i kolika je nova razina?",
+      P: 2,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [{ oznaka: "uho", r: 50 }],
+      promjena: { velicina: "r", faktor: 2 },
+      pitaj: ["I", "dL", "L"]
+    },
+    {
+      tip: TIP7,
+      nacin: "predvidi",
+      tekst: "Zvučnik snage 3,2 mW, mikrofon je 70 cm od njega. Do prvog zvučnika stavimo **još jedan jednak**. Koliko se puta promijeni intenzitet i za koliko razina zvuka?",
+      P: 3.2,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      ikona: "mikrofon",
+      prijamnici: [{ oznaka: "mikrofon", r: 70 }],
+      promjena: { velicina: "N", faktor: 2 }
+    },
+    {
+      tip: TIP7,
+      nacin: "postavi",
+      tekst: "Izvor ima snagu 2 mW. Povuci uho na mjesto gdje je razina zvuka **80 dB**.",
+      P: 2,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [{ oznaka: "uho", r: 50 }],
+      cilj: { velicina: "L", vrijednost: 80 }
+    },
+    {
+      tip: TIP7,
+      nacin: "postavi",
+      tekst: "Bliže uho je 50 cm od izvora snage 2 mW. Povuci **dalje uho** tako da čuje razinu **6 dB nižu** od bližeg.",
+      P: 2,
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      r_max: 200,
+      prijamnici: [
+        { oznaka: "bliže uho", r: 50 },
+        { oznaka: "dalje uho", r: 60 }
+      ],
+      mijenja: 1,
+      cilj: { velicina: "dL", vrijednost: 6 }
+    },
+    {
+      tip: TIP7,
+      nacin: "postavi",
+      tekst: "Uho je 50 cm od izvora. Namjesti **snagu izvora** tako da razina zvuka kod uha bude **90 dB**.",
+      P: "P",
+      jedinica_P: "mW",
+      jedinica_r: "cm",
+      prijamnici: [{ oznaka: "uho", r: 50 }],
+      mijenja: "P",
+      klizaci: [
+        {
+          id: "P",
+          oznaka: "snaga izvora $P$",
+          min: 0.5,
+          max: 10,
+          korak: 0.1,
+          pocetak: 1,
+          jedinica: "mW"
+        }
+      ],
+      cilj: { velicina: "L", vrijednost: 90, prijamnik: 0 }
+    }
+  ];
+  var ZAJEDNICKA2 = [
+    "tip",
+    "nacin",
+    "tekst",
+    "P",
+    "jedinica_P",
+    "N",
+    "prijamnici",
+    "jedinica_r",
+    "ikona",
+    "r_max",
+    "korak_r"
+  ];
+  var PO_NACINU = {
+    istrazi: ["klizaci"],
+    postavi: ["klizaci", "mijenja", "cilj", "tolerancija", "krivo"],
+    predvidi: ["promjena", "pitaj"],
+    izracunaj: ["pitaj"]
+  };
+  var uRasponu = (L) => L >= -1e-9 && L <= L_MAX + 1e-9;
+  function validateKlizaci2(s, need) {
+    if (s.klizaci == null) return;
+    if (!need(
+      Array.isArray(s.klizaci) && s.klizaci.length >= 1 && s.klizaci.length <= 2,
+      "klizaci mora biti popis od 1 do 2 klizača"
+    ))
+      return;
+    s.klizaci.forEach((k, i) => {
+      const at = `klizaci[${i}]`;
+      if (!need(k && typeof k === "object", `${at} mora biti objekt`)) return;
+      need(isText(k.id), `${at}.id mora biti tekst`);
+      need(
+        s.P === k.id || s.N === k.id,
+        `${at}.id „${k.id}“ ne koristi nijedno polje (P ili N mora biti „${k.id}“)`
+      );
+      for (const f2 of Object.keys(k))
+        need(
+          ["id", "oznaka", "min", "max", "korak", "pocetak", "jedinica"].includes(
+            f2
+          ),
+          `${at}: nepoznato polje „${f2}“`
+        );
+      if (k.oznaka != null)
+        need(isText(k.oznaka), `${at}.oznaka mora biti tekst`);
+      const ok = need(
+        isNum(k.min) && isNum(k.max) && k.min > 0 && k.max > k.min,
+        `${at}: min i max moraju biti brojevi, 0 < min < max`
+      ) && need(
+        isNum(k.korak) && k.korak > 0 && k.korak <= (k.max - k.min) / 4,
+        `${at}.korak mora biti pozitivan i najviše četvrtina raspona`
+      );
+      if (ok && k.pocetak != null)
+        need(
+          isNum(k.pocetak) && k.pocetak >= k.min && k.pocetak <= k.max,
+          `${at}.pocetak mora biti između min i max`
+        );
+      if (ok && s.N === k.id)
+        need(
+          Number.isInteger(k.min) && Number.isInteger(k.max) && Number.isInteger(k.korak) && k.max <= N_MAX,
+          `${at}: broj izvora ide u cijelim brojevima, 1–${N_MAX}`
+        );
+      if (ok && s.P === k.id && k.jedinica != null)
+        need(
+          k.jedinica === jedinicaP(s),
+          `${at}.jedinica mora biti jedinica_P (${jedinicaP(s)})`
+        );
+    });
+    const ids = s.klizaci.map((k) => k?.id);
+    need(
+      new Set(ids).size === ids.length,
+      "klizaci: id-jevi se ne smiju ponavljati"
+    );
+  }
+  function validateRazinaZvuka(s) {
+    const { list, need } = problems();
+    if (!need(
+      NACINI19.includes(s.nacin),
+      `razina_zvuka.nacin mora biti jedan od: ${NACINI19.join(", ")}`
+    ))
+      return list;
+    need(isText(s.tekst), "razina_zvuka treba „tekst“");
+    const dozvoljena = [...ZAJEDNICKA2, ...PO_NACINU[s.nacin]];
+    for (const f2 of Object.keys(s))
+      need(
+        dozvoljena.includes(f2),
+        `polje „${f2}“ ne postoji u načinu ${s.nacin} (polja: ${dozvoljena.join(", ")})`
+      );
+    if (s.jedinica_P != null)
+      need(
+        s.jedinica_P in JEDINICE_P,
+        `jedinica_P mora biti ${Object.keys(JEDINICE_P).join(" ili ")}`
+      );
+    if (s.jedinica_r != null)
+      need(
+        s.jedinica_r in JEDINICE_R,
+        `jedinica_r mora biti ${Object.keys(JEDINICE_R).join(" ili ")}`
+      );
+    if (s.ikona != null)
+      need(IKONE4.includes(s.ikona), `ikona mora biti ${IKONE4.join(" ili ")}`);
+    const smijeKlizace = s.nacin === "istrazi" || s.nacin === "postavi" && s.mijenja === "P";
+    if (smijeKlizace) validateKlizaci2(s, need);
+    else
+      need(
+        s.klizaci == null,
+        'klizači postoje samo u istrazi i u postavi s mijenja: "P"'
+      );
+    if (typeof s.P === "string")
+      need(
+        smijeKlizace && !!klizacZa2(s, "P"),
+        `P „${s.P}“ nije id nijednog klizača`
+      );
+    else
+      need(
+        isNum(s.P) && s.P * fP(s) >= 1e-9 && s.P * fP(s) <= 1e5,
+        "P mora biti snaga od 10⁻⁹ do 10⁵ W (u jedinica_P)"
+      );
+    if (typeof s.N === "string")
+      need(
+        smijeKlizace && !!klizacZa2(s, "N"),
+        `N „${s.N}“ nije id nijednog klizača`
+      );
+    else if (s.N != null)
+      need(
+        Number.isInteger(s.N) && s.N >= 1 && s.N <= N_MAX,
+        `N mora biti cijeli broj od 1 do ${N_MAX}`
+      );
+    if (s.nacin === "postavi" && s.mijenja === "P")
+      need(
+        typeof s.P === "string",
+        'uz mijenja: "P" polje P mora biti id klizača snage'
+      );
+    const pr = prijamniciOd(s);
+    if (!need(
+      Array.isArray(s.prijamnici) && pr.length >= 1 && pr.length <= 2,
+      "prijamnici mora biti popis od 1 do 2 prijamnika {oznaka, r}"
+    ))
+      return list;
+    pr.forEach((p, i) => {
+      const at = `prijamnici[${i}]`;
+      if (!need(p && typeof p === "object", `${at} mora biti objekt {oznaka, r}`))
+        return;
+      for (const f2 of Object.keys(p))
+        need(
+          ["oznaka", "r"].includes(f2),
+          `${at}: nepoznato polje „${f2}“ (samo oznaka i r)`
+        );
+      need(
+        isText(p.oznaka) && p.oznaka.length <= 24,
+        `${at}.oznaka mora biti kratak tekst (do 24 znaka), npr. „bliže uho“`
+      );
+      need(
+        isNum(p.r) && p.r > 0,
+        `${at}.r mora biti pozitivan broj (u ${jedinicaR(s)})`
+      );
+    });
+    if (pr.length === 2 && isText(pr[0]?.oznaka))
+      need(
+        pr[0].oznaka !== pr[1]?.oznaka,
+        "prijamnici moraju imati različite oznake"
+      );
+    if (list.length) return list;
+    if (s.r_max != null)
+      need(isNum(s.r_max) && s.r_max > 0, "r_max mora biti pozitivan broj");
+    if (s.korak_r != null)
+      need(isNum(s.korak_r) && s.korak_r > 0, "korak_r mora biti pozitivan broj");
+    if (list.length) return list;
+    if (s.nacin === "istrazi") {
+      noAnswerFields(s, need);
+    }
+    if (s.nacin === "postavi") {
+      need(
+        s.mijenja == null || s.mijenja === "P" || Number.isInteger(s.mijenja) && s.mijenja >= 0 && s.mijenja < pr.length,
+        `mijenja mora biti indeks uha (0${pr.length > 1 ? " ili 1" : ""}) ili "P"`
+      );
+      const c = s.cilj;
+      if (need(
+        c && typeof c === "object",
+        "postavi treba cilj: {velicina, vrijednost, prijamnik?}"
+      )) {
+        for (const f2 of Object.keys(c))
+          need(
+            ["velicina", "vrijednost", "prijamnik"].includes(f2),
+            `cilj: nepoznato polje „${f2}“`
+          );
+        need(
+          VELICINE_CILJ.includes(c.velicina),
+          `cilj.velicina mora biti ${VELICINE_CILJ.join(", ")}`
+        );
+        if (c.prijamnik != null)
+          need(
+            Number.isInteger(c.prijamnik) && c.prijamnik >= 0 && c.prijamnik < pr.length,
+            "cilj.prijamnik mora biti indeks uha"
+          );
+        if (c.velicina === "L")
+          need(
+            isNum(c.vrijednost) && uRasponu(c.vrijednost),
+            "cilj.vrijednost za L mora biti 0–130 dB"
+          );
+        if (c.velicina === "I")
+          need(
+            isNum(c.vrijednost) && c.vrijednost >= I0 && c.vrijednost <= 10,
+            "cilj.vrijednost za I mora biti 10⁻¹² – 10 W/m²"
+          );
+        if (c.velicina === "dL") {
+          need(pr.length === 2, "cilj dL traži dva uha");
+          need(
+            s.mijenja !== "P",
+            "ΔL ne ovisi o snazi izvora, pa se ne može postaviti klizačem P; neka se vuče uho"
+          );
+          need(
+            isNum(c.vrijednost) && Math.abs(c.vrijednost) >= 0.1 && Math.abs(c.vrijednost) <= 40,
+            "cilj.vrijednost za dL mora biti od 0,1 do 40 dB (koliko je uho koje se vuče tiše od drugoga; minus = glasnije)"
+          );
+          need(c.prijamnik == null, "cilj dL nema prijamnik");
+        } else if (s.mijenja !== "P" && c.prijamnik != null)
+          need(
+            c.prijamnik === mijenjaPrijamnik(s),
+            "cilj.prijamnik mora biti uho koje se vuče"
+          );
+      }
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija > 0,
+          "tolerancija mora biti pozitivan broj (dB, ili W/m² za I)"
+        );
+    }
+    if (s.nacin === "predvidi") {
+      need(pr.length === 1, "predvidi ima jedno uho");
+      const pm = s.promjena;
+      if (need(
+        pm && typeof pm === "object",
+        "predvidi treba promjena: {velicina: r | P | N, faktor}"
+      )) {
+        for (const f2 of Object.keys(pm))
+          need(
+            ["velicina", "faktor"].includes(f2),
+            `promjena: nepoznato polje „${f2}“`
+          );
+        need(
+          VELICINE_PROMJENE.includes(pm.velicina),
+          `promjena.velicina mora biti ${VELICINE_PROMJENE.join(", ")}`
+        );
+        need(
+          isNum(pm.faktor) && pm.faktor > 0 && Math.abs(pm.faktor - 1) > 1e-9 && pm.faktor <= 1e3 && pm.faktor >= 1e-3,
+          "promjena.faktor mora biti pozitivan broj različit od 1 (0,001–1000)"
+        );
+        if (pm.velicina === "N" && isNum(pm.faktor)) {
+          const N = isNum(s.N) ? s.N : 1;
+          need(
+            Number.isInteger(Math.round(N * pm.faktor * 1e9) / 1e9) && N * pm.faktor >= 1 && N * pm.faktor <= N_MAX,
+            `broj izvora nakon promjene (N·faktor) mora biti cijeli broj 1–${N_MAX}`
+          );
+        }
+      }
+      if (s.pitaj != null)
+        need(
+          Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3 && s.pitaj.every((v) => PITAJ_PREDVIDI.includes(v)) && new Set(s.pitaj).size === s.pitaj.length,
+          `pitaj mora biti popis različitih od: ${PITAJ_PREDVIDI.join(", ")}`
+        );
+    }
+    if (s.nacin === "izracunaj") {
+      if (need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
+        "izracunaj treba pitaj: 1–3 stavke {velicina, prijamnik?, jedinica?}"
+      )) {
+        const kljucevi = /* @__PURE__ */ new Set();
+        s.pitaj.forEach((p, i) => {
+          const at = `pitaj[${i}]`;
+          if (!need(p && typeof p === "object", `${at} mora biti objekt`)) return;
+          for (const f2 of Object.keys(p))
+            need(
+              [
+                "velicina",
+                "prijamnik",
+                "jedinica",
+                "tolerancija",
+                "krivo"
+              ].includes(f2),
+              `${at}: nepoznato polje „${f2}“`
+            );
+          if (!need(
+            VELICINE_IZR.includes(p.velicina),
+            `${at}.velicina mora biti ${VELICINE_IZR.join(", ")}`
+          ))
+            return;
+          if (p.velicina === "dL") {
+            need(pr.length === 2, `${at}: dL traži dva uha`);
+            need(p.prijamnik == null, `${at}: dL nema prijamnik`);
+            if (pr.length === 2)
+              need(
+                pr[0].r !== pr[1].r,
+                `${at}: za dL uši moraju biti na različitim udaljenostima`
+              );
+          } else if (pr.length === 2)
+            need(
+              p.prijamnik === 0 || p.prijamnik === 1,
+              `${at}.prijamnik (0 ili 1) je obavezan kad su dva uha`
+            );
+          else if (p.prijamnik != null)
+            need(p.prijamnik === 0, `${at}.prijamnik mora biti 0`);
+          if (p.jedinica != null)
+            need(
+              p.velicina === "S" && p.jedinica in JEDINICE_S,
+              `${at}.jedinica postoji samo za S: ${Object.keys(JEDINICE_S).join(" ili ")}`
+            );
+          if (p.tolerancija != null)
+            need(
+              isNum(p.tolerancija) && p.tolerancija > 0,
+              `${at}.tolerancija mora biti pozitivan broj`
+            );
+          const kljuc = `${p.velicina}${p.prijamnik ?? ""}`;
+          need(!kljucevi.has(kljuc), `${at} ponavlja isto pitanje`);
+          kljucevi.add(kljuc);
+        });
+      }
+    }
+    if (list.length) return list;
+    const { rMax, korak } = ravnaloZvuka(s);
+    need(korak <= rMax / 20, "korak_r mora biti najviše r_max/20");
+    const st0 = pocetnoStanje3(s);
+    pr.forEach(
+      (p, i) => need(
+        p.r <= rMax + 1e-12 && p.r >= korak - 1e-12,
+        `prijamnici[${i}].r mora biti na ravnalu (${tekstR(s, korak)} – ${tekstR(s, rMax)})`
+      )
+    );
+    const varijante = [st0];
+    for (const polje2 of ["P", "N"]) {
+      const k = klizacZa2(s, polje2);
+      if (k && isNum(k.min) && isNum(k.max))
+        varijante.push(
+          ...varijante.flatMap((v) => [
+            { ...v, [polje2]: k.min },
+            { ...v, [polje2]: k.max }
+          ])
+        );
+    }
+    const raspon4 = (st) => fizikaZvuka(s, st).prijamnici.every((p) => uRasponu(p.L));
+    need(
+      varijante.every(raspon4),
+      "razina zvuka kod prijamnika mora biti 0–130 dB (I od 10⁻¹² do 10 W/m²) za sve vrijednosti klizača"
+    );
+    if (s.nacin === "istrazi" || s.nacin === "postavi" && s.mijenja !== "P")
+      need(
+        varijante.every(
+          (v) => uRasponu(fizikaZvuka(s, { ...v, r: [rMax] }).prijamnici[0].L)
+        ),
+        "na kraju ravnala (r_max) razina mora biti barem 0 dB; skrati ravnalo ili povećaj snagu"
+      );
+    if (s.nacin === "predvidi" && list.length === 0) {
+      const { poslije } = predvidiStanja(s);
+      need(raspon4(poslije), "nakon promjene razina mora ostati 0–130 dB");
+      if (s.promjena.velicina === "r")
+        need(
+          poslije.r[0] <= rMax + 1e-12,
+          "udaljenost nakon promjene mora biti na ravnalu (povećaj r_max)"
+        );
+    }
+    if (s.nacin === "postavi" && list.length === 0) {
+      const rj = rjesenjaPostavi(s);
+      if (s.mijenja === "P") {
+        const k = klizacZa2(s, "P");
+        need(
+          rj.every((x) => x >= k.min - 1e-12 && x <= k.max + 1e-12),
+          `cilj traži snagu ${formatNumber(rj[0])} ${jedinicaP(s)}, a to nije u rasponu klizača`
+        );
+      } else
+        need(
+          rj.length > 0,
+          `cilj nije ostvariv na ravnalu (${tekstR(s, korak)} – ${tekstR(s, rMax)}); promijeni cilj ili r_max`
+        );
+      if (list.length === 0) {
+        const x0 = s.mijenja === "P" ? st0.P : st0.r[mijenjaPrijamnik(s)];
+        need(
+          !postaviTocno(s, x0),
+          "početni položaj već ostvaruje cilj; pomakni početak"
+        );
+        validateKrivo(s.krivo, null, 0, need);
+        if (Array.isArray(s.krivo))
+          s.krivo.forEach(
+            (x, i) => isNum(x?.vrijednost) && need(
+              !postaviTocno(s, x.vrijednost),
+              `krivo[${i}].vrijednost ${formatNumber(x.vrijednost)} ostvaruje cilj, a to je točan odgovor`
+            )
+          );
+      }
+    }
+    if (s.nacin === "izracunaj" && list.length === 0)
+      s.pitaj.forEach((p, i) => {
+        const r = izracunPitanja(s, { ...p, krivo: void 0 });
+        validateKrivo(p.krivo, r.vrijednost, r.tol, need, `pitaj[${i}].krivo`);
+      });
+    return list;
+  }
+  var razina_zvuka = {
+    tip: TIP7,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS7,
+    primjer: PRIMJER7,
+    primjeri: PRIMJERI7,
+    fizika: fizikaZvuka,
+    validate: validateRazinaZvuka,
+    // odgovor: postavi → broj (r u jedinica_r ili P u jedinica_P); predvidi → {I?, dL?, L?} (tekst); izracunaj → [tekst po pitanju]
+    check(s, odgovor3) {
+      if (s.nacin === "postavi") return checkPostavi5(s, odgovor3);
+      if (s.nacin === "predvidi") return checkPredvidi5(s, odgovor3);
+      if (s.nacin === "izracunaj") return checkIzracunaj3(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.nacin === "postavi") {
+        const rj = rjesenjaPostavi(s);
+        if (s.mijenja === "P")
+          return `P = ${tekstP(s, Math.round(rj[0] * 1e3) / 1e3)}`;
+        const ime2 = oznakaPrijamnika(s, mijenjaPrijamnik(s));
+        return `${ime2}: r = ${rj.map((r) => tekstR(s, Math.round(r * 100) / 100)).join(" ili ")}`;
+      }
+      if (s.nacin === "predvidi") {
+        const o = odgovoriPredvidi(s);
+        return pitajPredvidi(s).map(
+          (v) => v === "I" ? `I′ : I = ${tekstOmjera(o.I)}` : v === "dL" ? `ΔL = ${dBpredznak(o.dL)}` : `L′ = ${dB(o.L)}`
+        ).join(", ");
+      }
+      if (s.nacin === "izracunaj")
+        return s.pitaj.map((p) => {
+          const r = izracunPitanja(s, p);
+          return `${r.oznaka} = ${zapisVrijednosti(r.vrijednost, r.jedinica)}`;
+        }).join(", ");
+      return "";
+    },
+    // blizanac s istim odgovorom učenik bi samo prepisao
+    kljucOdgovora(s) {
+      try {
+        if (s.nacin === "izracunaj")
+          return JSON.stringify(
+            s.pitaj.map(
+              (p) => Number(izracunPitanja(s, p).vrijednost.toPrecision(3))
+            )
+          );
+        if (s.nacin === "predvidi") {
+          const o = odgovoriPredvidi(s);
+          return JSON.stringify(
+            pitajPredvidi(s).map((v) => Number(o[v].toPrecision(3)))
+          );
+        }
+        if (s.nacin === "postavi")
+          return JSON.stringify(
+            rjesenjaPostavi(s).map((x) => Number(x.toPrecision(3)))
+          );
+      } catch {
+        return null;
+      }
+      return null;
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/zrake.js
+  var TIP8 = "zrake";
+  var C_SVJETLOSTI = 3e8;
+  var SCENE9 = ["zrcalo", "zrcalo_slika", "lom", "ploca"];
+  var NACINI20 = {
+    zrcalo: ["istrazi", "prikaz", "postavi", "izracunaj"],
+    zrcalo_slika: ["istrazi", "prikaz", "postavi", "izracunaj"],
+    lom: ["istrazi", "prikaz", "postavi", "izracunaj", "odaberi"],
+    ploca: ["istrazi", "prikaz", "izracunaj", "odaberi"]
+  };
+  var GLEDANJE = ["istrazi", "prikaz"];
+  var PREDMETI = ["osoba", "strelica", "svijeca"];
+  var JEDINICE_DULJINE = ["cm", "m"];
+  var RAD = Math.PI / 180;
+  var sinD = (a) => Math.sin(a * RAD);
+  var cosD = (a) => Math.cos(a * RAD);
+  var tanD = (a) => Math.tan(a * RAD);
+  var asinD = (x) => Math.asin(x) / RAD;
+  var atanD = (x) => Math.atan(x) / RAD;
+  function snell(n1, n2, alpha) {
+    const s = n1 / n2 * sinD(alpha);
+    if (s > 1 + 1e-12) return null;
+    return asinD(Math.min(1, s));
+  }
+  var granicniKut = (n1, n2) => n1 > n2 ? asinD(n2 / n1) : null;
+  function fresnel(n1, n2, alpha) {
+    const b = snell(n1, n2, alpha);
+    if (b == null) return 1;
+    const ci = cosD(alpha);
+    const ct = cosD(b);
+    const rs = (n1 * ci - n2 * ct) / (n1 * ci + n2 * ct);
+    const rp = (n1 * ct - n2 * ci) / (n1 * ct + n2 * ci);
+    return (rs * rs + rp * rp) / 2;
+  }
+  var brzinaU = (n) => C_SVJETLOSTI / n;
+  var pomakPloce = (d, alpha, beta) => d * sinD(alpha - beta) / cosD(beta);
+  var TVARI = [
+    [1, "zrak"],
+    [1.33, "voda"],
+    [1.5, "staklo"],
+    [2.42, "dijamant"]
+  ];
+  function nazivSredstva(n, zadano) {
+    if (zadano && Math.abs(n - zadano.n) < 1e-9) return zadano.naziv;
+    const t = TVARI.find(([m]) => Math.abs(m - n) < 6e-3);
+    return t ? t[1] : "sredstvo";
+  }
+  var ZRAK = { naziv: "zrak", n: 1 };
+  var sredstvo1 = (s) => s.sredstvo1 ?? ZRAK;
+  var sredstvo2 = (s) => s.scena === "ploca" ? s.ploca : s.sredstvo2;
+  var jedinicaDuljine = (s) => s.jedinica ?? "cm";
+  var vrstaPredmeta = (s) => s.predmet ?? "osoba";
+  var ID_KLIZACA = {
+    zrcalo: ["kut"],
+    lom: ["kut", "n1", "n2"],
+    ploca: ["kut", "n", "debljina"],
+    zrcalo_slika: ["udaljenost"]
+  };
+  var OZNAKA_KLIZACA = {
+    kut: "upadni kut α",
+    n1: "indeks loma gore n₁",
+    n2: "indeks loma dolje n₂",
+    n: "indeks loma ploče n",
+    debljina: "debljina ploče d",
+    udaljenost: "udaljenost predmeta od zrcala a"
+  };
+  var klizaciOd3 = (s) => (Array.isArray(s.klizaci) ? s.klizaci : []).map((k) => ({
+    ...k,
+    oznaka: k.oznaka ?? OZNAKA_KLIZACA[k.id],
+    jedinica: k.id === "kut" ? "°" : k.id === "debljina" ? "cm" : k.id === "udaljenost" ? jedinicaDuljine(s) : ""
+  }));
+  function pocetniKut(s) {
+    if (isNum(s.kut)) return s.kut;
+    if (isNum(s.kut_povrsina)) return 90 - s.kut_povrsina;
+    return 30;
+  }
+  function pocetnoStanje4(s) {
+    const st = {
+      kut: pocetniKut(s),
+      n1: sredstvo1(s).n,
+      n2: sredstvo2(s)?.n ?? 1,
+      debljina: s.ploca?.debljina ?? 1,
+      udaljenost: s.udaljenost ?? 1,
+      oko: null,
+      klon: null
+    };
+    if (s.scena === "zrcalo_slika" && s.nacin === "postavi")
+      st.klon = pocetniKlon(s);
+    for (const k of klizaciOd3(s)) {
+      const v = isNum(k.pocetak) ? k.pocetak : { kut: st.kut, n1: st.n1, n2: st.n2, n: st.n2 }[k.id] ?? st[k.id];
+      if (k.id === "n") st.n2 = v;
+      else st[k.id] = v;
+    }
+    return st;
+  }
+  function fizika(s, st = pocetnoStanje4(s)) {
+    const alpha = st.kut;
+    const n1 = st.n1;
+    const n2 = st.n2;
+    const out = { alpha, phi: 90 - alpha, n1, n2 };
+    if (s.scena === "zrcalo") {
+      out.alpha_odbojni = alpha;
+      out.izmedu = 2 * alpha;
+    }
+    if (s.scena === "lom" || s.scena === "ploca") {
+      out.beta = snell(n1, n2, alpha);
+      out.totalna = out.beta == null;
+      out.R = fresnel(n1, n2, alpha);
+      out.alpha_g = granicniKut(n1, n2);
+      out.v1 = brzinaU(n1);
+      out.v2 = brzinaU(n2);
+    }
+    if (s.scena === "ploca" && out.beta != null) {
+      out.gamma = snell(n2, n1, out.beta);
+      out.debljina = st.debljina;
+      out.pomak = pomakPloce(st.debljina, alpha, out.beta);
+    }
+    if (s.scena === "zrcalo_slika") {
+      out.a = st.udaljenost;
+      out.slika_zrcalo = st.udaljenost;
+      out.slika_osoba = 2 * st.udaljenost;
+    }
+    return out;
+  }
+  var zaokr1 = (x) => Math.round(x * 10) / 10;
+  var kutTekst = (x) => `${formatNumber(zaokr1(x))}°`;
+  var nTekst = (n) => formatNumber(n);
+  var brzinaTekst = (v) => `${formatSci(v)} m/s`;
+  var duljinaTekst = (x, j) => `${formatNumber(Math.round(x * 100) / 100)} ${j}`;
+  var KUT_TOL = 0.2;
+  var blizu2 = (tocno) => ({
+    vrijednost: tocno,
+    tolerancija: 1,
+    poruka: "Blizu si, ali ne dovoljno. Računaj na jednu decimalu i zaokruži tek na kraju."
+  });
+  function radGreske(fn, tocnoStupnjevi, opisSin) {
+    const out = [];
+    out.push({
+      vrijednost: tocnoStupnjevi * RAD,
+      tolerancija: Math.max(5e-3, tocnoStupnjevi * RAD * 0.01),
+      poruka: "To je kut u **radijanima**. Traži se u stupnjevima: prebaci kalkulator u način DEG."
+    });
+    const r = fn();
+    if (isNum(r))
+      out.push({
+        vrijednost: r,
+        tolerancija: Math.max(5e-3, Math.abs(r) * 0.01),
+        poruka: `Kalkulator ti je u radijanima (RAD), pa je ${opisSin} krivo izračunan. Prebaci ga u stupnjeve (DEG) i ponovi.`
+      });
+    return out;
+  }
+  var VELICINE6 = {
+    zrcalo: {
+      alpha: { oznaka: "$\\alpha =$", naziv: "upadni kut", jedinica: "°" },
+      alpha_odbojni: {
+        oznaka: "$\\alpha' =$",
+        naziv: "odbojni kut",
+        jedinica: "°"
+      },
+      izmedu: {
+        oznaka: "kut između zraka",
+        naziv: "kut između upadne i odbijene zrake",
+        jedinica: "°"
+      },
+      povratak_povrsina: {
+        oznaka: "kut prema površini",
+        naziv: "kut prema površini za povratak u izvor",
+        jedinica: "°"
+      },
+      povratak_normala: {
+        oznaka: "upadni kut",
+        naziv: "upadni kut za povratak u izvor",
+        jedinica: "°"
+      }
+    },
+    zrcalo_slika: {
+      slika_osoba: { oznaka: "udaljenost slike od osobe", naziv: "slika–osoba" },
+      slika_zrcalo: {
+        oznaka: "udaljenost slike od zrcala",
+        naziv: "slika–zrcalo"
+      }
+    },
+    lom: {
+      alpha: { oznaka: "$\\alpha =$", naziv: "upadni kut", jedinica: "°" },
+      beta: { oznaka: "$\\beta =$", naziv: "kut loma", jedinica: "°" },
+      v1: {
+        oznaka: "$v_1 =$",
+        naziv: "brzina u gornjem sredstvu",
+        jedinica: "m/s"
+      },
+      v2: {
+        oznaka: "$v_2 =$",
+        naziv: "brzina u donjem sredstvu",
+        jedinica: "m/s"
+      },
+      alpha_g: {
+        oznaka: "$\\alpha_g =$",
+        naziv: "granični kut",
+        jedinica: "°"
+      }
+    },
+    ploca: {
+      beta: { oznaka: "$\\beta =$", naziv: "kut loma u ploči", jedinica: "°" },
+      gamma: {
+        oznaka: "$\\gamma =$",
+        naziv: "kut pod kojim zraka izlazi",
+        jedinica: "°"
+      },
+      pomak: { oznaka: "$x =$", naziv: "pomak zrake", jedinica: "cm" },
+      v2: { oznaka: "$v =$", naziv: "brzina u ploči", jedinica: "m/s" }
+    }
+  };
+  var velicineScene2 = (s) => VELICINE6[s.scena] ?? {};
+  var jedinicaPitanja2 = (s, p) => p.jedinica ?? velicineScene2(s)[p.velicina]?.jedinica ?? jedinicaDuljine(s);
+  function odgovorPitanja(s, p) {
+    const f2 = fizika(s);
+    const v = p.velicina;
+    const daniPhi = !isNum(s.kut) && isNum(s.kut_povrsina);
+    const krivo = [];
+    const k = (vrijednost3, poruka2, tolerancija = 0.25) => isNum(vrijednost3) && krivo.push({ vrijednost: vrijednost3, poruka: poruka2, tolerancija });
+    let tocno = NaN;
+    let tol2 = KUT_TOL;
+    if (s.scena === "zrcalo") {
+      const a = f2.alpha;
+      if (v === "alpha" || v === "alpha_odbojni") {
+        tocno = a;
+        k(
+          90 - a,
+          "To je kut prema **površini** zrcala. Kutovi se mjere od **normale** (okomice na zrcalo): α = 90° − φ."
+        );
+        if (v === "alpha_odbojni")
+          k(
+            2 * a,
+            "To je kut između upadne i odbijene zrake. Odbojni kut je samo jedan od njih: α' = α."
+          );
+      }
+      if (v === "izmedu") {
+        tocno = 2 * a;
+        k(
+          a,
+          "To je samo jedan kut. Upadna i odbijena zraka su s **različitih** strana normale, pa se kutovi zbrajaju: α + α'."
+        );
+        k(
+          2 * (90 - a),
+          "Zbrojio si kutove prema površini. Kut između zraka zbroj je kutova od normale: α + α' = 2α."
+        );
+        k(
+          90 - a,
+          "To je kut prema površini zrcala. Kut između zraka zbroj je upadnog i odbojnog kuta (od normale)."
+        );
+      }
+      if (v === "povratak_povrsina") {
+        tocno = 90;
+        k(
+          0,
+          "Pod 0° prema površini zraka bi klizila uz samo zrcalo. Natrag se vraća samo zraka koja pada **po normali**, a normala s površinom zatvara 90°."
+        );
+        if (daniPhi)
+          k(
+            s.kut_povrsina,
+            "Pod tim se kutom zraka odbije na drugu stranu normale. Natrag ide samo zraka po normali."
+          );
+      }
+      if (v === "povratak_normala") {
+        tocno = 0;
+        k(
+          90,
+          "90° od normale je zraka uz samu površinu. Natrag ide zraka koja pada po normali: upadni kut 0°."
+        );
+      }
+    }
+    if (s.scena === "zrcalo_slika") {
+      const a = f2.a;
+      tol2 = void 0;
+      if (v === "slika_osoba") {
+        tocno = 2 * a;
+        k(
+          a,
+          "To je udaljenost slike od **zrcala**. Od osobe do slike treba prijeći i njezinih a do zrcala: a + a.",
+          a * 5e-3
+        );
+      }
+      if (v === "slika_zrcalo") {
+        tocno = a;
+        k(
+          2 * a,
+          "To je udaljenost slike od osobe. Od zrcala je slika udaljena koliko i predmet: jednako daleko iza kao on ispred.",
+          a * 0.01
+        );
+        k(
+          a / 2,
+          "Slika nije na pola puta: iza zrcala je jednako daleko koliko je predmet ispred njega.",
+          a * 5e-3
+        );
+      }
+    }
+    if (s.scena === "lom" || s.scena === "ploca") {
+      const { n1, n2, alpha } = f2;
+      const [ime1, ime2] = [sredstvo1(s).naziv, sredstvo2(s).naziv];
+      if (v === "alpha") {
+        tocno = alpha;
+        k(
+          90 - alpha,
+          "To je kut prema površini. Upadni kut mjeri se od normale: α = 90° − φ."
+        );
+      }
+      if (v === "beta") {
+        tocno = f2.beta;
+        k(
+          alpha * n1 / n2,
+          `Podijelio si kut indeksom loma. Zakon loma govori o **sinusima**: sin β = sin α · n₁/n₂ = ${formatNumber(sinD(alpha) * n1 / n2)}, pa tek onda sin⁻¹.`
+        );
+        k(
+          90 - f2.beta,
+          "To je kut lomljene zrake prema površini. Kut loma mjeri se od **normale**."
+        );
+        k(
+          snell(n2, n1, alpha),
+          `Zamijenio si n₁ i n₂. n₁ je sredstvo iz kojeg zraka dolazi (${ime1}), a n₂ ono u koje ulazi (${ime2}).`
+        );
+        k(
+          alpha,
+          "To je upadni kut. Na granici dvaju sredstava zraka skreće, pa je kut loma drukčiji."
+        );
+        const sinB = n1 * sinD(alpha) / n2;
+        k(
+          sinB,
+          "To je **sinus** kuta loma, a ne sam kut. Primijeni još sin⁻¹.",
+          6e-3
+        );
+        krivo.push(
+          ...radGreske(
+            () => {
+              const x = n1 * Math.sin(alpha) / n2;
+              return Math.abs(x) <= 1 ? Math.asin(x) : null;
+            },
+            f2.beta,
+            "sin α"
+          )
+        );
+      }
+      if (v === "gamma") {
+        tocno = f2.gamma;
+        k(
+          f2.beta,
+          `To je kut u ploči. Na donjoj plohi zraka opet prelazi granicu (${ime2} → ${ime1}) pa se opet lomi, sad **od** normale: n·sin β = sin γ.`
+        );
+        k(
+          90 - f2.gamma,
+          "To je kut prema površini ploče. Izlazni kut mjeri se od normale."
+        );
+        k(
+          snell(n1, n2, f2.beta),
+          "Na izlasku iz gušćeg u rjeđe sredstvo zraka skreće **od** normale, a ne prema njoj."
+        );
+      }
+      if (v === "pomak") {
+        tocno = f2.pomak;
+        tol2 = Math.abs(f2.pomak) * 0.01;
+        k(
+          f2.debljina * (tanD(alpha) - tanD(f2.beta)),
+          "To je razmak duž plohe ploče. Pomak zrake mjeri se okomito na zrake: x = d·sin(α − β)/cos β.",
+          Math.abs(f2.pomak) * 0.01
+        );
+      }
+      if (v === "v1" || v === "v2") {
+        const n = v === "v1" ? n1 : n2;
+        tocno = brzinaU(n);
+        tol2 = tocno * 0.01;
+        if (n !== 1) {
+          k(
+            C_SVJETLOSTI * n,
+            "Svjetlost je u sredstvu **sporija**: v = c/n, a ne c·n.",
+            C_SVJETLOSTI * n * 0.01
+          );
+          k(
+            C_SVJETLOSTI,
+            `To je brzina u vakuumu (i zraku). U sredstvu indeksa loma ${nTekst(n)} svjetlost je ${nTekst(n)} puta sporija: v = c/n.`,
+            C_SVJETLOSTI * 5e-3
+          );
+        }
+      }
+      if (v === "alpha_g") {
+        tocno = f2.alpha_g;
+        k(
+          90 - f2.alpha_g,
+          "To je kut prema površini (ili si upotrijebio cos⁻¹). Granični kut mjeri se od normale: sin α_g = n₂/n₁."
+        );
+        k(
+          atanD(n2 / n1),
+          "Upotrijebio si tg⁻¹. Granični kut dobiva se iz sinusa: pri njemu je β = 90°, a sin 90° = 1, pa je sin α_g = n₂/n₁."
+        );
+        k(
+          atanD(n1 / n2),
+          "To je kut iz tg α = n (Brewsterov kut pri ulasku u kristal). Granični kut dobiva se iz sinusa: sin α_g = 1/n."
+        );
+        k(n2 / n1, "To je **sinus** graničnog kuta. Primijeni još sin⁻¹.", 6e-3);
+        krivo.push(...radGreske(() => null, f2.alpha_g, ""));
+      }
+    }
+    const auto = krivo.filter(
+      (x) => isNum(x.vrijednost) && Math.abs(x.vrijednost - tocno) > Math.max(tol2 ?? Math.abs(tocno) * 5e-3, x.tolerancija ?? 0, 1e-9)
+    );
+    const t = isNum(p.tolerancija) ? p.tolerancija : tol2;
+    const zadnje = velicineScene2(s)[v]?.jedinica === "°" ? [blizu2(tocno)] : [];
+    return { tocno, tol: t, krivo: [...p.krivo ?? [], ...auto, ...zadnje] };
+  }
+  var PONUDE = {
+    lom: ["prema_normali", "ravno", "od_normale", "odbija_se"],
+    ploca: ["paralelno", "kao_u_ploci", "bez_pomaka", "previse"]
+  };
+  function tocnaPonuda(s) {
+    const f2 = fizika(s);
+    if (s.scena === "ploca") return "paralelno";
+    if (f2.totalna) return "odbija_se";
+    return f2.n2 > f2.n1 ? "prema_normali" : "od_normale";
+  }
+  var ponudeOd = (s) => Array.isArray(s.ponudi) ? s.ponudi : PONUDE[s.scena] ?? [];
+  function kutoviPonuda(s) {
+    const f2 = fizika(s);
+    const a = f2.alpha;
+    if (s.scena === "ploca") {
+      const g = f2.gamma;
+      return {
+        paralelno: g,
+        kao_u_ploci: f2.beta,
+        bez_pomaka: a,
+        previse: Math.min(84, a + (90 - a) * 0.55)
+      };
+    }
+    const tocan = f2.beta;
+    const zamjena = snell(f2.n2, f2.n1, a);
+    let prema = f2.n2 > f2.n1 ? tocan : zamjena;
+    if (!isNum(prema) || a - prema < 6) prema = a * 0.55;
+    let od = f2.n2 < f2.n1 && !f2.totalna ? tocan : zamjena;
+    if (!isNum(od) || od - a < 6) od = Math.min(84, a + (90 - a) * 0.55);
+    return { prema_normali: prema, ravno: a, od_normale: od, odbija_se: a };
+  }
+  var PORUKE_PONUDA = (s) => {
+    const f2 = fizika(s);
+    const [i1, i2] = [sredstvo1(s).naziv, sredstvo2(s).naziv];
+    if (s.scena === "ploca")
+      return {
+        kao_u_ploci: `Na donjoj plohi zraka opet prelazi granicu (${i2} → ${i1}) pa se opet lomi, i to **od** normale.`,
+        bez_pomaka: "Smjer je dobar, ali zraka se ne može vratiti na pravac upadne zrake: u ploči je išla strmije, pa izlazi **pomaknuta** u stranu.",
+        previse: "Previše skreće. Iz n·sin β = sin γ izlazi γ = α: izlazna zraka paralelna je s upadnom."
+      };
+    const gusce = f2.n2 > f2.n1;
+    return {
+      prema_normali: gusce ? "" : `Iz gušćeg (${i1}) u rjeđe sredstvo (${i2}) svjetlost ubrzava, pa skreće **od** normale.`,
+      ravno: "Ravno, bez skretanja, prolazi samo zraka koja pada okomito (po normali). Ova pada koso, pa na granici skrene.",
+      od_normale: gusce ? `U gušće sredstvo (${i2}) svjetlost ulazi i usporava, pa skreće **prema** normali.` : f2.totalna ? `Upadni kut je veći od graničnog (${kutTekst(f2.alpha_g)}), pa zraka uopće ne izlazi: sva se odbije.` : "",
+      odbija_se: gusce ? "Totalne refleksije pri ulasku u **gušće** sredstvo nema: zraka uvijek uđe (malo se svjetlosti samo djelomično odbije)." : f2.totalna ? "" : `Upadni kut je manji od graničnog (${kutTekst(f2.alpha_g)}), pa zraka još izlazi van; totalna refleksija tek je iznad graničnog kuta.`
+    };
+  };
+  var OPIS_PONUDE = {
+    prema_normali: "skreće prema normali",
+    ravno: "ide ravno",
+    od_normale: "skreće od normale",
+    odbija_se: "sva se odbija (totalna refleksija)",
+    paralelno: "izlazi paralelno s upadnom, pomaknuta",
+    kao_u_ploci: "nastavlja kao u ploči",
+    bez_pomaka: "nastavlja po pravcu upadne zrake",
+    previse: "skreće još više od normale"
+  };
+  var TOL_POSTAVI2 = 0.5;
+  var METAR = 20;
+  var R_META = 0.6;
+  var tolPostavi2 = (s) => isNum(s.tolerancija) ? s.tolerancija : TOL_POSTAVI2;
+  function rjesenjePostavi2(s) {
+    if (s.scena === "zrcalo_slika") return s.udaljenost;
+    const c = s.cilj ?? {};
+    const n1 = sredstvo1(s).n;
+    const n2 = sredstvo2(s)?.n ?? 1;
+    if (c.vrsta === "povratak") return 0;
+    if (c.vrsta === "granicni") return granicniKut(n1, n2);
+    if (c.vrsta === "kut") {
+      if (c.velicina === "alpha") return c.vrijednost;
+      if (c.velicina === "alpha_povrsina") return 90 - c.vrijednost;
+      if (c.velicina === "izmedu") return c.vrijednost / 2;
+      if (c.velicina === "beta") return snell(n2, n1, c.vrijednost);
+    }
+    if (c.vrsta === "meta") return kutZaMetu(s);
+    return null;
+  }
+  function kutZaMetu(s) {
+    const [x, y] = s.cilj?.meta ?? [];
+    if (!isNum(x) || !isNum(y) || x <= 0) return null;
+    if (y > 0) return atanD(x / y);
+    if (s.scena !== "lom" || y === 0) return null;
+    const beta = atanD(x / -y);
+    return snell(sredstvo2(s).n, sredstvo1(s).n, beta);
+  }
+  function pogodakMete(s, kut) {
+    const [x, y] = s.cilj.meta;
+    const f2 = fizika(s, { ...pocetnoStanje4(s), kut });
+    let d;
+    if (y > 0) d = [sinD(kut), cosD(kut)];
+    else if (f2.beta == null) return { pogodak: false, nema: true };
+    else d = [sinD(f2.beta), -cosD(f2.beta)];
+    const t = x * d[0] + y * d[1];
+    const udaljenost = Math.abs(x * d[1] - y * d[0]);
+    return { pogodak: t > 0 && udaljenost <= R_META, udaljenost };
+  }
+  function ispunjavaCilj(s, kut) {
+    if (s.cilj?.vrsta === "meta") return pogodakMete(s, kut).pogodak;
+    const r = rjesenjePostavi2(s);
+    return isNum(r) && Math.abs(kut - r) <= tolPostavi2(s) + 1e-9;
+  }
+  function korakRavnala(s) {
+    const a = s.udaljenost ?? 1;
+    const koraci = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1e3];
+    return koraci.find((k) => k >= a / 12) ?? 1e3;
+  }
+  var pocetniKlon = (s) => {
+    const k = korakRavnala(s) / 2;
+    return Math.round((s.udaljenost ?? 1) * 0.4 / k) * k;
+  };
+  var tolSlike = (s) => Math.max(0.03 * s.udaljenost, korakRavnala(s) / 4 + 1e-9);
+  function checkSlika(s, d) {
+    if (!isNum(d))
+      return {
+        tocno: false,
+        poruka: "Povuci klona na mjesto slike.",
+        prazno: true
+      };
+    const a = s.udaljenost;
+    const j = jedinicaDuljine(s);
+    const tol2 = tolSlike(s);
+    if (Math.abs(d - a) <= tol2) return { tocno: true };
+    if (d < -tol2)
+      return {
+        tocno: false,
+        poruka: "Slika nije ispred zrcala. Zrake se od zrcala odbijaju natrag, a oko ih vidi kao da dolaze **iza** zrcala."
+      };
+    if (Math.abs(d) <= tol2)
+      return {
+        tocno: false,
+        poruka: "Slika nije na samom zrcalu. Zamisli da je zrcalo prozor: iza njega stoji klon jednako daleko kao ti ispred."
+      };
+    if (Math.abs(d - 2 * a) <= tol2)
+      return {
+        tocno: false,
+        poruka: `To je ${duljinaTekst(2 * a, j)} iza zrcala, koliko je slika udaljena od osobe. Od zrcala je slika udaljena koliko i osoba.`
+      };
+    if (Math.abs(d - a / 2) <= tol2)
+      return {
+        tocno: false,
+        poruka: "Slika nije na pola puta. Iza zrcala je **jednako daleko** koliko je predmet ispred njega."
+      };
+    return {
+      tocno: false,
+      poruka: d < a ? "Preblizu zrcalu. Slika je jednako daleko iza zrcala koliko je predmet ispred njega." : "Predaleko. Slika je jednako daleko iza zrcala koliko je predmet ispred njega."
+    };
+  }
+  function checkPostavi6(s, odgovor3) {
+    if (s.scena === "zrcalo_slika") return checkSlika(s, odgovor3);
+    const kut = isNum(odgovor3) ? odgovor3 : odgovor3?.kut;
+    if (!isNum(kut))
+      return { tocno: false, poruka: "Okreni laser pa provjeri.", prazno: true };
+    if (ispunjavaCilj(s, kut)) return { tocno: true };
+    const tol2 = tolPostavi2(s);
+    const isti2 = (x) => isNum(x) && Math.abs(kut - x) <= tol2;
+    const hit = (s.krivo ?? []).find((k) => isti2(k.vrijednost));
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const c = s.cilj;
+    const f2 = fizika(s, { ...pocetnoStanje4(s), kut });
+    const r = rjesenjePostavi2(s);
+    const kt = kutTekst(kut);
+    if (c.vrsta === "povratak") {
+      if (kut > 80)
+        return {
+          tocno: false,
+          poruka: "To je zraka gotovo uz samu površinu. Natrag u izvor ide samo zraka koja pada **po normali** (okomito na zrcalo)."
+        };
+      return {
+        tocno: false,
+        poruka: `Pri upadnom kutu ${kt} odbijena zraka ode pod ${kt} na drugu stranu normale. Natrag ide samo zraka po normali: upadni kut 0°.`
+      };
+    }
+    if (c.vrsta === "kut") {
+      const v = c.vrijednost;
+      if (c.velicina === "alpha" && isti2(90 - v))
+        return {
+          tocno: false,
+          poruka: `Postavio si ${kutTekst(v)} od **površine**, a zadano je ${kutTekst(v)} od **normale**.`
+        };
+      if (c.velicina === "alpha_povrsina" && isti2(v))
+        return {
+          tocno: false,
+          poruka: `Postavio si ${kutTekst(v)} od **normale**, a zadano je ${kutTekst(v)} od **površine**. Od normale je to 90° − ${kutTekst(v)}.`
+        };
+      if (c.velicina === "izmedu" && isti2(v))
+        return {
+          tocno: false,
+          poruka: "To je upadni kut jednak cijelom kutu između zraka. Kut između zraka zbroj je upadnog i odbojnog, pa je upadni pola od toga."
+        };
+      if (c.velicina === "izmedu" && isti2(90 - v / 2))
+        return {
+          tocno: false,
+          poruka: "Mjerio si od površine. Upadni kut mjeri se od normale, a kut između zraka je 2α."
+        };
+      if (c.velicina === "beta") {
+        if (isti2(v))
+          return {
+            tocno: false,
+            poruka: `Upadni kut je ${kt}, a toliki treba biti **kut loma** β. Zraka na granici skrene, pa upadni kut mora biti drukčiji.`
+          };
+        if (isti2(snell(f2.n1, f2.n2, v)))
+          return {
+            tocno: false,
+            poruka: "Zamijenio si n₁ i n₂: n₁ je sredstvo iz kojeg zraka dolazi, n₂ ono u koje ulazi."
+          };
+        if (f2.beta == null)
+          return {
+            tocno: false,
+            poruka: "Sve se odbilo, lomljene zrake nema. Smanji upadni kut."
+          };
+        return {
+          tocno: false,
+          poruka: `Kut loma je ${kutTekst(f2.beta)}. ${f2.beta < v ? "Povećaj" : "Smanji"} upadni kut.`
+        };
+      }
+      return {
+        tocno: false,
+        poruka: `Nije taj kut. ${kut < r ? "Povećaj" : "Smanji"} upadni kut (mjeri se od normale).`
+      };
+    }
+    if (c.vrsta === "granicni") {
+      const g = r;
+      const ishodKuta = kut < g && f2.beta != null ? `zraka još izlazi u ${sredstvo2(s).naziv} (kut loma ${kutTekst(f2.beta)})` : "sve se odbilo";
+      if (isti2(90 - g))
+        return {
+          tocno: false,
+          poruka: `To je granični kut mjeren od **površine**. Upadni kut mjeri se od normale: pri ${kt} od normale ${ishodKuta}.`
+        };
+      if (isti2(atanD(f2.n2 / f2.n1)))
+        return {
+          tocno: false,
+          poruka: "To je kut iz tg⁻¹. Granični kut dobiva se iz sinusa: pri njemu je kut loma 90°, pa je sin α_g = n₂/n₁."
+        };
+      if (isti2(atanD(f2.n1 / f2.n2)))
+        return {
+          tocno: false,
+          poruka: `To je kut iz tg α = n (Brewsterov kut), a ne granični. Granični kut: sin α_g = n₂/n₁. Pri ${kt} ${ishodKuta}.`
+        };
+      if (kut < g)
+        return {
+          tocno: false,
+          poruka: `Zraka još izlazi u ${sredstvo2(s).naziv} (kut loma ${kutTekst(f2.beta)}). Povećaj upadni kut.`
+        };
+      return {
+        tocno: false,
+        poruka: "Sve se odbilo: to je već totalna refleksija. Granični kut je manji, točno onaj pri kojem lomljena zraka legne uz površinu."
+      };
+    }
+    if (c.vrsta === "meta") {
+      const p = pogodakMete(s, kut);
+      if (p.nema)
+        return {
+          tocno: false,
+          poruka: "Nema lomljene zrake: to je već totalna refleksija. Smanji upadni kut."
+        };
+      const zraka = c.meta[1] > 0 ? "Odbijena" : "Lomljena";
+      return {
+        tocno: false,
+        poruka: kut < r ? `${zraka} zraka prolazi lijevo od mete (prestrmo). Povećaj upadni kut.` : `${zraka} zraka prolazi desno od mete (preplitko). Smanji upadni kut.`
+      };
+    }
+    return { tocno: false, poruka: s.savjet || "Nije točno." };
+  }
+  function checkIzracunaj4(s, unosi) {
+    const pitaj = s.pitaj;
+    const vals = pitaj.map(
+      (_, i) => Array.isArray(unosi) ? unosi[i] ?? "" : i === 0 ? unosi ?? "" : ""
+    );
+    const prazno = vals.findIndex((v) => !String(v).trim());
+    if (prazno >= 0)
+      return {
+        tocno: false,
+        poruka: pitaj.length > 1 ? "Upiši sve odgovore." : "Upiši odgovor.",
+        prazno: true,
+        polje: prazno
+      };
+    for (let i = 0; i < pitaj.length; i++) {
+      const p = pitaj[i];
+      const o = odgovorPitanja(s, p);
+      const r = checkNumber({
+        input: String(vals[i]),
+        answer: o.tocno,
+        tol: o.tol,
+        unit: jedinicaPitanja2(s, p),
+        krivo: o.krivo,
+        savjet: s.savjet
+      });
+      if (!r.tocno)
+        return {
+          ...r,
+          polje: i,
+          poruka: pitaj.length > 1 ? `U ${i + 1}. polju: ${r.poruka}` : r.poruka
+        };
+    }
+    return { tocno: true };
+  }
+  function checkOdaberi4(s, id) {
+    if (!isText(id))
+      return {
+        tocno: false,
+        poruka: "Dodirni jednu od zraka A–D.",
+        prazno: true
+      };
+    if (id === tocnaPonuda(s)) return { tocno: true };
+    return {
+      tocno: false,
+      poruka: PORUKE_PONUDA(s)[id] || s.savjet || "Nije ta zraka."
+    };
+  }
+  function skrivanje(s, { otkriveno = false, provjereno = false } = {}) {
+    const n = s.nacin;
+    if (GLEDANJE.includes(n)) return { izlaz: false, brojevi: false, kut: false };
+    if (n === "postavi")
+      return {
+        izlaz: !(otkriveno || provjereno),
+        brojevi: !(otkriveno || provjereno),
+        kut: s.skrij === "kut" && !otkriveno
+      };
+    return { izlaz: !otkriveno, brojevi: !otkriveno, kut: false };
+  }
+  function prikaziScene(s) {
+    if (Array.isArray(s.prikazi)) return s.prikazi;
+    if (s.scena === "zrcalo") return ["kutovi", "kut_povrsina"];
+    if (s.scena === "lom")
+      return sredstvo1(s).n > (sredstvo2(s)?.n ?? 1) || klizaciOd3(s).some((k) => k.id === "n1") ? ["kutovi", "sinusi", "brzine", "granicni"] : ["kutovi", "sinusi", "brzine"];
+    if (s.scena === "ploca") return ["kutovi", "pomak"];
+    return ["udaljenosti", "zrake"];
+  }
+  var PRIKAZI9 = {
+    zrcalo: ["kutovi", "kut_povrsina", "izmedu"],
+    lom: ["kutovi", "sinusi", "brzine", "granicni"],
+    ploca: ["kutovi", "pomak"],
+    zrcalo_slika: ["udaljenosti", "zrake"]
+  };
+  var SIRINA = 360;
+  var VISINA = 280;
+  var VISINE = { zrcalo: 236, lom: 280, ploca: 300, zrcalo_slika: 280 };
+  var visinaScene = (s) => VISINE[s.scena] ?? VISINA;
+  var r12 = (v) => Math.round(v * 10) / 10;
+  var T = (p) => [r12(p[0]), r12(p[1])];
+  var plus2 = (o, d, t) => [o[0] + d[0] * t, o[1] + d[1] * t];
+  var smjerKuta = (deg4) => Math.atan2(deg4[1], deg4[0]) / RAD;
+  function doRuba(o, d, h = VISINA, rub = 6) {
+    let t = Infinity;
+    if (d[0] > 1e-9) t = Math.min(t, (SIRINA - rub - o[0]) / d[0]);
+    if (d[0] < -1e-9) t = Math.min(t, (rub - o[0]) / d[0]);
+    if (d[1] > 1e-9) t = Math.min(t, (h - rub - o[1]) / d[1]);
+    if (d[1] < -1e-9) t = Math.min(t, (rub - o[1]) / d[1]);
+    return plus2(o, d, t);
+  }
+  function luk(c, r, u, v, vrsta, tekst, rOzn = r + 14) {
+    const a0 = smjerKuta(u);
+    let da = smjerKuta(v) - a0;
+    da = (da + 540) % 360 - 180;
+    if (Math.abs(da) < 1.5) return null;
+    const n = Math.max(4, Math.ceil(Math.abs(da) / 6));
+    const tocke = [];
+    for (let i = 0; i <= n; i++) {
+      const a = (a0 + da * i / n) * RAD;
+      tocke.push(T([c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)]));
+    }
+    const am = (a0 + da / 2) * RAD;
+    return {
+      vrsta,
+      tocke,
+      oznaka: {
+        x: r12(c[0] + rOzn * Math.cos(am)),
+        y: r12(c[1] + rOzn * Math.sin(am) + 4),
+        tekst,
+        // uz normalu dva susjedna luka (α i α') ne smiju se preklopiti: tekst se poravna prema svojoj strani
+        sidro: Math.cos(am) < -0.04 ? "end" : Math.cos(am) > 0.04 ? "start" : "middle"
+      }
+    };
+  }
+  var oznakaKuta = (sim, x, pokazi, pitano2) => pitano2 ? `${sim} = ?` : pokazi && isNum(x) ? `${sim} = ${kutTekst(x)}` : sim;
+  var tonSredstva = (n) => Math.max(0, Math.min(1, (n - 1) / 1.5));
+  function geometrija(s, st = pocetnoStanje4(s), opt = {}) {
+    const sk = skrivanje(s, opt);
+    const otkriveno = !!opt.otkriveno;
+    const f2 = fizika(s, st);
+    const prikazi = GLEDANJE.includes(s.nacin) ? prikaziScene(s) : s.scena === "zrcalo_slika" ? ["udaljenosti", "zrake"] : ["kutovi"];
+    const ima2 = (k) => prikazi.includes(k);
+    const pitano2 = new Set(
+      s.nacin === "izracunaj" && !otkriveno ? (s.pitaj ?? []).map((p) => p.velicina) : []
+    );
+    const daniPhi = !isNum(s.kut) && isNum(s.kut_povrsina);
+    const brojAlpha = !sk.brojevi || s.nacin === "postavi" && !sk.kut || s.nacin === "izracunaj" && !daniPhi && !pitano2.has("alpha");
+    const g = {
+      w: SIRINA,
+      h: visinaScene(s),
+      scena: s.scena,
+      sredstva: [],
+      granice: [],
+      zrcalo: null,
+      normale: [],
+      zrake: [],
+      lukovi: [],
+      kote: [],
+      natpisi: [],
+      laser: null,
+      meta: null,
+      kandidati: [],
+      skriveno: sk
+    };
+    if (s.scena === "zrcalo_slika")
+      return geometrijaSlike(s, st, g, sk, otkriveno, opt);
+    if (s.scena === "zrcalo" || s.scena === "lom") {
+      const lom = s.scena === "lom";
+      const O2 = lom ? [180, 150] : [180, 200];
+      const L2 = lom ? 104 : 128;
+      const a2 = f2.alpha;
+      const dIn2 = [sinD(a2), cosD(a2)];
+      const laser2 = plus2(O2, dIn2, -L2);
+      const gore = [0, -1];
+      const unatrag2 = [-dIn2[0], -dIn2[1]];
+      const dOdb = [sinD(a2), -cosD(a2)];
+      g.laser = {
+        x: r12(laser2[0]),
+        y: r12(laser2[1]),
+        kut: r12(smjerKuta(dIn2)),
+        o: T(O2),
+        L: L2,
+        rucka: T(plus2(laser2, dIn2, -24))
+      };
+      g.normale.push({
+        od: T([O2[0], lom ? 16 : 30]),
+        do: T([O2[0], lom ? 272 : O2[1]])
+      });
+      if (lom) {
+        const [s12, s22] = [sredstvo1(s), sredstvo2(s)];
+        g.sredstva.push(
+          {
+            tocke: [
+              [0, 0],
+              [SIRINA, 0],
+              [SIRINA, O2[1]],
+              [0, O2[1]]
+            ],
+            ton: tonSredstva(f2.n1),
+            naziv: nazivSredstva(f2.n1, s12),
+            n: f2.n1,
+            oznaka: {
+              x: 10,
+              y: 20,
+              tekst: `${nazivSredstva(f2.n1, s12)} · n_1 = ${nTekst(f2.n1)}`
+            }
+          },
+          {
+            tocke: [
+              [0, O2[1]],
+              [SIRINA, O2[1]],
+              [SIRINA, g.h],
+              [0, g.h]
+            ],
+            ton: tonSredstva(f2.n2),
+            naziv: nazivSredstva(f2.n2, s22),
+            n: f2.n2,
+            oznaka: {
+              x: 10,
+              y: g.h - 10,
+              tekst: `${nazivSredstva(f2.n2, s22)} · n_2 = ${nTekst(f2.n2)}`
+            }
+          }
+        );
+        g.granice.push({ od: [0, O2[1]], do: [SIRINA, O2[1]] });
+      } else {
+        g.zrcalo = { od: [22, O2[1]], do: [SIRINA - 22, O2[1]], strana: "dolje" };
+      }
+      if (s.nacin === "odaberi") {
+        g.zrake.push({
+          vrsta: "upadna",
+          tocke: [T(laser2), T(O2)],
+          n: [f2.n1],
+          t0: 0,
+          jakost: 1
+        });
+        dodajKandidate(s, g, O2, f2, otkriveno);
+        if (otkriveno)
+          dodajLom(s, g, O2, L2, f2, sk, {
+            brojevi: true,
+            pitano: pitano2,
+            ima: () => true,
+            brojAlpha: true
+          });
+        else
+          g.lukovi.push(luk(O2, 44, gore, unatrag2, "alpha", `α = ${kutTekst(a2)}`));
+        g.lukovi = g.lukovi.filter(Boolean);
+        return g;
+      }
+      g.zrake.push({
+        vrsta: "upadna",
+        tocke: [T(laser2), T(O2)],
+        n: [f2.n1],
+        t0: 0,
+        jakost: 1
+      });
+      if (!lom) {
+        if (!sk.izlaz)
+          g.zrake.push({
+            vrsta: "odbijena",
+            tocke: [T(O2), T(doRuba(O2, dOdb, g.h))],
+            n: [1],
+            t0: L2,
+            jakost: 1
+          });
+        const brojevi2 = !sk.brojevi;
+        if (ima2("kutovi") || s.nacin !== "istrazi") {
+          g.lukovi.push(
+            luk(
+              O2,
+              48,
+              gore,
+              unatrag2,
+              "alpha",
+              oznakaKuta("α", a2, brojAlpha, pitano2.has("alpha"))
+            )
+          );
+          if (!sk.izlaz)
+            g.lukovi.push(
+              luk(
+                O2,
+                48,
+                gore,
+                dOdb,
+                "alpha_odbojni",
+                oznakaKuta("α'", a2, brojevi2, pitano2.has("alpha_odbojni"))
+              )
+            );
+          else if (pitano2.has("alpha_odbojni"))
+            g.natpisi.push({
+              x: O2[0] + 52,
+              y: O2[1] - 52,
+              tekst: "α' = ?",
+              vrsta: "pitanje"
+            });
+        }
+        const phiZadan = s.nacin === "izracunaj" && daniPhi;
+        if (GLEDANJE.includes(s.nacin) && ima2("kut_povrsina") || phiZadan)
+          g.lukovi.push(
+            luk(
+              O2,
+              30,
+              [-1, 0],
+              unatrag2,
+              "phi",
+              oznakaKuta("φ", 90 - a2, brojevi2 || phiZadan, false),
+              66
+            )
+          );
+        if (GLEDANJE.includes(s.nacin) && ima2("izmedu") || pitano2.has("izmedu") && !sk.izlaz || s.nacin === "izracunaj" && otkriveno && (s.pitaj ?? []).some((p) => p.velicina === "izmedu"))
+          g.lukovi.push(
+            luk(
+              O2,
+              74,
+              unatrag2,
+              dOdb,
+              "izmedu",
+              oznakaKuta("α + α'", 2 * a2, brojevi2, pitano2.has("izmedu")),
+              88
+            )
+          );
+        else if (pitano2.has("izmedu"))
+          g.natpisi.push({
+            x: O2[0],
+            y: O2[1] - 96,
+            tekst: "kut između zraka = ?",
+            vrsta: "pitanje"
+          });
+        if (pitano2.has("povratak_povrsina") || pitano2.has("povratak_normala"))
+          g.natpisi.push({
+            x: O2[0],
+            y: 24,
+            tekst: "kada se zraka vraća u laser?",
+            vrsta: "pitanje"
+          });
+      } else {
+        dodajLom(s, g, O2, L2, f2, sk, {
+          brojevi: !sk.brojevi,
+          pitano: pitano2,
+          ima: ima2,
+          brojAlpha
+        });
+      }
+      if (s.nacin === "postavi" && s.cilj?.vrsta === "meta") {
+        const [mx, my] = s.cilj.meta;
+        const pogodak = (opt.provjereno || otkriveno) && pogodakMete(s, f2.alpha).pogodak;
+        g.meta = {
+          x: r12(O2[0] + mx * METAR),
+          y: r12(O2[1] - my * METAR),
+          r: R_META * METAR,
+          pogodak
+        };
+      }
+      g.lukovi = g.lukovi.filter(Boolean);
+      return g;
+    }
+    const s1 = sredstvo1(s);
+    const s2 = s.ploca;
+    const dMax = Math.max(
+      st.debljina,
+      ...klizaciOd3(s).filter((k) => k.id === "debljina").map((k) => k.max)
+    );
+    const mjerilo2 = Math.min(30, 80 / dMax);
+    const tpx = st.debljina * mjerilo2;
+    const Y1 = 110;
+    const Y2 = Y1 + tpx;
+    const O = [124, Y1];
+    const L = 76;
+    const a = f2.alpha;
+    const dIn = [sinD(a), cosD(a)];
+    const laser = plus2(O, dIn, -L);
+    const unatrag = [-dIn[0], -dIn[1]];
+    g.laser = {
+      x: r12(laser[0]),
+      y: r12(laser[1]),
+      kut: r12(smjerKuta(dIn)),
+      o: T(O),
+      L,
+      rucka: T(plus2(laser, dIn, -24))
+    };
+    g.sredstva.push(
+      {
+        tocke: [
+          [0, 0],
+          [SIRINA, 0],
+          [SIRINA, g.h],
+          [0, g.h]
+        ],
+        ton: tonSredstva(f2.n1),
+        naziv: s1.naziv,
+        n: f2.n1,
+        oznaka: {
+          x: 10,
+          y: g.h - 10,
+          tekst: `${s1.naziv} · n = ${nTekst(f2.n1)}`
+        }
+      },
+      {
+        tocke: T2([
+          [0, Y1],
+          [SIRINA, Y1],
+          [SIRINA, Y2],
+          [0, Y2]
+        ]),
+        ton: tonSredstva(f2.n2),
+        naziv: nazivSredstva(f2.n2, s2),
+        n: f2.n2,
+        oznaka: {
+          x: 10,
+          y: r12(tpx >= 24 ? Y1 + 17 : Y2 + 15),
+          tekst: `${nazivSredstva(f2.n2, s2)} · n = ${nTekst(f2.n2)}`
+        }
+      }
+    );
+    g.granice.push(
+      { od: [0, Y1], do: [SIRINA, Y1] },
+      { od: [0, r12(Y2)], do: [SIRINA, r12(Y2)] }
+    );
+    g.normale.push({ od: [O[0], Y1 - 66], do: T([O[0], Y2 + 14]) });
+    g.zrake.push({
+      vrsta: "upadna",
+      tocke: [T(laser), T(O)],
+      n: [f2.n1],
+      t0: 0,
+      jakost: 1
+    });
+    const b = f2.beta;
+    const dB2 = [sinD(b), cosD(b)];
+    const E2 = plus2(O, dB2, tpx / cosD(b));
+    const dOut = [sinD(f2.gamma), cosD(f2.gamma)];
+    g.normale.push({
+      od: T([E2[0], Y1 - 8]),
+      do: T([E2[0], Math.min(g.h - 4, Y2 + 64)])
+    });
+    const brojevi = !sk.brojevi;
+    const vidiPomak = GLEDANJE.includes(s.nacin) ? ima2("pomak") : otkriveno && s.nacin === "izracunaj";
+    if (s.nacin === "odaberi") {
+      g.zrake.push({
+        vrsta: "lomljena",
+        tocke: [T(O), T(E2)],
+        n: [f2.n2],
+        t0: L * f2.n1,
+        jakost: 1 - f2.R
+      });
+      g.lukovi.push(luk(O, 34, [0, -1], unatrag, "alpha", `α = ${kutTekst(a)}`));
+      dodajKandidatePloce(s, g, O, E2, Y2, f2, otkriveno);
+      if (otkriveno) {
+        g.lukovi.push(
+          luk(E2, 34, [0, 1], dOut, "gamma", `γ = ${kutTekst(f2.gamma)}`)
+        );
+      }
+      g.lukovi = g.lukovi.filter(Boolean);
+      return g;
+    }
+    if (vidiPomak)
+      g.zrake.push({
+        vrsta: "nastavak",
+        tocke: [T(O), T(doRuba(O, dIn, g.h))],
+        n: [f2.n1],
+        t0: 0,
+        jakost: 0.5,
+        crtkano: true
+      });
+    if (!sk.izlaz) {
+      g.zrake.push({
+        vrsta: "odbijena",
+        tocke: [T(O), T(doRuba(O, [dIn[0], -dIn[1]], g.h))],
+        n: [f2.n1],
+        t0: L * f2.n1,
+        jakost: f2.R
+      });
+      g.zrake.push({
+        vrsta: "lomljena",
+        tocke: [T(O), T(E2), T(doRuba(E2, dOut, g.h))],
+        n: [f2.n2, f2.n1],
+        t0: L * f2.n1,
+        jakost: 1 - f2.R
+      });
+    }
+    if (ima2("kutovi") || !GLEDANJE.includes(s.nacin)) {
+      g.lukovi.push(
+        luk(
+          O,
+          34,
+          [0, -1],
+          unatrag,
+          "alpha",
+          oznakaKuta("α", a, brojAlpha || brojevi, false)
+        )
+      );
+      if (!sk.izlaz) {
+        if (tpx > 26)
+          g.lukovi.push(
+            luk(
+              O,
+              Math.min(30, tpx - 6),
+              [0, 1],
+              dB2,
+              "beta",
+              oznakaKuta("β", b, brojevi, pitano2.has("beta")),
+              Math.min(30, tpx - 6) + 14
+            )
+          );
+        g.lukovi.push(
+          luk(
+            E2,
+            34,
+            [0, 1],
+            dOut,
+            "gamma",
+            oznakaKuta("γ", f2.gamma, brojevi, pitano2.has("gamma"))
+          )
+        );
+      } else {
+        const pit = [...pitano2].map(
+          (v) => ({ beta: "β = ?", gamma: "γ = ?", pomak: "x = ?", v2: "v = ?" })[v]
+        ).filter(Boolean);
+        if (pit.length)
+          g.natpisi.push({
+            x: 250,
+            y: r12(Math.min(g.h - 30, Y2 + 40)),
+            tekst: pit.join("   "),
+            vrsta: "pitanje"
+          });
+      }
+    }
+    if (vidiPomak && !sk.izlaz && f2.pomak > 0.01) {
+      const t = (E2[0] - O[0]) * dIn[0] + (E2[1] - O[1]) * dIn[1];
+      const F = plus2(O, dIn, t);
+      const dl = Math.hypot(F[0] - E2[0], F[1] - E2[1]) || 1;
+      g.kote.push({
+        od: T(E2),
+        do: T(F),
+        tekst: "x",
+        oznaka: T(plus2(F, [(F[0] - E2[0]) / dl, (F[1] - E2[1]) / dl], 9))
+      });
+    }
+    g.kote.push({
+      od: [SIRINA - 22, Y1],
+      do: [SIRINA - 22, r12(Y2)],
+      tekst: `d = ${duljinaTekst(st.debljina, "cm")}`,
+      okomita: true
+    });
+    g.lukovi = g.lukovi.filter(Boolean);
+    return g;
+  }
+  function T2(tocke) {
+    return tocke.map(T);
+  }
+  function dodajLom(s, g, O, L, f2, sk, { brojevi, pitano: pitano2, ima: ima2, brojAlpha }) {
+    const a = f2.alpha;
+    const dIn = [sinD(a), cosD(a)];
+    const unatrag = [-dIn[0], -dIn[1]];
+    const dOdb = [sinD(a), -cosD(a)];
+    const gore = [0, -1];
+    const ishod2 = !sk.izlaz;
+    if (ishod2) {
+      g.zrake.push({
+        vrsta: "odbijena",
+        tocke: [T(O), T(doRuba(O, dOdb, g.h))],
+        n: [f2.n1],
+        t0: L * f2.n1,
+        jakost: f2.R
+      });
+      if (f2.beta != null) {
+        const dB2 = [sinD(f2.beta), cosD(f2.beta)];
+        g.zrake.push({
+          vrsta: "lomljena",
+          tocke: [T(O), T(doRuba(O, dB2, g.h))],
+          n: [f2.n2],
+          t0: L * f2.n1,
+          jakost: 1 - f2.R
+        });
+      } else
+        g.natpisi.push({
+          x: 250,
+          y: O[1] + 66,
+          tekst: "totalna refleksija: lomljene zrake nema",
+          vrsta: "totalna"
+        });
+    }
+    if (ima2("kutovi") || !GLEDANJE.includes(s.nacin)) {
+      g.lukovi.push(
+        luk(
+          O,
+          44,
+          gore,
+          unatrag,
+          "alpha",
+          oznakaKuta("α", a, brojAlpha, pitano2.has("alpha"))
+        )
+      );
+      if (ishod2 && f2.beta != null)
+        g.lukovi.push(
+          luk(
+            O,
+            44,
+            [0, 1],
+            [sinD(f2.beta), cosD(f2.beta)],
+            "beta",
+            oznakaKuta("β", f2.beta, brojevi, pitano2.has("beta"))
+          )
+        );
+      if (ishod2 && f2.beta == null)
+        g.lukovi.push(
+          luk(
+            O,
+            44,
+            gore,
+            dOdb,
+            "alpha_odbojni",
+            oznakaKuta("α'", a, brojevi, false)
+          )
+        );
+      if (!ishod2 && pitano2.has("beta"))
+        g.natpisi.push({ x: 236, y: 214, tekst: "β = ?", vrsta: "pitanje" });
+    }
+    const granicni2 = f2.alpha_g;
+    if (granicni2 != null && (GLEDANJE.includes(s.nacin) && ima2("granicni") || s.nacin === "izracunaj" && !sk.izlaz)) {
+      const dG = [-sinD(granicni2), -cosD(granicni2)];
+      const kraj3 = plus2(O, dG, 112);
+      g.zrake.push({
+        vrsta: "granicna",
+        tocke: [T(kraj3), T(O)],
+        n: [f2.n1],
+        t0: 0,
+        jakost: 0.6,
+        crtkano: true
+      });
+      g.natpisi.push({
+        x: r12(kraj3[0] - 10),
+        y: r12(kraj3[1] - 4),
+        tekst: "α_g",
+        vrsta: "granicni"
+      });
+    }
+    if (s.nacin === "izracunaj" && !ishod2 && pitano2.has("alpha_g"))
+      g.natpisi.push({
+        x: 250,
+        y: O[1] + 66,
+        tekst: "α_g = ?",
+        vrsta: "pitanje"
+      });
+    if (s.nacin === "izracunaj" && !ishod2) {
+      const pit = [...pitano2].filter((v) => v === "v1" || v === "v2");
+      for (const v of pit)
+        g.natpisi.push({
+          x: 350,
+          y: v === "v1" ? 20 : g.h - 10,
+          tekst: `${v === "v1" ? "v_1" : "v_2"} = ?`,
+          vrsta: "pitanje",
+          desno: true
+        });
+    }
+  }
+  function dodajKandidate(s, g, O, f2, otkriveno) {
+    const kutovi = kutoviPonuda(s);
+    const tocna = tocnaPonuda(s);
+    const lista = ponudeOd(s).map((id) => {
+      const k = kutovi[id];
+      const d = id === "odbija_se" ? [sinD(k), -cosD(k)] : [sinD(k), cosD(k)];
+      const kraj3 = plus2(O, d, id === "odbija_se" ? 96 : 98);
+      return { id, d, kraj: kraj3, tocna: id === tocna };
+    });
+    slova(lista);
+    g.kandidati = lista.map((c) => ({
+      id: c.id,
+      slovo: c.slovo,
+      tocke: [T(O), T(c.kraj)],
+      oznaka: T(plus2(O, c.d, c.id === "odbija_se" ? 116 : 118)),
+      tocna: otkriveno ? c.tocna : void 0
+    }));
+  }
+  function dodajKandidatePloce(s, g, O, E2, Y2, f2, otkriveno) {
+    const kutovi = kutoviPonuda(s);
+    const tocna = tocnaPonuda(s);
+    const a = f2.alpha;
+    const dIn = [sinD(a), cosD(a)];
+    const Fz = plus2(O, dIn, (Y2 - O[1]) / dIn[1]);
+    const lista = ponudeOd(s).map((id) => {
+      const k = kutovi[id];
+      const d = [sinD(k), cosD(k)];
+      const od = id === "bez_pomaka" ? Fz : E2;
+      return { id, d, od, kraj: od, tocna: id === tocna };
+    });
+    slova(lista);
+    const dolje = g.h - 18 - Y2 - 16;
+    lista.forEach((c) => {
+      const y = c.slovo === "A" || c.slovo === "C" ? dolje : dolje * 0.55;
+      c.kraj = plus2(c.od, c.d, Math.min(130, y / c.d[1]));
+    });
+    g.kandidati = lista.map((c) => ({
+      id: c.id,
+      slovo: c.slovo,
+      tocke: [T(c.od), T(c.kraj)],
+      oznaka: T(plus2(c.kraj, c.d, 16)),
+      tocna: otkriveno ? c.tocna : void 0
+    }));
+  }
+  function slova(lista) {
+    const poredak = [...lista].sort(
+      (p, q) => Math.atan2(q.d[1], q.d[0]) - Math.atan2(p.d[1], p.d[0]) || p.kraj[0] - q.kraj[0]
+    );
+    poredak.forEach((c, i) => c.slovo = "ABCD"[i]);
+  }
+  var MX = 190;
+  var POD = 232;
+  var ZRCALO_Y = [40, POD];
+  var VISINA_PREDMETA = { osoba: 96, strelica: 78, svijeca: 66 };
+  function mjeriloSlike(s, st = pocetnoStanje4(s)) {
+    const aMax = Math.max(
+      st.udaljenost,
+      ...klizaciOd3(s).filter((k) => k.id === "udaljenost").map((k) => k.max)
+    );
+    return s.nacin === "postavi" ? 72 / s.udaljenost : 128 / aMax;
+  }
+  var granicaKlona = (s) => {
+    const m = mjeriloSlike(s);
+    return [-(MX - 24) / m, (SIRINA - 14 - MX) / m];
+  };
+  var zadanoOko = (s, st) => {
+    const m = mjeriloSlike(s, st);
+    const x = MX - st.udaljenost * m;
+    return [r12(Math.max(26, (x + MX) / 2 - 6)), 74];
+  };
+  function geometrijaSlike(s, st, g, sk, otkriveno, opt) {
+    const m = mjeriloSlike(s, st);
+    const a = st.udaljenost;
+    const j = jedinicaDuljine(s);
+    const vrsta = vrstaPredmeta(s);
+    const h = VISINA_PREDMETA[vrsta];
+    const px = MX - a * m;
+    const ix = MX + a * m;
+    g.zrcalo = { od: [MX, ZRCALO_Y[0]], do: [MX, ZRCALO_Y[1]], strana: "desno" };
+    g.pod = { y: POD };
+    g.predmet = { vrsta, x: r12(px), dno: POD, visina: h };
+    const vidiSliku = s.nacin === "postavi" ? otkriveno : !sk.izlaz;
+    g.slika = vidiSliku ? { vrsta, x: r12(ix), dno: POD, visina: h } : null;
+    const postavi = s.nacin === "postavi";
+    if (postavi && isNum(st.klon)) {
+      const status = opt.provjereno || otkriveno ? Math.abs(st.klon - a) <= tolSlike(s) ? "ok" : "krivo" : null;
+      g.klon = { vrsta, x: r12(MX + st.klon * m), dno: POD, visina: h, status };
+    }
+    const oko = st.oko ?? zadanoOko(s, st);
+    g.oko = vidiSliku ? { x: oko[0], y: oko[1], pomicno: s.nacin === "istrazi" } : null;
+    if (vidiSliku && (prikaziScene(s).includes("zrake") || !GLEDANJE.includes(s.nacin))) {
+      const izvori2 = [
+        [
+          [px, POD - h],
+          [ix, POD - h],
+          [oko[0], oko[1] - 5]
+        ],
+        [
+          [px, POD - h],
+          [ix, POD - h],
+          [oko[0], oko[1] + 5]
+        ],
+        [
+          [px, POD - 2],
+          [ix, POD - 2],
+          [oko[0], oko[1]]
+        ]
+      ];
+      for (const [P2, Pz, E2] of izvori2) {
+        const t = (MX - Pz[0]) / (E2[0] - Pz[0]);
+        const My = Pz[1] + t * (E2[1] - Pz[1]);
+        if (!(t > 0 && t < 1) || My < ZRCALO_Y[0] || My > ZRCALO_Y[1]) continue;
+        const M = [MX, My];
+        g.zrake.push({
+          vrsta: "upadna",
+          tocke: [T(P2), T(M), T(E2)],
+          n: [1, 1],
+          t0: 0,
+          jakost: 1,
+          tanka: true
+        });
+        g.zrake.push({
+          vrsta: "produzetak",
+          tocke: [T(M), T(Pz)],
+          n: [1],
+          t0: 0,
+          jakost: 0.7,
+          crtkano: true
+        });
+      }
+    }
+    const vidiKote = GLEDANJE.includes(s.nacin) ? prikaziScene(s).includes("udaljenosti") : true;
+    if (vidiKote) {
+      const yk = postavi ? POD + 40 : POD + 18;
+      g.kote.push({
+        od: [r12(px), yk],
+        do: [MX, yk],
+        tekst: `a = ${duljinaTekst(a, j)}`
+      });
+      if (vidiSliku) {
+        g.kote.push({
+          od: [MX, yk],
+          do: [r12(ix), yk],
+          tekst: duljinaTekst(a, j)
+        });
+        if (!postavi && (s.nacin === "izracunaj" || prikaziScene(s).includes("udaljenosti")))
+          g.kote.push({
+            od: [r12(px), POD + 38],
+            do: [r12(ix), POD + 38],
+            tekst: duljinaTekst(2 * a, j)
+          });
+      }
+    }
+    if (s.nacin === "izracunaj" && !vidiSliku)
+      g.natpisi.push({
+        x: 276,
+        y: POD - 50,
+        tekst: "slika = ?",
+        vrsta: "pitanje"
+      });
+    if (postavi) {
+      const k = korakRavnala(s);
+      const [lo, hi] = granicaKlona(s);
+      const crtice = [];
+      for (let i = Math.ceil(lo / k); i <= Math.floor(hi / k); i++) {
+        const x = MX + i * k * m;
+        const korakOzn = [1, 2, 5, 10].find((q) => q * k * m >= 34) ?? 10;
+        crtice.push({
+          x: r12(x),
+          duga: i % korakOzn === 0,
+          tekst: i % korakOzn === 0 ? formatNumber(Math.abs(i * k)) : null
+        });
+      }
+      g.ravnalo = { y: POD, crtice, jedinica: j };
+    }
+    return g;
+  }
+  var OPIS8 = `Geometrijska optika (fizika, matura): zraka lasera, normala i kutovi uživo. tekst, scena, nacin. Kutovi se uvijek mjere od normale (α upadni, α' odbojni, β kut loma, γ izlazni, φ = 90° − α kut prema površini). c = 3·10⁸ m/s.
+Scene:
+- "zrcalo": vodoravno ravno zrcalo; kut (upadni, od normale, 0–89) ILI kut_povrsina (φ, 1–90).
+- "zrcalo_slika": okomito ravno zrcalo; udaljenost (predmet–zrcalo, > 0), jedinica? ("cm" zadano | "m"), predmet? ("osoba" | "strelica" | "svijeca"). Zrake iz vrha predmeta preko zrcala u oko (oko se vuče), crtkani produžeci do slike.
+- "lom": vodoravna granica; sredstvo1? (gore, odakle zraka dolazi; zadano {naziv: "zrak", n: 1}), sredstvo2 {naziv, n} (dolje); kut ILI kut_povrsina. Djelomično odbijena zraka (debljina iz Fresnela); za n1 > n2 granični kut i totalna refleksija.
+- "ploca": planparalelna ploča u sredstvu sredstvo1? (zadano zrak); ploca {naziv, n, debljina (cm)}; kut ILI kut_povrsina. Izlazna zraka paralelna s upadnom, pomak x = d·sin(α − β)/cos β.
+Načini:
+- "istrazi" (gledanje): laser se vuče (kut), klizaci?: [{id, min, max, korak, pocetak?, oznaka?}] (1–3; id zrcalo: kut; lom: kut, n1, n2; ploca: kut, n, debljina; zrcalo_slika: udaljenost); prikazi?: zrcalo: kutovi, kut_povrsina, izmedu; lom: kutovi, sinusi, brzine, granicni; ploca: kutovi, pomak; zrcalo_slika: udaljenosti, zrake.
+- "prikaz" (gledanje): isti crtež bez povlačenja i klizača (zamjena za sliku u objašnjenju); prikazi? kao gore.
+- "postavi" (Tvoj red, zrcalo i lom): učenik okreće laser; izlazne zrake vide se tek nakon provjere. cilj: {vrsta: "kut", velicina: "alpha" | "alpha_povrsina" | "izmedu" (zrcalo) | "beta" (lom), vrijednost (°)} | {vrsta: "povratak"} (zrcalo: zraka se vraća u laser) | {vrsta: "granicni"} (lom, n1 > n2) | {vrsta: "meta", meta: [x, y]} (jedinice po 20 px od točke upada, y prema gore; y > 0 pogađa odbijena, y < 0 lomljena zraka). kut / kut_povrsina = početni položaj lasera (ne smije već ispunjavati cilj). skrij?: "kut" (bez broja kuta uživo), tolerancija? (°, zadano 0,5), krivo?: [{vrijednost (upadni kut), poruka}]. Poruke za kut od površine, Brewsterov kut umjesto graničnog, „još izlazi / sve se odbilo“, promašaj mete dodaju se same.
+  zrcalo_slika + postavi: učenik povlači klona po ravnalu iza zrcala na mjesto slike (bez cilja); poruke za sliku na zrcalu, na pola puta, na 2a i ispred zrcala dodaju se same.
+- "izracunaj" (Tvoj red): scena s „?“, izlazne zrake skrivene do točnog odgovora. pitaj: [{velicina, oznaka?, jedinica?, tolerancija?, krivo?}] (1–3). Veličine: zrcalo: alpha, alpha_odbojni, izmedu, povratak_povrsina, povratak_normala; zrcalo_slika: slika_osoba, slika_zrcalo; lom: alpha, beta, v1, v2, alpha_g (n1 > n2); ploca: beta, gamma, pomak, v2. Kutovi ±0,2°, brzine 1 %. Tipične greške računa kod: kut od površine, α/n umjesto sinusa, zamijenjeni n, sin β bez sin⁻¹, kalkulator u radijanima, c·n, 90° − α_g, tg⁻¹ i Brewster umjesto graničnog, γ = β, a umjesto 2a.
+- "odaberi" (Tvoj red, lom i ploca): uz upadnu zraku nacrtane su zrake A–D, učenik dodirne pravu. ponudi?: lom: prema_normali, ravno, od_normale, odbija_se; ploca: paralelno, kao_u_ploci, bez_pomaka, previse (3–4, mora uključiti točnu). Točnu računa kod iz n i kuta.`;
+  var PRIMJER8 = {
+    tip: TIP8,
+    scena: "lom",
+    nacin: "izracunaj",
+    tekst: "Svjetlost iz zraka upada na staklo indeksa loma 1,5 pod kutom 39° prema normali. Koliki je kut loma i kolika je brzina svjetlosti u tom staklu?",
+    sredstvo1: { naziv: "zrak", n: 1 },
+    sredstvo2: { naziv: "staklo", n: 1.5 },
+    kut: 39,
+    pitaj: [
+      { velicina: "beta", oznaka: "$\\beta =$" },
+      { velicina: "v2", oznaka: "$v =$" }
+    ]
+  };
+  var PRIMJERI8 = [
+    // 1125 a
+    {
+      tip: TIP8,
+      scena: "zrcalo",
+      nacin: "izracunaj",
+      tekst: "Zraka svjetlosti pada na ravno zrcalo tako da s njegovom **površinom** zatvara kut 25°. Koliki je odbojni kut i koliki je kut između upadne i odbijene zrake?",
+      kut_povrsina: 25,
+      pitaj: [{ velicina: "alpha_odbojni" }, { velicina: "izmedu" }]
+    },
+    // 1125 a, treći dio
+    {
+      tip: TIP8,
+      scena: "zrcalo",
+      nacin: "postavi",
+      tekst: "Okreni laser tako da se odbijena zraka vrati **natrag u laser**. Odbijenu zraku vidjet ćeš tek kad provjeriš.",
+      kut_povrsina: 25,
+      cilj: { vrsta: "povratak" }
+    },
+    // 1126 a: istraživanje
+    {
+      tip: TIP8,
+      scena: "zrcalo",
+      nacin: "istrazi",
+      tekst: "Okreći laser i usporedi kut prema **normali** (α, α') s kutom prema **površini** (φ).",
+      kut_povrsina: 35,
+      prikazi: ["kutovi", "kut_povrsina", "izmedu"]
+    },
+    // 1128 a: blizanac
+    {
+      tip: TIP8,
+      scena: "zrcalo",
+      nacin: "postavi",
+      tekst: "Namjesti laser tako da zraka s **površinom** zrcala zatvara 40°. Brojka uz laser pokazuje kut od normale.",
+      kut: 20,
+      cilj: { vrsta: "kut", velicina: "alpha_povrsina", vrijednost: 40 }
+    },
+    // 1127 a: igra s metom
+    {
+      tip: TIP8,
+      scena: "zrcalo",
+      nacin: "postavi",
+      tekst: "Okreni laser tako da odbijena zraka pogodi metu. Zraku ćeš vidjeti tek kad provjeriš, pa prvo procijeni kut.",
+      kut: 30,
+      cilj: { vrsta: "meta", meta: [6, 3.5] }
+    },
+    // 1125 b
+    {
+      tip: TIP8,
+      scena: "zrcalo_slika",
+      nacin: "postavi",
+      tekst: "Osoba stoji 80 cm ispred ravnog zrcala. Dovuci njezinog „klona“ na mjesto na kojem se vidi njezina slika.",
+      udaljenost: 80,
+      jedinica: "cm",
+      predmet: "osoba"
+    },
+    // 1126 b
+    {
+      tip: TIP8,
+      scena: "zrcalo_slika",
+      nacin: "izracunaj",
+      tekst: "Osoba stoji 120 cm ispred ravnog zrcala. Koliko je njezina slika udaljena od nje?",
+      udaljenost: 120,
+      pitaj: [{ velicina: "slika_osoba" }]
+    },
+    // 1125 b: istraživanje
+    {
+      tip: TIP8,
+      scena: "zrcalo_slika",
+      nacin: "istrazi",
+      tekst: "Povuci **oko** i promijeni udaljenost svijeće. Gdje se sijeku crtkani produžeci zraka?",
+      udaljenost: 80,
+      predmet: "svijeca",
+      klizaci: [{ id: "udaljenost", min: 20, max: 150, korak: 10 }]
+    },
+    // 1131 a
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "istrazi",
+      tekst: "Okreći laser i mijenjaj indeks loma donjeg sredstva. Prati omjer sinusa i točkice svjetlosti: gdje putuju sporije?",
+      sredstvo2: { naziv: "voda", n: 1.33 },
+      kut: 35,
+      klizaci: [{ id: "n2", min: 1, max: 2.5, korak: 0.01 }]
+    },
+    // 1132 a
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "odaberi",
+      tekst: "Zraka iz zraka pada na staklo indeksa loma 1,7 pod kutom 55° prema normali. Koja je od zraka A–D prava lomljena zraka?",
+      sredstvo2: { naziv: "staklo", n: 1.7 },
+      kut: 55
+    },
+    // 1130 b
+    {
+      tip: TIP8,
+      scena: "ploca",
+      nacin: "istrazi",
+      tekst: "Mijenjaj debljinu ploče i indeks loma. Što se mijenja na izlaznoj zraci, a što ostaje isto?",
+      ploca: { naziv: "staklo", n: 1.5, debljina: 2 },
+      kut: 39,
+      klizaci: [
+        { id: "debljina", min: 0.5, max: 4, korak: 0.5 },
+        { id: "n", min: 1.1, max: 2.5, korak: 0.05 }
+      ]
+    },
+    // 1133 b
+    {
+      tip: TIP8,
+      scena: "ploca",
+      nacin: "izracunaj",
+      tekst: "Zraka pada pod kutom 63° prema normali na planparalelnu staklenu ploču indeksa loma 1,75. Pod kojim kutom izlazi s druge strane ploče?",
+      ploca: { naziv: "staklo", n: 1.75, debljina: 2 },
+      kut: 63,
+      pitaj: [{ velicina: "beta" }, { velicina: "gamma" }]
+    },
+    // 1134 b
+    {
+      tip: TIP8,
+      scena: "ploca",
+      nacin: "odaberi",
+      tekst: "Zraka pada pod 26° na staklenu planparalelnu ploču (n = 1,55). Kojim putem zraka izlazi iz ploče?",
+      ploca: { naziv: "staklo", n: 1.55, debljina: 2 },
+      kut: 26
+    },
+    // 1135
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "postavi",
+      tekst: "Zraka ide iz kristala (n = 1,5) prema zraku. Izračunaj granični kut i namjesti laser na njega. Ishod ćeš vidjeti kad provjeriš.",
+      sredstvo1: { naziv: "kristal", n: 1.5 },
+      sredstvo2: { naziv: "zrak", n: 1 },
+      kut: 20,
+      cilj: { vrsta: "granicni" }
+    },
+    // 1138
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "izracunaj",
+      tekst: "Kristal ima indeks loma 2,42. Koliki je granični kut totalne refleksije pri prijelazu iz tog kristala u zrak?",
+      sredstvo1: { naziv: "kristal", n: 2.42 },
+      sredstvo2: { naziv: "zrak", n: 1 },
+      kut: 15,
+      pitaj: [{ velicina: "alpha_g" }]
+    },
+    // 1137: istraživanje totalne refleksije
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "istrazi",
+      tekst: "Zraka izlazi iz kristala (n = 1,6) u zrak. **Povećavaj upadni kut** i gledaj lomljenu i odbijenu zraku oko graničnog kuta.",
+      sredstvo1: { naziv: "kristal", n: 1.6 },
+      sredstvo2: { naziv: "zrak", n: 1 },
+      kut: 25
+    },
+    // 1135, blizanac: totalne refleksije pri ulasku u gušće sredstvo nema
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "odaberi",
+      tekst: "Zraka iz zraka pada na kristal (n = 1,5) pod kutom 60°. Što se dogodi na granici?",
+      sredstvo2: { naziv: "kristal", n: 1.5 },
+      kut: 60
+    },
+    // 1136: crtež za objašnjenje
+    {
+      tip: TIP8,
+      scena: "lom",
+      nacin: "prikaz",
+      tekst: "Iz kristala (n = 1,33) pod 60°: kut je veći od graničnog (48,8°), pa je to totalna refleksija.",
+      sredstvo1: { naziv: "kristal", n: 1.33 },
+      sredstvo2: { naziv: "zrak", n: 1 },
+      kut: 60,
+      prikazi: ["kutovi", "granicni"]
+    }
+  ];
+  var KLJUCEVI = {
+    zajednicki: ["tip", "scena", "nacin", "tekst", "savjet"],
+    zrcalo: ["kut", "kut_povrsina"],
+    lom: ["kut", "kut_povrsina", "sredstvo1", "sredstvo2"],
+    ploca: ["kut", "kut_povrsina", "sredstvo1", "ploca"],
+    zrcalo_slika: ["udaljenost", "jedinica", "predmet"],
+    istrazi: ["klizaci", "prikazi"],
+    prikaz: ["prikazi"],
+    postavi: ["cilj", "skrij", "tolerancija", "krivo"],
+    izracunaj: ["pitaj"],
+    odaberi: ["ponudi"]
+  };
+  function validateSredstvo(x, ime2, need) {
+    if (!need(x && typeof x === "object", `${ime2} mora biti {naziv, n}`))
+      return false;
+    need(isText(x.naziv), `${ime2}.naziv mora biti tekst (npr. "staklo")`);
+    return need(
+      isNum(x.n) && x.n >= 1 && x.n <= 3,
+      `${ime2}.n mora biti indeks loma od 1 do 3`
+    );
+  }
+  function validateKlizaci3(s, need) {
+    if (s.klizaci == null) return;
+    if (!need(
+      Array.isArray(s.klizaci) && s.klizaci.length >= 1 && s.klizaci.length <= 3,
+      "klizaci mora biti popis od 1 do 3 klizača"
+    ))
+      return;
+    const ids = ID_KLIZACA[s.scena];
+    const raspon4 = {
+      kut: [0, 89],
+      n1: [1, 3],
+      n2: [1, 3],
+      n: [1, 3],
+      debljina: [0.1, 50],
+      udaljenost: [0.01, 1e4]
+    };
+    const vidjeni = /* @__PURE__ */ new Set();
+    s.klizaci.forEach((k, i) => {
+      const w = `klizaci[${i}]`;
+      if (!need(
+        ids.includes(k?.id),
+        `${w}.id mora biti jedan od: ${ids.join(", ")}`
+      ))
+        return;
+      need(!vidjeni.has(k.id), `${w}: klizač „${k.id}“ je već zadan`);
+      vidjeni.add(k.id);
+      const [lo, hi] = raspon4[k.id];
+      const ok = need(
+        isNum(k.min) && isNum(k.max) && k.min < k.max,
+        `${w}: min i max moraju biti brojevi, min < max`
+      ) && need(
+        k.min >= lo && k.max <= hi,
+        `${w}: raspon za ${k.id} mora biti unutar [${formatNumber(lo)}, ${formatNumber(hi)}]`
+      ) && need(
+        isNum(k.korak) && k.korak > 0 && (k.max - k.min) / k.korak <= 2e3,
+        `${w}.korak mora biti pozitivan broj (najviše 2000 koraka)`
+      );
+      if (ok && k.pocetak != null)
+        need(
+          isNum(k.pocetak) && k.pocetak >= k.min && k.pocetak <= k.max,
+          `${w}.pocetak mora biti između min i max`
+        );
+      if (k.oznaka != null) need(isText(k.oznaka), `${w}.oznaka mora biti tekst`);
+      for (const p of Object.keys(k ?? {}))
+        need(
+          ["id", "min", "max", "korak", "pocetak", "oznaka"].includes(p),
+          `${w}: nepoznato polje „${p}“`
+        );
+    });
+    const izSpeca = {
+      kut: pocetniKut(s),
+      n1: sredstvo1(s).n,
+      n2: s.sredstvo2?.n,
+      n: s.ploca?.n,
+      debljina: s.ploca?.debljina,
+      udaljenost: s.udaljenost
+    };
+    for (const k of s.klizaci)
+      if (k && k.pocetak == null && isNum(k.min) && isNum(k.max) && isNum(izSpeca[k.id]))
+        need(
+          izSpeca[k.id] >= k.min && izSpeca[k.id] <= k.max,
+          `klizač ${k.id}: vrijednost iz speca (${formatNumber(izSpeca[k.id])}) nije između min i max; zadaj pocetak ili promijeni raspon`
+        );
+    if (s.scena === "ploca") {
+      const n = s.klizaci.find((k) => k.id === "n");
+      if (n && isNum(n.min))
+        need(
+          n.min > sredstvo1(s).n,
+          "klizač n ploče mora biti veći od indeksa loma okoline"
+        );
+    }
+  }
+  var zrake = {
+    tip: TIP8,
+    samoRucno: true,
+    uloga: (s) => GLEDANJE.includes(s.nacin) ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS8,
+    primjer: PRIMJER8,
+    primjeri: PRIMJERI8,
+    fizika,
+    geometrija,
+    validate(s) {
+      const { list, need } = problems();
+      need(isText(s.tekst), "zrake treba „tekst“");
+      if (!need(
+        SCENE9.includes(s.scena),
+        `zrake.scena mora biti jedna od: ${SCENE9.join(", ")}`
+      ))
+        return list;
+      if (!need(
+        NACINI20[s.scena].includes(s.nacin),
+        `zrake.nacin za scenu ${s.scena} mora biti jedan od: ${NACINI20[s.scena].join(", ")}`
+      ))
+        return list;
+      const dozvoljeni = [
+        ...KLJUCEVI.zajednicki,
+        ...KLJUCEVI[s.scena],
+        ...KLJUCEVI[s.nacin] ?? []
+      ];
+      for (const k of Object.keys(s))
+        need(
+          dozvoljeni.includes(k),
+          `zrake: polje „${k}“ ne pripada sceni ${s.scena} u načinu ${s.nacin} (dopuštena: ${dozvoljeni.join(", ")})`
+        );
+      if (s.savjet != null) need(isText(s.savjet), "savjet mora biti tekst");
+      if (s.scena !== "zrcalo_slika") {
+        const imaKut = s.kut != null;
+        const imaPhi = s.kut_povrsina != null;
+        if (s.nacin === "postavi")
+          need(
+            !(imaKut && imaPhi),
+            "zadaj najviše jedno od: kut, kut_povrsina (početni položaj lasera)"
+          );
+        else
+          need(
+            imaKut !== imaPhi,
+            "zadaj točno jedno od: kut (upadni, od normale) ili kut_povrsina (prema površini)"
+          );
+        if (imaKut)
+          need(
+            isNum(s.kut) && s.kut >= 0 && s.kut <= 89,
+            "kut mora biti upadni kut od 0 do 89 (°, od normale)"
+          );
+        if (imaPhi)
+          need(
+            isNum(s.kut_povrsina) && s.kut_povrsina >= 1 && s.kut_povrsina <= 90,
+            "kut_povrsina mora biti od 1 do 90 (°)"
+          );
+      }
+      let sredstvaOk = true;
+      if (s.scena === "lom") {
+        if (s.sredstvo1 != null)
+          sredstvaOk = validateSredstvo(s.sredstvo1, "sredstvo1", need) && sredstvaOk;
+        sredstvaOk = validateSredstvo(s.sredstvo2, "sredstvo2", need) && sredstvaOk;
+        if (sredstvaOk && s.nacin !== "istrazi")
+          need(
+            sredstvo1(s).n !== s.sredstvo2.n,
+            "sredstvo1 i sredstvo2 moraju imati različit n (inače nema loma)"
+          );
+      }
+      if (s.scena === "ploca") {
+        if (s.sredstvo1 != null)
+          sredstvaOk = validateSredstvo(s.sredstvo1, "sredstvo1", need) && sredstvaOk;
+        sredstvaOk = validateSredstvo(s.ploca, "ploca", need) && sredstvaOk;
+        if (sredstvaOk) {
+          need(
+            isNum(s.ploca.debljina) && s.ploca.debljina >= 0.1 && s.ploca.debljina <= 50,
+            "ploca.debljina mora biti od 0,1 do 50 (cm)"
+          );
+          need(
+            s.ploca.n > sredstvo1(s).n,
+            "ploca.n mora biti veći od indeksa loma okoline (sredstvo1)"
+          );
+          for (const p of Object.keys(s.ploca))
+            need(
+              ["naziv", "n", "debljina"].includes(p),
+              `ploca: nepoznato polje „${p}“`
+            );
+        }
+      }
+      if (s.scena === "zrcalo_slika") {
+        need(
+          isNum(s.udaljenost) && s.udaljenost > 0 && s.udaljenost <= 1e4,
+          "udaljenost mora biti pozitivan broj (predmet–zrcalo)"
+        );
+        if (s.jedinica != null)
+          need(
+            JEDINICE_DULJINE.includes(s.jedinica),
+            `jedinica mora biti ${JEDINICE_DULJINE.join(" ili ")}`
+          );
+        if (s.predmet != null)
+          need(
+            PREDMETI.includes(s.predmet),
+            `predmet mora biti jedan od: ${PREDMETI.join(", ")}`
+          );
+      }
+      if (list.length) return list;
+      if (GLEDANJE.includes(s.nacin)) {
+        noAnswerFields(s, need);
+        if (s.nacin === "istrazi") validateKlizaci3(s, need);
+        if (s.prikazi != null && need(
+          Array.isArray(s.prikazi) && s.prikazi.length >= 1,
+          "prikazi mora biti neprazan popis"
+        ))
+          for (const p of s.prikazi)
+            need(
+              PRIKAZI9[s.scena].includes(p),
+              `prikazi: „${p}“ nije za scenu ${s.scena} (${PRIKAZI9[s.scena].join(", ")})`
+            );
+        if (s.scena === "lom" && (s.prikazi ?? []).includes("granicni"))
+          need(
+            sredstvo1(s).n > s.sredstvo2.n || (s.klizaci ?? []).some((k) => k.id === "n1" || k.id === "n2"),
+            "prikazi granicni ima smisla samo uz n1 > n2 (iz gušćeg u rjeđe)"
+          );
+        return list;
+      }
+      if (s.nacin === "postavi") {
+        if (s.scena === "zrcalo_slika") {
+          need(
+            s.cilj == null && s.skrij == null && s.tolerancija == null,
+            "zrcalo_slika + postavi nema cilj, skrij ni tolerancija: učenik dovlači sliku"
+          );
+          if (s.krivo != null)
+            need(
+              false,
+              "zrcalo_slika + postavi nema krivo (poruke se računaju same)"
+            );
+          return list;
+        }
+        const c = s.cilj;
+        if (!need(c && typeof c === "object", "postavi treba cilj {vrsta, …}"))
+          return list;
+        const vrste = s.scena === "zrcalo" ? ["kut", "povratak", "meta"] : ["kut", "granicni", "meta"];
+        if (!need(
+          vrste.includes(c.vrsta),
+          `cilj.vrsta za scenu ${s.scena} mora biti: ${vrste.join(", ")}`
+        ))
+          return list;
+        const polja = {
+          kut: ["vrsta", "velicina", "vrijednost"],
+          povratak: ["vrsta"],
+          granicni: ["vrsta"],
+          meta: ["vrsta", "meta"]
+        }[c.vrsta];
+        for (const p of Object.keys(c))
+          need(
+            polja.includes(p),
+            `cilj ${c.vrsta}: nepoznato polje „${p}“ (polja: ${polja.join(", ")})`
+          );
+        if (c.vrsta === "kut") {
+          const vel = s.scena === "zrcalo" ? ["alpha", "alpha_povrsina", "izmedu"] : ["alpha", "alpha_povrsina", "beta"];
+          if (!need(
+            vel.includes(c.velicina),
+            `cilj.velicina mora biti: ${vel.join(", ")}`
+          ))
+            return list;
+          need(
+            isNum(c.vrijednost),
+            "cilj.vrijednost mora biti kut u stupnjevima"
+          );
+        }
+        if (c.vrsta === "granicni")
+          need(
+            sredstvo1(s).n > s.sredstvo2.n,
+            "granicni: zraka mora ići iz gušćeg u rjeđe sredstvo (sredstvo1.n > sredstvo2.n)"
+          );
+        if (c.vrsta === "meta") {
+          if (!need(
+            Array.isArray(c.meta) && c.meta.length === 2 && c.meta.every(isNum),
+            "cilj.meta mora biti [x, y] (jedinice od točke upada, y prema gore)"
+          ))
+            return list;
+          const [x, y] = c.meta;
+          need(
+            x > 0 && x <= 8.5,
+            "meta: x mora biti od 0 do 8,5 (desno od normale, unutar crteža)"
+          );
+          if (s.scena === "zrcalo")
+            need(
+              y > 0 && y <= 9,
+              "meta: za zrcalo y mora biti od 0 do 9 (iznad zrcala)"
+            );
+          else
+            need(
+              y !== 0 && Math.abs(y) <= 6.5,
+              "meta: za lom y mora biti od −6,5 do 6,5 (ne 0)"
+            );
+          need(
+            Math.hypot(x, y) >= 2.5,
+            "meta je preblizu točki upada (udaljenost barem 2,5)"
+          );
+        }
+        if (s.skrij != null)
+          need(
+            s.skrij === "kut",
+            'skrij može biti samo "kut" (ishod je u postavi ionako skriven do provjere)'
+          );
+        if (s.tolerancija != null)
+          need(
+            isNum(s.tolerancija) && s.tolerancija > 0 && s.tolerancija <= 5,
+            "tolerancija mora biti od 0 do 5 (°)"
+          );
+        if (list.length) return list;
+        const r = rjesenjePostavi2(s);
+        if (!need(
+          isNum(r) && r >= 0 && r <= 89,
+          "cilj se ne može postići upadnim kutom od 0° do 89°"
+        ))
+          return list;
+        need(
+          !ispunjavaCilj(s, pocetniKut(s)),
+          "početni položaj lasera (kut / kut_povrsina, zadano 30°) već ispunjava cilj: zadaj drugi"
+        );
+        if (s.krivo != null && need(Array.isArray(s.krivo), "krivo mora biti popis")) {
+          s.krivo.forEach((k, i) => {
+            need(
+              isNum(k?.vrijednost) && k.vrijednost >= 0 && k.vrijednost <= 89,
+              `krivo[${i}].vrijednost mora biti upadni kut 0–89`
+            );
+            need(isText(k?.poruka), `krivo[${i}].poruka mora biti tekst`);
+            if (isNum(k?.vrijednost))
+              need(
+                !ispunjavaCilj(s, k.vrijednost),
+                `krivo[${i}].vrijednost ${formatNumber(k.vrijednost)} ispunjava cilj, a to je točan odgovor`
+              );
+          });
+        }
+        return list;
+      }
+      if (s.nacin === "izracunaj") {
+        if (!need(
+          Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
+          "pitaj mora biti popis od 1 do 3 pitanja {velicina, …}"
+        ))
+          return list;
+        const vel = velicineScene2(s);
+        const f2 = fizika(s);
+        const vidjene = /* @__PURE__ */ new Set();
+        s.pitaj.forEach((p, i) => {
+          const w = `pitaj[${i}]`;
+          if (!need(
+            p && p.velicina in vel,
+            `${w}.velicina za scenu ${s.scena} mora biti: ${Object.keys(vel).join(", ")}`
+          ))
+            return;
+          need(
+            !vidjene.has(p.velicina),
+            `${w}: veličina „${p.velicina}“ se već traži`
+          );
+          vidjene.add(p.velicina);
+          for (const k of Object.keys(p))
+            need(
+              ["velicina", "oznaka", "jedinica", "tolerancija", "krivo"].includes(
+                k
+              ),
+              `${w}: nepoznato polje „${k}“`
+            );
+          if (p.oznaka != null)
+            need(isText(p.oznaka), `${w}.oznaka mora biti tekst`);
+          if (p.tolerancija != null)
+            need(
+              isNum(p.tolerancija) && p.tolerancija >= 0,
+              `${w}.tolerancija mora biti broj ≥ 0`
+            );
+          const zadana = vel[p.velicina].jedinica;
+          if (p.jedinica != null)
+            need(
+              p.jedinica === (zadana ?? jedinicaDuljine(s)),
+              `${w}.jedinica mora biti „${zadana ?? jedinicaDuljine(s)}“ (ili je izostavi)`
+            );
+          if (p.velicina === "alpha")
+            need(
+              s.kut_povrsina != null,
+              `${w}: alpha se traži samo kad je zadan kut_povrsina`
+            );
+          if (p.velicina === "alpha_g")
+            need(
+              f2.n1 > f2.n2,
+              `${w}: granični kut postoji samo iz gušćeg u rjeđe (sredstvo1.n > sredstvo2.n)`
+            );
+          if (["beta", "gamma", "pomak"].includes(p.velicina))
+            need(
+              f2.beta != null,
+              `${w}: pri ovom kutu je totalna refleksija, pa nema kuta loma`
+            );
+          if (["gamma", "pomak"].includes(p.velicina))
+            need(f2.alpha > 0, `${w}: uz kut 0° zraka prolazi ravno`);
+          if (list.length) return;
+          const o = odgovorPitanja(s, p);
+          validateKrivo(
+            p.krivo,
+            o.tocno,
+            o.tol ?? Math.abs(o.tocno) * 5e-3,
+            need,
+            `${w}.krivo`
+          );
+        });
+        return list;
+      }
+      if (s.nacin === "odaberi") {
+        const f2 = fizika(s);
+        const sve = PONUDE[s.scena];
+        if (s.ponudi != null) {
+          if (need(
+            Array.isArray(s.ponudi) && s.ponudi.length >= 3 && s.ponudi.length <= 4,
+            `ponudi mora biti popis od 3 do 4 zrake (${sve.join(", ")})`
+          )) {
+            for (const p of s.ponudi)
+              need(
+                sve.includes(p),
+                `ponudi: „${p}“ nije zraka scene ${s.scena} (${sve.join(", ")})`
+              );
+            need(
+              new Set(s.ponudi).size === s.ponudi.length,
+              "ponudi: zrake se ne smiju ponavljati"
+            );
+            need(
+              s.ponudi.includes(tocnaPonuda(s)),
+              `ponudi mora uključiti točnu zraku („${tocnaPonuda(s)}“)`
+            );
+          }
+        }
+        need(
+          f2.alpha >= 10 && f2.alpha <= 80,
+          "odaberi: upadni kut mora biti od 10° do 80° (inače se zrake ne razlikuju)"
+        );
+        if (s.scena === "lom" && f2.n1 > f2.n2 && f2.alpha_g != null)
+          need(
+            Math.abs(f2.alpha - f2.alpha_g) >= 3,
+            "odaberi: kut je preblizu graničnom, zraka se ne vidi jasno"
+          );
+        if (s.scena === "ploca") {
+          need(f2.beta != null, "odaberi: zraka mora ući u ploču");
+          const tpx = Math.min(40 * s.ploca.debljina, 104);
+          if (ponudeOd(s).includes("bez_pomaka") && f2.beta != null)
+            need(
+              tpx * (tanD(f2.alpha) - tanD(f2.beta)) >= 12,
+              "odaberi: pomak zrake je premalen da se „bez_pomaka“ razlikuje od prave zrake (povećaj kut, n ili debljinu, ili izbaci bez_pomaka iz ponudi)"
+            );
+        }
+        if (list.length) return list;
+        const kut = kutoviPonuda(s);
+        const ids = ponudeOd(s).filter(
+          (id) => id !== "odbija_se" && id !== "bez_pomaka"
+        );
+        for (let i = 0; i < ids.length; i++)
+          for (let j = i + 1; j < ids.length; j++)
+            need(
+              Math.abs(kut[ids[i]] - kut[ids[j]]) >= 4,
+              `odaberi: zrake „${ids[i]}“ i „${ids[j]}“ su preblizu (razlika manja od 4°), promijeni kut ili n`
+            );
+        return list;
+      }
+      return list;
+    },
+    check(s, odgovor3) {
+      if (s.nacin === "postavi") return checkPostavi6(s, odgovor3);
+      if (s.nacin === "izracunaj") return checkIzracunaj4(s, odgovor3);
+      if (s.nacin === "odaberi") return checkOdaberi4(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.nacin === "postavi") {
+        if (s.scena === "zrcalo_slika")
+          return `slika je ${duljinaTekst(s.udaljenost, jedinicaDuljine(s))} iza zrcala`;
+        const r = rjesenjePostavi2(s);
+        const c = s.cilj;
+        if (c.vrsta === "povratak")
+          return "upadni kut 0°: zraka pada po normali (90° prema površini)";
+        if (c.vrsta === "granicni") return `granični kut α_g = ${kutTekst(r)}`;
+        if (c.vrsta === "meta") return `upadni kut α ≈ ${kutTekst(r)}`;
+        return `upadni kut α = ${kutTekst(r)} (od normale)`;
+      }
+      if (s.nacin === "izracunaj")
+        return s.pitaj.map((p) => {
+          const o = odgovorPitanja(s, p);
+          const j = jedinicaPitanja2(s, p);
+          const iznos5 = j === "°" ? kutTekst(o.tocno) : j === "m/s" ? brzinaTekst(o.tocno) : duljinaTekst(o.tocno, j);
+          return `${p.oznaka ?? velicineScene2(s)[p.velicina].oznaka} ${iznos5}`;
+        }).join("; ");
+      if (s.nacin === "odaberi") {
+        const id = tocnaPonuda(s);
+        const f2 = fizika(s);
+        const dodatak = s.scena === "lom" && f2.beta != null ? ` (β = ${kutTekst(f2.beta)})` : s.scena === "ploca" ? ` (γ = α = ${kutTekst(f2.alpha)})` : "";
+        return `zraka koja ${OPIS_PONUDE[id]}${dodatak}`;
+      }
+      return "";
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/leca.js
+  var TIP9 = "leca";
+  var NACINI21 = [
+    "istrazi",
+    "prikaz",
+    "zastor",
+    "nacrtaj",
+    "postavi",
+    "izracunaj"
+  ];
+  var GLEDANJE2 = ["istrazi", "prikaz"];
+  var ZRAKE = ["paralelna", "centar", "zariste"];
+  var PREDMETI2 = ["strelica", "svijeca"];
+  var OCITANJA = ["a", "b", "y_slike", "m", "vrsta"];
+  var VELICINE7 = ["b", "y_slike", "m", "f", "j", "a", "vrsta"];
+  var CILJEVI = ["m", "b", "y_slike"];
+  var JEDINICA2 = {
+    a: "cm",
+    b: "cm",
+    y_slike: "cm",
+    f: "cm",
+    m: "",
+    j: "m⁻¹"
+  };
+  var NAZIV = {
+    a: "udaljenost predmeta a",
+    b: "udaljenost slike b",
+    y_slike: "visina slike y′",
+    m: "povećanje y′/y",
+    f: "žarišna daljina f",
+    j: "jakost leće j",
+    vrsta: "vrsta slike"
+  };
+  var SVOJSTVA = [
+    { kljuc: "realna", da: "realna", ne: "virtualna" },
+    { kljuc: "uspravna", da: "uspravna", ne: "obrnuta" },
+    { kljuc: "uvecana", da: "uvećana", ne: "umanjena" }
+  ];
+  var zaokruzi = (n, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
+  var broj4 = (n, d = 2) => Number.isFinite(n) ? formatNumber(zaokruzi(n, d) || 0) : "∞";
+  var cm = (n, d = 2) => `${broj4(n, d)} cm`;
+  var razlicit = (x, y) => Math.abs(x - y) > 0.015 * Math.max(Math.abs(y), 1e-9);
+  function slikaLece(f2, a, y = 1) {
+    if (Math.abs(a - f2) < 1e-9 * Math.max(1, Math.abs(f2)))
+      return {
+        beskonacno: true,
+        b: Infinity,
+        m: Infinity,
+        y: Infinity,
+        realna: null,
+        uspravna: null,
+        uvecana: true,
+        jednaka: false
+      };
+    const b = a * f2 / (a - f2);
+    const m = -b / a;
+    return {
+      beskonacno: false,
+      b,
+      m,
+      y: m * y,
+      realna: b > 0,
+      uspravna: m > 0,
+      uvecana: Math.abs(m) > 1 + 1e-9,
+      jednaka: Math.abs(Math.abs(m) - 1) < 1e-9
+    };
+  }
+  function vrstaTekst(sl) {
+    if (sl.beskonacno) return "slike nema (zrake izlaze paralelno)";
+    return [
+      sl.realna ? "realna" : "virtualna",
+      sl.uspravna ? "uspravna" : "obrnuta",
+      sl.jednaka ? "jednake veličine" : sl.uvecana ? "uvećana" : "umanjena"
+    ].join(" · ");
+  }
+  function parametriZrake(ime2, f2, a, y) {
+    if (ime2 === "paralelna") return { ime: ime2, h: y, sUlaz: 0, sIzlaz: -y / f2 };
+    if (ime2 === "centar") return { ime: ime2, h: 0, sUlaz: -y / a, sIzlaz: -y / a };
+    if (ime2 === "zariste") {
+      if (Math.abs(a - f2) < 1e-9 * Math.max(1, Math.abs(f2))) return null;
+      const sUlaz = -y / (a - f2);
+      return { ime: ime2, h: y + a * sUlaz, sUlaz, sIzlaz: 0 };
+    }
+    return null;
+  }
+  var visinaPredmeta = (s) => isNum(s.y) ? s.y : 3;
+  var zrakeSpeca = (s) => Array.isArray(s.zrake) ? s.zrake : ZRAKE;
+  var listaA = (s) => Array.isArray(s.a) ? s.a : isNum(s.a) ? [s.a] : [];
+  var korakA = (s) => isNum(s.korak) ? s.korak : 0.5;
+  var otvorLece = (s) => isNum(s.otvor) ? s.otvor : 6;
+  var mijenja = (s) => Array.isArray(s.mijenja) ? s.mijenja : s.nacin === "istrazi" || s.nacin === "postavi" ? ["a"] : [];
+  var pitano = (s, v) => Array.isArray(s.pitaj) && s.pitaj.some((q) => q?.velicina === v);
+  function fIzMjerenja(s) {
+    const f2 = s.mjerenja.map(([a, b]) => a * b / (a + b));
+    return f2.reduce((x, y) => x + y, 0) / f2.length;
+  }
+  var fLece = (s) => isNum(s.f) ? s.f : Array.isArray(s.mjerenja) ? fIzMjerenja(s) : NaN;
+  var pocetniA = (s) => Array.isArray(s.mjerenja) && !isNum(s.a) ? s.mjerenja[0][0] : listaA(s)[0];
+  function rasponA(s) {
+    if (Array.isArray(s.a_raspon)) return s.a_raspon;
+    const F = Math.max(...rasponF(s).map(Math.abs));
+    const hi = Math.max(4 * F, ...listaA(s).map((a) => a * 1.5));
+    return [korakA(s), Math.ceil(hi / 5) * 5];
+  }
+  function rasponF(s) {
+    if (mijenja(s).includes("f") && Array.isArray(s.f_raspon)) return s.f_raspon;
+    return [s.f, s.f];
+  }
+  function mrezaA(s) {
+    const [lo, hi] = rasponA(s);
+    const k = korakA(s);
+    const out = [];
+    for (let i = Math.ceil(lo / k - 1e-9); i * k <= hi + 1e-9; i++)
+      out.push(zaokruzi(i * k, 6));
+    return out;
+  }
+  var imaOstruSliku = (f2, a) => a > f2 + 1e-9;
+  function rasponZastora(s) {
+    if (Array.isArray(s.zastor_raspon)) return s.zastor_raspon;
+    const bs = listaA(s).filter((a) => imaOstruSliku(s.f, a)).map((a) => slikaLece(s.f, a).b);
+    return [2, Math.ceil(Math.max(2.5 * s.f, ...bs.map((b) => 1.5 * b)) / 5) * 5];
+  }
+  var tolZastora = (s, b) => isNum(s.tolerancija) ? s.tolerancija : Math.max(0.3, 0.01 * b);
+  function pocetakZastora(s) {
+    const [lo, hi] = rasponZastora(s);
+    const bs = listaA(s).filter((a) => imaOstruSliku(s.f, a)).map((a) => slikaLece(s.f, a).b);
+    for (const u of [0.85, 0.95, 0.15, 0.6, 0.35, 0.05]) {
+      const x = zaokruzi(lo + u * (hi - lo), 0);
+      if (bs.every((b) => Math.abs(x - b) >= 3)) return x;
+    }
+    return null;
+  }
+  function aZaCilj(s) {
+    const f2 = s.f;
+    const { velicina: velicina3, vrijednost: vrijednost3 } = s.cilj;
+    if (velicina3 === "b") return vrijednost3 * f2 / (vrijednost3 - f2);
+    const m = velicina3 === "m" ? vrijednost3 : vrijednost3 / visinaPredmeta(s);
+    return f2 * (m - 1) / m;
+  }
+  function vrijednostCilja(s, a) {
+    const sl = slikaLece(s.f, a, visinaPredmeta(s));
+    return { m: sl.m, b: sl.b, y_slike: sl.y }[s.cilj.velicina];
+  }
+  var tolCilja2 = (s) => isNum(s.cilj?.tolerancija) ? s.cilj.tolerancija : Math.abs(s.cilj.vrijednost) * 0.01;
+  var ostvaruje = (s, a) => {
+    const q = vrijednostCilja(s, a);
+    return Number.isFinite(q) && near(q, s.cilj.vrijednost, tolCilja2(s));
+  };
+  var kutPogleda = (pg, s) => Math.atan(pg.sy / pg.sx * s) * 180 / Math.PI;
+  function nagibRuke(h, t) {
+    if (!Array.isArray(t) || !isNum(t[0]) || !isNum(t[1]) || t[0] <= 1e-6)
+      return null;
+    return (t[1] - h) / t[0];
+  }
+  var SIRINA2 = 360;
+  var RUB = 12;
+  var POLA_VISINE = 86;
+  function pogledLece(s) {
+    const n = s.nacin;
+    const f2 = fLece(s);
+    const y = visinaPredmeta(s);
+    let xL;
+    let xR;
+    let yMax;
+    let traka = false;
+    let ravnalo = false;
+    if (n === "istrazi" || n === "postavi") {
+      const [, aMax] = rasponA(s);
+      const F = Math.max(...rasponF(s).map(Math.abs));
+      const X = Math.max(aMax * 1.08, 2.4 * F);
+      xL = -X;
+      xR = X;
+      yMax = y * 2.4;
+      traka = n === "istrazi" && f2 > 0 && s.zone !== false;
+    } else if (n === "zastor" || Array.isArray(s.mjerenja)) {
+      const aMax = Math.max(
+        ...Array.isArray(s.mjerenja) ? s.mjerenja.map((p) => p[0]) : listaA(s)
+      );
+      const zMax = Array.isArray(s.mjerenja) ? Math.max(...s.mjerenja.map((p) => p[1])) * 1.25 : rasponZastora(s)[1];
+      xL = -aMax * 1.1 - 2;
+      xR = zMax * 1.05;
+      yMax = 1.3 * Math.max(y, otvorLece(s) / 2);
+      ravnalo = true;
+    } else {
+      const a = pocetniA(s);
+      const sl = slikaLece(f2, a, y);
+      const b = Number.isFinite(sl.b) ? sl.b : 0;
+      const yS = Number.isFinite(sl.y) ? Math.abs(sl.y) : y;
+      yMax = 1.28 * Math.max(y, yS);
+      const F = Math.abs(f2);
+      if (n === "izracunaj") {
+        const pitaF = pitano(s, "f") || pitano(s, "j");
+        const X = 1.12 * (pitano(s, "a") ? Math.max(Math.abs(b), 2 * F) : pitaF ? Math.max(a, Math.abs(b)) : Math.max(a, 2 * F));
+        xL = -X;
+        xR = X;
+        if (!pitaF) yMax = 2.6 * y;
+      } else if (n === "nacrtaj") {
+        const lo = a < F ? -Math.max(a, 2.5 * F) : -Math.max(a, 1.3 * F);
+        const hi = a < F ? Math.max(2.2 * F, 0.5 * a) : Math.max(3.7 * F, 0.5 * a);
+        const m = 0.12 * (hi - lo);
+        xL = lo - m;
+        xR = hi + m;
+        yMax = 2.6 * y;
+      } else {
+        const lo = Math.min(-a, b, -Math.abs(f2));
+        const hi = Math.max(b, 1.3 * Math.abs(f2), 0.5 * a);
+        const m = 0.12 * (hi - lo);
+        xL = lo - m;
+        xR = hi + m;
+      }
+    }
+    const sx = (SIRINA2 - 2 * RUB) / (xR - xL);
+    const sy = POLA_VISINE / yMax;
+    const oy = 14 + POLA_VISINE;
+    return {
+      sirina: SIRINA2,
+      visina: oy + POLA_VISINE + 12 + (traka ? 30 : 0) + (ravnalo ? 30 : 0),
+      xL,
+      xR,
+      yMax,
+      sx,
+      sy,
+      ox: RUB - xL * sx,
+      oy,
+      traka,
+      ravnalo
+    };
+  }
+  function vrijednostIzracuna(s, v) {
+    const f2 = fLece(s);
+    if (v === "f") return f2;
+    if (v === "j") return 100 / f2;
+    const sl = slikaLece(f2, s.a, visinaPredmeta(s));
+    return { b: sl.b, y_slike: sl.y, m: sl.m, a: s.a }[v];
+  }
+  var tolPitanja2 = (q, x) => isNum(q.tolerancija) ? q.tolerancija : Math.abs(x) * 0.01;
+  function autoKrivo2(s, v) {
+    const f2 = fLece(s);
+    const y = visinaPredmeta(s);
+    const out = [];
+    const dodaj = (x, poruka2) => {
+      if (Number.isFinite(x) && x !== 0) out.push({ vrijednost: x, poruka: poruka2 });
+    };
+    if (v === "b" || v === "y_slike" || v === "m" || v === "a") {
+      const a = s.a;
+      const sl = slikaLece(f2, a, y);
+      if (v === "b") {
+        dodaj(
+          -sl.b,
+          sl.b < 0 ? "Iznos je dobar, ali fali minus. Negativan $b$ nije greška: znači da je slika s **iste** strane leće kao predmet (virtualna). Upiši ga s minusom." : "Predznak ne valja: predmet je dalje od žarišta ($a > f$), pa je $b$ pozitivan i slika je s druge strane leće."
+        );
+        dodaj(
+          a * f2 / (a + f2),
+          "Zbrojio si $\\frac1f$ i $\\frac1a$. Iz $\\frac1a + \\frac1b = \\frac1f$ slijedi $\\frac1b = \\frac1f - \\frac1a$: oduzimaš."
+        );
+        dodaj(
+          -(a * f2) / (a + f2),
+          "Zbrojio si $\\frac1f$ i $\\frac1a$. Iz $\\frac1a + \\frac1b = \\frac1f$ slijedi $\\frac1b = \\frac1f - \\frac1a$: oduzimaš."
+        );
+        dodaj(
+          1 / sl.b,
+          "To je $\\frac1b$. Na kraju još okreni razlomak: $b = \\frac{af}{a - f}$."
+        );
+      }
+      if (v === "y_slike") {
+        dodaj(
+          -sl.y,
+          sl.y < 0 ? "Iznos je dobar, ali slika je obrnuta, pa je $y'$ negativan: $y' = -\\frac ba\\,y$." : "Predznak ne valja: slika je uspravna, pa je $y'$ pozitivan ($b$ je negativan, a $y' = -\\frac ba\\,y$)."
+        );
+        dodaj(
+          -(a / sl.b) * y,
+          "Omjer je obrnut: $\\frac{y'}{y} = -\\frac ba$, a ne $-\\frac ab$."
+        );
+        dodaj(
+          a / sl.b * y,
+          "Omjer je obrnut: $\\frac{y'}{y} = -\\frac ba$, a ne $-\\frac ab$."
+        );
+        if (Math.abs(y - 1) > 1e-9)
+          dodaj(
+            sl.m,
+            "To je omjer $\\frac{y'}{y}$. Pomnoži ga visinom predmeta $y$."
+          );
+      }
+      if (v === "m") {
+        dodaj(
+          -sl.m,
+          "Pazi na predznak: $\\frac{y'}{y} = -\\frac ba$. Negativan omjer znači obrnutu sliku, pozitivan uspravnu."
+        );
+        dodaj(-a / sl.b, "Omjer je obrnut: $\\frac{y'}{y} = -\\frac ba$.");
+        dodaj(a / sl.b, "Omjer je obrnut: $\\frac{y'}{y} = -\\frac ba$.");
+      }
+      if (v === "a") {
+        const m = sl.m;
+        dodaj(
+          f2 * (m + 1) / m,
+          m > 0 ? "S tim $a$ slika je **obrnuta**. Uspravna slika znači $\\frac{y'}{y} = +" + broj4(m, 2) + "$, pa je $b = -" + broj4(m, 2) + "\\,a$ (negativan)." : "S tim $a$ slika je **uspravna**. Obrnuta slika znači negativan omjer $\\frac{y'}{y}$."
+        );
+      }
+    }
+    if (v === "f") {
+      if (Array.isArray(s.mjerenja)) {
+        const A = s.mjerenja.map((p) => p[0]);
+        const B = s.mjerenja.map((p) => p[1]);
+        const sr = (l) => l.reduce((x, z) => x + z, 0) / l.length;
+        dodaj(
+          sr(A) * sr(B) / (sr(A) + sr(B)),
+          "Ne uzimaj srednje vrijednosti $a$ i $b$. Izračunaj $f = \\frac{ab}{a+b}$ za **svako** mjerenje, pa uzmi srednju vrijednost tih $f$."
+        );
+        dodaj(
+          (sr(A) + sr(B)) / 2,
+          "To je srednja vrijednost udaljenosti. Žarišnu daljinu daje jednadžba leće: $f = \\frac{ab}{a+b}$."
+        );
+        dodaj(
+          sr(A),
+          "To je srednja vrijednost od $a$. Treba $f = \\frac{ab}{a+b}$ za svako mjerenje."
+        );
+        dodaj(
+          sr(B),
+          "To je srednja vrijednost od $b$. Treba $f = \\frac{ab}{a+b}$ za svako mjerenje."
+        );
+        dodaj(
+          sr(s.mjerenja.map(([a, b]) => (a + b) / (a * b))),
+          "To je $\\frac1f$. Okreni razlomak: $f = \\frac{ab}{a+b}$."
+        );
+      } else {
+        const sl = slikaLece(f2, s.a, y);
+        dodaj(
+          (s.a + sl.b) / 2,
+          "To je srednja vrijednost od $a$ i $b$. Žarišnu daljinu daje $f = \\frac{ab}{a+b}$."
+        );
+        dodaj(
+          s.a + sl.b,
+          "Zbrojio si udaljenosti. Iz $\\frac1f = \\frac1a + \\frac1b$ slijedi $f = \\frac{ab}{a+b}$."
+        );
+        dodaj(1 / f2, "To je $\\frac1f$. Okreni razlomak: $f = \\frac{ab}{a+b}$.");
+      }
+    }
+    if (v === "j") {
+      dodaj(
+        1 / f2,
+        `Jakost je $j = \\frac1f$, ali $f$ mora biti u **metrima**: $f = ${broj4(f2 / 100, 4)}$ m.`
+      );
+      dodaj(
+        f2,
+        "To je žarišna daljina. Jakost je njezina obrnuta vrijednost: $j = \\frac1f$ (f u metrima)."
+      );
+      dodaj(
+        f2 / 100,
+        "To je $f$ u metrima. Jakost je obrnuta vrijednost: $j = \\frac1f$."
+      );
+      dodaj(
+        -100 / f2,
+        "Pazi na predznak: sabirna leća ima pozitivnu jakost, rastresna negativnu."
+      );
+    }
+    const tocno = vrijednostIzracuna(s, v);
+    const vidjeno = [];
+    return out.filter((k) => {
+      if (!razlicit(k.vrijednost, tocno)) return false;
+      if (vidjeno.some((x) => !razlicit(k.vrijednost, x))) return false;
+      vidjeno.push(k.vrijednost);
+      return true;
+    });
+  }
+  function checkVrsta(s, o) {
+    const sl = slikaLece(fLece(s), s.a, visinaPredmeta(s));
+    const tocno = {
+      realna: sl.realna,
+      uspravna: sl.uspravna,
+      uvecana: sl.uvecana
+    };
+    if (!o || SVOJSTVA.some((p) => typeof o[p.kljuc] !== "boolean"))
+      return {
+        tocno: false,
+        poruka: "Odaberi sva tri svojstva slike.",
+        prazno: true
+      };
+    if (SVOJSTVA.every((p) => o[p.kljuc] === tocno[p.kljuc]))
+      return { tocno: true };
+    if (fLece(s) > 0 && o.realna === o.uspravna)
+      return {
+        tocno: false,
+        poruka: "Sabirna leća realnu sliku uvijek daje **obrnutu**, a virtualnu **uspravnu**. Provjeri predznake $b$ i $y'$."
+      };
+    if (o.realna !== tocno.realna)
+      return {
+        tocno: false,
+        poruka: "Realna ili virtualna: pogledaj predznak od $b$. Pozitivan $b$: slika je s druge strane leće i hvata se na zastoru (realna); negativan: virtualna."
+      };
+    if (o.uspravna !== tocno.uspravna)
+      return {
+        tocno: false,
+        poruka: "Uspravna ili obrnuta: pogledaj predznak od $y'$ (ili od $\\frac{y'}{y} = -\\frac ba$). Negativan znači obrnuta."
+      };
+    return {
+      tocno: false,
+      poruka: "Uvećana ili umanjena: usporedi $|y'|$ s $y$, odnosno $|b|$ s $a$."
+    };
+  }
+  function checkIzracunaj5(s, odgovor3) {
+    const unosi = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
+    const vise = s.pitaj.length > 1;
+    const polja = [];
+    let prva = null;
+    for (const [i, q] of s.pitaj.entries()) {
+      let r;
+      if (q.velicina === "vrsta") r = checkVrsta(s, unosi[i]);
+      else {
+        const x = vrijednostIzracuna(s, q.velicina);
+        const ulaz = typeof unosi[i] === "string" ? unosi[i].replace(
+          /\s*(dpt|dioptrij\w*|m\^?\{?-1\}?|m⁻¹|1\/m)\s*$/i,
+          ""
+        ) : unosi[i] ?? "";
+        r = checkNumber({
+          input: ulaz,
+          answer: x,
+          tol: tolPitanja2(q, x),
+          unit: JEDINICA2[q.velicina],
+          krivo: [...q.krivo ?? [], ...autoKrivo2(s, q.velicina)],
+          savjet: s.savjet || SAVJET3[q.velicina]
+        });
+      }
+      if (r.prazno)
+        return {
+          tocno: false,
+          poruka: vise ? `${velikoSlovo(NAZIV[q.velicina])}: ${malo(r.poruka)}` : r.poruka,
+          prazno: true,
+          polja: s.pitaj.map((_, j) => j < i ? polja[j] : null)
+        };
+      polja.push(!!r.tocno);
+      if (!r.tocno && !prva) prva = { ...r, q };
+    }
+    if (!prva) return { tocno: true, polja };
+    return {
+      tocno: false,
+      poruka: vise ? `${velikoSlovo(NAZIV[prva.q.velicina])}: ${prva.poruka}` : prva.poruka,
+      polja
+    };
+  }
+  var velikoSlovo = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  var malo = (t) => t.charAt(0).toLowerCase() + t.slice(1);
+  var SAVJET3 = {
+    b: "Nije točno. Iz $\\frac1a + \\frac1b = \\frac1f$ izrazi $b = \\frac{af}{a - f}$ i pazi na predznak.",
+    y_slike: "Nije točno. Visina slike je $y' = -\\frac ba\\,y$ (s predznakom).",
+    m: "Nije točno. Povećanje je $\\frac{y'}{y} = -\\frac ba$.",
+    f: "Nije točno. Iz jednadžbe leće: $f = \\frac{ab}{a+b}$.",
+    j: "Nije točno. Jakost je $j = \\frac1f$, uz $f$ u metrima.",
+    a: "Nije točno. Iz $\\frac{y'}{y} = -\\frac ba$ izrazi $b$ preko $a$ i uvrsti u jednadžbu leće."
+  };
+  function checkZastor(s, odgovor3) {
+    const A = listaA(s);
+    const unosi = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
+    const polja = A.map(() => null);
+    const prazan = A.findIndex((_, i) => unosi[i] == null || unosi[i] === "");
+    if (prazan >= 0)
+      return {
+        tocno: false,
+        poruka: `Zabilježi mjerenje i za $a = ${broj4(A[prazan], 1)}$ cm.`,
+        prazno: true
+      };
+    let prva = null;
+    A.forEach((a, i) => {
+      const u = unosi[i];
+      let poruka2 = null;
+      if (imaOstruSliku(s.f, a)) {
+        const b = slikaLece(s.f, a).b;
+        if (u === "nema")
+          poruka2 = `Za $a = ${broj4(a, 1)}$ cm oštra slika **postoji**. Pomiči zastor polako i gledaj kad je plamen najoštriji.`;
+        else {
+          const x = typeof u === "number" ? u : parseNumber(String(u), "cm");
+          if (!isNum(x)) poruka2 = "Pomakni zastor i zabilježi njegov položaj.";
+          else if (Math.abs(x - b) > tolZastora(s, b) + 1e-9)
+            poruka2 = `Za $a = ${broj4(a, 1)}$ cm slika je još mutna: zastor je ${x < b ? "preblizu leći" : "predaleko od leće"}.`;
+        }
+      } else if (u !== "nema")
+        poruka2 = `Za $a = ${broj4(a, 1)}$ cm je li plamen na zastoru igdje oštar? Pomakni zastor cijelom duljinom klupe.`;
+      polja[i] = poruka2 == null;
+      if (poruka2 && !prva) prva = poruka2;
+    });
+    if (!prva) return { tocno: true, polja };
+    return { tocno: false, poruka: prva, polja };
+  }
+  var KRATKO_ZRAKE = {
+    paralelna: "Paralelna zraka",
+    centar: "Zraka kroz središte",
+    zariste: "Zraka kroz F"
+  };
+  var OPIS_PRAVILA = {
+    paralelna: "Paralelna zraka nakon leće prolazi kroz žarište **F′ iza leće**.",
+    centar: "Zraka kroz optičko središte **ne skreće**: nastavlja ravno, istim smjerom.",
+    zariste: "Zraka koja prolazi kroz žarište F nakon leće ide **paralelno s osi**."
+  };
+  function checkNacrtaj2(s, odgovor3) {
+    const pg = pogledLece(s);
+    const imena = zrakeSpeca(s);
+    const ruke = Array.isArray(odgovor3) ? odgovor3 : [];
+    const y = visinaPredmeta(s);
+    const neokrenute = imena.filter((_, i) => !Array.isArray(ruke[i]));
+    if (neokrenute.length)
+      return {
+        tocno: false,
+        poruka: `Okreni sve zrake (još ${neokrenute.length}): povuci kružić na kraju svake zrake.`,
+        prazno: true
+      };
+    const polja = [];
+    let prva = null;
+    imena.forEach((ime2, i) => {
+      const z = parametriZrake(ime2, s.f, s.a, y);
+      const sN = nagibRuke(z.h, ruke[i]);
+      const isti2 = (c) => sN != null && Math.abs(kutPogleda(pg, sN) - kutPogleda(pg, c)) <= 2;
+      const ok = isti2(z.sIzlaz);
+      polja.push(ok);
+      if (ok || prva) return;
+      const ime1 = KRATKO_ZRAKE[ime2];
+      let p = OPIS_PRAVILA[ime2];
+      if (sN == null) p = "Zraka nakon leće ide dalje udesno, kroz leću.";
+      else if (ime2 === "paralelna" && isti2(0))
+        p = "Ne prolazi ravno: leća je lomi. " + OPIS_PRAVILA.paralelna;
+      else if (ime2 === "paralelna" && isti2(z.h / s.f))
+        p = "Usmjerio si je kao da dolazi iz F **ispred** leće. Paralelna zraka nakon leće prolazi kroz žarište **F′ iza leće**.";
+      else if (ime2 === "centar" && isti2(0))
+        p = "Paralelno s osi izlazi zraka koja je došla kroz F. Zraka kroz optičko središte **ne skreće**.";
+      else if (ime2 === "zariste" && isti2(z.sUlaz))
+        p = "Ne nastavlja ravno: leća je lomi. " + OPIS_PRAVILA.zariste;
+      else if (ime2 === "zariste" && isti2(-z.h / s.f))
+        p = "Kroz F′ prolazi zraka koja je došla **paralelno** s osi. " + OPIS_PRAVILA.zariste;
+      prva = `**${ime1}:** ${p}`;
+    });
+    if (!prva) return { tocno: true, polja };
+    return { tocno: false, poruka: prva, polja };
+  }
+  function checkPostavi7(s, odgovor3) {
+    const a = isNum(odgovor3) ? odgovor3 : odgovor3?.a;
+    if (!isNum(a))
+      return { tocno: false, poruka: "Pomakni predmet.", prazno: true };
+    const hit = (s.krivo ?? []).find(
+      (k) => Math.abs(k.vrijednost - a) <= korakA(s) / 2 + 1e-9
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    if (ostvaruje(s, a)) return { tocno: true };
+    const f2 = s.f;
+    const y = visinaPredmeta(s);
+    const sl = slikaLece(f2, a, y);
+    const aT = aZaCilj(s);
+    const smjer = aT > a ? "Pomakni predmet **dalje** od leće." : "Pomakni predmet **bliže** leći.";
+    if (sl.beskonacno)
+      return {
+        tocno: false,
+        poruka: `Predmet je točno u žarištu: zrake izlaze paralelno i slike nema. ${smjer}`
+      };
+    const v = s.cilj.vrijednost;
+    if (s.cilj.velicina === "b") {
+      if (Math.sign(sl.b) !== Math.sign(v))
+        return {
+          tocno: false,
+          poruka: v < 0 ? `Slika je sad realna, s druge strane leće (b = ${cm(sl.b, 1)}). Slika s iste strane kao predmet (b < 0) nastaje kad je predmet **bliže** leći od žarišta.` : `Slika je sad virtualna (b = ${cm(sl.b, 1)}). Realnu sliku dobiješ kad je predmet dalje od žarišta.`
+        };
+      return {
+        tocno: false,
+        poruka: `Slika je sad na b = ${cm(sl.b, 1)}, a treba ${cm(v, 1)}. ${smjer}`
+      };
+    }
+    const m = sl.m;
+    const mT = s.cilj.velicina === "m" ? v : v / y;
+    const opisM = (x) => `${x > 0 ? "uspravna" : "obrnuta"} i ${Math.abs(x) > 1 ? `${broj4(Math.abs(x), 2)}× veća` : `${broj4(Math.abs(x), 2)} od predmeta`}`;
+    if (Math.sign(m) !== Math.sign(mT)) {
+      if (Math.abs(Math.abs(m) - Math.abs(mT)) <= Math.abs(mT) * 0.01 + 1e-9)
+        return {
+          tocno: false,
+          poruka: mT > 0 ? `Ovo je **obrnuta** slika ${broj4(Math.abs(m), 2)}× veća. Uspravnu sliku sabirna leća daje samo kad je predmet bliže od žarišta.` : `Ovo je **uspravna** (virtualna) slika. Obrnutu sliku dobiješ kad je predmet dalje od žarišta.`
+        };
+      return {
+        tocno: false,
+        poruka: mT > 0 ? `Slika je sad obrnuta (y′/y = ${broj4(m, 2)}). Za uspravnu sliku predmet mora biti bliže leći od žarišta.` : `Slika je sad uspravna (y′/y = ${broj4(m, 2)}). Za obrnutu sliku predmet mora biti dalje od žarišta.`
+      };
+    }
+    return {
+      tocno: false,
+      poruka: `Slika je sad ${opisM(m)} (y′/y = ${broj4(m, 2)}), a treba ${broj4(mT, 2)}. ${smjer}`
+    };
+  }
+  var SVA_POLJA = [
+    "a",
+    "y",
+    "predmet",
+    "zrake",
+    "mijenja",
+    "a_raspon",
+    "f_raspon",
+    "korak",
+    "prikazi",
+    "zone",
+    "otvor",
+    "zastor_raspon",
+    "tolerancija",
+    "cilj",
+    "skriveno",
+    "krivo",
+    "pitaj",
+    "mjerenja"
+  ];
+  var POLJA_NACINA3 = {
+    istrazi: [
+      "a",
+      "y",
+      "predmet",
+      "zrake",
+      "mijenja",
+      "a_raspon",
+      "f_raspon",
+      "korak",
+      "prikazi",
+      "zone"
+    ],
+    prikaz: ["a", "y", "predmet", "zrake", "prikazi"],
+    zastor: ["a", "y", "otvor", "zastor_raspon", "tolerancija", "predmet"],
+    nacrtaj: ["a", "y", "predmet", "zrake"],
+    postavi: [
+      "a",
+      "y",
+      "predmet",
+      "zrake",
+      "korak",
+      "a_raspon",
+      "cilj",
+      "skriveno",
+      "krivo",
+      "prikazi"
+    ],
+    izracunaj: ["a", "y", "predmet", "zrake", "pitaj", "mjerenja", "otvor"]
+  };
+  var raspon3 = (r, lo, hi) => Array.isArray(r) && r.length === 2 && r.every(isNum) && r[0] >= lo && r[1] <= hi && r[0] < r[1];
+  function validateLeca(s) {
+    const { list, need } = problems();
+    if (!need(
+      NACINI21.includes(s.nacin),
+      `leca.nacin mora biti jedan od: ${NACINI21.join(", ")}`
+    ))
+      return list;
+    need(isText(s.tekst), "leca treba „tekst“");
+    const n = s.nacin;
+    for (const p of SVA_POLJA)
+      need(
+        !(p in s) || POLJA_NACINA3[n].includes(p),
+        `polje „${p}“ ne postoji u načinu ${n} (polja: ${POLJA_NACINA3[n].join(", ")})`
+      );
+    if (s.savjet != null) need(isText(s.savjet), "savjet mora biti tekst");
+    const mj = Array.isArray(s.mjerenja);
+    if (!(n === "izracunaj" && mj && s.f == null))
+      need(
+        isNum(s.f) && Math.abs(s.f) >= 2 && Math.abs(s.f) <= 100,
+        "f mora biti broj (cm), |f| od 2 do 100; pozitivan za sabirnu, negativan za rastresnu leću"
+      );
+    if (["zastor", "nacrtaj"].includes(n))
+      need(!(s.f < 0), `${n} je samo za sabirnu leću (f > 0)`);
+    if (s.y != null)
+      need(
+        isNum(s.y) && s.y > 0 && s.y <= 50,
+        "y (visina predmeta) mora biti broj od 0 do 50 cm"
+      );
+    if (s.predmet != null)
+      need(
+        PREDMETI2.includes(s.predmet),
+        `predmet mora biti ${PREDMETI2.join(" ili ")}`
+      );
+    if (s.zrake != null)
+      need(
+        Array.isArray(s.zrake) && s.zrake.length >= (n === "nacrtaj" ? 2 : 1) && s.zrake.every((z) => ZRAKE.includes(z)) && new Set(s.zrake).size === s.zrake.length,
+        `zrake mora biti popis različitih zraka iz: ${ZRAKE.join(", ")}${n === "nacrtaj" ? " (najmanje dvije)" : ""}`
+      );
+    if (s.prikazi != null)
+      need(
+        Array.isArray(s.prikazi) && s.prikazi.length >= 1 && s.prikazi.every((p) => OCITANJA.includes(p)) && new Set(s.prikazi).size === s.prikazi.length,
+        `prikazi mora biti popis očitanja iz: ${OCITANJA.join(", ")}`
+      );
+    if (list.length) return list;
+    const f2 = fLece(s);
+    const aOk = (a) => isNum(a) && a >= 0.5 && a <= 300;
+    if (n === "zastor") {
+      const A = listaA(s);
+      if (!need(
+        A.length >= 1 && A.length <= 4 && A.every((a) => isNum(a) && a >= 1 && a <= 300) && new Set(A).size === A.length && (isNum(s.a) || Array.isArray(s.a)),
+        "zastor: a je udaljenost svijeće (cm) ili popis 1–4 različite udaljenosti od 1 do 300 cm"
+      ))
+        return list;
+      if (s.otvor != null)
+        need(
+          isNum(s.otvor) && s.otvor >= 1 && s.otvor <= 20,
+          "otvor (promjer leće) mora biti od 1 do 20 cm"
+        );
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija > 0 && s.tolerancija <= 5,
+          "tolerancija mora biti od 0 do 5 cm"
+        );
+      if (s.zastor_raspon != null && !need(
+        raspon3(s.zastor_raspon, 0.5, 400),
+        "zastor_raspon mora biti [od, do] u cm, 0,5 ≤ od < do ≤ 400"
+      ))
+        return list;
+      const [lo, hi] = rasponZastora(s);
+      A.filter((a) => imaOstruSliku(f2, a)).forEach((a) => {
+        const b = slikaLece(f2, a).b;
+        need(
+          b >= lo + 0.5 && b <= hi - 0.5,
+          `za a = ${broj4(a, 1)} cm oštra slika je na ${broj4(b, 1)} cm, izvan klupe (${broj4(lo, 1)}–${broj4(hi, 1)} cm); smanji ili povećaj zastor_raspon`
+        );
+        need(
+          b <= 8 * f2,
+          `za a = ${broj4(a, 1)} cm slika je predaleko (b = ${broj4(b, 1)} cm); predmet stavi dalje od žarišta`
+        );
+      });
+      need(
+        pocetakZastora(s) != null,
+        "zastor nema početni položaj dovoljno daleko od oštrih slika; proširi zastor_raspon"
+      );
+      return list;
+    }
+    if (!(n === "izracunaj" && mj && s.a == null) && !need(aOk(s.a), "a (udaljenost predmeta) mora biti broj od 0,5 do 300 cm"))
+      return list;
+    if (n === "istrazi" || n === "postavi") {
+      if (s.korak != null)
+        need(
+          isNum(s.korak) && s.korak >= 0.1 && s.korak <= 5,
+          "korak mora biti od 0,1 do 5 cm"
+        );
+      if (s.a_raspon != null && !need(
+        raspon3(s.a_raspon, 0.1, 300),
+        "a_raspon mora biti [od, do] u cm, 0,1 ≤ od < do ≤ 300"
+      ))
+        return list;
+      const [lo, hi] = rasponA(s);
+      need(
+        s.a >= lo - 1e-9 && s.a <= hi + 1e-9,
+        `a = ${broj4(s.a)} nije u rasponu ${broj4(lo)}–${broj4(hi)} cm`
+      );
+      need(
+        Math.abs(s.a / korakA(s) - Math.round(s.a / korakA(s))) < 1e-6,
+        "a mora biti na koraku pomicanja (korak)"
+      );
+    }
+    if (n === "istrazi") {
+      if (s.zone != null)
+        need(typeof s.zone === "boolean", "zone mora biti true ili false");
+      if (s.mijenja != null)
+        need(
+          Array.isArray(s.mijenja) && s.mijenja.length >= 1 && s.mijenja.every((m) => m === "a" || m === "f") && new Set(s.mijenja).size === s.mijenja.length,
+          "mijenja mora biti popis iz: a, f"
+        );
+      if (mijenja(s).includes("f")) {
+        if (need(
+          Array.isArray(s.f_raspon) && s.f_raspon.length === 2 && s.f_raspon.every(isNum) && s.f_raspon[0] < s.f_raspon[1] && s.f_raspon.every(
+            (x) => Math.sign(x) === Math.sign(s.f) && Math.abs(x) >= 2 && Math.abs(x) <= 100
+          ),
+          "uz mijenja f treba f_raspon: [od, do] istog predznaka kao f, |f| od 2 do 100 cm"
+        ))
+          need(
+            s.f >= s.f_raspon[0] && s.f <= s.f_raspon[1],
+            "f mora biti unutar f_raspon"
+          );
+      } else
+        need(
+          s.f_raspon == null,
+          'f_raspon ima smisla samo uz mijenja: ["a", "f"]'
+        );
+    }
+    if (n === "prikaz" || n === "nacrtaj" || n === "izracunaj" && !mj) {
+      const sl = slikaLece(f2, s.a, visinaPredmeta(s));
+      if (n !== "prikaz")
+        need(
+          !sl.beskonacno,
+          "predmet ne smije biti točno u žarištu (a = f): slike nema"
+        );
+      if (!sl.beskonacno)
+        need(
+          Math.abs(sl.b) <= 10 * Math.abs(f2),
+          `slika je predaleko za crtež (b = ${broj4(sl.b, 1)} cm); predmet makni dalje od žarišta`
+        );
+    }
+    if (n === "prikaz" || n === "istrazi") noAnswerFields(s, need);
+    if (n === "nacrtaj") {
+      const sl = slikaLece(f2, s.a, visinaPredmeta(s));
+      need(
+        Math.abs(s.a - f2) >= 0.15 * f2,
+        "nacrtaj: predmet mora biti barem 0,15 f od žarišta (inače zrake izlaze gotovo paralelno)"
+      );
+      if (!sl.beskonacno)
+        need(
+          Math.abs(sl.m) <= 6,
+          "nacrtaj: slika je više od 6× veća od predmeta; stavi predmet dalje od žarišta"
+        );
+    }
+    if (n === "postavi") validatePostavi3(s, need);
+    if (n === "izracunaj") validateIzracunaj2(s, need, mj);
+    return list;
+  }
+  function validatePostavi3(s, need) {
+    const c = s.cilj;
+    if (!need(
+      c && typeof c === "object" && CILJEVI.includes(c.velicina) && isNum(c.vrijednost) && c.vrijednost !== 0,
+      `cilj mora biti {velicina: ${CILJEVI.join(" | ")}, vrijednost (broj ≠ 0), tolerancija?}`
+    ))
+      return;
+    if (c.tolerancija != null && !need(
+      isNum(c.tolerancija) && c.tolerancija > 0,
+      "cilj.tolerancija mora biti pozitivan broj"
+    ))
+      return;
+    if (c.velicina === "y_slike")
+      need(isNum(s.y), "cilj y_slike treba zadanu visinu predmeta y");
+    if (s.skriveno != null)
+      need(typeof s.skriveno === "boolean", "skriveno mora biti true ili false");
+    const aT = aZaCilj(s);
+    if (!need(
+      Number.isFinite(aT) && aT > 0,
+      "cilj se ne može postići ovom lećom (predmet bi morao biti iza leće)"
+    ))
+      return;
+    const [lo, hi] = rasponA(s);
+    need(
+      aT >= lo - 1e-9 && aT <= hi + 1e-9,
+      `cilj traži a = ${broj4(aT)} cm, izvan a_raspon (${broj4(lo)}–${broj4(hi)} cm)`
+    );
+    need(
+      mrezaA(s).some((a) => ostvaruje(s, a)),
+      `cilj traži a = ${broj4(aT, 3)} cm, a to nije na koraku pomicanja (${broj4(korakA(s))} cm); promijeni korak ili cilj`
+    );
+    need(!ostvaruje(s, s.a), "početni položaj predmeta već ostvaruje cilj");
+    validateKrivo(s.krivo, null, 0, need);
+    if (Array.isArray(s.krivo))
+      s.krivo.forEach(
+        (k, i) => isNum(k?.vrijednost) && need(
+          !ostvaruje(s, k.vrijednost),
+          `krivo[${i}].vrijednost ${broj4(k.vrijednost)} ostvaruje cilj, a to je točan odgovor`
+        )
+      );
+  }
+  function validateIzracunaj2(s, need, mj) {
+    if (!need(
+      Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 4,
+      "izracunaj treba pitaj: 1–4 tražene veličine"
+    ))
+      return;
+    const vidjeno = /* @__PURE__ */ new Set();
+    for (const [i, q] of s.pitaj.entries()) {
+      if (!need(
+        q && VELICINE7.includes(q.velicina),
+        `pitaj[${i}].velicina mora biti jedna od: ${VELICINE7.join(", ")}`
+      ))
+        continue;
+      need(!vidjeno.has(q.velicina), `pitaj[${i}] se ponavlja`);
+      vidjeno.add(q.velicina);
+      for (const k of Object.keys(q))
+        need(
+          ["velicina", "oznaka", "tolerancija", "krivo"].includes(k),
+          `pitaj[${i}]: nepoznato polje „${k}“ (velicina, oznaka?, tolerancija?, krivo?)`
+        );
+      if (q.oznaka != null)
+        need(isText(q.oznaka), `pitaj[${i}].oznaka mora biti tekst`);
+      if (q.velicina === "vrsta") {
+        need(
+          q.tolerancija == null && q.krivo == null,
+          `pitaj[${i}]: vrsta nema toleranciju ni krivo`
+        );
+        continue;
+      }
+      if (q.tolerancija != null)
+        need(
+          isNum(q.tolerancija) && q.tolerancija >= 0,
+          `pitaj[${i}].tolerancija mora biti broj ≥ 0`
+        );
+      const x = vrijednostIzracuna(s, q.velicina);
+      if (need(
+        Number.isFinite(x),
+        `pitaj[${i}]: ${NAZIV[q.velicina]} nije konačan broj`
+      ))
+        validateKrivo(q.krivo, x, tolPitanja2(q, x), need, `pitaj[${i}].krivo`);
+    }
+    const fj = [...vidjeno].filter((v) => v === "f" || v === "j");
+    need(
+      !fj.length || fj.length === vidjeno.size,
+      "f i j pitaju se same (iz a i b); ne miješaj ih s b, y′, y′/y, a ili vrstom"
+    );
+    if (mj) {
+      if (!need(
+        s.mjerenja.length >= 1 && s.mjerenja.length <= 8 && s.mjerenja.every(
+          (p) => Array.isArray(p) && p.length === 2 && p.every((x) => isNum(x) && x > 0 && x <= 400)
+        ),
+        "mjerenja mora biti popis 1–8 parova [a, b] u cm (pozitivni brojevi)"
+      ))
+        return;
+      need(fj.length > 0, "mjerenja (tablica a, b) idu samo uz pitaj f ili j");
+      const fm = fIzMjerenja(s);
+      s.mjerenja.forEach(
+        ([a, b], i) => need(
+          Math.abs(a * b / (a + b) - fm) <= 0.03 * fm,
+          `mjerenja[${i}] = [${broj4(a)}, ${broj4(b)}] ne odgovara istoj leći (f = ${broj4(a * b / (a + b))} cm, a srednja vrijednost je ${broj4(fm)} cm)`
+        )
+      );
+      if (isNum(s.f))
+        need(
+          Math.abs(s.f - fm) <= 0.02 * fm,
+          `f = ${broj4(s.f)} ne odgovara mjerenjima (srednja vrijednost ${broj4(fm)} cm)`
+        );
+    } else {
+      if (vidjeno.has("y_slike"))
+        need(isNum(s.y), "za y′ treba zadana visina predmeta y");
+      if (vidjeno.has("vrsta")) {
+        const sl = slikaLece(fLece(s), s.a, visinaPredmeta(s));
+        need(
+          !sl.jednaka,
+          "vrsta: predmet u 2F daje sliku jednake veličine; izaberi drugi a"
+        );
+      }
+    }
+  }
+  var OPIS9 = `Tanka leća na optičkoj klupi (fizika, matura; jednadžba leće 1/a + 1/b = 1/f, y′/y = −b/a). Sve udaljenosti u cm. Konvencija predznaka kao u rješenjima: b < 0 = virtualna slika s iste strane kao predmet, y′ < 0 = obrnuta slika, f > 0 sabirna, f < 0 rastresna leća. Zrake, sliku, zamućenje na zastoru i sve točne odgovore računa aplikacija.
+Polja: tekst, nacin, f (cm; uz mjerenja smije izostati), a (udaljenost predmeta), y? (visina predmeta, zadano 3), predmet? ("strelica" | "svijeca"; zastor i mjerenja zadano svijeća), zrake? (podskup od "paralelna", "centar", "zariste"; zadano sve tri).
+Načini:
+- "istrazi" (Istraži): učenik vuče predmet (i F′ ako mijenja sadrži "f"), uživo se crtaju karakteristične zrake i slika (puna = realna, crtkana s produžecima = virtualna) i ispisuju a, b, y′, y′/y i vrsta slike; ispod osi traka sa zonama (dalje od 2F, između F i 2F, unutar F). mijenja? (["a"] zadano ili ["a", "f"]), a_raspon? [od, do], f_raspon? (uz "f"), korak? (cm, zadano 0,5), prikazi? (podskup od a, b, y_slike, m, vrsta), zone? (false skriva traku). a = f: zrake izlaze paralelno, slike nema.
+- "prikaz" (Pogledaj): isti crtež bez povlačenja (zamjena za sliku u objašnjenju).
+- "zastor" (Tvoj red, pokus): svijeća na a (broj ili popis 1–4 udaljenosti), leća i zastor koji učenik vuče (fino ‹ ›). Na zastoru je plamen zamućen koliko bi stvarno bio (otvor? = promjer leće, zadano 6 cm); F se ne vidi. Za svaki a učenik namjesti oštru sliku i zabilježi; ako je a ≤ f, točno je „Nema oštre slike“. tolerancija? (cm, zadano max(0,3; 1 % b)), zastor_raspon? [od, do]. Odgovor je tablica izmjerenih b.
+- "nacrtaj" (Tvoj red): sabirna leća, upadne zrake (najmanje 2) nacrtane do leće; učenik okreće izlazni dio svake zrake (povlači kružić; zraka se privuče na F, F′, 2F, 2F′, vodoravno i ravno dalje). Točno do 2°. Kad su sve zrake dobre, pojavi se slika (virtualna s crtkanim produžecima). Poruke za tipične greške (paralelna kroz F ispred leće, zraka kroz središte skrenuta, zraka kroz F nastavlja ravno) dodaju se same.
+- "postavi" (Tvoj red): učenik vuče predmet (korak? zadano 0,5 cm, a_raspon?) dok slika ne ispuni cilj: {velicina: "m" (y′/y s predznakom, npr. 1.25 = uspravna 25 % veća) | "b" | "y_slike", vrijednost, tolerancija? (zadano 1 %)}. skriveno? (zadano true): slika, zrake i brojevi slike vide se tek nakon provjere tog položaja. Poruke za obrnutu umjesto uspravne slike i smjer pomicanja dodaju se same; krivo?: [{vrijednost (a u cm), poruka}].
+- "izracunaj" (Tvoj red): pitaj: [{velicina: "b" | "y_slike" | "m" | "f" | "j" | "a" | "vrsta", oznaka?, tolerancija? (zadano 1 %), krivo?}] (1–4). Crtež ne odaje odgovor: slika i zrake (i F kad se pita f ili j; i predmet kad se pita a) pojave se tek nakon točnog odgovora. "vrsta" su tri prekidača (realna/virtualna, uspravna/obrnuta, uvećana/umanjena). j je u m⁻¹ (dioptrije). Uz pitaj f/j može mjerenja: [[a, b], …] (tablica pokusa; f je srednja vrijednost od ab/(a+b)). Tipične krive vrijednosti dodaju se same: b bez minusa, zbrojeno umjesto oduzeto (af/(a+f)), neokrenuti 1/b, y′ bez predznaka ili s obrnutim omjerom, j uz f u cm (0,08), srednja vrijednost a i b umjesto f, a za obrnutu umjesto uspravne slike.`;
+  var PRIMJER9 = {
+    tip: TIP9,
+    nacin: "nacrtaj",
+    f: 10,
+    a: 14,
+    y: 6,
+    zrake: ["paralelna", "centar", "zariste"],
+    tekst: "Predmet visok 6 cm stoji 14 cm ispred sabirne leće žarišne daljine 10 cm. **Okreni izlazni dio svake zrake** tako da ide kamo je leća lomi. Gdje se sijeku, tamo je vrh slike."
+  };
+  var PRIMJERI9 = [
+    // istraživanje: kroz sve zone (1145)
+    {
+      tip: TIP9,
+      nacin: "istrazi",
+      f: 10,
+      a: 25,
+      y: 4,
+      a_raspon: [2, 40],
+      tekst: "**Vuci predmet** prema leći i gledaj kako se slika mijenja: gdje je realna, gdje uvećana, a kad postane virtualna (povećalo)."
+    },
+    // 1140 a: pokus sa zastorom
+    {
+      tip: TIP9,
+      nacin: "zastor",
+      f: 12.5,
+      a: [30, 35, 40, 65],
+      tekst: "Za svaki položaj svijeće **pomakni zastor dok plamen ne bude oštar** i zabilježi udaljenost zastora od leće."
+    },
+    // 1140 b: predmet unutar žarišne daljine
+    {
+      tip: TIP9,
+      nacin: "zastor",
+      f: 12.5,
+      a: 10,
+      tekst: "Svijeća je sad samo 10 cm ispred iste leće. **Potraži oštru sliku** plamena na zastoru."
+    },
+    // 1140 a: f i jakost iz tablice
+    {
+      tip: TIP9,
+      nacin: "izracunaj",
+      mjerenja: [
+        [30, 21.4],
+        [35, 19.4],
+        [40, 18.2],
+        [65, 15.5]
+      ],
+      pitaj: [{ velicina: "f" }, { velicina: "j" }],
+      tekst: "Iz izmjerenih parova izračunaj srednju vrijednost žarišne daljine leće i njezinu jakost."
+    },
+    // 1140 b: gdje je slika i kakva je
+    {
+      tip: TIP9,
+      nacin: "izracunaj",
+      f: 12.5,
+      a: 10,
+      pitaj: [{ velicina: "b" }, { velicina: "vrsta" }],
+      tekst: "Predmet je 10 cm ispred leće žarišne daljine 12,5 cm. Gdje nastaje slika i kakva je?"
+    },
+    // 1145 a: račun
+    {
+      tip: TIP9,
+      nacin: "izracunaj",
+      f: 10,
+      a: 14,
+      y: 6,
+      pitaj: [{ velicina: "b" }, { velicina: "y_slike" }, { velicina: "vrsta" }],
+      tekst: "Predmet visok 6 cm stoji 14 cm ispred sabirne leće žarišne daljine 10 cm. Gdje nastaje slika, kolika je i kakva je?"
+    },
+    // 1145 b: povećalo
+    {
+      tip: TIP9,
+      nacin: "postavi",
+      f: 10,
+      a: 6,
+      y: 2,
+      a_raspon: [0.5, 30],
+      cilj: { velicina: "m", vrijednost: 1.25 },
+      tekst: "Leća žarišne daljine 10 cm kao povećalo daje **uspravnu** sliku uvećanu za 25 %. Izračunaj gdje je predmet, pa ga **postavi** tamo."
+    },
+    // 1146 b: račun udaljenosti predmeta
+    {
+      tip: TIP9,
+      nacin: "izracunaj",
+      f: 24,
+      a: 4,
+      pitaj: [{ velicina: "a" }],
+      tekst: "Leća žarišne daljine 24 cm kao povećalo daje uspravnu sliku uvećanu za 20 %. Koliko je predmet udaljen od leće?"
+    },
+    // povećalo: konstrukcija virtualne slike (1145 b)
+    {
+      tip: TIP9,
+      nacin: "nacrtaj",
+      f: 10,
+      a: 6,
+      y: 2,
+      zrake: ["paralelna", "centar"],
+      tekst: "Predmet je **bliže** leći od žarišta. Okreni izlazne zrake. Sijeku li se iza leće?"
+    },
+    // 1147 a: gotova konstrukcija
+    {
+      tip: TIP9,
+      nacin: "prikaz",
+      f: 28,
+      a: 44,
+      y: 4,
+      tekst: "Predmet visok 4 cm, 44 cm ispred leće žarišne daljine 28 cm: tri karakteristične zrake sijeku se u vrhu slike."
+    },
+    // rastresna leća
+    {
+      tip: TIP9,
+      nacin: "istrazi",
+      f: -15,
+      a: 30,
+      y: 4,
+      a_raspon: [3, 45],
+      mijenja: ["a", "f"],
+      f_raspon: [-25, -5],
+      tekst: "Rastresna leća: **vuci predmet i žarište F′**. Može li slika ikad biti realna ili uvećana?"
+    }
+  ];
+  var leca = {
+    tip: TIP9,
+    samoRucno: true,
+    uloga: (s) => GLEDANJE2.includes(s.nacin) ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS9,
+    primjer: PRIMJER9,
+    primjeri: PRIMJERI9,
+    validate: validateLeca,
+    check(s, odgovor3) {
+      if (s.nacin === "zastor") return checkZastor(s, odgovor3);
+      if (s.nacin === "nacrtaj") return checkNacrtaj2(s, odgovor3);
+      if (s.nacin === "postavi") return checkPostavi7(s, odgovor3);
+      if (s.nacin === "izracunaj") return checkIzracunaj5(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      const f2 = fLece(s);
+      const y = visinaPredmeta(s);
+      if (s.nacin === "zastor")
+        return listaA(s).map((a) => {
+          if (!imaOstruSliku(f2, a))
+            return `a = ${cm(a, 1)}: oštre slike nema (predmet je unutar žarišne daljine; slika je virtualna, b = ${cm(slikaLece(f2, a).b, 1)})`;
+          return `a = ${cm(a, 1)} → b = ${cm(slikaLece(f2, a).b, 1)}`;
+        }).join("; ");
+      if (s.nacin === "nacrtaj") {
+        const sl = slikaLece(f2, s.a, y);
+        return `paralelna zraka kroz F′, zraka kroz središte ravno, zraka kroz F paralelno s osi; slika: b = ${cm(sl.b)}, y′ = ${cm(sl.y)} (${vrstaTekst(sl).replaceAll(" · ", ", ")})`;
+      }
+      if (s.nacin === "postavi") {
+        const aT = aZaCilj(s);
+        const sl = slikaLece(f2, aT, y);
+        return `a = ${cm(aT)} (tada je b = ${cm(sl.b)}, y′/y = ${broj4(sl.m, 2)})`;
+      }
+      if (s.nacin === "izracunaj")
+        return s.pitaj.map((q) => {
+          if (q.velicina === "vrsta")
+            return vrstaTekst(slikaLece(f2, s.a, y)).replaceAll(" · ", ", ");
+          const x = vrijednostIzracuna(s, q.velicina);
+          const o = {
+            b: "b",
+            y_slike: "y′",
+            m: "y′/y",
+            f: "f",
+            j: "j",
+            a: "a"
+          }[q.velicina];
+          return `${o} = ${broj4(x, 2)}${JEDINICA2[q.velicina] ? ` ${JEDINICA2[q.velicina]}` : ""}`;
+        }).join("; ");
+      return "";
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/_interferencija.js
+  var rad4 = (x) => x * Math.PI / 180;
+  var deg2 = (x) => x * 180 / Math.PI;
+  var DULJINA = { m: 1, cm: 0.01, mm: 1e-3, µm: 1e-6, nm: 1e-9 };
+  var normJed = (j) => typeof j === "string" ? j.replace("μ", "µ") : j;
+  var KLIZACI4 = {
+    lambda: {
+      oznaka: "valna duljina λ",
+      kratko: "λ",
+      jedinica: "nm",
+      min: 380,
+      max: 750
+    },
+    d: {
+      oznaka: "razmak pukotina d",
+      kratko: "d",
+      jedinica: "µm",
+      min: 10,
+      max: 1e3
+    },
+    a: {
+      oznaka: "udaljenost zastora a",
+      kratko: "a",
+      jedinica: "m",
+      min: 0.2,
+      max: 10
+    },
+    zareza_po_mm: {
+      oznaka: "zareza po milimetru",
+      kratko: "broj zareza po mm",
+      jedinica: "/mm",
+      min: 20,
+      max: 1250
+    },
+    N: {
+      oznaka: "broj osvijetljenih pukotina N",
+      kratko: "N",
+      jedinica: "",
+      min: 2,
+      max: 50
+    }
+  };
+  var KLIZACI_VRSTE = {
+    young: ["lambda", "d", "a"],
+    resetka: ["lambda", "d", "zareza_po_mm", "N"]
+  };
+  var D_RESETKA = { min: 0.8, max: 50 };
+  function metaKlizaca(s, id) {
+    const m = { ...KLIZACI4[id] };
+    if (id === "d" && s.vrsta === "resetka") {
+      m.oznaka = "konstanta rešetke d";
+      m.min = D_RESETKA.min;
+      m.max = D_RESETKA.max;
+    }
+    return m;
+  }
+  var klizaciOd4 = (s) => Array.isArray(s.klizaci) ? s.klizaci : [];
+  var korakIndeks = (k, x) => Math.round((x - k.min) / k.korak);
+  var zaokruziNaKorak = (k, x) => Math.round(
+    Math.min(k.max, Math.max(k.min, k.min + korakIndeks(k, x) * k.korak)) * 1e9
+  ) / 1e9;
+  function vrijednostiKlizaca4(k) {
+    const n = Math.round((k.max - k.min) / k.korak);
+    return Array.from(
+      { length: n + 1 },
+      (_, i) => Math.round((k.min + i * k.korak) * 1e9) / 1e9
+    );
+  }
+  function pocetneVrijednosti3(s) {
+    const p = {};
+    for (const k of klizaciOd4(s))
+      p[k.id] = isNum(k.pocetak) ? k.pocetak : zaokruziNaKorak(k, (k.min + k.max) / 2);
+    return p;
+  }
+  function fizika2(s, p = pocetneVrijednosti3(s)) {
+    const v = (id) => id in p ? p[id] : s[id];
+    const lambdaNm = v("lambda");
+    const lam = lambdaNm * 1e-9;
+    if (s.vrsta === "young") {
+      const dUm = v("d");
+      const d2 = dUm * 1e-6;
+      const a = v("a");
+      const razmak = lam * a / d2;
+      return { vrsta: "young", lambdaNm, lam, dUm, d: d2, a, s: razmak, N: 2 };
+    }
+    let d;
+    let izvor2;
+    if ("d" in p) [d, izvor2] = [p.d * 1e-6, "d"];
+    else if ("zareza_po_mm" in p)
+      [d, izvor2] = [1e-3 / p.zareza_po_mm, "zareza_po_mm"];
+    else if (isNum(s.d)) [d, izvor2] = [s.d * 1e-6, "d"];
+    else if (isNum(s.zareza_po_mm))
+      [d, izvor2] = [1e-3 / s.zareza_po_mm, "zareza_po_mm"];
+    else [d, izvor2] = [(s.red ?? 1) * lam / Math.sin(rad4(s.kut)), "kut"];
+    const omjer = d / lam;
+    const kmax = Math.max(0, Math.ceil(omjer - 1e-9) - 1);
+    const redovi = [];
+    for (let k = -kmax; k <= kmax; k++)
+      redovi.push({ k, alpha: deg2(Math.asin(k * lam / d)) });
+    const N = isNum(v("N")) ? v("N") : 20;
+    return {
+      vrsta: "resetka",
+      lambdaNm,
+      lam,
+      d,
+      dUm: d * 1e6,
+      zareza: 1e-3 / d,
+      omjer,
+      kmax,
+      brojMaksimuma: 2 * kmax + 1,
+      redovi,
+      N,
+      izvor: izvor2
+    };
+  }
+  var kutReda = (f2, k) => Math.abs(k * f2.lam) < f2.d ? deg2(Math.asin(k * f2.lam / f2.d)) : null;
+  function prugaU(u) {
+    const au = Math.abs(u);
+    const k = Math.round(au);
+    if (Math.abs(au - k) <= 0.25) return { vrsta: "svijetla", red: k };
+    return { vrsta: "tamna", red: Math.floor(au) + 1 };
+  }
+  var fmt2 = (x) => formatNumber(Number(x.toPrecision(4)));
+  var cm2 = (m) => `${fmt2(m * 100)} cm`;
+
+  // src/lib/lesson/katalog/fizika/interferencija.js
+  var TIP10 = "interferencija";
+  var VRSTE4 = ["young", "resetka"];
+  var NACINI22 = {
+    young: ["istrazi", "odaberi", "izmjeri", "izracunaj", "postavi"],
+    resetka: ["istrazi", "izracunaj", "postavi"]
+  };
+  var PRIKAZI10 = {
+    young: ["razlika_putova", "faza", "intenzitet", "redovi", "ravnalo"],
+    resetka: ["intenzitet", "redovi", "kutovi"]
+  };
+  var POLJA3 = [
+    "tip",
+    "vrsta",
+    "nacin",
+    "tekst",
+    "lambda",
+    "d",
+    "a",
+    "zareza_po_mm",
+    "kut",
+    "red",
+    "N",
+    "klizaci",
+    "prikazi",
+    "cilj",
+    "pruge",
+    "jedinica",
+    "pitaj",
+    "krivo",
+    "savjet"
+  ];
+  var VELICINE8 = {
+    young: {
+      s: { naziv: "razmak susjednih pruga", oznaka: "s", jed: "cm" },
+      lambda: { naziv: "valna duljina", oznaka: "λ", jed: "nm" },
+      d: { naziv: "razmak pukotina", oznaka: "d", jed: "µm" },
+      a: { naziv: "udaljenost zastora", oznaka: "a", jed: "m" }
+    },
+    resetka: {
+      d: { naziv: "konstanta rešetke", oznaka: "d", jed: "m" },
+      zareza_po_mm: {
+        naziv: "broj zareza po milimetru",
+        oznaka: "N",
+        jed: "",
+        iza: "zareza/mm"
+      },
+      alpha: { naziv: "kut maksimuma", oznaka: "α", jed: "°" },
+      lambda: { naziv: "valna duljina", oznaka: "λ", jed: "nm" },
+      kmax: { naziv: "najviši red maksimuma", oznaka: "kₘₐₓ", jed: "" },
+      broj_maksimuma: {
+        naziv: "ukupan broj maksimuma",
+        oznaka: "broj maksimuma",
+        jed: ""
+      }
+    }
+  };
+  var JED_DOPUSTENE = {
+    s: ["cm", "mm", "m"],
+    lambda: ["nm", "µm", "m"],
+    d: ["µm", "mm", "m"],
+    a: ["m", "cm"],
+    alpha: ["°"],
+    zareza_po_mm: [],
+    kmax: [],
+    broj_maksimuma: []
+  };
+  var jedinicaPolja = (s, q) => normJed(q.jedinica) ?? VELICINE8[s.vrsta][q.velicina].jed;
+  var SUB3 = "₀₁₂₃₄₅₆₇₈₉";
+  var indeksTekst = (n) => String(n).split("").map((c) => SUB3[Number(c)]).join("");
+  function oznakaPolja(s, q) {
+    if (q.velicina === "alpha") return `α${indeksTekst(q.red ?? 1)}`;
+    if (q.velicina === "kmax") return "kₘₐₓ";
+    return VELICINE8[s.vrsta][q.velicina].oznaka;
+  }
+  var sinKut = (x) => Math.sin(rad4(x));
+  var jedU = (j) => j && j !== "°" ? ` ${j}` : j === "°" ? "°" : "";
+  var iznos4 = (x, j) => `${Math.abs(x) >= 1e5 || Math.abs(x) < 1e-3 && x !== 0 ? formatSci(x) : fmt2(x)}${jedU(j)}`;
+  function izracun4(s, q) {
+    const f2 = fizika2(s);
+    const J = jedinicaPolja(s, q);
+    const uJ = J && DULJINA[J] ? 1 / DULJINA[J] : 1;
+    const krivo = [];
+    const si = (x2, poruka2) => krivo.push({ vrijednost: x2 * uJ, poruka: poruka2 });
+    const sirovo = (x2, poruka2) => krivo.push({ vrijednost: x2, poruka: poruka2 });
+    const oba = (x2, poruka2) => {
+      si(x2, poruka2);
+      if (uJ !== 1) sirovo(x2, poruka2);
+    };
+    const uMetrima = (x2, J2 = J) => `Rezultat je u metrima, a traži se u ${J2}: ${formatSci(x2)} m = ${iznos4(x2 / DULJINA[J2], J2)}.`;
+    const NM = `Valnu duljinu pretvori u metre: ${fmt2(f2.lambdaNm)} nm = ${formatSci(f2.lam)} m (n = 10⁻⁹).`;
+    let x;
+    if (s.vrsta === "young") {
+      const { lam: lam2, d: d2, a } = f2;
+      const sr = f2.s;
+      const N = s.pruge?.N;
+      const L = N ? (N - 1) * sr : null;
+      const UM = `Razmak pukotina pretvori u metre: ${fmt2(f2.dUm)} µm = ${formatSci(d2)} m (µ = 10⁻⁶).`;
+      const CM2 = `Razmak pruga pretvori u metre: ${cm2(sr)} = ${formatSci(sr)} m.`;
+      const BROJ = N ? `${N} pruga ima ${N - 1} razmaka (kao stupići ograde), pa je s = L / ${N - 1}, a ne L / ${N}.` : "";
+      if (q.velicina === "s") {
+        x = sr;
+        if (N) {
+          si(L / N, BROJ);
+          si(
+            L,
+            "To je duljina cijele skupine pruga, a ne razmak dviju susjednih. Podijeli je brojem razmaka."
+          );
+        } else {
+          oba(lam2 * d2 / a, "Iz λ = s·d/a slijedi s = λ·a/d.");
+          oba(sr * 1e9, NM);
+          oba(sr * 1e-6, UM);
+        }
+      } else if (q.velicina === "lambda") {
+        x = lam2;
+        if (N) oba(L / N * d2 / a, BROJ);
+        oba(sr * a / d2, "Zamijenio si d i a: λ = s·d/a.");
+        oba(sr * f2.dUm / a, UM);
+        oba(sr * 100 * d2 / a, CM2);
+        oba(sr * 100 * f2.dUm / a, "Pretvori u metre i s (iz cm) i d (iz µm).");
+      } else if (q.velicina === "d") {
+        x = d2;
+        oba(lam2 * sr / a, "Iz λ = s·d/a slijedi d = λ·a/s.");
+        oba(f2.lambdaNm * a / sr, NM);
+        oba(lam2 * a / (sr * 100), CM2);
+      } else if (q.velicina === "a") {
+        x = a;
+        oba(lam2 * d2 / sr, "Iz λ = s·d/a slijedi a = s·d/λ.");
+        oba(sr * d2 / f2.lambdaNm, NM);
+        oba(sr * f2.dUm / lam2, UM);
+        oba(sr * 100 * d2 / lam2, CM2);
+      }
+      if (DULJINA[J] && J !== "m") sirovo(x, uMetrima(x));
+      return gotovo(s, q, x * uJ, J, krivo);
+    }
+    const { lam, d } = f2;
+    const k0 = s.red ?? 1;
+    const a0 = s.kut ?? kutReda(f2, k0);
+    const izKuta = f2.izvor === "kut";
+    const RAD3 = "Kalkulator računa u radijanima: prebaci ga na stupnjeve (DEG) pa ponovi.";
+    const kriviD = () => {
+      const out = [];
+      if (!izKuta) return out;
+      out.push([
+        k0 * lam * sinKut(a0),
+        "Iz d·sin α = kλ slijedi d = kλ / sin α."
+      ]);
+      out.push([k0 * lam / Math.abs(Math.sin(a0)), RAD3]);
+      out.push([
+        k0 * lam / Math.cos(rad4(a0)),
+        "U formuli je sin α, a ne cos α."
+      ]);
+      out.push([
+        k0 * lam / Math.tan(rad4(a0)),
+        "U formuli je sin α, a ne tg α."
+      ]);
+      if (k0 > 1)
+        out.push([
+          lam / sinKut(a0),
+          `Maksimum je ${k0}. reda, pa je d = ${k0}·λ / sin α.`
+        ]);
+      out.push([k0 * f2.lambdaNm / sinKut(a0), NM]);
+      return out;
+    };
+    if (q.velicina === "d") {
+      x = d;
+      for (const [v, p] of kriviD()) oba(v, p);
+      if (f2.izvor === "zareza_po_mm") {
+        const n = f2.zareza;
+        oba(
+          1 / n,
+          "Zareza je po milimetru: d = 1 mm / N = 10⁻³ m / N, a ne 1 m / N."
+        );
+        oba(
+          0.01 / n,
+          "Zareza je po milimetru, a ne po centimetru: d = 10⁻³ m / N."
+        );
+      }
+      if (J !== "µm")
+        sirovo(
+          d * 1e6,
+          `To je d u mikrometrima; upiši ga u ${J}: ${fmt2(d * 1e6)} µm = ${iznos4(d / DULJINA[J], J)}.`
+        );
+      if (J !== "m") sirovo(d, uMetrima(d));
+    } else if (q.velicina === "zareza_po_mm") {
+      x = f2.zareza;
+      sirovo(
+        1 / d,
+        "To je broj zareza po metru. Milimetar je 1000 puta kraći, pa u njega stane 1000 puta manje zareza."
+      );
+      sirovo(
+        0.01 / d,
+        "To je broj zareza po centimetru. Traži se po milimetru: 1 mm = 10⁻³ m."
+      );
+      sirovo(
+        1 / (d * 1e6),
+        `1 mm = 1000 µm, pa je broj zareza 1000 µm / ${fmt2(d * 1e6)} µm.`
+      );
+      for (const [v, p] of kriviD()) sirovo(1e-3 / v, p);
+    } else if (q.velicina === "alpha") {
+      const k = q.red ?? 1;
+      x = kutReda(f2, k);
+      const sn = k * lam / d;
+      sirovo(
+        Math.asin(sn),
+        "Kut je u radijanima. Prebaci kalkulator na stupnjeve (DEG)."
+      );
+      sirovo(sn, "To je sin α. Kut je α = sin⁻¹(kλ/d).");
+      sirovo(deg2(Math.atan(sn)), "Iz d·sin α = kλ treba sin⁻¹, a ne tg⁻¹.");
+      if (k > 1)
+        sirovo(
+          deg2(Math.asin(lam / d)),
+          `To je kut prvog reda. Za ${k}. red je sin α = ${k}·λ/d.`
+        );
+      if (izKuta && k !== k0)
+        sirovo(
+          a0 * k / k0,
+          "Kut ne raste razmjerno redu: razmjeran je sin α. Izračunaj sin α = kλ/d pa α."
+        );
+    } else if (q.velicina === "lambda") {
+      x = lam;
+      const sa = sinKut(a0);
+      if (k0 > 1) oba(d * sa, `Maksimum je ${k0}. reda: λ = d·sin α / ${k0}.`);
+      oba(d / sa * k0, "Iz d·sin α = kλ slijedi λ = d·sin α / k.");
+      oba(d * Math.abs(Math.sin(a0)) / k0, RAD3);
+      if (f2.izvor === "zareza_po_mm")
+        oba(
+          1 / f2.zareza * sa / k0,
+          "Zareza je po milimetru: d = 10⁻³ m / N, a ne 1 m / N."
+        );
+      if (J !== "m") sirovo(lam, uMetrima(lam));
+    } else if (q.velicina === "kmax") {
+      x = f2.kmax;
+      if (Math.ceil(f2.omjer) !== f2.kmax)
+        sirovo(
+          Math.ceil(f2.omjer),
+          "Najviši red mora imati sin α < 1, pa d/λ zaokruži naniže."
+        );
+      sirovo(
+        f2.omjer,
+        "Red maksimuma je cijeli broj: najveći k za koji je k·λ < d."
+      );
+      sirovo(
+        f2.brojMaksimuma,
+        "To je broj svih maksimuma. Traži se najviši red k (s jedne strane)."
+      );
+    } else if (q.velicina === "broj_maksimuma") {
+      x = f2.brojMaksimuma;
+      sirovo(
+        f2.kmax,
+        "To je najviši red. Maksimumi su s obje strane središnjeg, a tu je i središnji (k = 0)."
+      );
+      sirovo(2 * f2.kmax, "Zaboravio si središnji maksimum (k = 0).");
+      if (Math.ceil(f2.omjer) !== f2.kmax)
+        sirovo(
+          2 * Math.ceil(f2.omjer) + 1,
+          "Najviši red mora imati sin α < 1, pa d/λ zaokruži naniže."
+        );
+    }
+    return gotovo(s, q, x * (DULJINA[J] ? uJ : 1), J, krivo);
+  }
+  function gotovo(s, q, vrijednost3, J, krivo) {
+    const tol2 = q.velicina === "alpha" ? 0.15 : q.velicina === "kmax" || q.velicina === "broj_maksimuma" ? 0.01 : Math.abs(vrijednost3) * 0.01;
+    const filt = [];
+    for (const k of krivo) {
+      if (!Number.isFinite(k.vrijednost) || k.vrijednost <= 0) continue;
+      if (Math.abs(k.vrijednost - vrijednost3) <= Math.max(tol2 * 1.5, Math.abs(vrijednost3) * 0.015))
+        continue;
+      if (filt.some(
+        (o) => Math.abs(o.vrijednost - k.vrijednost) <= Math.abs(k.vrijednost) * 5e-3
+      ))
+        continue;
+      filt.push(k);
+    }
+    return {
+      vrijednost: vrijednost3,
+      jedinica: J,
+      oznaka: oznakaPolja(s, q),
+      tol: tol2,
+      krivo: [...q.krivo ?? [], ...filt]
+    };
+  }
+  var pitanja = (s) => Array.isArray(s.pitaj) ? s.pitaj : [];
+  function checkPolje(s, i, input) {
+    const q = pitanja(s)[i];
+    const r = izracun4(s, q);
+    const J = r.jedinica === "°" ? "°" : r.jedinica;
+    return checkNumber({
+      input,
+      answer: r.vrijednost,
+      tol: r.tol,
+      unit: J,
+      krivo: r.krivo,
+      savjet: q.savjet ?? s.savjet
+    });
+  }
+  function tocnaPozicija(s) {
+    const f2 = fizika2(s);
+    const c = s.cilj ?? {};
+    if (c.pruga === "svijetla") return c.red * f2.s;
+    if (c.pruga === "tamna") return (c.red - 0.5) * f2.s;
+    if (c.faza === "pi") return 0.5 * f2.s;
+    if (c.faza === "0") return 0;
+    if (isNum(c.razlika_putova)) return c.razlika_putova * f2.s;
+    return 0;
+  }
+  var redni = (k) => `${k}.`;
+  function checkOdaberi5(s, odgovor3) {
+    const y = isNum(odgovor3) ? odgovor3 : odgovor3?.y;
+    if (!isNum(y))
+      return {
+        tocno: false,
+        poruka: "Dodirni mjesto na zastoru (ili povuci sondu P).",
+        prazno: true
+      };
+    const f2 = fizika2(s);
+    const u = y / f2.s;
+    const pr = prugaU(u);
+    const c = s.cilj;
+    const razlika2 = Math.round(2 * Math.abs(u)) / 2;
+    const R2 = `${formatNumber(razlika2)} λ`;
+    const svijetlaTu = `Tu je svijetla pruga: valovi stižu u fazi (razlika putova ${R2}, cijeli broj valnih duljina) i pojačaju se.`;
+    const tamnaTu = `Tu je tamna pruga: razlika putova je ${R2}, pa valovi stižu u protufazi (brijeg na dolinu) i ponište se.`;
+    if (c.pruga) {
+      if (pr.vrsta === c.pruga && pr.red === c.red) return { tocno: true };
+      if (pr.vrsta !== c.pruga)
+        return {
+          tocno: false,
+          poruka: pr.vrsta === "svijetla" ? svijetlaTu : tamnaTu
+        };
+      if (c.pruga === "svijetla") {
+        if (pr.red === 0)
+          return {
+            tocno: false,
+            poruka: "To je središnja svijetla pruga: do nje oba vala prijeđu jednak put, pa je ona **nulta** (k = 0). Brojimo od nje prema van."
+          };
+        if (pr.red === c.red + 1)
+          return {
+            tocno: false,
+            poruka: `To je ${redni(pr.red)} svijetla pruga. Središnja je nulta (k = 0), a prva je odmah do nje: brojimo 0, 1, 2…`
+          };
+        return {
+          tocno: false,
+          poruka: `To je ${redni(pr.red)} svijetla pruga (središnja je nulta). Traži se ${redni(c.red)}`
+        };
+      }
+      return {
+        tocno: false,
+        poruka: `To je ${redni(pr.red)} tamna pruga. Prva tamna je odmah uz središnju svijetlu (razlika putova ½ λ). Traži se ${redni(c.red)}`
+      };
+    }
+    if (c.faza) {
+      const trazi = c.faza === "pi" ? "tamna" : "svijetla";
+      if (pr.vrsta === trazi) return { tocno: true };
+      return {
+        tocno: false,
+        poruka: trazi === "tamna" ? `${svijetlaTu} U protufazi stižu tamo gdje je tamno.` : `${tamnaTu} U fazi stižu tamo gdje je svijetlo.`
+      };
+    }
+    if (Math.abs(Math.abs(u) - c.razlika_putova) <= 0.25) return { tocno: true };
+    return {
+      tocno: false,
+      poruka: `Tu je razlika putova ${R2}. Od jedne pruge do susjedne (svijetla → tamna) razlika putova naraste za ½ λ, a u središtu je 0.`
+    };
+  }
+  function tocnoOdaberi(s) {
+    const f2 = fizika2(s);
+    const c = s.cilj;
+    const y = Math.abs(tocnaPozicija(s));
+    const gdje = y === 0 ? "u središtu zastora" : `na y = ±${cm2(y)}`;
+    if (c.pruga === "svijetla")
+      return c.red === 0 ? "središnja svijetla pruga (k = 0)" : `${c.red}. svijetla pruga, ${gdje} (razlika putova ${c.red} λ, razlika u fazi ${2 * c.red}π ≡ 0)`;
+    if (c.pruga === "tamna")
+      return `${c.red}. tamna pruga, ${gdje} (razlika putova ${formatNumber(c.red - 0.5)} λ, protufaza)`;
+    if (c.faza === "pi")
+      return `bilo koja tamna pruga, npr. prva, na y = ±${cm2(0.5 * f2.s)} (razlika putova ½ λ, razlika u fazi π)`;
+    if (c.faza === "0")
+      return "bilo koja svijetla pruga, npr. središnja (razlika putova 0, razlika u fazi 0)";
+    return `pruga ${gdje}: razlika putova ${formatNumber(c.razlika_putova)} λ`;
+  }
+  var jedinicaIzmjeri = (s) => normJed(s.jedinica) ?? "cm";
+  function izmjeriStanje(s, i1, i2) {
+    const f2 = fizika2(s);
+    if (!isNum(i1) || !isNum(i2)) return { n: 0, L: 0 };
+    return { n: Math.abs(i2 - i1) + 1, L: Math.abs(i2 - i1) * f2.s };
+  }
+  function checkIzmjeri(s, odgovor3) {
+    const f2 = fizika2(s);
+    const J = jedinicaIzmjeri(s);
+    const uJ = 1 / DULJINA[J];
+    const N = s.pruge.N;
+    const L = (N - 1) * f2.s;
+    const { n, L: Lm } = izmjeriStanje(s, odgovor3?.i1, odgovor3?.i2);
+    const krivo = [...s.krivo ?? []];
+    const brojR = (m) => `${m} pruga ima samo ${m - 1} razmaka (kao stupići ograde), pa L dijeliš s ${m - 1}, a ne s ${m}.`;
+    krivo.push({ vrijednost: L / N * uJ, poruka: brojR(N) });
+    if (n >= 2 && n !== N)
+      krivo.push({ vrijednost: Lm / n * uJ, poruka: brojR(n) });
+    for (const LL of [L, Lm])
+      if (LL > 0)
+        krivo.push({
+          vrijednost: LL * uJ,
+          poruka: "To je duljina cijele skupine pruga (L), a ne razmak dviju susjednih. Podijeli je brojem razmaka."
+        });
+    for (const j of ["m", "cm", "mm"])
+      if (j !== J)
+        krivo.push({
+          vrijednost: f2.s / DULJINA[j],
+          poruka: `To je razmak u ${j}, a upiši ga u ${J}.`
+        });
+    const ans = f2.s * uJ;
+    return checkNumber({
+      input: odgovor3?.s ?? odgovor3,
+      answer: ans,
+      tol: ans * 0.01,
+      unit: J,
+      krivo: krivo.filter(
+        (k) => Math.abs(k.vrijednost - ans) > ans * 0.015 || s.krivo?.includes(k)
+      ),
+      savjet: s.savjet ?? (n !== N ? `Najprije kaliperima obuhvati točno ${N} svijetlih pruga (sad ih je ${n}). Onda izmjerenu duljinu L podijeli brojem razmaka.` : "Izmjerenu duljinu L podijeli brojem razmaka između tih pruga.")
+    });
+  }
+  var CILJ_VELICINE = {
+    young: { s: ["lambda", "d", "a"] },
+    resetka: { alpha: ["lambda", "d", "zareza_po_mm"] }
+  };
+  function vrijednostCilja2(s, p) {
+    const f2 = fizika2(s, p);
+    if (s.cilj.velicina === "s") return f2.s * 100;
+    return kutReda(f2, s.cilj.red ?? 1);
+  }
+  var tolCilja3 = (s) => s.cilj.velicina === "s" ? Math.abs(s.cilj.vrijednost) * 0.01 : 0.15;
+  var jedCilja = (s) => s.cilj.velicina === "s" ? "cm" : "°";
+  var oznakaCilja = (s) => s.cilj.velicina === "s" ? "s" : `α${indeksTekst(s.cilj.red ?? 1)}`;
+  function pogadja(s, p) {
+    const q = vrijednostCilja2(s, p);
+    return isNum(q) && Math.abs(q - s.cilj.vrijednost) <= tolCilja3(s);
+  }
+  function najboljaVrijednost(s) {
+    const k = klizaciOd4(s)[0];
+    let best = null;
+    let bd = Infinity;
+    for (const x of vrijednostiKlizaca4(k)) {
+      const q = vrijednostCilja2(s, { [k.id]: x });
+      if (!isNum(q)) continue;
+      const dd = Math.abs(q - s.cilj.vrijednost);
+      if (dd < bd) [best, bd] = [x, dd];
+    }
+    return best;
+  }
+  var FIZ_SAVJET = {
+    "s:lambda": "Veća valna duljina daje veći razmak pruga (s = λa/d).",
+    "s:d": "Što su pukotine bliže (manji d), to su pruge dalje jedna od druge (s = λa/d).",
+    "s:a": "Što je zastor dalje, to su pruge šire razmaknute (s = λa/d).",
+    "alpha:lambda": "Veća valna duljina skreće pod većim kutom (sin α = kλ/d).",
+    "alpha:d": "Manja konstanta rešetke (gušći zarezi) daje veći kut (sin α = kλ/d).",
+    "alpha:zareza_po_mm": "Više zareza po milimetru znači manji d, a time veći kut (sin α = kλ/d)."
+  };
+  function checkPostavi8(s, odgovor3) {
+    const k = klizaciOd4(s)[0];
+    const x = isNum(odgovor3) ? odgovor3 : odgovor3?.[k.id];
+    if (!isNum(x))
+      return { tocno: false, poruka: "Pomakni klizač.", prazno: true };
+    if (pogadja(s, { [k.id]: x })) return { tocno: true };
+    const hit = (s.krivo ?? []).find(
+      (c) => Math.abs(c.vrijednost - x) <= k.korak / 2
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const m = metaKlizaca(s, k.id);
+    const q = vrijednostCilja2(s, { [k.id]: x });
+    if (!isNum(q))
+      return {
+        tocno: false,
+        poruka: `Uz ${m.oznaka} = ${iznos4(x, m.jedinica)} ${s.cilj.red ?? 1}. red uopće ne postoji (kλ > d). ${FIZ_SAVJET[`alpha:${k.id}`]}`
+      };
+    const gore = vrijednostCilja2(s, { [k.id]: x + k.korak });
+    const raste = isNum(gore) ? gore > q : true;
+    const vise = q < s.cilj.vrijednost === raste;
+    return {
+      tocno: false,
+      poruka: `Sada je ${oznakaCilja(s)} = ${iznos4(q, jedCilja(s))}, a treba ${iznos4(s.cilj.vrijednost, jedCilja(s))}. ${FIZ_SAVJET[`${s.cilj.velicina}:${k.id}`]} Zato ${vise ? "povećaj" : "smanji"} ${m.kratko}.`
+    };
+  }
+  var OPIS10 = `Interferencija svjetlosti (fizika, matura): Youngov pokus i optička rešetka. Polja: tekst, vrsta ("young" | "resetka"), nacin.
+Iznosi: lambda (nm, 380–750). Young: d (razmak pukotina, µm, 10–1000), a (udaljenost zastora, m, 0,2–10); s = λa/d (aproksimacija malih kutova, s/a < 0,05). Rešetka: točno jedno od d (konstanta, µm, 0,8–50), zareza_po_mm (20–1250) ili kut + red (kut maksimuma reda red u °; d = red·λ / sin kut), red? (zadano 1) je red čiji se kut zadaje ili prikazuje; N? (broj osvijetljenih pukotina za oštrinu maksimuma, 2–50, zadano 20).
+Klizači (istrazi do 3, postavi točno 1): klizaci: [{id, min, max, korak, pocetak?}], id je "lambda" | "d" | "a" (Young) ili "lambda" | "d" | "zareza_po_mm" | "N" (rešetka); veličinu koju zadaje klizač ne piši i kao broj. Oznake i jedinice klizača dodaje widget (λ u nm s bojom spektra, d u µm, a u m).
+Crtež: Young — laser, dvije pukotine (d povećan), zastor s prugama u boji λ, krivulja intenziteta cos², ravnalo u cm, sonda P sa zrakama iz obje pukotine, istaknutim viškom puta Δ i pločom s dva vala i njihovim zbrojem (razlika u fazi 0, π, 2π ≡ 0…). Rešetka — kutomjer s maksimumima redova 0, ±1, ±2… pod kutovima sin α = kλ/d, polarna krivulja intenziteta za N pukotina i tablica kutova.
+Načini:
+- "istrazi" (pogledaj): klizači; prikazi? (Young: razlika_putova, faza, intenzitet, redovi, ravnalo; rešetka: intenzitet, redovi, kutovi; zadano sve). Sonda se vuče po zastoru.
+- "odaberi" (Tvoj red, samo Young): učenik dodirne zastor. cilj: {pruga: "svijetla" | "tamna", red} (središnja svijetla je red 0, prva tamna red 1; red ≤ 4) | {faza: "0" | "pi"} (bilo koja svijetla / tamna) | {razlika_putova: x} (u λ, višekratnik od 0,5, ≤ 4). Tolerancija ±¼ razmaka pruga; poruke za krivi red (nulta pruga), svijetlu umjesto tamne i obrnuto dodaju se same. Do provjere nema oznaka redova, Δ ni faze.
+- "izmjeri" (Tvoj red, samo Young): pruge: {N} (3–12); jedinica? ("cm" zadano | "mm" | "m"). Učenik kaliperima obuhvati N svijetlih pruga (L se očita), pa upiše s = L/(N − 1). Auto-greške: L/N, cijela duljina L, kriva jedinica. ${"krivo?"} kao kod broja.
+- "izracunaj" (Tvoj red): pitaj: [{velicina, jedinica?, red?, krivo?, savjet?}] (1–3 polja). Young: s (cm | mm | m), lambda (nm | µm | m), d (µm | mm | m), a (m | cm); pruge? {N}: na zastoru je označena skupina od N pruga s duljinom L. Rešetka: d (m | µm | mm), zareza_po_mm, alpha (°, red), lambda (nm | µm | m; d ili zareza_po_mm zadani), kmax, broj_maksimuma. Tražene veličine na crtežu su „?“ (λ tražena → bijela svjetlost). Tolerancija 1 % (kut ±0,15°). Auto-greške: nm/µm/cm nepretvoreni, L/N umjesto L/(N − 1), zamijenjeni d i a, d = λ·sin α, cos/tg umjesto sin, kalkulator u radijanima, zaboravljen red k, zareza po metru ili centimetru, k_max zaokružen naviše, broj maksimuma bez središnjeg.
+- "postavi" (Tvoj red): točno jedan klizač; cilj: {velicina: "s", vrijednost (cm)} (Young; klizač lambda, d ili a) | {velicina: "alpha", red?, vrijednost (°)} (rešetka; klizač lambda, d ili zareza_po_mm). Tražena veličina, ravnalo i stupnjevi se ne vide do provjere. krivo?: [{vrijednost (klizača), poruka}].`;
+  var PRIMJER10 = {
+    tip: TIP10,
+    vrsta: "young",
+    nacin: "izmjeri",
+    lambda: 400,
+    d: 80,
+    a: 4.4,
+    pruge: { N: 9 },
+    tekst: "Pukotine su razmaknute 80 µm, a zastor je 4,4 m od njih. Kaliperima obuhvati **9 susjednih svijetlih pruga**, pa izračunaj razmak dviju susjednih pruga."
+  };
+  var PRIMJERI10 = [
+    {
+      tip: TIP10,
+      vrsta: "young",
+      nacin: "istrazi",
+      klizaci: [
+        { id: "lambda", min: 380, max: 750, korak: 5, pocetak: 400 },
+        { id: "d", min: 40, max: 200, korak: 10, pocetak: 80 },
+        { id: "a", min: 1, max: 6, korak: 0.1, pocetak: 4.4 }
+      ],
+      tekst: "Povuci sondu **P** po zastoru i gledaj kako dva vala stižu: kolika je razlika putova i jesu li u fazi. Zatim mijenjaj λ, d i a i gledaj razmak pruga."
+    },
+    {
+      tip: TIP10,
+      vrsta: "young",
+      nacin: "odaberi",
+      lambda: 400,
+      d: 80,
+      a: 4.4,
+      cilj: { faza: "pi" },
+      tekst: "Dodirni na zastoru mjesto u koje dva vala stižu **u protufazi** (razlika u fazi π)."
+    },
+    {
+      tip: TIP10,
+      vrsta: "young",
+      nacin: "odaberi",
+      lambda: 600,
+      d: 120,
+      a: 3.8,
+      cilj: { pruga: "svijetla", red: 2 },
+      tekst: "Dodirni **drugu svijetlu prugu** (maksimum drugog reda) na zastoru."
+    },
+    {
+      tip: TIP10,
+      vrsta: "young",
+      nacin: "izracunaj",
+      lambda: 400,
+      d: 80,
+      a: 4.4,
+      pruge: { N: 9 },
+      pitaj: [
+        { velicina: "s", jedinica: "cm" },
+        { velicina: "lambda", jedinica: "nm" }
+      ],
+      tekst: "Pukotine su razmaknute 80 µm, a zastor je 4,4 m od njih. Između prvog i zadnjeg od 9 susjednih maksimuma izmjereno je 17,6 cm. Koliki je razmak susjednih pruga i kolika je valna duljina lasera?"
+    },
+    {
+      tip: TIP10,
+      vrsta: "young",
+      nacin: "postavi",
+      d: 80,
+      a: 4.4,
+      klizaci: [{ id: "lambda", min: 380, max: 750, korak: 5, pocetak: 600 }],
+      cilj: { velicina: "s", vrijednost: 2.2 },
+      tekst: "Pukotine su razmaknute 80 µm, a zastor je 4,4 m daleko. **Namjesti valnu duljinu** lasera tako da razmak susjednih pruga bude 2,2 cm."
+    },
+    {
+      tip: TIP10,
+      vrsta: "resetka",
+      nacin: "istrazi",
+      klizaci: [
+        { id: "lambda", min: 380, max: 750, korak: 5, pocetak: 540 },
+        { id: "zareza_po_mm", min: 50, max: 800, korak: 10, pocetak: 200 },
+        { id: "N", min: 2, max: 20, korak: 1, pocetak: 2 }
+      ],
+      tekst: "Povećaj **broj osvijetljenih pukotina** od 2 do 20: maksimumi ostaju na istim mjestima, ali postaju oštri. Zatim mijenjaj λ i broj zareza po milimetru."
+    },
+    {
+      tip: TIP10,
+      vrsta: "resetka",
+      nacin: "izracunaj",
+      lambda: 540,
+      kut: 6.2,
+      red: 1,
+      pitaj: [{ velicina: "d", jedinica: "m" }, { velicina: "zareza_po_mm" }],
+      tekst: "Laserska svjetlost valne duljine 540 nm pada okomito na optičku rešetku. Maksimum prvog reda vidi se pod kutom 6,2°. Kolika je konstanta rešetke i koliko zareza po milimetru ima ta rešetka?"
+    },
+    {
+      tip: TIP10,
+      vrsta: "resetka",
+      nacin: "izracunaj",
+      lambda: 420,
+      zareza_po_mm: 800,
+      pitaj: [{ velicina: "alpha", red: 2 }, { velicina: "kmax" }],
+      tekst: "Svjetlost valne duljine 420 nm pada na rešetku s 800 zareza po milimetru. Pod kojim se kutom vidi maksimum drugog reda i koji je najviši red koji se još vidi?"
+    },
+    {
+      tip: TIP10,
+      vrsta: "resetka",
+      nacin: "postavi",
+      lambda: 540,
+      klizaci: [
+        { id: "zareza_po_mm", min: 50, max: 800, korak: 10, pocetak: 400 }
+      ],
+      cilj: { velicina: "alpha", red: 1, vrijednost: 6.2 },
+      tekst: "Laser valne duljine 540 nm. **Namjesti broj zareza po milimetru** tako da se maksimum prvog reda vidi pod kutom 6,2°."
+    }
+  ];
+  function validateKlizaci4(s, need, { najmanje = 0, najvise = 3 } = {}) {
+    if (s.klizaci == null) {
+      need(najmanje === 0, `${s.nacin} treba klizači (${najmanje})`);
+      return [];
+    }
+    if (!need(
+      Array.isArray(s.klizaci) && s.klizaci.length >= najmanje && s.klizaci.length <= najvise,
+      `klizaci mora biti popis od ${najmanje} do ${najvise} klizača`
+    ))
+      return [];
+    const ids = [];
+    s.klizaci.forEach((k, i) => {
+      const at = `klizaci[${i}]`;
+      if (!need(
+        KLIZACI_VRSTE[s.vrsta].includes(k?.id),
+        `${at}.id mora biti jedan od: ${KLIZACI_VRSTE[s.vrsta].join(", ")}`
+      ))
+        return;
+      need(!ids.includes(k.id), `${at}: klizač „${k.id}“ je već zadan`);
+      ids.push(k.id);
+      need(
+        s[k.id] == null,
+        `${at}: „${k.id}“ zadaje klizač, pa ga ne piši i kao broj u specu`
+      );
+      for (const f2 of Object.keys(k))
+        need(
+          ["id", "min", "max", "korak", "pocetak"].includes(f2),
+          `${at}: nepoznato polje „${f2}“ (oznaku i jedinicu dodaje widget)`
+        );
+      const m = metaKlizaca(s, k.id);
+      if (!need(
+        isNum(k.min) && isNum(k.max) && isNum(k.korak) && k.korak > 0 && k.min < k.max,
+        `${at}: min < max i korak > 0 moraju biti brojevi`
+      ))
+        return;
+      need(
+        k.min >= m.min && k.max <= m.max,
+        `${at}: raspon za ${k.id} mora biti unutar ${formatNumber(m.min)}–${formatNumber(m.max)} ${m.jedinica}`
+      );
+      const n = (k.max - k.min) / k.korak;
+      need(
+        Math.abs(n - Math.round(n)) < 1e-6 && n <= 2e3,
+        `${at}: (max − min) mora biti višekratnik koraka (najviše 2000 koraka)`
+      );
+      if (k.id === "N")
+        need(
+          Number.isInteger(k.min) && Number.isInteger(k.korak),
+          `${at}: broj pukotina je cijeli broj`
+        );
+      if (k.pocetak != null)
+        need(
+          isNum(k.pocetak) && k.pocetak >= k.min && k.pocetak <= k.max && Math.abs(
+            (k.pocetak - k.min) / k.korak - Math.round((k.pocetak - k.min) / k.korak)
+          ) < 1e-6,
+          `${at}.pocetak mora biti vrijednost klizača (od min do max u koracima)`
+        );
+    });
+    return ids;
+  }
+  var brojU = (s, need, ime2, min, max, opis) => need(
+    isNum(s[ime2]) && s[ime2] >= min && s[ime2] <= max,
+    `${ime2} mora biti broj od ${formatNumber(min)} do ${formatNumber(max)} (${opis})`
+  );
+  function krajevi2(s) {
+    let out = [{}];
+    for (const k of klizaciOd4(s))
+      out = out.flatMap((p) => [
+        { ...p, [k.id]: k.min },
+        { ...p, [k.id]: k.max }
+      ]);
+    return out;
+  }
+  function validate5(s) {
+    const { list, need } = problems();
+    need(isText(s.tekst), "interferencija treba „tekst“");
+    if (!need(VRSTE4.includes(s.vrsta), `vrsta mora biti: ${VRSTE4.join(" ili ")}`))
+      return list;
+    if (!need(
+      NACINI22[s.vrsta].includes(s.nacin),
+      `nacin za vrstu ${s.vrsta} mora biti jedan od: ${NACINI22[s.vrsta].join(", ")}`
+    ))
+      return list;
+    for (const k of Object.keys(s))
+      need(POLJA3.includes(k), `interferencija: nepoznato polje „${k}“`);
+    const young = s.vrsta === "young";
+    const nac = s.nacin;
+    const ids = nac === "istrazi" ? validateKlizaci4(s, need, { najvise: 3 }) : nac === "postavi" ? validateKlizaci4(s, need, { najmanje: 1, najvise: 1 }) : (need(
+      s.klizaci == null,
+      `u načinu ${nac} nema klizača (vrijednosti su zadane)`
+    ), []);
+    if (list.length) return list;
+    const imaK = (id) => ids.includes(id);
+    if (!imaK("lambda"))
+      brojU(
+        s,
+        need,
+        "lambda",
+        380,
+        750,
+        "valna duljina u nm, vidljiva svjetlost"
+      );
+    if (young) {
+      for (const f3 of ["zareza_po_mm", "kut", "red", "N"])
+        need(s[f3] == null, `polje „${f3}“ postoji samo za rešetku`);
+      if (!imaK("d")) brojU(s, need, "d", 10, 1e3, "razmak pukotina u µm");
+      if (!imaK("a")) brojU(s, need, "a", 0.2, 10, "udaljenost zastora u m");
+    } else {
+      need(s.a == null, "rešetka nema „a“: kutovi se čitaju na kutomjeru");
+      const izvori2 = ["d", "zareza_po_mm", "kut"].filter((f3) => s[f3] != null);
+      const kIzvor = ids.filter((i) => i === "d" || i === "zareza_po_mm");
+      need(
+        izvori2.length + kIzvor.length === 1,
+        "rešetka treba točno jedno od: d (µm), zareza_po_mm, kut (+ red) ili klizač d / zareza_po_mm"
+      );
+      if (s.d != null) brojU(s, need, "d", 0.8, 50, "konstanta rešetke u µm");
+      if (s.zareza_po_mm != null)
+        brojU(s, need, "zareza_po_mm", 20, 1250, "broj zareza po milimetru");
+      if (s.red != null)
+        need(
+          Number.isInteger(s.red) && s.red >= 1 && s.red <= 10,
+          "red mora biti cijeli broj od 1 do 10"
+        );
+      if (s.kut != null) {
+        brojU(s, need, "kut", 0.5, 80, "kut maksimuma reda „red“ u °");
+        need(
+          !imaK("lambda"),
+          "uz kut λ mora biti broj (d se računa iz kuta i λ), a ne klizač"
+        );
+      }
+      if (s.N != null)
+        need(
+          Number.isInteger(s.N) && s.N >= 2 && s.N <= 50,
+          "N (broj osvijetljenih pukotina) mora biti cijeli broj od 2 do 50"
+        );
+      if (s.N != null)
+        need(!imaK("N"), "N zadaje klizač, pa ga ne piši i kao broj");
+    }
+    if (list.length) return list;
+    for (const p of krajevi2(s)) {
+      const f3 = fizika2(s, p);
+      if (young)
+        need(
+          f3.s / f3.a < 0.05,
+          `s/a = λ/d mora biti < 0,05 (aproksimacija malih kutova iz λ = sd/a); uz λ = ${fmt2(f3.lambdaNm)} nm i d = ${fmt2(f3.dUm)} µm je ${fmt2(f3.s / f3.a)}`
+        );
+      else
+        need(
+          f3.dUm >= 0.8 && f3.dUm <= 50,
+          `konstanta rešetke mora biti 0,8–50 µm (sad ${fmt2(f3.dUm)} µm)`
+        );
+    }
+    if (list.length) return list;
+    const f2 = fizika2(s);
+    if (!young && s.kut != null && s.red != null)
+      need(
+        Math.abs(kutReda(f2, s.red) - s.kut) < 0.1,
+        "zadani kut i izračunati kut se ne slažu"
+      );
+    if (!young && s.nacin !== "istrazi" && s.nacin !== "postavi")
+      need(
+        f2.kmax >= (s.red ?? 1),
+        `uz ove brojeve ${s.red ?? 1}. red ne postoji (kλ ≥ d)`
+      );
+    if (s.prikazi != null) {
+      need(nac === "istrazi", "prikazi postoji samo u načinu istrazi");
+      need(
+        Array.isArray(s.prikazi) && s.prikazi.length >= 1 && s.prikazi.every((x) => PRIKAZI10[s.vrsta].includes(x)),
+        `prikazi mora biti popis od: ${PRIKAZI10[s.vrsta].join(", ")}`
+      );
+    }
+    const samo = (polja, gdje) => polja.forEach(
+      (p) => need(s[p] == null, `polje „${p}“ postoji samo u načinu ${gdje}`)
+    );
+    if (nac !== "izracunaj") samo(["pitaj"], "izracunaj");
+    if (nac !== "izmjeri") samo(["jedinica"], "izmjeri");
+    if (nac !== "izmjeri" && nac !== "izracunaj")
+      samo(["pruge"], "izmjeri ili izracunaj");
+    if (nac !== "odaberi" && nac !== "postavi")
+      samo(["cilj"], "odaberi ili postavi");
+    if (nac === "istrazi" || nac === "odaberi" || nac === "izracunaj")
+      samo(["krivo"], "izmjeri ili postavi (u izracunaj krivo ide u pitaj)");
+    if (nac === "istrazi") noAnswerFields(s, need);
+    if (s.pruge != null) {
+      need(
+        s.pruge && Object.keys(s.pruge).every((k) => k === "N") && Number.isInteger(s.pruge.N) && s.pruge.N >= 3 && s.pruge.N <= 12,
+        "pruge mora biti {N} s cijelim N od 3 do 12"
+      );
+    }
+    if (nac === "odaberi") {
+      const c = s.cilj;
+      if (need(c && typeof c === "object", "odaberi treba cilj")) {
+        const kljuc = Object.keys(c).sort().join(",");
+        if (kljuc === "pruga,red")
+          need(
+            ["svijetla", "tamna"].includes(c.pruga) && Number.isInteger(c.red) && c.red >= (c.pruga === "svijetla" ? 0 : 1) && c.red <= 4,
+            "cilj {pruga: svijetla (red 0–4) | tamna (red 1–4), red}"
+          );
+        else if (kljuc === "faza")
+          need(["0", "pi"].includes(c.faza), 'cilj.faza mora biti "0" ili "pi"');
+        else if (kljuc === "razlika_putova")
+          need(
+            isNum(c.razlika_putova) && c.razlika_putova >= 0 && c.razlika_putova <= 4 && Number.isInteger(c.razlika_putova * 2),
+            "cilj.razlika_putova mora biti višekratnik od 0,5 između 0 i 4 (u λ)"
+          );
+        else
+          need(
+            false,
+            'cilj mora biti {pruga, red}, {faza: "0" | "pi"} ili {razlika_putova}'
+          );
+      }
+    }
+    if (nac === "izmjeri") {
+      need(s.pruge != null, "izmjeri treba pruge: {N}");
+      need(
+        s.jedinica == null || ["cm", "mm", "m"].includes(normJed(s.jedinica)),
+        "jedinica mora biti cm, mm ili m"
+      );
+      if (!list.length) {
+        const J = jedinicaIzmjeri(s);
+        validateKrivo(s.krivo, f2.s / DULJINA[J], f2.s / DULJINA[J] * 0.01, need);
+      }
+    }
+    if (nac === "izracunaj") {
+      if (need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.length <= 3,
+        "pitaj mora biti popis od 1 do 3 polja"
+      )) {
+        const vel = VELICINE8[s.vrsta];
+        s.pitaj.forEach((q, i) => {
+          const at = `pitaj[${i}]`;
+          if (!need(
+            q && q.velicina in vel,
+            `${at}.velicina mora biti: ${Object.keys(vel).join(", ")}`
+          ))
+            return;
+          for (const k of Object.keys(q))
+            need(
+              ["velicina", "jedinica", "red", "krivo", "savjet"].includes(k),
+              `${at}: nepoznato polje „${k}“`
+            );
+          const dop = JED_DOPUSTENE[q.velicina];
+          if (q.jedinica != null)
+            need(
+              dop.includes(normJed(q.jedinica)),
+              dop.length ? `${at}.jedinica za ${q.velicina} mora biti: ${dop.join(", ")}` : `${at}: ${q.velicina} nema jedinicu`
+            );
+          if (q.red != null)
+            need(
+              q.velicina === "alpha" && Number.isInteger(q.red) && q.red >= 1 && q.red <= f2.kmax,
+              `${at}.red postoji samo za alpha i mora biti red koji postoji (1–${f2.kmax})`
+            );
+          if (q.savjet != null)
+            need(isText(q.savjet), `${at}.savjet mora biti tekst`);
+          need(
+            !s.pitaj.some(
+              (o, j) => j < i && o.velicina === q.velicina && (o.red ?? 1) === (q.red ?? 1)
+            ),
+            `${at}: ista veličina je već u pitaj`
+          );
+          if (!young && q.velicina === "lambda")
+            need(
+              s.kut == null,
+              `${at}: za λ zadaj d ili zareza_po_mm (i red), a ne kut`
+            );
+          if (!young && (q.velicina === "d" || q.velicina === "zareza_po_mm"))
+            need(
+              s.d == null || q.velicina !== "d",
+              `${at}: d je zadan, pa ga ne pitaj`
+            );
+          if (!young && q.velicina === "zareza_po_mm")
+            need(
+              s.zareza_po_mm == null,
+              `${at}: broj zareza je zadan, pa ga ne pitaj`
+            );
+          if (!list.length) {
+            const r = izracun4(s, q);
+            validateKrivo(q.krivo, r.vrijednost, r.tol, need, `${at}.krivo`);
+          }
+        });
+        if (young && s.pruge) {
+          need(
+            !s.pitaj.some((q) => q.velicina !== "s" && q.velicina !== "lambda"),
+            "uz pruge Young pita s i/ili lambda"
+          );
+        }
+      }
+      need(s.savjet == null || isText(s.savjet), "savjet mora biti tekst");
+    }
+    if (nac === "postavi") {
+      const c = s.cilj;
+      const dop = CILJ_VELICINE[s.vrsta];
+      if (need(
+        c && c.velicina in dop && isNum(c.vrijednost) && c.vrijednost > 0,
+        `postavi treba cilj: {velicina: ${Object.keys(dop).join(" | ")}, vrijednost${young ? " (cm)" : " (°), red?"}}`
+      )) {
+        for (const k of Object.keys(c))
+          need(
+            ["velicina", "vrijednost", "red"].includes(k),
+            `cilj: nepoznato polje „${k}“`
+          );
+        need(
+          dop[c.velicina].includes(ids[0]),
+          `za cilj ${c.velicina} klizač mora biti: ${dop[c.velicina].join(", ")}`
+        );
+        if (c.velicina === "alpha") {
+          need(c.vrijednost < 80, "cilj.vrijednost (kut) mora biti manji od 80°");
+          if (c.red != null)
+            need(
+              Number.isInteger(c.red) && c.red >= 1 && c.red <= 10,
+              "cilj.red mora biti cijeli broj 1–10"
+            );
+        } else need(c.red == null, "cilj za s nema red");
+        if (!list.length) {
+          const k = klizaciOd4(s)[0];
+          const best = najboljaVrijednost(s);
+          need(
+            best != null && pogadja(s, { [k.id]: best }),
+            "cilj se ne može postići nijednom vrijednošću klizača (u toleranciji 1 % ili ±0,15°)"
+          );
+          need(
+            !pogadja(s, pocetneVrijednosti3(s)),
+            "početna vrijednost klizača već ostvaruje cilj"
+          );
+          if (s.krivo != null) {
+            validateKrivo(s.krivo, null, 0, need);
+            if (Array.isArray(s.krivo))
+              s.krivo.forEach(
+                (x, i) => isNum(x?.vrijednost) && need(
+                  !pogadja(s, { [k.id]: x.vrijednost }),
+                  `krivo[${i}].vrijednost ostvaruje cilj, a to je točan odgovor`
+                )
+              );
+          }
+        }
+      }
+    }
+    return list;
+  }
+  var interferencija = {
+    tip: TIP10,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS10,
+    primjer: PRIMJER10,
+    primjeri: PRIMJERI10,
+    fizika: fizika2,
+    validate: validate5,
+    check(s, odgovor3) {
+      if (s.nacin === "odaberi") return checkOdaberi5(s, odgovor3);
+      if (s.nacin === "izmjeri") return checkIzmjeri(s, odgovor3);
+      if (s.nacin === "postavi") return checkPostavi8(s, odgovor3);
+      if (s.nacin === "izracunaj") {
+        const q = pitanja(s);
+        const ul = Array.isArray(odgovor3) ? odgovor3 : [odgovor3];
+        if (q.some((_, i) => !String(ul[i] ?? "").trim()))
+          return {
+            tocno: false,
+            poruka: q.length > 1 ? "Upiši broj u svako polje." : "Upiši broj.",
+            prazno: true
+          };
+        for (let i = 0; i < q.length; i++) {
+          const r = checkPolje(s, i, ul[i]);
+          if (!r.tocno)
+            return {
+              ...r,
+              polje: i,
+              poruka: q.length > 1 ? `U ${i + 1}. polju: ${r.poruka}` : r.poruka
+            };
+        }
+        return { tocno: true };
+      }
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.nacin === "odaberi") return tocnoOdaberi(s);
+      if (s.nacin === "izmjeri") {
+        const f2 = fizika2(s);
+        const J = jedinicaIzmjeri(s);
+        const N = s.pruge.N;
+        const L = (N - 1) * f2.s;
+        return `s = L / ${N - 1} = ${iznos4(L / DULJINA[J], J)} / ${N - 1} = ${iznos4(f2.s / DULJINA[J], J)}`;
+      }
+      if (s.nacin === "izracunaj")
+        return pitanja(s).map((q) => {
+          const r = izracun4(s, q);
+          const m = VELICINE8[s.vrsta][q.velicina];
+          return `${r.oznaka} = ${iznos4(r.vrijednost, r.jedinica)}${m.iza ? ` ${m.iza}` : ""}`;
+        }).join("; ");
+      if (s.nacin === "postavi") {
+        const k = klizaciOd4(s)[0];
+        const m = metaKlizaca(s, k.id);
+        const x = najboljaVrijednost(s);
+        return k.id === "zareza_po_mm" ? `${fmt2(x)} zareza po milimetru` : `${m.kratko} = ${iznos4(x, m.jedinica)}`;
+      }
+      return "";
+    },
+    brojcaniOdgovor(s) {
+      if (s?.nacin === "izmjeri")
+        return fizika2(s).s / DULJINA[jedinicaIzmjeri(s)];
+      if (s?.nacin === "izracunaj") {
+        const q = pitanja(s).at(-1);
+        return q ? izracun4(s, q).vrijednost : null;
+      }
+      if (s?.nacin === "postavi") return najboljaVrijednost(s);
+      return null;
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/em_val.js
+  var TIP11 = "em_val";
+  var C_SVJ = 3e8;
+  var SCENE10 = ["polja", "spektar", "sredstvo"];
+  var NACINI23 = {
+    polja: ["istrazi", "prikaz", "odaberi"],
+    spektar: ["istrazi", "prikaz", "smjesti", "odaberi_podrucje"],
+    sredstvo: ["istrazi", "prikaz", "predvidi", "izracunaj"]
+  };
+  var GLEDANJE3 = ["istrazi", "prikaz"];
+  var jeGledanje = (s) => GLEDANJE3.includes(s.nacin);
+  var RAD2 = Math.PI / 180;
+  var OSI2 = ["gore-dolje", "istok-zapad", "sjever-jug"];
+  var SMJEROVI5 = ["istok", "zapad", "sjever", "jug", "gore", "dolje"];
+  var VEKTOR = {
+    istok: [1, 0, 0],
+    zapad: [-1, 0, 0],
+    sjever: [0, 1, 0],
+    jug: [0, -1, 0],
+    gore: [0, 0, 1],
+    dolje: [0, 0, -1]
+  };
+  var OS_VEKTOR = {
+    "istok-zapad": [1, 0, 0],
+    "sjever-jug": [0, 1, 0],
+    "gore-dolje": [0, 0, 1]
+  };
+  var SMJER_U_OS = {
+    istok: "istok-zapad",
+    zapad: "istok-zapad",
+    sjever: "sjever-jug",
+    jug: "sjever-jug",
+    gore: "gore-dolje",
+    dolje: "gore-dolje"
+  };
+  var TRAZI2 = ["B", "E", "smjer"];
+  var osSmjera = (smjer) => SMJER_U_OS[smjer];
+  var trecaOs = (a, b) => OSI2.find((o) => o !== a && o !== b);
+  var vektorski = (a, b) => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ];
+  var smjerVektora = (v) => SMJEROVI5.find((s) => VEKTOR[s].every((c, i) => c === v[i]));
+  var trazenoPolje = (s) => s.trazi ?? "B";
+  function poljaOsi(s) {
+    let smjer = s.smjer_sirenja;
+    if (!SMJEROVI5.includes(smjer))
+      smjer = smjerVektora(vektorski(OS_VEKTOR[s.E], OS_VEKTOR[s.B]));
+    const sirenje = osSmjera(smjer);
+    const E2 = s.E ?? trecaOs(sirenje, s.B);
+    const B = s.B ?? trecaOs(sirenje, E2);
+    const k = VEKTOR[smjer];
+    const e = OS_VEKTOR[E2];
+    return { E: E2, B, sirenje, smjer, k, e, b: vektorski(k, e) };
+  }
+  function tocnaOs(s) {
+    const o = poljaOsi(s);
+    const t = trazenoPolje(s);
+    return t === "E" ? o.E : t === "B" ? o.B : o.sirenje;
+  }
+  function checkPolja2(s, os) {
+    if (!OSI2.includes(os))
+      return {
+        tocno: false,
+        poruka: "Dodirni jednu od triju osi (ili gumb ispod crteža).",
+        prazno: true
+      };
+    const o = poljaOsi(s);
+    const t = trazenoPolje(s);
+    if (os === tocnaOs(s)) return { tocno: true };
+    if (t === "B" || t === "E") {
+      const drugo = t === "B" ? "E" : "B";
+      const imeDrugog = drugo === "E" ? "električno" : "magnetsko";
+      if (os === o[drugo])
+        return {
+          tocno: false,
+          poruka: `Po toj osi titra **${imeDrugog}** polje ${drugo}. E i B titraju **okomito jedno na drugo**, pa ${t} ne može biti na istoj osi.`
+        };
+      if (os === o.sirenje)
+        return {
+          tocno: false,
+          poruka: `Po toj se osi val **širi**. Elektromagnetski val je transverzalni: ${t} titra **okomito na smjer širenja**.`
+        };
+    }
+    if (t === "smjer")
+      return {
+        tocno: false,
+        poruka: `Po toj osi titra ${os === o.E ? "električno polje E" : "magnetsko polje B"}. Val se širi okomito i na E i na B, a u prostoru je samo jedna os okomita na obje.`
+      };
+    return { tocno: false, poruka: s.savjet || "Nije ta os." };
+  }
+  var PODRUCJA = [
+    {
+      id: "radio",
+      naziv: "radiovalovi",
+      genitiv: "radiovalova",
+      kratko: "radio",
+      od: 1,
+      do: Infinity,
+      boja: "#fde68a"
+    },
+    {
+      id: "mikro",
+      naziv: "mikrovalovi",
+      genitiv: "mikrovalova",
+      kratko: "mikro",
+      od: 1e-3,
+      do: 1,
+      boja: "#fcd34d"
+    },
+    {
+      id: "ic",
+      naziv: "infracrveno zračenje",
+      genitiv: "infracrvenog zračenja",
+      kratko: "IC",
+      od: 7e-7,
+      do: 1e-3,
+      boja: "#fca5a5"
+    },
+    {
+      id: "vidljivo",
+      naziv: "vidljiva svjetlost",
+      genitiv: "vidljive svjetlosti",
+      kratko: "",
+      od: 4e-7,
+      do: 7e-7,
+      boja: null
+    },
+    {
+      id: "uv",
+      naziv: "ultraljubičasto zračenje",
+      genitiv: "ultraljubičastog zračenja",
+      kratko: "UV",
+      od: 1e-8,
+      do: 4e-7,
+      boja: "#c4b5fd"
+    },
+    {
+      id: "rendgen",
+      naziv: "rendgensko zračenje",
+      genitiv: "rendgenskog zračenja",
+      kratko: "rendgen",
+      od: 1e-11,
+      do: 1e-8,
+      boja: "#a5b4fc"
+    },
+    {
+      id: "gama",
+      naziv: "gama-zračenje",
+      genitiv: "gama-zračenja",
+      kratko: "gama",
+      od: 0,
+      do: 1e-11,
+      boja: "#93c5fd"
+    }
+  ];
+  var GRANICE = [1, 1e-3, 7e-7, 4e-7, 1e-8, 1e-11];
+  var podrucje = (lambda) => PODRUCJA.find((p) => lambda >= p.od && lambda < p.do) ?? null;
+  function susjedi(id) {
+    const i = PODRUCJA.findIndex((p) => p.id === id);
+    return [PODRUCJA[i - 1] ?? null, PODRUCJA[i + 1] ?? null].filter(Boolean);
+  }
+  function izmeduTekst(id) {
+    const s = susjedi(id);
+    return s.length === 2 ? `između ${s[0].genitiv} i ${s[1].genitiv}` : `uz ${s[0].genitiv} (rub spektra)`;
+  }
+  var zadanaLambda = (s) => isNum(s.lambda) ? s.lambda : isNum(s.f) ? C_SVJ / s.f : null;
+  var lg = (x) => Math.log10(x);
+  var LG_MIN_OZNAKE = -12.9;
+  var LG_MAX_OZNAKE = 2.9;
+  function lambdaTekst(lambda) {
+    const u = lambda >= 1e3 ? ["km", 1e3] : lambda >= 1 ? ["m", 1] : lambda >= 0.01 ? ["cm", 0.01] : lambda >= 1e-3 ? ["mm", 1e-3] : lambda >= 1e-6 ? ["µm", 1e-6] : lambda >= 1e-11 ? ["nm", 1e-9] : ["pm", 1e-12];
+    return `${formatSci(lambda / u[1], 2)} ${u[0]}`;
+  }
+  var lambdaMTekst = (lambda) => `${formatSci(lambda, 2)} m`;
+  var SUP2 = {
+    0: "⁰",
+    1: "¹",
+    2: "²",
+    3: "³",
+    4: "⁴",
+    5: "⁵",
+    6: "⁶",
+    7: "⁷",
+    8: "⁸",
+    9: "⁹",
+    "-": "⁻"
+  };
+  var potencija = (e) => `10${[...String(e)].map((c) => SUP2[c]).join("")}`;
+  var PRETVORBE = {
+    2: "1 cm = 10⁻² m",
+    3: "1 mm = 10⁻³ m",
+    6: "1 µm = 10⁻⁶ m",
+    9: "1 nm = 10⁻⁹ m"
+  };
+  function checkSmjesti(s, odgovor3) {
+    const l = typeof odgovor3 === "number" ? odgovor3 : parseNumber(String(odgovor3 ?? ""));
+    if (!isNum(l) || l <= 0)
+      return {
+        tocno: false,
+        poruka: "Povuci oznaku na traci spektra.",
+        prazno: true
+      };
+    const tocna = zadanaLambda(s);
+    const d = lg(l / tocna);
+    if (Math.abs(d) <= 0.05) return { tocno: true };
+    const krivo = (s.krivo ?? []).find(
+      (k2) => isNum(k2?.vrijednost) && Math.abs(lg(l / k2.vrijednost)) <= 0.05
+    );
+    if (krivo) return { tocno: false, poruka: krivo.poruka };
+    if (isNum(s.f) && Math.abs(lg(l * C_SVJ / s.f)) <= 0.05)
+      return {
+        tocno: false,
+        poruka: "To je f/c. Valna duljina je $\\lambda = \\dfrac{c}{f}$: **veća frekvencija znači kraću valnu duljinu**."
+      };
+    const k = Math.round(d);
+    if (k !== 0 && Math.abs(d - k) <= 0.05) {
+      const pretv = PRETVORBE[Math.abs(k)];
+      const gdje = k > 0 ? "predaleko lijevo (preduga valna duljina)" : "predaleko desno (prekratka valna duljina)";
+      return {
+        tocno: false,
+        poruka: `Znamenke su dobre, ali oznaka je ${potencija(Math.abs(k))} puta ${gdje}. ${pretv ? `Provjeri pretvorbu jedinica: ${pretv}.` : "Provjeri potenciju broja 10 u računu."}`
+      };
+    }
+    if (podrucje(l)?.id === podrucje(tocna)?.id)
+      return {
+        tocno: false,
+        poruka: "Područje je dobro, ali vrijednost nije. Izračunaj λ točno pa oznaku namjesti strelicama ◀ ▶."
+      };
+    return {
+      tocno: false,
+      poruka: s.savjet || (isNum(s.f) ? "Nije tu. Izračunaj $\\lambda = \\dfrac{c}{f}$ uz $c = 3\\cdot10^8$ m/s pa namjesti oznaku na tu valnu duljinu." : "Nije tu. Pretvori valnu duljinu u metre pa namjesti oznaku.")
+    };
+  }
+  function checkPodrucje(s, id) {
+    const odabrano = PODRUCJA.find((p) => p.id === id);
+    if (!odabrano)
+      return {
+        tocno: false,
+        poruka: "Dodirni jedno područje na traci spektra.",
+        prazno: true
+      };
+    const tocna = zadanaLambda(s);
+    const t = podrucje(tocna);
+    if (odabrano.id === t.id) return { tocno: true };
+    if (isNum(s.f) && podrucje(s.f / C_SVJ)?.id === odabrano.id)
+      return {
+        tocno: false,
+        poruka: "Nije to područje. Ako si računao f/c, obrni: $\\lambda = \\dfrac{c}{f}$. Veća frekvencija znači **kraću** valnu duljinu."
+      };
+    for (const k of [9, 6, 3, 2]) {
+      for (const pr of [1, -1]) {
+        const kriva = tocna * 10 ** (pr * k);
+        if (kriva > 1e-14 && kriva < 1e5 && podrucje(kriva)?.id === odabrano.id && podrucje(kriva).id !== t.id && !isNum(s.f))
+          return {
+            tocno: false,
+            poruka: `Pazi na jedinicu: ${PRETVORBE[k]}. Valnu duljinu najprije pretvori u metre.`
+          };
+      }
+    }
+    const i = PODRUCJA.indexOf(odabrano);
+    const j = PODRUCJA.indexOf(t);
+    if (Math.abs(i - j) === 1) {
+      const granica = GRANICE[Math.min(i, j)];
+      return {
+        tocno: false,
+        poruka: `Blizu je, ali nije to područje. Usporedi valnu duljinu s granicom ${lambdaTekst(granica)}: je li dulja ili kraća od nje?`
+      };
+    }
+    return {
+      tocno: false,
+      poruka: s.savjet || `Nije to područje. ${isNum(s.f) ? "Izračunaj $\\lambda = \\dfrac{c}{f}$ i " : "Valnu duljinu "}usporedi s granicama područja. Dulje valne duljine su lijevo, kraće desno.`
+    };
+  }
+  var SREDSTVA = [
+    { naziv: "voda", n: 1.33 },
+    { naziv: "led", n: 1.31 },
+    { naziv: "staklo", n: 1.5 },
+    { naziv: "plastika", n: 1.58 },
+    { naziv: "dijamant", n: 2.42 }
+  ];
+  var SMJER_SVJETLOSTI = ["u_sredstvo", "iz_sredstva"];
+  var PREDVIDI = ["f", "lambda", "v", "T", "boja"];
+  var IZRACUNAJ = ["lambda_s", "v", "f"];
+  var BOJE = [
+    { ime: "ljubičasta", korijen: "ljubičast", do: 450 },
+    { ime: "plava", korijen: "plav", do: 495 },
+    { ime: "zelena", korijen: "zelen", do: 570 },
+    { ime: "žuta", korijen: "žut", do: 590 },
+    { ime: "narančasta", korijen: "narančast", do: 620 },
+    { ime: "crvena", korijen: "crven", do: Infinity }
+  ];
+  var bojaIme = (nm) => BOJE.find((b) => nm < b.do).ime;
+  function lambdaRGB(nm) {
+    const l = Math.min(780, Math.max(380, nm));
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    if (l < 440) {
+      r = (440 - l) / 60;
+      b = 1;
+    } else if (l < 490) {
+      g = (l - 440) / 50;
+      b = 1;
+    } else if (l < 510) {
+      g = 1;
+      b = (510 - l) / 20;
+    } else if (l < 580) {
+      r = (l - 510) / 70;
+      g = 1;
+    } else if (l < 645) {
+      r = 1;
+      g = (645 - l) / 65;
+    } else r = 1;
+    const k = l > 700 ? 0.55 + 0.45 * (780 - l) / 80 : l < 420 ? 0.55 + 0.45 * (l - 380) / 40 : 1;
+    const h = (x) => Math.round(255 * (x * k) ** 0.8).toString(16).padStart(2, "0");
+    return `#${h(r)}${h(g)}${h(b)}`;
+  }
+  function fizikaSredstva(s, st = {}) {
+    const lambda = isNum(st.lambda) ? st.lambda : s.lambda;
+    const n = isNum(st.n) ? st.n : s.sredstvo?.n;
+    const naziv4 = isNum(st.n) && st.n !== s.sredstvo?.n ? SREDSTVA.find((x) => Math.abs(x.n - st.n) < 1e-9)?.naziv ?? "sredstvo" : s.sredstvo?.naziv ?? "sredstvo";
+    const f2 = C_SVJ / (lambda * 1e-9);
+    const zrak = { naziv: "zrak", n: 1, lambda, v: C_SVJ };
+    const sred = { naziv: naziv4, n, lambda: lambda / n, v: C_SVJ / n };
+    const uSredstvo = (s.smjer ?? "u_sredstvo") === "u_sredstvo";
+    return {
+      lambda,
+      n,
+      f: f2,
+      T: 1 / f2,
+      boja: bojaIme(lambda),
+      rgb: lambdaRGB(lambda),
+      lijevo: uSredstvo ? zrak : sred,
+      desno: uSredstvo ? sred : zrak,
+      uSredstvo
+    };
+  }
+  function promjene(s) {
+    const fz = fizikaSredstva(s);
+    const smjer = (a, b) => b > a * (1 + 1e-9) ? "raste" : b < a * (1 - 1e-9) ? "pada" : "isto";
+    return {
+      f: "isto",
+      T: "isto",
+      lambda: smjer(fz.lijevo.lambda, fz.desno.lambda),
+      v: smjer(fz.lijevo.v, fz.desno.v),
+      boja: "ista"
+    };
+  }
+  var NAZIV_VELICINE = {
+    f: "frekvencija",
+    T: "period",
+    lambda: "valna duljina",
+    v: "brzina",
+    boja: "boja"
+  };
+  var OPCIJE_PREDVIDI = {
+    f: ["raste", "pada", "isto"],
+    T: ["raste", "pada", "isto"],
+    lambda: ["raste", "pada", "isto"],
+    v: ["raste", "pada", "isto"],
+    boja: ["ista", "druga"]
+  };
+  function trazenaVrijednost(s) {
+    const fz = fizikaSredstva(s);
+    if (s.pitaj === "lambda_s")
+      return {
+        vrijednost: fz.desno.lambda,
+        jedinica: "nm",
+        oznaka: "λ_s",
+        naziv: `valna duljina u sredstvu (${fz.desno.naziv})`
+      };
+    if (s.pitaj === "v")
+      return {
+        vrijednost: fz.desno.v,
+        jedinica: "m/s",
+        oznaka: "v",
+        naziv: `brzina svjetlosti u sredstvu (${fz.desno.naziv})`
+      };
+    return {
+      vrijednost: fz.f,
+      jedinica: "Hz",
+      oznaka: "f",
+      naziv: "frekvencija svjetlosti"
+    };
+  }
+  var tolIzracunaj = (s, ans) => isNum(s.tolerancija) ? s.tolerancija : Math.abs(ans) * 0.01;
+  function kriveSredstva(s) {
+    const fz = fizikaSredstva(s);
+    const { lambda, n } = fz;
+    if (s.pitaj === "lambda_s")
+      return [
+        {
+          vrijednost: lambda * n,
+          poruka: "Pomnožio si s n. U sredstvu je val sporiji, pa su mu brjegovi **bliže**: $\\lambda_s = \\dfrac{\\lambda}{n}$ je manja od λ."
+        },
+        {
+          vrijednost: lambda,
+          poruka: "To je valna duljina u zraku. Frekvencija ostaje ista, ali val je u sredstvu sporiji, pa se valna duljina smanji n puta."
+        },
+        {
+          vrijednost: lambda / n * 1e-9,
+          poruka: "To je u metrima, a polje traži nanometre. Valnu duljinu u nm samo podijeli s n."
+        },
+        {
+          vrijednost: n / lambda,
+          poruka: "Obrnuo si razlomak: $\\lambda_s = \\dfrac{\\lambda}{n}$."
+        }
+      ];
+    if (s.pitaj === "v")
+      return [
+        {
+          vrijednost: C_SVJ * n,
+          poruka: "Pomnožio si s n. Iz $n = \\dfrac{c}{v}$ slijedi $v = \\dfrac{c}{n}$: u sredstvu je svjetlost **sporija** nego u zraku."
+        },
+        {
+          vrijednost: C_SVJ,
+          poruka: "To je brzina svjetlosti u zraku. U sredstvu indeksa loma n svjetlost je n puta sporija."
+        },
+        {
+          vrijednost: C_SVJ / n / 1e3,
+          poruka: "To je u km/s, a polje traži m/s."
+        }
+      ];
+    return [
+      {
+        vrijednost: C_SVJ / (lambda * 1e-9 / n),
+        poruka: "Uzeo si valnu duljinu u sredstvu, a uz c ide valna duljina u zraku: $f = \\dfrac{c}{\\lambda}$ (ili $f = \\dfrac{v}{\\lambda_s}$)."
+      },
+      {
+        vrijednost: C_SVJ / lambda,
+        poruka: "Nanometre nisi pretvorio u metre: 1 nm = 10⁻⁹ m."
+      },
+      {
+        vrijednost: C_SVJ / (lambda * 1e-9) / n,
+        poruka: "Frekvencija se pri ulasku u sredstvo **ne mijenja**: $f = \\dfrac{c}{\\lambda}$ s valnom duljinom u zraku."
+      },
+      {
+        vrijednost: lambda * 1e-9 / C_SVJ,
+        poruka: "Obrnuo si razlomak: $f = \\dfrac{c}{\\lambda}$."
+      }
+    ];
+  }
+  function checkPredvidi6(s, odg) {
+    const pitaj = s.pitaj ?? [];
+    if (!odg || typeof odg !== "object" || pitaj.some((k2) => !OPCIJE_PREDVIDI[k2].includes(odg[k2])))
+      return {
+        tocno: false,
+        poruka: "Odaberi odgovor za svaku veličinu.",
+        prazno: true
+      };
+    const tocno = promjene(s);
+    const krive = pitaj.filter((k2) => odg[k2] !== tocno[k2]);
+    if (!krive.length) return { tocno: true };
+    const k = krive[0];
+    const PORUKE = {
+      f: "Koliko brjegova u sekundi **uđe** u granicu, toliko ih mora i **izaći**: ne mogu se nigdje nagomilati ni izgubiti. Što to znači za frekvenciju?",
+      T: "Period je $T = \\dfrac{1}{f}$: mijenja se samo ako se mijenja frekvencija. Prvo odluči što je s frekvencijom.",
+      lambda: "Valna duljina je $\\lambda = \\dfrac{v}{f}$. Usporedi brzinu i frekvenciju s obje strane granice.",
+      v: "Brzina svjetlosti u sredstvu indeksa loma n je $v = \\dfrac{c}{n}$, a u zraku (n ≈ 1) gotovo c. Usporedi n s jedne i s druge strane granice.",
+      boja: "Boju određuje **frekvencija**, a ne valna duljina. Što se na granici događa s frekvencijom?"
+    };
+    return {
+      tocno: false,
+      poruka: `Nije sve točno. **${NAZIV_VELICINE[k][0].toUpperCase()}${NAZIV_VELICINE[k].slice(1)}:** ${PORUKE[k]}`,
+      krive
+    };
+  }
+  function checkIzracunaj6(s, odgovor3) {
+    const t = trazenaVrijednost(s);
+    const tol2 = tolIzracunaj(s, t.vrijednost);
+    return checkNumber({
+      input: odgovor3,
+      answer: t.vrijednost,
+      tol: tol2,
+      unit: t.jedinica,
+      krivo: [...s.krivo ?? [], ...kriveSredstva(s)],
+      savjet: s.savjet
+    });
+  }
+  function bojeUTekstu(tekst) {
+    const t = ` ${String(tekst ?? "").toLowerCase().replace(/infracrven|ultraljubičast/g, "")}`;
+    return BOJE.filter((b) => new RegExp(`[^a-zčćžšđ]${b.korijen}`).test(t));
+  }
+  var OPIS11 = `Elektromagnetski val (fizika, matura): polja E i B u prostoru, spektar i svjetlost u sredstvu. tekst, scena, nacin, savjet? (poruka za ostale krive odgovore). c = 3·10⁸ m/s.
+Scene i načini („istrazi“ = učenik se igra, „prikaz“ = samo animacija, oboje POGLEDAJ; ostalo je Tvoj red):
+- "polja": val u prostoru (kosa projekcija; učenik vuče crtež lijevo-desno i zakreće pogled). Osi: "gore-dolje", "istok-zapad", "sjever-jug". smjer_sirenja: "istok" | "zapad" | "sjever" | "jug" | "gore" | "dolje"; E i/ili B: os titranja (B se računa sam: okomit na E i na smjer širenja). E crveno, B plavo.
+  - "istrazi" / "prikaz": smjer_sirenja + E (ili B). U „istrazi“ učenik mijenja i smjer širenja i os E.
+  - "odaberi": trazi? "B" (zadano; spec ima smjer_sirenja + E) | "E" (smjer_sirenja + B) | "smjer" (E + B, smjer_sirenja? za animaciju nakon odgovora). Traženo se ne crta; učenik dodirne os (ili gumb s nazivom osi). Poruke za os drugog polja i os širenja dodaju se same.
+- "spektar": traka od radiovalova (lijevo) do gama-zračenja (desno), log skala, os λ dolje i os f gore, vidljivo povećano ispod. Granice: radio > 1 m, mikro 1 mm–1 m, IC 700 nm–1 mm, vidljivo 400–700 nm, UV 10–400 nm, rendgen 0,01–10 nm, gama < 0,01 nm. Zadaje se f (Hz) ili lambda (u METRIMA, npr. 2.5e-7), od 10⁻¹² do 10³ m; za Tvoj red ne bliže od 10 % granici područja.
+  - "istrazi": f ili lambda? za početni položaj; učenik vuče oznaku (uživo λ, f, područje), gumbi s uređajima.
+  - "prikaz": f ili lambda; oznaka stoji, istaknuto je područje i susjedi.
+  - "smjesti": f ili lambda; učenik vuče oznaku na valnu duljinu (oznaka skače po „lijepim“ vrijednostima, fino strelicama). Točno unutar ±12 % (0,05 dekade). Os f je skrivena kad je zadana f. Poruke za f/c i pogrešnu potenciju (cm, mm, µm, nm) dodaju se same; ${KRIVO_OPIS} (vrijednost je λ u m). Nakon točnog zasvijetle područje i susjedi.
+  - "odaberi_podrucje": f ili lambda; učenik dodirne područje. Poruke za f/c, jedinicu i susjedno područje dodaju se same.
+- "sredstvo": svjetlost iz zraka ulazi u sredstvo (ili izlazi iz njega): lambda (valna duljina u ZRAKU, nm, 380–750), sredstvo: {naziv, n (1,1–3)}, smjer? "u_sredstvo" (zadano) | "iz_sredstva", boja? (ime boje; mora odgovarati λ: ljubičasta < 450, plava < 495, zelena < 570, žuta < 590, narančasta < 620, crvena). Brjegovi se u sredstvu zbiju (λ/n) i idu sporije (c/n), boja ostaje; na dvije točke bljeskaju brjegovi koji prolaze (jednako često). Tablica f, λ, v, boja s obje strane.
+  - "istrazi": klizači n (s gumbima voda, led, staklo, plastika, dijamant) i λ.
+  - "prikaz": samo animacija i tablica.
+  - "predvidi": pitaj: popis od "f", "lambda", "v", "T", "boja"; učenik za svaku bira raste / pada / isto (boja: ista / druga). Val u drugom sredstvu i njegove vrijednosti vide se tek nakon točnog odgovora. Poruke se računaju same.
+  - "izracunaj": samo "u_sredstvo"; pitaj: "lambda_s" (nm) | "v" (m/s) | "f" (Hz); tolerancija? (apsolutna, zadano 1 %). Krive vrijednosti λ·n, λ, m umjesto nm, c·n, c, km/s, f s λ_s, nm nepretvoreni… dodaju se same; ${KRIVO_OPIS}.`;
+  var PRIMJER11 = {
+    tip: TIP11,
+    scena: "polja",
+    nacin: "odaberi",
+    smjer_sirenja: "istok",
+    E: "gore-dolje",
+    trazi: "B",
+    tekst: "Antena odašilje elektromagnetski val koji se širi **prema istoku**, a električno polje titra **gore-dolje**. Dodirni os po kojoj titra **magnetsko** polje."
+  };
+  var PRIMJERI11 = [
+    {
+      tip: TIP11,
+      scena: "polja",
+      nacin: "istrazi",
+      smjer_sirenja: "sjever",
+      E: "gore-dolje",
+      tekst: "Val se širi prema sjeveru, električno polje titra gore-dolje. **Zakreni crtež** i promijeni smjer širenja: gdje je uvijek magnetsko polje?"
+    },
+    {
+      tip: TIP11,
+      scena: "polja",
+      nacin: "odaberi",
+      smjer_sirenja: "gore",
+      E: "sjever-jug",
+      tekst: "Val se širi **uvis**, a električno polje titra **sjever-jug**. Dodirni os po kojoj titra magnetsko polje."
+    },
+    {
+      tip: TIP11,
+      scena: "polja",
+      nacin: "odaberi",
+      trazi: "smjer",
+      E: "gore-dolje",
+      B: "istok-zapad",
+      smjer_sirenja: "jug",
+      tekst: "U nekoj točki električno polje titra **gore-dolje**, a magnetsko **istok-zapad**. Dodirni os po kojoj se val širi."
+    },
+    {
+      tip: TIP11,
+      scena: "polja",
+      nacin: "prikaz",
+      smjer_sirenja: "zapad",
+      E: "sjever-jug",
+      tekst: "Val se širi prema zapadu, E titra sjever-jug, pa B titra gore-dolje."
+    },
+    {
+      tip: TIP11,
+      scena: "spektar",
+      nacin: "smjesti",
+      f: 25e8,
+      tekst: "Mikrovalna pećnica grije hranu zračenjem frekvencije $2{,}5\\cdot10^{9}$ Hz. Izračunaj valnu duljinu i **povuci oznaku** na nju."
+    },
+    {
+      tip: TIP11,
+      scena: "spektar",
+      nacin: "istrazi",
+      lambda: 5e-7,
+      tekst: "Vuci oznaku po spektru i gledaj kako se mijenjaju valna duljina i frekvencija. Isprobaj i uređaje ispod."
+    },
+    {
+      tip: TIP11,
+      scena: "spektar",
+      nacin: "odaberi_podrucje",
+      f: 3e14,
+      tekst: "Daljinski upravljač šalje zračenje frekvencije $3\\cdot10^{14}$ Hz. **Dodirni područje** spektra kojem to zračenje pripada."
+    },
+    {
+      tip: TIP11,
+      scena: "spektar",
+      nacin: "smjesti",
+      f: 12e14,
+      tekst: "Lampa za dezinfekciju vode šalje zračenje frekvencije $1{,}2\\cdot10^{15}$ Hz. Povuci oznaku na valnu duljinu tog zračenja."
+    },
+    {
+      tip: TIP11,
+      scena: "spektar",
+      nacin: "prikaz",
+      f: 6e18,
+      tekst: "Rendgenski uređaj: $f = 6\\cdot10^{18}$ Hz, pa je $\\lambda = 0{,}05$ nm, između ultraljubičastog i gama-zračenja."
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "predvidi",
+      lambda: 520,
+      sredstvo: { naziv: "voda", n: 1.33 },
+      pitaj: ["f", "lambda", "v", "boja"],
+      tekst: "Zelena svjetlost valne duljine 520 nm iz zraka ulazi u vodu. Što se pritom događa s ovim veličinama?"
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "izracunaj",
+      lambda: 660,
+      sredstvo: { naziv: "staklo", n: 1.5 },
+      pitaj: "lambda_s",
+      tekst: "Crvena svjetlost valne duljine 660 nm iz zraka uđe u staklo indeksa loma 1,5. Kolika je njezina valna duljina u staklu?"
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "istrazi",
+      lambda: 580,
+      sredstvo: { naziv: "dijamant", n: 2.42 },
+      tekst: "Žuta svjetlost ulazi u dijamant. Mijenjaj **indeks loma** i **valnu duljinu**: što se mijenja, a što ostaje isto?"
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "izracunaj",
+      lambda: 470,
+      sredstvo: { naziv: "led", n: 1.31 },
+      pitaj: "v",
+      tekst: "Plava svjetlost iz zraka uđe u led indeksa loma 1,31. Kolikom brzinom putuje kroz led?"
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "predvidi",
+      lambda: 610,
+      sredstvo: { naziv: "plastika", n: 1.58 },
+      smjer: "iz_sredstva",
+      pitaj: ["f", "lambda", "v", "boja"],
+      tekst: "Narančasta svjetlost **izlazi** iz plastike u zrak. Što se pritom događa s ovim veličinama?"
+    },
+    {
+      tip: TIP11,
+      scena: "sredstvo",
+      nacin: "prikaz",
+      lambda: 610,
+      sredstvo: { naziv: "plastika", n: 1.58 },
+      tekst: "Narančasta svjetlost u plastici: brjegovi su 1,58 puta bliže, a boja je ista."
+    }
+  ];
+  var POLJA_SCENE3 = {
+    polja: ["smjer_sirenja", "E", "B", "trazi"],
+    spektar: ["f", "lambda"],
+    sredstvo: ["lambda", "sredstvo", "smjer", "boja", "pitaj", "tolerancija"]
+  };
+  function validatePolja(s, need) {
+    const ima2 = (k) => s[k] != null;
+    if (ima2("smjer_sirenja"))
+      need(
+        SMJEROVI5.includes(s.smjer_sirenja),
+        `smjer_sirenja mora biti jedan od: ${SMJEROVI5.join(", ")}`
+      );
+    for (const k of ["E", "B"])
+      if (ima2(k))
+        need(OSI2.includes(s[k]), `${k} mora biti os: ${OSI2.join(", ")}`);
+    if (ima2("trazi"))
+      need(
+        s.nacin === "odaberi" && TRAZI2.includes(s.trazi),
+        `trazi postoji samo u „odaberi“ i mora biti: ${TRAZI2.join(", ")}`
+      );
+    if (ima2("smjer_sirenja") && SMJEROVI5.includes(s.smjer_sirenja)) {
+      const os = osSmjera(s.smjer_sirenja);
+      if (OSI2.includes(s.E))
+        need(
+          s.E !== os,
+          `E ne može titrati po osi širenja (${os}): EM val je transverzalni`
+        );
+      if (OSI2.includes(s.B))
+        need(
+          s.B !== os,
+          `B ne može titrati po osi širenja (${os}): EM val je transverzalni`
+        );
+    }
+    if (OSI2.includes(s.E) && OSI2.includes(s.B))
+      need(s.E !== s.B, "E i B ne mogu titrati po istoj osi");
+    const t = trazenoPolje(s);
+    if (s.nacin === "odaberi" && t === "B") {
+      need(
+        ima2("smjer_sirenja") && ima2("E"),
+        "odaberi (trazi B) treba smjer_sirenja i E"
+      );
+      need(!ima2("B"), "odaberi (trazi B): B je odgovor, ne smije biti u specu");
+    } else if (s.nacin === "odaberi" && t === "E") {
+      need(
+        ima2("smjer_sirenja") && ima2("B"),
+        "odaberi (trazi E) treba smjer_sirenja i B"
+      );
+      need(!ima2("E"), "odaberi (trazi E): E je odgovor, ne smije biti u specu");
+    } else if (s.nacin === "odaberi" && t === "smjer") {
+      need(ima2("E") && ima2("B"), "odaberi (trazi smjer) treba E i B");
+    } else {
+      need(
+        ima2("smjer_sirenja") && (ima2("E") || ima2("B")),
+        `${s.nacin} treba smjer_sirenja i E (ili B)`
+      );
+    }
+  }
+  function validateSpektar(s, need) {
+    const imaF = s.f != null;
+    const imaL = s.lambda != null;
+    if (s.nacin === "istrazi")
+      need(
+        !(imaF && imaL),
+        "istrazi: najviše jedno od f i lambda (početni položaj oznake)"
+      );
+    else
+      need(
+        imaF !== imaL,
+        `${s.nacin} treba točno jedno od: f (Hz) ili lambda (m)`
+      );
+    if (imaF) need(isNum(s.f) && s.f > 0, "f mora biti pozitivan broj (Hz)");
+    if (imaL)
+      need(
+        isNum(s.lambda) && s.lambda > 0,
+        "lambda mora biti pozitivan broj (u metrima, npr. 2.5e-7)"
+      );
+    const l = zadanaLambda(s);
+    if (!isNum(l) || l <= 0) return;
+    need(
+      l >= 10 ** LG_MIN_OZNAKE && l <= 10 ** LG_MAX_OZNAKE,
+      `valna duljina ${lambdaMTekst(l)} je izvan crteža (10⁻¹² m do 10³ m, tj. f od 3·10⁵ do 3·10²⁰ Hz)`
+    );
+    if (s.nacin !== "istrazi")
+      for (const g of GRANICE)
+        need(
+          Math.abs(l / g - 1) > 0.1,
+          `valna duljina ${lambdaTekst(l)} je preblizu granici područja (${lambdaTekst(g)}), pa je odgovor dvosmislen`
+        );
+    if (s.nacin === "smjesti") {
+      validateKrivo(s.krivo, null, 0, need);
+      (s.krivo ?? []).forEach((k, i) => {
+        if (isNum(k?.vrijednost)) {
+          need(
+            k.vrijednost > 0,
+            `krivo[${i}].vrijednost mora biti valna duljina u m (> 0)`
+          );
+          if (k.vrijednost > 0)
+            need(
+              Math.abs(lg(k.vrijednost / l)) > 0.05,
+              `krivo[${i}].vrijednost je (unutar 12 %) točna valna duljina`
+            );
+        }
+      });
+    } else need(s.krivo == null, "krivo postoji samo u „smjesti“");
+  }
+  function validateSredstvo2(s, need) {
+    need(
+      isNum(s.lambda) && s.lambda >= 380 && s.lambda <= 750,
+      "lambda mora biti valna duljina vidljive svjetlosti u zraku, 380–750 (nm)"
+    );
+    const sr = s.sredstvo;
+    if (need(sr && typeof sr === "object", "sredstvo mora biti {naziv, n}")) {
+      need(isText(sr.naziv), "sredstvo.naziv mora biti tekst (npr. „voda“)");
+      need(
+        isNum(sr.n) && sr.n >= 1.1 && sr.n <= 3,
+        "sredstvo.n mora biti indeks loma od 1,1 do 3"
+      );
+    }
+    if (s.smjer != null)
+      need(
+        SMJER_SVJETLOSTI.includes(s.smjer),
+        `smjer mora biti ${SMJER_SVJETLOSTI.join(" ili ")}`
+      );
+    if (isNum(s.lambda) && s.lambda >= 380 && s.lambda <= 750) {
+      const ime2 = bojaIme(s.lambda);
+      if (s.boja != null)
+        need(
+          s.boja === ime2,
+          `boja „${s.boja}“ ne odgovara valnoj duljini ${formatNumber(s.lambda)} nm (to je ${ime2})`
+        );
+      const uTekstu = bojeUTekstu(s.tekst);
+      if (uTekstu.length === 1)
+        need(
+          uTekstu[0].ime === ime2,
+          `tekst kaže da je svjetlost ${uTekstu[0].ime}, a ${formatNumber(s.lambda)} nm je ${ime2}`
+        );
+    }
+    if (s.nacin === "predvidi") {
+      need(
+        Array.isArray(s.pitaj) && s.pitaj.length >= 1 && s.pitaj.every((k) => PREDVIDI.includes(k)) && new Set(s.pitaj).size === s.pitaj.length,
+        `predvidi: pitaj mora biti popis različitih veličina od: ${PREDVIDI.join(", ")}`
+      );
+      need(
+        s.krivo == null && s.tolerancija == null,
+        "predvidi nema krivo ni tolerancija"
+      );
+    } else if (s.nacin === "izracunaj") {
+      need(
+        IZRACUNAJ.includes(s.pitaj),
+        `izracunaj: pitaj mora biti jedno od: ${IZRACUNAJ.join(", ")}`
+      );
+      need(
+        (s.smjer ?? "u_sredstvo") === "u_sredstvo",
+        "izracunaj postoji samo za smjer u_sredstvo"
+      );
+      if (s.tolerancija != null)
+        need(
+          isNum(s.tolerancija) && s.tolerancija > 0,
+          "tolerancija mora biti pozitivan broj (u jedinici odgovora)"
+        );
+      if (IZRACUNAJ.includes(s.pitaj) && isNum(s.lambda) && isNum(sr?.n)) {
+        const t = trazenaVrijednost(s);
+        validateKrivo(s.krivo, t.vrijednost, tolIzracunaj(s, t.vrijednost), need);
+      }
+    } else need(s.pitaj == null, `${s.nacin} nema pitaj`);
+  }
+  var em_val = {
+    tip: TIP11,
+    samoRucno: true,
+    uloga: (s) => jeGledanje(s) ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS11,
+    primjer: PRIMJER11,
+    primjeri: PRIMJERI11,
+    poljaOsi,
+    fizikaSredstva,
+    validate(s) {
+      const { list, need } = problems();
+      need(isText(s.tekst), "em_val treba „tekst“");
+      if (!need(
+        SCENE10.includes(s.scena),
+        `em_val.scena mora biti jedna od: ${SCENE10.join(", ")}`
+      ))
+        return list;
+      if (!need(
+        NACINI23[s.scena].includes(s.nacin),
+        `em_val.nacin za scenu ${s.scena} mora biti jedan od: ${NACINI23[s.scena].join(", ")}`
+      ))
+        return list;
+      const svoja = POLJA_SCENE3[s.scena];
+      for (const [scena, polja] of Object.entries(POLJA_SCENE3))
+        if (scena !== s.scena) {
+          for (const p of polja)
+            if (!svoja.includes(p))
+              need(
+                !(p in s),
+                `polje „${p}“ ne postoji u sceni ${s.scena} (polja scene: ${svoja.join(", ")})`
+              );
+        }
+      if (jeGledanje(s)) noAnswerFields(s, need);
+      if (s.savjet != null) need(isText(s.savjet), "savjet mora biti tekst");
+      if (s.scena === "polja") validatePolja(s, need);
+      if (s.scena === "spektar") validateSpektar(s, need);
+      if (s.scena === "sredstvo") validateSredstvo2(s, need);
+      return list;
+    },
+    check(s, odgovor3) {
+      if (s.scena === "polja" && s.nacin === "odaberi")
+        return checkPolja2(s, odgovor3);
+      if (s.scena === "spektar" && s.nacin === "smjesti")
+        return checkSmjesti(s, odgovor3);
+      if (s.scena === "spektar" && s.nacin === "odaberi_podrucje")
+        return checkPodrucje(s, odgovor3);
+      if (s.scena === "sredstvo" && s.nacin === "predvidi")
+        return checkPredvidi6(s, odgovor3);
+      if (s.scena === "sredstvo" && s.nacin === "izracunaj")
+        return checkIzracunaj6(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.scena === "polja" && s.nacin === "odaberi") {
+        const os = tocnaOs(s);
+        const t = trazenoPolje(s);
+        return t === "smjer" ? `val se širi po osi ${os}` : `${t === "B" ? "magnetsko" : "električno"} polje titra ${os}`;
+      }
+      if (s.scena === "spektar" && (s.nacin === "smjesti" || s.nacin === "odaberi_podrucje")) {
+        const l = zadanaLambda(s);
+        const p = podrucje(l);
+        const nm = l >= 1e-6 && l < 1e-5 ? ` = ${formatNumber(l * 1e9)} nm` : "";
+        const racun = isNum(s.f) ? `λ = c/f = ${lambdaMTekst(l)} = ${lambdaTekst(l)}${nm}` : `λ = ${lambdaTekst(l)}${nm}`;
+        return `${racun}; ${p.naziv}, ${izmeduTekst(p.id)}`;
+      }
+      if (s.scena === "sredstvo" && s.nacin === "predvidi") {
+        const p = promjene(s);
+        const fz = fizikaSredstva(s);
+        const RIJEC2 = {
+          raste: "se poveća",
+          pada: "se smanji",
+          isto: "ostaje ista",
+          ista: `ostaje ista (${fz.boja})`
+        };
+        return (s.pitaj ?? []).map((k) => {
+          if (k === "lambda")
+            return `valna duljina ${RIJEC2[p.lambda]} (${formatSci(fz.lijevo.lambda, 3)} nm → ${formatSci(fz.desno.lambda, 3)} nm)`;
+          if (k === "T")
+            return `period ${p.T === "isto" ? "ostaje isti" : RIJEC2[p.T]}`;
+          return `${NAZIV_VELICINE[k]} ${RIJEC2[p[k]]}`;
+        }).join("; ");
+      }
+      if (s.scena === "sredstvo" && s.nacin === "izracunaj") {
+        const t = trazenaVrijednost(s);
+        const fz = fizikaSredstva(s);
+        const iznos5 = `${formatSci(t.vrijednost, 3)} ${t.jedinica}`;
+        if (s.pitaj === "lambda_s")
+          return `λ_s = λ/n = ${formatNumber(fz.lambda)} nm / ${formatNumber(fz.n)} ≈ ${iznos5}`;
+        if (s.pitaj === "v")
+          return `v = c/n = 3·10⁸ m/s / ${formatNumber(fz.n)} ≈ ${iznos5}`;
+        return `f = c/λ = 3·10⁸ m/s / ${formatSci(fz.lambda * 1e-9, 3)} m ≈ ${iznos5}`;
+      }
+      return "";
+    }
+  };
+
+  // src/lib/lesson/katalog/fizika/polarizacija.js
+  var TIP12 = "polarizacija";
+  var SCENE11 = ["filtri", "prorez", "odsjaj"];
+  var NACINI24 = {
+    filtri: ["istrazi", "prikaz", "postavi"],
+    prorez: ["istrazi", "prikaz", "odaberi"],
+    odsjaj: ["istrazi", "prikaz", "postavi", "odaberi", "izracunaj"]
+  };
+  var POLJA4 = {
+    filtri: ["izvor", "filtri", "mijenja", "cilj", "prikazi_postotak", "krivo"],
+    prorez: ["prorez", "titranje", "valovi", "izvor_zvuka", "pitaj"],
+    odsjaj: [
+      "n",
+      "povrsina",
+      "kut",
+      "naocale",
+      "cilj",
+      "pitaj",
+      "krivo",
+      "tolerancija",
+      "prikazi_postotak"
+    ]
+  };
+  var KORAK_FILTRA = 5;
+  var TOL_FILTAR = 3;
+  var TOL_NAOCALE = 5;
+  var TOL_KUT2 = 0.3;
+  var TOL_IZRACUN = 0.2;
+  var IZVORI = {
+    zarulja: "žarulja",
+    svijeca: "svijeća",
+    lampa: "stolna lampa",
+    svjetiljka: "džepna svjetiljka",
+    sunce: "Sunce"
+  };
+  var IZVORI_ZVUKA = {
+    zvucnik: "zvučnik",
+    vilica: "glazbena vilica",
+    zvono: "zvono",
+    truba: "truba",
+    bubanj: "bubanj"
+  };
+  var VALOVI = ["uze", "zvuk"];
+  var rad5 = (d) => d * Math.PI / 180;
+  var deg3 = (r) => r * 180 / Math.PI;
+  var r13 = (x) => Math.round(x * 10) / 10;
+  var normOs = (k) => (k % 180 + 180) % 180;
+  function razlikaOsi(a, b) {
+    const d = Math.abs(normOs(a) - normOs(b));
+    return Math.min(d, 180 - d);
+  }
+  var kutTekst2 = (x) => `${r13(x).toFixed(1).replace("-", "−").replace(".", ",")}°`;
+  var naMrezi3 = (x, korak) => isNum(x) && Math.abs(x / korak - Math.round(x / korak)) < 1e-9;
+  function opisOsi(k) {
+    const o = normOs(k);
+    if (razlikaOsi(o, 0) < 1e-9) return "uspravno";
+    if (razlikaOsi(o, 90) < 1e-9) return "vodoravno";
+    return `${formatNumber(r13(o), 1)}° od uspravnog`;
+  }
+  function intenziteti(kutovi) {
+    let I = 1;
+    let pol = null;
+    return kutovi.map((k, i) => {
+      I = i === 0 ? I / 2 : I * Math.cos(rad5(k - pol)) ** 2;
+      if (I < 1e-12) I = 0;
+      pol = k;
+      return I;
+    });
+  }
+  var kutoviFiltara = (s) => s.filtri.map((f2) => normOs(f2.kut));
+  var konacni = (kutovi) => intenziteti(kutovi).at(-1);
+  function rjesenjaFiltri(s) {
+    const k0 = kutoviFiltara(s);
+    const m = s.mijenja;
+    const vals = [];
+    for (let i = 0; i < 360; i++) {
+      const k = [...k0];
+      k[m] = i / 2;
+      vals.push([i / 2, konacni(k)]);
+    }
+    const max = Math.max(...vals.map((v) => v[1]));
+    const ok = s.cilj?.intenzitet === 0 ? (v) => v[1] < 1e-9 : (v) => v[1] > max - 1e-9 && max > 0;
+    return vals.filter(ok).map((v) => v[0]);
+  }
+  var blizuRjesenja = (s, k, rj = rjesenjaFiltri(s)) => rj.some((x) => razlikaOsi(x, k) <= TOL_FILTAR);
+  function checkFiltri(s, odgovor3) {
+    if (!isNum(odgovor3))
+      return {
+        tocno: false,
+        poruka: "Okreni filtar: povuci ručku na rubu.",
+        prazno: true
+      };
+    const rj = rjesenjaFiltri(s);
+    if (blizuRjesenja(s, odgovor3, rj)) return { tocno: true };
+    const hit = (s.krivo ?? []).find(
+      (k) => razlikaOsi(k.vrijednost, odgovor3) <= TOL_FILTAR
+    );
+    if (hit) return { tocno: false, poruka: hit.poruka };
+    const kutovi = kutoviFiltara(s);
+    kutovi[s.mijenja] = normOs(odgovor3);
+    const I = konacni(kutovi);
+    const N = kutovi.length;
+    if (s.cilj.intenzitet === 0) {
+      if (N === 2) {
+        const d = Math.round(razlikaOsi(kutovi[0], kutovi[1]));
+        if (d <= TOL_FILTAR)
+          return {
+            tocno: false,
+            poruka: "Osi filtara su **paralelne**: drugi filtar propušta isto titranje koje je prošlo kroz prvi, pa prolazi sva ta svjetlost. Mrak je tek kad drugi filtar propušta samo titranje kojega iza prvog **uopće nema**."
+          };
+        return {
+          tocno: false,
+          poruka: `Iza filtra još ima svjetlosti: osi zatvaraju ${d}°, pa drugi filtar propušta dio titranja koje je prošlo kroz prvi. Mrak je tek kad drugi filtar propušta samo titranje kojega iza prvog **uopće nema**.`
+        };
+      }
+      return {
+        tocno: false,
+        poruka: "Iza zadnjeg filtra još ima svjetlosti. Pogledaj krugove iznad zrake: u kojem smjeru titra svjetlost prije tog filtra, a koji smjer on propušta?"
+      };
+    }
+    if (I === 0)
+      return {
+        tocno: false,
+        poruka: "Sad je iza filtra **mrak**: filtar propušta samo titranje kojega u svjetlosti ispred njega nema. Najviše prolazi kad filtar propušta upravo smjer u kojem svjetlost titra."
+      };
+    return {
+      tocno: false,
+      poruka: "Prolazi dio svjetlosti, ali može i više. Najviše prolazi kad filtar propušta upravo smjer u kojem svjetlost ispred njega titra."
+    };
+  }
+  var titranjeUzeta = (s) => isNum(s.titranje) ? normOs(s.titranje) : 0;
+  var prolazUzeta = (titranje2, prorez) => Math.cos(rad5(titranje2 - prorez));
+  function prolaziProrez(s, prorez) {
+    const a = Math.abs(prolazUzeta(titranjeUzeta(s), prorez));
+    return {
+      uze: a > 0.999 ? "da" : a < 0.01 ? "ne" : "djelomicno",
+      zvuk: "da"
+    };
+  }
+  var OPCIJE_PROREZ = [
+    { kljuc: "uze", tekst: "samo uže" },
+    { kljuc: "zvuk", tekst: "samo zvuk" },
+    { kljuc: "oba", tekst: "oba vala" },
+    { kljuc: "nijedan", tekst: "nijedan" }
+  ];
+  function tocnaOpcijaProrez(s) {
+    return prolaziProrez(s, s.prorez ?? 0).uze === "da" ? "oba" : "zvuk";
+  }
+  function checkProrez(s, odgovor3) {
+    const ok = OPCIJE_PROREZ.map((o) => o.kljuc);
+    if (!ok.includes(odgovor3))
+      return { tocno: false, poruka: "Odaberi jedan odgovor.", prazno: true };
+    const tocna = tocnaOpcijaProrez(s);
+    if (odgovor3 === tocna) return { tocno: true };
+    const zvukProlazi = "Zvuk prolazi kako god okrenuo prorez: čestice zraka titraju naprijed-natrag, **u smjeru širenja**, pa nema titranja poprijeko koje bi prorez mogao zaustaviti.";
+    if (tocna === "zvuk") {
+      if (odgovor3 === "uze")
+        return {
+          tocno: false,
+          poruka: `Obrnuto. Uže titra **poprijeko**, a prorez je okomit na to titranje, pa ga zaustavi. ${zvukProlazi}`
+        };
+      if (odgovor3 === "oba")
+        return {
+          tocno: false,
+          poruka: "Zvuk prolazi, ali uže ne: uže titra poprijeko, a prorez propušta samo titranje u svom smjeru, okomito na titranje užeta."
+        };
+      return { tocno: false, poruka: zvukProlazi };
+    }
+    if (odgovor3 === "zvuk")
+      return {
+        tocno: false,
+        poruka: "Uže titra baš u smjeru proreza, pa i ono prolazi."
+      };
+    if (odgovor3 === "uze") return { tocno: false, poruka: zvukProlazi };
+    return {
+      tocno: false,
+      poruka: `Prorez je paralelan s titranjem užeta, pa uže prolazi. ${zvukProlazi}`
+    };
+  }
+  var brewster = (n) => deg3(Math.atan(n));
+  var granicni = (n) => deg3(Math.asin(1 / n));
+  var OPCIJE_ODSJAJ = [
+    { kljuc: "upadna", tekst: "upadna (sunčeva) zraka" },
+    { kljuc: "odbijena", tekst: "odbijena zraka (odsjaj)" },
+    { kljuc: "lomljena", tekst: "lomljena zraka (u sredstvu)" }
+  ];
+  var nazivSredstva2 = (s) => isText(s.povrsina) ? s.povrsina : "sredstvo";
+  function izracunOdsjaja(s) {
+    const n = s.n;
+    const aB = brewster(n);
+    const p = s.pitaj;
+    if (p === "beta_B")
+      return {
+        oznaka: "$\\beta$",
+        naziv: "kut loma pri Brewsterovu kutu",
+        vrijednost: 90 - aB,
+        krivo: [
+          {
+            vrijednost: aB,
+            poruka: "To je upadni (Brewsterov) kut. Lomni kut β je kut lomljene zrake od normale, u sredstvu."
+          },
+          {
+            vrijednost: granicni(n),
+            poruka: "To je granični kut totalne refleksije (sin⁻¹(1/n)), a ne lomni kut. Prvo izračunaj $\\alpha_B$ iz $\\text{tg}\\,\\alpha_B = n$."
+          },
+          {
+            vrijednost: aB / n,
+            poruka: "Ne dijeli se kut s n: Snellov zakon dijeli sinuse, sin α / sin β = n. Ili iskoristi da odbijena i lomljena zraka zatvaraju 90°."
+          }
+        ]
+      };
+    if (p === "kut_zraka")
+      return {
+        oznaka: "$\\gamma$",
+        naziv: "kut između odbijene i lomljene zrake",
+        vrijednost: 90,
+        krivo: [
+          {
+            vrijednost: 2 * aB,
+            poruka: "To je kut između upadne i odbijene zrake (α + α'). Traži se kut između **odbijene** i **lomljene**."
+          },
+          {
+            vrijednost: aB,
+            poruka: "To je Brewsterov kut, kut zrake od normale. Traži se kut između odbijene i lomljene zrake."
+          },
+          {
+            vrijednost: 180 - aB,
+            poruka: "Od 180° oduzmi oba kuta uz normalu: α' (odbijena) i β (lomljena)."
+          }
+        ]
+      };
+    return {
+      oznaka: "$\\alpha_B$",
+      naziv: "Brewsterov kut",
+      vrijednost: aB,
+      krivo: [
+        {
+          vrijednost: 90 - aB,
+          poruka: "To je kut prema **površini** ($90° - \\alpha_B$), odnosno tg⁻¹(1/n). Brewsterov kut mjeri se od **okomice** (normale): $\\text{tg}\\,\\alpha_B = n$."
+        },
+        {
+          vrijednost: granicni(n),
+          poruka: "To je sin⁻¹(1/n), **granični kut** totalne refleksije. Za Brewsterov kut vrijedi $\\text{tg}\\,\\alpha_B = n$, pa treba **tg⁻¹**."
+        },
+        {
+          vrijednost: deg3(Math.acos(1 / n)),
+          poruka: "To je cos⁻¹(1/n). Za Brewsterov kut vrijedi $\\text{tg}\\,\\alpha_B = n$, pa treba **tg⁻¹(n)**."
+        },
+        {
+          vrijednost: Math.atan(n),
+          poruka: "Kalkulator je u radijanima (RAD). Prebaci ga u stupnjeve (DEG) i ponovi tg⁻¹."
+        },
+        {
+          vrijednost: Math.tan(rad5(n)),
+          poruka: "Izračunao si tg(n). Treba obrnuto: kut kojemu je tangens jednak n, dakle **tg⁻¹(n)**."
+        },
+        {
+          vrijednost: Math.tan(n),
+          poruka: "Izračunao si tg(n) (i to u radijanima). Treba kut kojemu je tangens jednak n: **tg⁻¹(n)**, kalkulator u DEG."
+        }
+      ]
+    };
+  }
+  var tolIzracun = (s) => isNum(s.tolerancija) ? s.tolerancija : TOL_IZRACUN;
+  function krivoUpadni(n) {
+    return [
+      {
+        vrijednost: 90 - brewster(n),
+        poruka: "To je kut prema **površini** ($90° - \\alpha_B$). Upadni kut mjeri se od okomice na površinu (normale)."
+      },
+      {
+        vrijednost: granicni(n),
+        poruka: "To je **granični kut** totalne refleksije, sin⁻¹(1/n). Za Brewsterov kut vrijedi $\\text{tg}\\,\\alpha_B = n$, pa treba tg⁻¹."
+      },
+      {
+        vrijednost: deg3(Math.acos(1 / n)),
+        poruka: "To je cos⁻¹(1/n). Za Brewsterov kut vrijedi $\\text{tg}\\,\\alpha_B = n$, pa treba tg⁻¹(n)."
+      }
+    ];
+  }
+  function checkOdsjaj(s, odgovor3) {
+    const n = s.n;
+    if (s.nacin === "izracunaj") {
+      const r = izracunOdsjaja(s);
+      const t = tolIzracun(s);
+      return checkNumber({
+        input: odgovor3,
+        answer: r.vrijednost,
+        tol: t,
+        unit: "°",
+        krivo: [
+          ...s.krivo ?? [],
+          ...r.krivo.filter((k) => Math.abs(k.vrijednost - r.vrijednost) > 2 * t).map((k) => ({
+            ...k,
+            tolerancija: Math.max(t, Math.abs(k.vrijednost) * 0.01)
+          }))
+        ],
+        savjet: "Nije točno. Brewsterov kut: $\\text{tg}\\,\\alpha_B = n$ (kut se mjeri od okomice na površinu)."
+      });
+    }
+    if (s.nacin === "odaberi") {
+      if (!OPCIJE_ODSJAJ.some((o) => o.kljuc === odgovor3))
+        return { tocno: false, poruka: "Odaberi jednu zraku.", prazno: true };
+      if (odgovor3 === "odbijena") return { tocno: true };
+      if (odgovor3 === "upadna")
+        return {
+          tocno: false,
+          poruka: "Sunčeva svjetlost je **nepolarizirana**: titra u svim smjerovima jednako. Polarizira se tek pri odbijanju."
+        };
+      return {
+        tocno: false,
+        poruka: `Svjetlost koja uđe u ${nazivSredstva2(s)} samo je **djelomično** polarizirana: u njoj ima i vodoravnog titranja. Potpuno polariziran može biti samo odsjaj, i to pod Brewsterovim kutom.`
+      };
+    }
+    if (s.nacin === "postavi" && s.cilj?.velicina === "naocale") {
+      if (!isNum(odgovor3))
+        return {
+          tocno: false,
+          poruka: "Okreni naočale: povuci ručku na rubu stakla.",
+          prazno: true
+        };
+      if (razlikaOsi(odgovor3, 0) <= TOL_NAOCALE) return { tocno: true };
+      const hit = (s.krivo ?? []).find(
+        (k) => razlikaOsi(k.vrijednost, odgovor3) <= TOL_NAOCALE
+      );
+      if (hit) return { tocno: false, poruka: hit.poruka };
+      if (razlikaOsi(odgovor3, 90) <= TOL_NAOCALE)
+        return {
+          tocno: false,
+          poruka: "Vodoravne naočale propuštaju upravo **vodoravno** titranje, a odsjaj titra baš tako: vidiš ga punim sjajem."
+        };
+      return {
+        tocno: false,
+        poruka: "Ukoso okrenute naočale propuštaju dio vodoravnog titranja, pa se odsjaj još vidi. Odsjaj titra vodoravno: naočale moraju propuštati samo titranje **okomito** na to."
+      };
+    }
+    if (s.nacin === "postavi") {
+      if (!isNum(odgovor3))
+        return {
+          tocno: false,
+          poruka: "Namjesti upadni kut klizačem.",
+          prazno: true
+        };
+      const aB = brewster(n);
+      if (Math.abs(odgovor3 - aB) <= TOL_KUT2 + 1e-9) return { tocno: true };
+      const hit = [...s.krivo ?? [], ...krivoUpadni(n)].find(
+        (k) => Math.abs(k.vrijednost - odgovor3) <= 0.5
+      );
+      if (hit) return { tocno: false, poruka: hit.poruka };
+      return {
+        tocno: false,
+        poruka: `Pri ${kutTekst2(odgovor3)} odsjaj je tek **djelomično** polariziran (pogledaj krug na odbijenoj zraci i kut između odbijene i lomljene zrake). Brewsterov kut izračunaj iz $\\text{tg}\\,\\alpha_B = n$ i mjeri ga od okomice.`
+      };
+    }
+    return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+  }
+  var OPIS12 = `Polarizacija svjetlosti (fizika, matura). tekst, scena, nacin. Kutovi osi (filtar, prorez, naočale) mjere se od uspravnog: 0 = uspravno, 90 = vodoravno, višekratnici od 5, u [0, 180). Upadni kut mjeri se od normale. U ODGOVOR načinima ishod (svjetlina iza filtra, polarizacija odsjaja, β, kut između zraka, uže iza proreza) ostaje skriven do provjere.
+Scene:
+- "filtri": izvor? ("zarulja" | "svijeca" | "lampa" | "svjetiljka" | "sunce"; nepolarizirana svjetlost) → filtri: 1–3 [{kut}] → zastor. Prvi filtar propusti polovinu, svaki sljedeći I·cos²Δ (to se vidi samo kao svjetlina; brojke uz prikazi_postotak: true). Iznad zrake krugovi „gledano uzduž zrake“ (smjer titranja).
+  Načini: "istrazi" (mijenja?: indeks ili popis indeksa filtara koji se okreću, zadano svi), "prikaz", "postavi" (mijenja: indeks filtra koji učenik okreće; cilj: {intenzitet: 0} = mrak iza zadnjeg filtra ili {intenzitet: "najvise"}; točno u ±3°, npr. 90° i 270° oba; početni kut ne smije već ispunjavati cilj; ${KRIVO_OPIS}, vrijednost = kut osi).
+- "prorez": uže (transverzalni val, ruka ga trese u smjeru titranje?, zadano 0 = gore-dolje) i zvuk (izvor_zvuka?: "zvucnik" | "vilica" | "zvono" | "truba" | "bubanj"; longitudinalni val, čestice zraka) prolaze kroz ogradu s prorezom pod kutom prorez (zadano 0). Uže prolazi kad je prorez paralelan s titranjem, zvuk uvijek. valovi?: ["uze", "zvuk"] (zadano oba).
+  Načini: "istrazi" (učenik okreće prorez), "prikaz", "odaberi" (pitaj: "prolazi"; učenik bira: samo uže / samo zvuk / oba / nijedan; prorez mora biti paralelan ili okomit na titranje; treba oba vala).
+- "odsjaj": sunčeva zraka pada na površinu (povrsina?: npr. "jezero (voda)", n: 1,2–2,5) pod upadnim kutom kut (°, 0–89). Odbijena i lomljena zraka, lukovi α, α', β i kut između odbijene i lomljene; krugovi polarizacije (Fresnel): odsjaj je nepolariziran pri 0°, djelomično polariziran, a potpuno (samo vodoravno) pri α_B (tg α_B = n), kad odbijena i lomljena zraka zatvaraju 90°. naocale?: kut osi polarizacijskih naočala; tada se vidi i „pogled kroz naočale“ (odsjaj kroz naočale = vodoravni dio·sin² + ostalo·cos²).
+  Načini: "istrazi" (klizač upadnog kuta, zadano 30°; naočale se okreću), "prikaz" (kut zadano α_B), "postavi" s cilj {velicina: "upadni_kut", vrijednost: "brewster"} (učenik namjesti kut, ±0,3°; kut = početni, ne α_B; bez naočala; poruke za 90° − α_B, granični kut sin⁻¹(1/n) i cos⁻¹(1/n) dodaju se same; krivo?: [{vrijednost (°), poruka}]) ili {velicina: "naocale", vrijednost: "bez_odsjaja"} (kut = α_B, zadano; naocale = početna os, nije uspravna; točno uspravno ±5°), "odaberi" (pitaj: "potpuno_polarizirana": učenik bira upadnu, odbijenu ili lomljenu zraku; kut = α_B), "izracunaj" (pitaj: "alpha_B" | "beta_B" (lomni kut pri α_B) | "kut_zraka" (između odbijene i lomljene); upis u °; tolerancija? zadano 0,2°; tipične greške (90° − α_B, sin⁻¹ i cos⁻¹ umjesto tg⁻¹, RAD, tg(n)…) dodaje aplikacija; ${KRIVO_OPIS}).`;
+  var PRIMJER12 = {
+    tip: TIP12,
+    scena: "filtri",
+    nacin: "postavi",
+    izvor: "zarulja",
+    filtri: [{ kut: 0 }, { kut: 30 }],
+    mijenja: 1,
+    cilj: { intenzitet: 0 },
+    tekst: "Svjetlost žarulje prolazi kroz dva polarizacijska filtra. **Okreni drugi filtar** tako da iza njega bude potpuni mrak."
+  };
+  var PRIMJERI12 = [
+    {
+      tip: TIP12,
+      scena: "filtri",
+      nacin: "istrazi",
+      izvor: "svijeca",
+      filtri: [{ kut: 0 }, { kut: 0 }],
+      mijenja: 1,
+      tekst: "Svjetlost svijeće prolazi kroz dva polarizacijska filtra. **Okreći drugi filtar** i prati svjetlinu iza njega i krugove iznad zrake (smjer titranja gledan uzduž zrake)."
+    },
+    {
+      tip: TIP12,
+      scena: "filtri",
+      nacin: "istrazi",
+      izvor: "sunce",
+      filtri: [{ kut: 0 }, { kut: 45 }, { kut: 90 }],
+      prikazi_postotak: true,
+      tekst: "Iznenađenje: prvi i zadnji filtar su okomiti, a ipak nešto prolazi. **Okreći srednji filtar** i gledaj što se događa iza zadnjeg."
+    },
+    {
+      tip: TIP12,
+      scena: "prorez",
+      nacin: "istrazi",
+      izvor_zvuka: "zvucnik",
+      prorez: 0,
+      tekst: "Uže tresemo gore-dolje, a zvučnik šalje zvuk. **Okreći prorez** i usporedi koji val prolazi."
+    },
+    {
+      tip: TIP12,
+      scena: "prorez",
+      nacin: "odaberi",
+      izvor_zvuka: "vilica",
+      prorez: 90,
+      pitaj: "prolazi",
+      tekst: "Uže tresemo gore-dolje, a glazbena vilica titra. Prorez je **vodoravan**. Koji val prolazi kroz prorez?"
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "istrazi",
+      povrsina: "jezero (voda)",
+      n: 1.33,
+      kut: 30,
+      naocale: 90,
+      tekst: "Sunčeva svjetlost odbija se od jezera. **Mijenjaj upadni kut** i prati krug na odbijenoj zraci; **okreći naočale** i gledaj odsjaj kroz njih."
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "postavi",
+      povrsina: "jezero (voda)",
+      n: 1.33,
+      kut: 30,
+      cilj: { velicina: "upadni_kut", vrijednost: "brewster" },
+      tekst: "Indeks loma vode je 1,33. Izračunaj Brewsterov kut i **namjesti sunčevu zraku** na njega, tako da odsjaj bude potpuno polariziran."
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "postavi",
+      povrsina: "jezero (voda)",
+      n: 1.33,
+      naocale: 90,
+      cilj: { velicina: "naocale", vrijednost: "bez_odsjaja" },
+      tekst: "Sunce je pod Brewsterovim kutom, pa je odsjaj s jezera potpuno polariziran. **Okreni os naočala** tako da odsjaj nestane."
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "odaberi",
+      povrsina: "stakleni stol",
+      n: 1.5,
+      pitaj: "potpuno_polarizirana",
+      tekst: "Sunčeva svjetlost pada na stakleni stol (n = 1,5) pod Brewsterovim kutom. Koja je zraka **potpuno** polarizirana?"
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "izracunaj",
+      povrsina: "zaleđeno klizalište (led)",
+      n: 1.31,
+      pitaj: "alpha_B",
+      tekst: "Sunčeva svjetlost odbija se od zaleđenog klizališta (indeks loma leda 1,31). Pod kojim je upadnim kutom odsjaj potpuno polariziran?"
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "izracunaj",
+      povrsina: "plastični stol",
+      n: 1.58,
+      pitaj: "kut_zraka",
+      tekst: "Svjetlost pada na plastični stol (n = 1,58) pod Brewsterovim kutom. Koliki kut zatvaraju odbijena i lomljena zraka?"
+    },
+    {
+      tip: TIP12,
+      scena: "odsjaj",
+      nacin: "prikaz",
+      povrsina: "lakirani stol",
+      n: 1.55,
+      tekst: "Odsjaj pod Brewsterovim kutom: odbijena zraka titra samo vodoravno, a odbijena i lomljena zraka zatvaraju 90°."
+    }
+  ];
+  function validateFiltri(s, need) {
+    if (s.izvor != null)
+      need(
+        IZVORI[s.izvor] != null,
+        `izvor mora biti jedan od: ${Object.keys(IZVORI).join(", ")}`
+      );
+    if (!need(
+      Array.isArray(s.filtri) && s.filtri.length >= 1 && s.filtri.length <= 3,
+      "filtri mora biti popis od 1 do 3 filtra [{kut}]"
+    ))
+      return;
+    let ispravni = true;
+    s.filtri.forEach((f2, i) => {
+      ispravni = need(
+        f2 && typeof f2 === "object" && naMrezi3(f2.kut, KORAK_FILTRA) && f2.kut >= 0 && f2.kut < 180,
+        `filtri[${i}].kut mora biti kut osi od uspravnog u [0, 180), višekratnik od 5`
+      ) && ispravni;
+      if (f2 && typeof f2 === "object")
+        need(
+          Object.keys(f2).every((k) => k === "kut"),
+          `filtri[${i}] smije imati samo „kut“`
+        );
+    });
+    if (s.prikazi_postotak != null)
+      need(
+        typeof s.prikazi_postotak === "boolean",
+        "prikazi_postotak mora biti true ili false"
+      );
+    const indeks = (m) => Number.isInteger(m) && m >= 0 && m < s.filtri.length;
+    if (s.nacin === "istrazi") {
+      noAnswerFields(s, need);
+      if (s.mijenja != null)
+        need(
+          indeks(s.mijenja) || Array.isArray(s.mijenja) && s.mijenja.length >= 1 && s.mijenja.every(indeks) && new Set(s.mijenja).size === s.mijenja.length,
+          "mijenja mora biti indeks filtra (od 0) ili popis različitih indeksa"
+        );
+    }
+    if (s.nacin === "prikaz") {
+      noAnswerFields(s, need);
+      need(s.mijenja == null, "prikaz se ne dira: bez polja mijenja");
+    }
+    if (s.nacin === "postavi") {
+      need(
+        s.filtri.length >= 2,
+        "postavi treba barem 2 filtra (iza jednog filtra uvijek prolazi polovina)"
+      );
+      const okM = need(
+        indeks(s.mijenja),
+        "postavi treba mijenja: indeks filtra (od 0) koji učenik okreće"
+      );
+      const okC = need(
+        s.cilj && typeof s.cilj === "object" && (s.cilj.intenzitet === 0 || s.cilj.intenzitet === "najvise") && Object.keys(s.cilj).length === 1,
+        'cilj mora biti {intenzitet: 0} (mrak) ili {intenzitet: "najvise"}'
+      );
+      if (okM && okC && ispravni && s.filtri.length >= 2) {
+        const rj = rjesenjaFiltri(s);
+        if (need(rj.length > 0, "cilj se ne može postići okretanjem tog filtra")) {
+          need(
+            !blizuRjesenja(s, s.filtri[s.mijenja].kut, rj),
+            "početni kut pomičnog filtra već ispunjava cilj: zadaj drugi početni kut"
+          );
+          need(
+            !(s.cilj.intenzitet === "najvise" && rj.length > 6),
+            "cilj „najvise“: pomični filtar ne mijenja svjetlinu (ništa se ne može naučiti)"
+          );
+        }
+        validateKrivo(s.krivo, null, 0, need);
+        (s.krivo ?? []).forEach(
+          (k, i) => isNum(k?.vrijednost) && need(
+            !blizuRjesenja(s, k.vrijednost, rj),
+            `krivo[${i}].vrijednost ${formatNumber(k.vrijednost)}° ispunjava cilj, a to je točan odgovor`
+          )
+        );
+      }
+    } else
+      need(s.cilj == null && s.krivo == null, `${s.nacin} nema cilj ni krivo`);
+  }
+  function validateProrez(s, need) {
+    for (const [ime2, opis] of [
+      ["prorez", "kut proreza"],
+      ["titranje", "smjer titranja užeta"]
+    ])
+      if (s[ime2] != null)
+        need(
+          naMrezi3(s[ime2], KORAK_FILTRA) && s[ime2] >= 0 && s[ime2] < 180,
+          `${ime2} (${opis}) mora biti kut od uspravnog u [0, 180), višekratnik od 5`
+        );
+    if (s.izvor_zvuka != null)
+      need(
+        IZVORI_ZVUKA[s.izvor_zvuka] != null,
+        `izvor_zvuka mora biti jedan od: ${Object.keys(IZVORI_ZVUKA).join(", ")}`
+      );
+    if (s.valovi != null)
+      need(
+        Array.isArray(s.valovi) && s.valovi.length >= 1 && s.valovi.every((v) => VALOVI.includes(v)) && new Set(s.valovi).size === s.valovi.length,
+        'valovi mora biti popis od: "uze", "zvuk"'
+      );
+    if (s.nacin === "odaberi") {
+      need(s.pitaj === "prolazi", 'odaberi treba pitaj: "prolazi"');
+      need(
+        s.valovi == null || s.valovi.length === 2,
+        "odaberi treba oba vala (uže i zvuk)"
+      );
+      const d = razlikaOsi(titranjeUzeta(s), s.prorez ?? 0);
+      need(
+        d < 1e-9 || Math.abs(d - 90) < 1e-9,
+        "odaberi: prorez mora biti paralelan ili okomit na titranje užeta"
+      );
+      need(
+        s.cilj == null && s.krivo == null,
+        "odaberi nema cilj ni krivo (poruke daje aplikacija)"
+      );
+    } else {
+      noAnswerFields(s, need);
+      need(s.pitaj == null, `${s.nacin} nema pitaj`);
+    }
+  }
+  function validateOdsjaj(s, need) {
+    if (!need(
+      isNum(s.n) && s.n >= 1.2 && s.n <= 2.5,
+      "n (indeks loma površine) mora biti broj od 1,2 do 2,5"
+    ))
+      return;
+    if (s.povrsina != null)
+      need(
+        isText(s.povrsina) && s.povrsina.length <= 40,
+        "povrsina mora biti kratak tekst (npr. „jezero (voda)“)"
+      );
+    if (s.kut != null)
+      need(
+        isNum(s.kut) && s.kut >= 0 && s.kut <= 89,
+        "kut (upadni, od normale) mora biti od 0 do 89°"
+      );
+    if (s.naocale != null)
+      need(
+        naMrezi3(s.naocale, KORAK_FILTRA) && s.naocale >= 0 && s.naocale < 180,
+        "naocale (os naočala od uspravnog) mora biti u [0, 180), višekratnik od 5"
+      );
+    if (s.prikazi_postotak != null)
+      need(
+        typeof s.prikazi_postotak === "boolean",
+        "prikazi_postotak mora biti true ili false"
+      );
+    const aB = brewster(s.n);
+    const kutJeB = !isNum(s.kut) || Math.abs(s.kut - aB) <= TOL_KUT2;
+    if (s.nacin === "istrazi" || s.nacin === "prikaz") {
+      noAnswerFields(s, need);
+      need(
+        s.pitaj == null && s.tolerancija == null,
+        `${s.nacin} nema pitaj ni tolerancija`
+      );
+      return;
+    }
+    if (s.nacin === "postavi") {
+      need(
+        s.pitaj == null && s.tolerancija == null,
+        "postavi nema pitaj ni tolerancija"
+      );
+      const v = s.cilj?.velicina;
+      if (!need(
+        s.cilj && (v === "upadni_kut" && s.cilj.vrijednost === "brewster" || v === "naocale" && s.cilj.vrijednost === "bez_odsjaja") && Object.keys(s.cilj).length === 2,
+        'cilj mora biti {velicina: "upadni_kut", vrijednost: "brewster"} ili {velicina: "naocale", vrijednost: "bez_odsjaja"}'
+      ))
+        return;
+      if (v === "upadni_kut") {
+        need(
+          s.naocale == null,
+          "postavi upadni_kut nema naočale (one bi odale kut)"
+        );
+        need(
+          !isNum(s.kut) || Math.abs(s.kut - aB) > 2,
+          "početni kut ne smije biti blizu Brewsterova kuta (barem 2° od njega)"
+        );
+        validateKrivo(s.krivo, aB, TOL_KUT2, need);
+      } else {
+        need(
+          isNum(s.naocale),
+          "postavi naocale treba naocale: početnu os naočala"
+        );
+        if (isNum(s.naocale))
+          need(
+            razlikaOsi(s.naocale, 0) > TOL_NAOCALE,
+            "početna os naočala ne smije biti uspravna (to je točan odgovor)"
+          );
+        need(
+          kutJeB,
+          `kut mora biti Brewsterov (${kutTekst2(aB)}) ili izostavljen: samo tada odsjaj potpuno nestane`
+        );
+        validateKrivo(s.krivo, null, 0, need);
+        (s.krivo ?? []).forEach(
+          (k, i) => isNum(k?.vrijednost) && need(
+            razlikaOsi(k.vrijednost, 0) > TOL_NAOCALE,
+            `krivo[${i}].vrijednost je uspravno, a to je točan odgovor`
+          )
+        );
+      }
+      return;
+    }
+    need(s.cilj == null, `${s.nacin} nema cilj`);
+    need(s.naocale == null, `${s.nacin} nema naočale`);
+    need(
+      kutJeB,
+      `${s.nacin}: kut mora biti Brewsterov (${kutTekst2(aB)}) ili izostavljen`
+    );
+    if (s.nacin === "odaberi") {
+      need(
+        s.pitaj === "potpuno_polarizirana",
+        'odaberi treba pitaj: "potpuno_polarizirana"'
+      );
+      need(
+        s.krivo == null && s.tolerancija == null,
+        "odaberi nema krivo ni tolerancija (poruke daje aplikacija)"
+      );
+    }
+    if (s.nacin === "izracunaj") {
+      if (need(
+        ["alpha_B", "beta_B", "kut_zraka"].includes(s.pitaj),
+        'izracunaj treba pitaj: "alpha_B", "beta_B" ili "kut_zraka"'
+      )) {
+        const r = izracunOdsjaja(s);
+        if (s.tolerancija != null)
+          need(
+            isNum(s.tolerancija) && s.tolerancija > 0 && s.tolerancija <= 2,
+            "tolerancija mora biti od 0 do 2 (°)"
+          );
+        validateKrivo(s.krivo, r.vrijednost, tolIzracun(s), need);
+      }
+    }
+  }
+  var polarizacija = {
+    tip: TIP12,
+    samoRucno: true,
+    uloga: (s) => s.nacin === "istrazi" || s.nacin === "prikaz" ? POGLEDAJ : ODGOVOR,
+    istrazi: (s) => s.nacin === "istrazi",
+    opis: OPIS12,
+    primjer: PRIMJER12,
+    primjeri: PRIMJERI12,
+    validate(s) {
+      const { list, need } = problems();
+      need(isText(s.tekst), "polarizacija treba „tekst“");
+      if (!need(
+        SCENE11.includes(s.scena),
+        `polarizacija.scena mora biti jedna od: ${SCENE11.join(", ")}`
+      ))
+        return list;
+      if (!need(
+        NACINI24[s.scena].includes(s.nacin),
+        `scena ${s.scena}: nacin mora biti jedan od: ${NACINI24[s.scena].join(", ")}`
+      ))
+        return list;
+      const svaPolja = new Set(Object.values(POLJA4).flat());
+      for (const f2 of svaPolja)
+        need(
+          !(f2 in s) || POLJA4[s.scena].includes(f2),
+          `polje „${f2}“ ne postoji u sceni ${s.scena} (polja scene: ${POLJA4[s.scena].join(", ")})`
+        );
+      need(
+        !("skrij" in s),
+        "skrij nije potreban: u načinima s odgovorom ishod je uvijek skriven do provjere"
+      );
+      if (s.scena === "filtri") validateFiltri(s, need);
+      if (s.scena === "prorez") validateProrez(s, need);
+      if (s.scena === "odsjaj") validateOdsjaj(s, need);
+      return list;
+    },
+    check(s, odgovor3) {
+      if (s.scena === "filtri" && s.nacin === "postavi")
+        return checkFiltri(s, odgovor3);
+      if (s.scena === "prorez" && s.nacin === "odaberi")
+        return checkProrez(s, odgovor3);
+      if (s.scena === "odsjaj") return checkOdsjaj(s, odgovor3);
+      return { tocno: false, poruka: "Ovaj korak nema provjeru." };
+    },
+    tocanOdgovor(s) {
+      if (s.scena === "filtri" && s.nacin === "postavi") {
+        const rj = rjesenjaFiltri(s);
+        const kutovi = [...new Set(rj.map((x) => Math.round(x)))];
+        const ime2 = `${s.mijenja + 1}. filtra`;
+        const opis = (k) => razlikaOsi(k, 0) < 1e-9 || razlikaOsi(k, 90) < 1e-9 ? `${k}° (${opisOsi(k)})` : `${k}°`;
+        if (s.cilj.intenzitet === 0 && s.filtri.length === 2)
+          return `os ${ime2} okomita na os ${s.mijenja === 0 ? 2 : 1}. filtra: ${kutovi.map(opis).join(" ili ")}`;
+        return `os ${ime2}: ${kutovi.map(opis).join(" ili ")}`;
+      }
+      if (s.scena === "prorez" && s.nacin === "odaberi")
+        return tocnaOpcijaProrez(s) === "oba" ? "oba vala: uže titra u smjeru proreza, a zvuk (longitudinalni val) prolazi uvijek" : "samo zvuk: longitudinalni val prolazi uvijek, a uže titra okomito na prorez";
+      if (s.scena === "odsjaj") {
+        if (s.nacin === "izracunaj") {
+          const r = izracunOdsjaja(s);
+          return `${r.oznaka} = ${kutTekst2(r.vrijednost)}`;
+        }
+        if (s.nacin === "odaberi")
+          return "odbijena zraka (odsjaj): titra samo vodoravno";
+        if (s.nacin === "postavi" && s.cilj?.velicina === "naocale")
+          return "uspravno: naočale propuštaju samo uspravno titranje, a odsjaj titra vodoravno";
+        if (s.nacin === "postavi")
+          return `$\\alpha_B$ = tg⁻¹(${formatNumber(s.n)}) = ${kutTekst2(brewster(s.n))}`;
+      }
+      return "";
+    },
+    brojcaniOdgovor(s) {
+      if (s?.scena !== "odsjaj" || !isNum(s.n)) return null;
+      if (s.nacin === "izracunaj") return izracunOdsjaja(s).vrijednost;
+      if (s.nacin === "postavi" && s.cilj?.velicina === "upadni_kut")
+        return brewster(s.n);
+      return null;
+    }
+  };
+
   // src/lib/lesson/katalog/fizika/index.js
-  var FIZIKA = [gibanje, crtaj_graf, sile_tijelo, vektori, kruzenje, sudar, energija_stupci, tlak_dubina, cijev, krivulja_zagrijavanja, plinski_dijagram, plin_posuda, naboji_polje, ploce_polje, strujni_krug, smjer_u_polju, indukcija, naboj_u_polju];
+  var FIZIKA = [
+    gibanje,
+    crtaj_graf,
+    sile_tijelo,
+    vektori,
+    kruzenje,
+    sudar,
+    energija_stupci,
+    tlak_dubina,
+    cijev,
+    krivulja_zagrijavanja,
+    plinski_dijagram,
+    plin_posuda,
+    naboji_polje,
+    ploce_polje,
+    strujni_krug,
+    smjer_u_polju,
+    indukcija,
+    naboj_u_polju,
+    titranje,
+    val_uze,
+    valne_fronte,
+    razina_zvuka,
+    zrake,
+    leca,
+    interferencija,
+    em_val,
+    polarizacija
+  ];
 
   // src/lib/lesson/katalog/index.js
   var KATALOG = Object.fromEntries(
@@ -17146,7 +28885,7 @@ nacin:
   var widget = (spec) => KATALOG[spec?.tip];
   var uloga = (spec) => widget(spec)?.uloga(spec);
   var istrazuje = (spec) => uloga(spec) === POGLEDAJ && !!widget(spec)?.istrazi?.(spec);
-  var tocanOdgovor3 = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
+  var tocanOdgovor5 = (spec) => widget(spec)?.tocanOdgovor?.(spec) ?? "";
 
   // src/lib/lesson/katalog/vjezba.js
   var VJEZBA_OPIS = `vjezba (po želji, samo kad lekcija uči pretvaranje jedinica): {"velicina": "duljina" | "povrsina" | "volumen" | "masa" | "vrijeme",
@@ -17423,15 +29162,15 @@ nacin:
   }
   function sourceSketch(lekcija, izvor2, err) {
     if (!izvor2?.tip || lekcija.zadatak?.skica) return;
-    const pitanja = lekcija.podzadaci.map((p) => p?.pitanje).filter(Boolean);
+    const pitanja2 = lekcija.podzadaci.map((p) => p?.pitanje).filter(Boolean);
     if (izvor2.tip === "ljestvica") {
       err(
-        pitanja.some(
+        pitanja2.some(
           (q) => q.tip === "mjerilo" && q.nacin !== "istrazi" && (!izvor2.instrument || q.instrument === izvor2.instrument)
         ),
         `izvorni zadatak očitava se s instrumenta (${izvor2.instrument ?? "ljestvica"}), a lekcija ga ne prikazuje: neka očitanje bude pitanje (mjerilo "procitaj") ili stavi ljestvicu u zadatak.skica`
       );
-    } else if (!(izvor2.tip === "graf" && pitanja.some((q) => q.tip === "ocitaj_graf"))) {
+    } else if (!(izvor2.tip === "graf" && pitanja2.some((q) => q.tip === "ocitaj_graf"))) {
       err(
         false,
         `izvorni zadatak ima skicu (${izvor2.tip}), a lekcija je nema: učenik ne vidi lik. Stavi istu skicu u zadatak.skica (izostavi samo oznaku koju učenik treba izračunati)`
@@ -17491,7 +29230,7 @@ nacin:
     try {
       const a = widget(spec).brojcaniOdgovor?.(spec);
       if (isNum(a)) out.push(a);
-      out.push(...numbersIn(String(tocanOdgovor3(spec))));
+      out.push(...numbersIn(String(tocanOdgovor5(spec))));
     } catch {
     }
     return out;
