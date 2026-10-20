@@ -14,34 +14,44 @@ class AccountObjectiveServiceTest {
     @Test
     void onTimeReviewKeepsClassicSm2Growth() {
         // elapsedDays == oldI → classic round(oldI * ef)
-        assertEquals((short) 50, AccountObjectiveService.computeEarlyAwareInterval((short) 20, 2.5f, 20));
+        assertEquals((short) 50, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 20, (short) 4));
     }
 
     @Test
-    void lateReviewKeepsClassicSm2Growth() {
-        // elapsedDays > oldI → still classic round(oldI * ef)
-        assertEquals((short) 50, AccountObjectiveService.computeEarlyAwareInterval((short) 20, 2.5f, 40));
+    void lateReviewCountsTheDelayByRating() {
+        // I=6, ef=2.5, 14 days elapsed (8 late): q=5 counts all of it, q=4 half, q=3 none
+        assertEquals((short) 35, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 5));
+        assertEquals((short) 25, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 4));
+        assertEquals((short) 15, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 3));
+    }
+
+    @Test
+    void lateBaseIsCappedAtThreeTimesTheOldInterval() {
+        // 90 days elapsed on I=6: the base stops at 18 → 45, not 225
+        assertEquals((short) 45, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 90, (short) 5));
+        // q=4: 6 + (18 - 6) / 2 = 12 → 30
+        assertEquals((short) 30, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 90, (short) 4));
     }
 
     @Test
     void earlyReviewScalesGrowthProportionally() {
         // I=20, ef=2.5, full would be 50 (+30). After 2 days: 20 + 0.10*30 = 23
-        assertEquals((short) 23, AccountObjectiveService.computeEarlyAwareInterval((short) 20, 2.5f, 2));
+        assertEquals((short) 23, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 2, (short) 4));
         // After 10 days: 20 + 0.5*30 = 35
-        assertEquals((short) 35, AccountObjectiveService.computeEarlyAwareInterval((short) 20, 2.5f, 10));
+        assertEquals((short) 35, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 10, (short) 4));
     }
 
     @Test
     void zeroElapsedKeepsCurrentInterval() {
         // No time passed → no ballooning, interval stays the same
-        assertEquals((short) 20, AccountObjectiveService.computeEarlyAwareInterval((short) 20, 2.5f, 0));
+        assertEquals((short) 20, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 0, (short) 4));
     }
 
     @Test
     void neverShrinksBelowCurrentInterval() {
         // Even with a low ef, an early success must not reduce the interval below oldI
         short oldI = 20;
-        short result = AccountObjectiveService.computeEarlyAwareInterval(oldI, 1.3f, 1);
+        short result = AccountObjectiveService.computeElapsedAwareInterval(oldI, 1.3f, 1, (short) 4);
         assertTrue(result >= oldI, "interval must never shrink below oldI, was " + result);
     }
 
@@ -89,5 +99,8 @@ class AccountObjectiveServiceTest {
 
         AccountObjective early = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(3)));
         assertEquals((short) 11, AccountObjectiveService.nextInterval(early, (short) 4, now));
+
+        AccountObjective late = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(14)));
+        assertEquals((short) 35, AccountObjectiveService.nextInterval(late, (short) 5, now));
     }
 }

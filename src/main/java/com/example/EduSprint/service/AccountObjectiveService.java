@@ -146,23 +146,43 @@ public class AccountObjectiveService {
         }
 
         long elapsedDays = Math.max(0, Duration.between(accountObjective.getLastSolvedDate(), solvedAt).toDays());
-        return computeEarlyAwareInterval(accountObjective.getI(), accountObjective.getEf(), elapsedDays);
+        return computeElapsedAwareInterval(accountObjective.getI(), accountObjective.getEf(), elapsedDays, q);
     }
 
     /**
-     * Computes the next SM-2 interval for a successful review, but scales the growth by how much
-     * of the previous interval actually elapsed. This prevents the interval from ballooning when a
-     * user reviews an objective early (e.g. via the map) — reviewing an I=20 objective after 2 days
-     * should not stretch it to ~50 as if the full interval had passed. Reviews that happen on time
-     * or late (elapsedDays >= oldI) keep the classic {@code round(oldI * ef)} behaviour.
+     * Computes the next SM-2 interval for a successful review from the time that actually elapsed, not only the
+     * scheduled interval.
+     * <ul>
+     *   <li>Early (elapsedDays &lt; oldI): growth scales with how much of the interval elapsed, so reviewing an
+     *   I=20 objective after 2 days (e.g. via the map) does not stretch it to ~50 as if the full interval had
+     *   passed. Never shrinks below oldI.</li>
+     *   <li>Late (elapsedDays &gt; oldI): the student remembered for longer than scheduled, so part of the delay
+     *   counts towards the base, as in Anki's SM-2: q=5 all of it, q=4 half, q=3 none (it took effort, which
+     *   says nothing about the longer gap). The delay counts up to {@link #MAX_LATE_BASE}×oldI, so coming back
+     *   after months does not jump the interval to most of a year.</li>
+     * </ul>
+     * On time keeps the classic {@code round(oldI * ef)}.
      */
-    static short computeEarlyAwareInterval(short oldI, float ef, long elapsedDays) {
+    static short computeElapsedAwareInterval(short oldI, float ef, long elapsedDays, short q) {
         int fullI = Math.round(oldI * ef);
-        if (oldI <= 0 || elapsedDays >= oldI) {
-            return (short) fullI;                       // on time or late → normal SM-2
+        if (oldI <= 0) {
+            return (short) fullI;
+        }
+        if (elapsedDays >= oldI) {
+            long late = Math.min(elapsedDays, (long) MAX_LATE_BASE * oldI) - oldI;
+            double base = oldI + late * lateCredit(q);
+            return (short) Math.round(base * ef);
         }
         double ratio = (double) elapsedDays / oldI;     // 0..1
         int scaled = (int) Math.round(oldI + ratio * (fullI - oldI));
         return (short) Math.max(scaled, oldI);          // never shrink below the current interval
+    }
+
+    /** The late review's base counts the delay up to this many times the old interval. */
+    static final int MAX_LATE_BASE = 3;
+
+    /** How much of a late review's delay counts towards the next interval's base. */
+    private static double lateCredit(short q) {
+        return q >= 5 ? 1.0 : q == 4 ? 0.5 : 0.0;
     }
 }
