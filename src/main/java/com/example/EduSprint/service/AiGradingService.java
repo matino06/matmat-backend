@@ -30,11 +30,13 @@ public class AiGradingService {
             "i u feedback napiši točno '" + UNREADABLE_IMAGE_MARKER + "'.";
 
     private final AiSettingsService aiSettingsService;
+    private final AnthropicApi anthropic;
 
     public AiGradingService(@Qualifier("gradingOpenRouterClient") OpenRouterClient openRouterClient,
-                            AiSettingsService aiSettingsService) {
+                            AiSettingsService aiSettingsService, AnthropicApi anthropic) {
         this.openRouterClient = openRouterClient;
         this.aiSettingsService = aiSettingsService;
+        this.anthropic = anthropic;
     }
 
     public AiGradeResult gradeShortAnswer(MockExamQuestion question, String userAnswer, String parentQuestionText) {
@@ -221,8 +223,9 @@ public class AiGradingService {
         return sb.toString();
     }
 
+    // Claude model iz postavki ide na Anthropic API dok ima kredita, inače na OpenRouter.
     private JsonNode callModel(ObjectNode body) {
-        JsonNode root = openRouterClient.complete(body);
+        JsonNode root = anthropic.complete(body, AnthropicApi.SOURCE_GRADING, openRouterClient);
         log.info("AI grading response: model={}, provider={}",
                 root.path("model").asText(""), root.path("provider").asText(""));
         JsonNode text = root.path("choices").path(0).path("message").path("content");

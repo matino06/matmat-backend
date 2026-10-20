@@ -105,6 +105,7 @@ public class AiChatService {
     private final TransactionTemplate transactionTemplate;
     private final AiSettingsService aiSettingsService;
     private final NamedParameterJdbcTemplate jdbc;
+    private final AnthropicApi anthropic;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiChatService(@Qualifier("chatOpenRouterClient") OpenRouterClient openRouterClient,
@@ -118,7 +119,8 @@ public class AiChatService {
                          StorageService storageService,
                          TransactionTemplate transactionTemplate,
                          AiSettingsService aiSettingsService,
-                         NamedParameterJdbcTemplate jdbc) {
+                         NamedParameterJdbcTemplate jdbc,
+                         AnthropicApi anthropic) {
         this.openRouterClient = openRouterClient;
         this.aiPromptRepository = aiPromptRepository;
         this.aiConversationRepository = aiConversationRepository;
@@ -131,6 +133,7 @@ public class AiChatService {
         this.transactionTemplate = transactionTemplate;
         this.aiSettingsService = aiSettingsService;
         this.jdbc = jdbc;
+        this.anthropic = anthropic;
     }
 
     /**
@@ -604,7 +607,8 @@ public class AiChatService {
         meta.putPOJO("conversationId", prepared.conversationId());
         meta.put("imagesAttached", prepared.imagesAttached());
 
-        Flux<ServerSentEvent<String>> deltas = openRouterClient.stream(prepared.body())
+        // Claude model iz postavki ide na Anthropic API dok ima kredita, inače na OpenRouter.
+        Flux<ServerSentEvent<String>> deltas = anthropic.stream(prepared.body(), AnthropicApi.SOURCE_CHAT, openRouterClient)
                 .doOnNext(chunk -> {
                     if (chunk.has("error")) {
                         throw new RuntimeException("OpenRouter stream error: " + chunk.path("error"));

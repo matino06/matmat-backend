@@ -107,7 +107,8 @@ class AiChatConversationTest {
         steps = mock(ExplanationStepRepository.class);
         service = new AiChatService(openRouter, mock(AiPromptRepository.class), conversations, messages,
                 mock(TaskRepository.class), steps, attempts, questions,
-                mock(StorageService.class), tx, settings, null);
+                mock(StorageService.class), tx, settings, null,
+                new AnthropicApi(null, "", java.math.BigDecimal.ZERO, java.math.BigDecimal.valueOf(2)));
         account = mock(Account.class);
         when(account.getAccountId()).thenReturn(ACCOUNT_ID);
     }
