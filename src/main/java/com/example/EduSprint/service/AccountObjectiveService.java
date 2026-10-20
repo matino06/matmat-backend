@@ -119,6 +119,16 @@ public class AccountObjectiveService {
     }
 
     /**
+     * Je li učenik ovu lekciju već ocijenio. Ako jest, lekcija je na ponavljanju: trebaju li mu koraci, zaboravio
+     * ju je (a prvi put su koraci dio učenja). Interaktivna lekcija o tome ovisno predlaže ocjenu.
+     */
+    public boolean isReview(Account account, LearningObjective objective) {
+        return accountObjectiveRepository.findByAccountAndObjective(account, objective)
+                .map(accountObjective -> accountObjective.getLastQ() != null)
+                .orElse(false);
+    }
+
+    /**
      * Datum ispita: dan prije ispita ponavlja se samo ono što bi inače bilo upitno na ispitu, ne sve lekcije.
      * <ul>
      *   <li>ponavljanje koje bi palo na dan ispita dolazi dan ranije, jer na dan ispita učenik možda ne stigne;</li>
