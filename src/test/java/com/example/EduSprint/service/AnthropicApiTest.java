@@ -136,6 +136,19 @@ class AnthropicApiTest {
     }
 
     @Test
+    void conversationStartsWithTheStudentEvenWhenOldHistoryStartsWithAGreeting() throws Exception {
+        JsonNode body = mapper.readTree("""
+                {"model": "anthropic/claude-haiku-5.5", "max_tokens": 1000,
+                 "messages": [{"role": "system", "content": "Upute"},
+                              {"role": "assistant", "content": "Bok! Kako ti mogu pomoći?"},
+                              {"role": "user", "content": "Što je derivacija?"}]}""");
+        JsonNode sent = mapper.readTree(mapper.writeValueAsString(
+                api("sk-ant-test", BigDecimal.ZERO).params("claude-haiku-5-5", body)._body()));
+        assertEquals(1, sent.path("messages").size());
+        assertEquals("user", sent.path("messages").path(0).path("role").asText());
+    }
+
+    @Test
     void gradingJsonSchemaBecomesStructuredOutput() throws Exception {
         JsonNode body = mapper.readTree("""
                 {"model": "anthropic/claude-haiku-5.5", "max_tokens": 10000,

@@ -334,12 +334,16 @@ public class AnthropicApi {
                 .model(model)
                 .maxTokens(body.path("max_tokens").asLong(16_000));
         List<TextBlockParam> system = new ArrayList<>();
+        boolean started = false;
         for (JsonNode message : body.path("messages")) {
             String role = message.path("role").asText();
             List<ContentBlockParam> blocks = blocks(message.path("content"));
             if ("system".equals(role)) {
                 blocks.forEach(b -> b.text().ifPresent(system::add));
             } else if (!blocks.isEmpty()) {
+                // Anthropic traži da razgovor počne učenikom; povijest starog frontenda može početi pozdravom asistenta.
+                if ("assistant".equals(role) && !started) continue;
+                started = true;
                 params.addMessage(MessageParam.builder()
                         .role("assistant".equals(role) ? MessageParam.Role.ASSISTANT : MessageParam.Role.USER)
                         .contentOfBlockParams(blocks)
