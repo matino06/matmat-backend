@@ -10805,5 +10805,2177 @@
   "zapamti": [
    "Zapamti."
   ]
+ },
+ "kvant-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kvant."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kvant 1",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "foton",
+     "nacin": "izracunaj",
+     "lambda": 650,
+     "izvor": "laserski pokazivač",
+     "pitaj": [
+      {
+       "velicina": "E",
+       "jedinica": "J"
+      },
+      {
+       "velicina": "E",
+       "jedinica": "eV"
+      }
+     ],
+     "tekst": "Laserski pokazivač svijetli crvenom svjetlošću valne duljine 650 nm. Kolika je energija jednog fotona u džulima, a kolika u elektronvoltima?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "foton",
+      "nacin": "istrazi",
+      "izvor": "laserski pokazivač",
+      "klizaci": [
+       {
+        "id": "lambda",
+        "min": 380,
+        "max": 750,
+        "korak": 1,
+        "pocetak": 650
+       },
+       {
+        "id": "jakost",
+        "min": 10,
+        "max": 100,
+        "korak": 10,
+        "pocetak": 40
+       }
+      ],
+      "tekst": "Mijenjaj **boju** lasera i gledaj kovanicu energije koju nosi svaki foton. Onda pojačaj svjetlo: što se mijenja, broj fotona ili njihova energija?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 500
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kvant 2",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "foton",
+     "nacin": "postavi",
+     "izvor": "laserski pokazivač",
+     "cilj": {
+      "velicina": "E",
+      "jedinica": "eV",
+      "vrijednost": 2.5
+     },
+     "klizaci": [
+      {
+       "id": "lambda",
+       "min": 380,
+       "max": 750,
+       "korak": 1,
+       "pocetak": 650
+      }
+     ],
+     "tekst": "Namjesti laser čiji foton nosi **2,5 eV**."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "elektronvolt",
+      "nacin": "prikaz",
+      "U": 1,
+      "tekst": "**Elektronvolt** je energija koju elektron dobije kad prođe napon od 1 V."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 501
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kvant 3",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "foton",
+     "nacin": "izracunaj",
+     "lambda": 590,
+     "izvor": "laserski pokazivač",
+     "pitaj": [
+      {
+       "velicina": "E",
+       "jedinica": "J"
+      },
+      {
+       "velicina": "E",
+       "jedinica": "eV"
+      }
+     ],
+     "tekst": "Laserski pokazivač svijetli žutom svjetlošću valne duljine 590 nm. Kolika je energija jednog fotona u džulima, a kolika u elektronvoltima?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "elektronvolt",
+      "nacin": "istrazi",
+      "klizaci": [
+       {
+        "id": "U",
+        "min": 0.5,
+        "max": 5,
+        "korak": 0.5,
+        "pocetak": 1
+       }
+      ],
+      "tekst": "Mijenjaj napon između ploča i gledaj koliko energije elektron dobije."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 502
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kvant-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kvant."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kvant 4",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "fotoefekt",
+     "nacin": "izracunaj",
+     "lambda": 300,
+     "U_z": 1.5,
+     "pitaj": [
+      {
+       "velicina": "Ek",
+       "jedinica": "eV"
+      },
+      {
+       "velicina": "W_i",
+       "jedinica": "eV"
+      }
+     ],
+     "tekst": "Pločicu obasjamo UV-zračenjem valne duljine 300 nm, a izbačene elektrone zaustavlja napon od 1,5 V. Kolika je najveća kinetička energija elektrona i koliki je izlazni rad metala?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "fotoefekt",
+      "nacin": "istrazi",
+      "lambda": 300,
+      "U_z": 1.5,
+      "klizaci": [
+       {
+        "id": "U",
+        "min": 0,
+        "max": 3,
+        "korak": 0.05,
+        "pocetak": 0
+       },
+       {
+        "id": "jakost",
+        "min": 10,
+        "max": 100,
+        "korak": 10,
+        "pocetak": 60
+       }
+      ],
+      "tekst": "Pločicu obasjava UV-zračenje od 300 nm. **Povećavaj zaustavni napon** i gledaj elektrone i ampermetar: pri kojem naponu struja padne na nulu?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 503
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kvant 5",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "fotoefekt",
+     "nacin": "izracunaj",
+     "lambda": 300,
+     "U_z": 1.5,
+     "pitaj": [
+      {
+       "velicina": "lambda0",
+       "jedinica": "nm"
+      }
+     ],
+     "tekst": "Isti metal (λ = 300 nm, U_z = 1,5 V). Kolika je najveća valna duljina koja još izbacuje elektrone?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "fotoefekt",
+      "nacin": "istrazi",
+      "lambda": 450,
+      "metali": [
+       {
+        "naziv": "cezij",
+        "W_i": 2.1
+       },
+       {
+        "naziv": "natrij",
+        "W_i": 2.3
+       },
+       {
+        "naziv": "cink",
+        "W_i": 4.3
+       }
+      ],
+      "klizaci": [
+       {
+        "id": "lambda",
+        "min": 200,
+        "max": 700,
+        "korak": 1,
+        "pocetak": 450
+       },
+       {
+        "id": "jakost",
+        "min": 10,
+        "max": 100,
+        "korak": 10,
+        "pocetak": 60
+       }
+      ],
+      "tekst": "Odaberi metal i mijenjaj valnu duljinu. Kod koje valne duljine elektroni prestanu izlaziti? Pomaže li jače svjetlo?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 504
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kvant 6",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "fotoefekt",
+     "nacin": "postavi",
+     "lambda": 300,
+     "U_z": 1.5,
+     "cilj": "granicna",
+     "klizaci": [
+      {
+       "id": "lambda",
+       "min": 200,
+       "max": 700,
+       "korak": 1,
+       "pocetak": 300
+      }
+     ],
+     "tekst": "Isti metal. Namjesti **najveću** valnu duljinu koja još izbacuje elektrone."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kvant",
+      "scena": "de_broglie",
+      "nacin": "istrazi",
+      "cestice": [
+       "elektron",
+       "proton",
+       "loptica"
+      ],
+      "klizaci": [
+       {
+        "id": "v",
+        "min": 2000000,
+        "max": 20000000,
+        "korak": 100000,
+        "pocetak": 7300000
+       }
+      ],
+      "tekst": "Mijenjaj brzinu elektrona i usporedi njegovu valnu duljinu s razmakom atoma u kristalu. Probaj i proton i tenisku lopticu."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 505
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kvant-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kvant."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kvant 7",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "fotoefekt",
+     "nacin": "postavi",
+     "lambda": 260,
+     "metal": {
+      "W_i": 2.78
+     },
+     "cilj": "zaustavni",
+     "klizaci": [
+      {
+       "id": "U",
+       "min": 0,
+       "max": 4,
+       "korak": 0.05,
+       "pocetak": 0.5
+      }
+     ],
+     "tekst": "Metal izlaznog rada 2,78 eV obasjamo zračenjem od 260 nm. Namjesti napon pri kojem struja **upravo padne na nulu**."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 506
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kvant 8",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "fotoefekt",
+     "nacin": "predvidi",
+     "lambda": 220,
+     "U_z": 1.2,
+     "jakost": 40,
+     "promjena": "jakost_gore",
+     "pitaj": [
+      "Ek",
+      "broj_elektrona",
+      "U_z"
+     ],
+     "tekst": "Pločicu obasjava zračenje od 220 nm, a zaustavni napon je $U_z$ = 1,2 V. Što se dogodi kad svjetlost postane jača?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 507
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kvant 9",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "de_broglie",
+     "nacin": "izracunaj",
+     "cestica": "elektron",
+     "v": 7300000,
+     "pitaj": [
+      {
+       "velicina": "lambda",
+       "jedinica": "m"
+      }
+     ],
+     "tekst": "Elektron se giba brzinom 7,3·10⁶ m/s. Kolika mu je de Broglieva valna duljina?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 508
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kvant-4": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kvant."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kvant 10",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "de_broglie",
+     "nacin": "izracunaj",
+     "cestica": "elektron",
+     "v": 3800000,
+     "pitaj": [
+      {
+       "velicina": "p",
+       "jedinica": "kg m/s"
+      },
+      {
+       "velicina": "lambda",
+       "jedinica": "m"
+      }
+     ],
+     "tekst": "Elektron se giba brzinom 3,8·10⁶ m/s. Kolika mu je količina gibanja, a kolika de Broglieva valna duljina?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 509
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kvant 11",
+    "pitanje": {
+     "tip": "kvant",
+     "scena": "de_broglie",
+     "nacin": "postavi",
+     "cestica": "elektron",
+     "cilj": {
+      "velicina": "lambda",
+      "vrijednost": 0.2
+     },
+     "klizaci": [
+      {
+       "id": "v",
+       "min": 1000000,
+       "max": 10000000,
+       "korak": 10000,
+       "pocetak": 7000000
+      }
+     ],
+     "tekst": "Namjesti brzinu elektrona tako da mu valna duljina bude **0,2 nm**."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 510
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "atom-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta atom."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "atom 1",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "izracunaj",
+     "pocetna": 2,
+     "pitaj": [
+      {
+       "velicina": "E_n",
+       "n": 2,
+       "jedinica": "eV"
+      },
+      {
+       "velicina": "E_ion",
+       "n": 2,
+       "jedinica": "eV"
+      }
+     ],
+     "tekst": "Elektron u atomu vodika nalazi se na 2. stazi. Kolika mu je energija i koliko energije treba dovesti da ga se potpuno otrgne od atoma?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "atom",
+      "scena": "razine",
+      "nacin": "istrazi",
+      "pocetna": 3,
+      "tekst": "**Povuci elektron** na drugu razinu (ili dodirni oznaku razine). Gledaj kakav foton izleti pri skoku dolje, a kakav treba za skok gore. Pošalji i foton iz topa desno."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 511
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "atom 2",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "izracunaj",
+     "pocetna": 3,
+     "pitaj": [
+      {
+       "velicina": "E_f",
+       "od": 3,
+       "do": 2,
+       "jedinica": "eV"
+      }
+     ],
+     "tekst": "U drugom atomu vodika elektron skoči s 3. na 2. stazu. Kolika je energija emitiranog fotona?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "atom",
+      "scena": "razine",
+      "nacin": "prikaz",
+      "od": 2,
+      "do": "ionizacija",
+      "tekst": "Elektron na 2. stazi je 3,4 eV „duboko“ u bunaru. Toliko mu energije treba dovesti da izađe na rub, do 0 eV."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 512
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "atom 3",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "izracunaj",
+     "pitaj": [
+      {
+       "velicina": "E_f",
+       "od": 5,
+       "do": 2,
+       "jedinica": "eV"
+      },
+      {
+       "velicina": "lambda",
+       "od": 5,
+       "do": 2,
+       "jedinica": "nm"
+      }
+     ],
+     "energije": true,
+     "tekst": "Elektron skoči s 5. na 2. stazu. Kolika je energija fotona i njegova valna duljina? Energije razina očitaj s crteža."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "atom",
+      "scena": "staze",
+      "nacin": "istrazi",
+      "pocetna": 2,
+      "tekst": "Bohrove staze: **dodirni stazu** i gledaj kako elektron skače i kakav foton pri tome nastaje. Prebaci na „u mjerilu“: staze rastu s n²."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 513
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "atom-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta atom."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "atom 4",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "apsorpcija",
+     "pocetna": 1,
+     "fotoni": [
+      10.2,
+      11
+     ],
+     "tekst": "Na atom vodika u osnovnom stanju padnu dva fotona, jedan od 10,2 eV, a drugi od 11 eV. Za svaki odaberi hoće li ga atom upiti."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "atom",
+      "scena": "staze",
+      "nacin": "prikaz",
+      "od": 3,
+      "do": 2,
+      "tekst": "Elektron skoči s 3. na 2. stazu i atom ispusti foton crvene svjetlosti."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 514
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "atom 5",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "apsorpcija",
+     "pocetna": 1,
+     "fotoni": [
+      12.75,
+      12.4,
+      16
+     ],
+     "tekst": "Na atom vodika u osnovnom stanju padnu tri fotona. Za svaki odaberi hoće li ga atom upiti."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 515
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "atom 6",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "prijelaz",
+     "vrsta": "emisija",
+     "od": 4,
+     "cilj": {
+      "E_f": 2.55
+     },
+     "tekst": "Elektron je na 4. razini. **Povuci ga** na razinu na koju mora skočiti da atom ispusti foton od 2,55 eV."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 516
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "atom-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta atom."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "atom 7",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "prijelaz",
+     "vrsta": "emisija",
+     "cilj": {
+      "boja": "crvena"
+     },
+     "n_max": 5,
+     "tekst": "Atom vodika svijetli crveno. **Odaberi skok** pri kojem atom ispusti crveni foton: dodirni početnu, pa završnu razinu."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 517
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "atom 8",
+    "pitanje": {
+     "tip": "atom",
+     "scena": "razine",
+     "nacin": "prijelaz",
+     "vrsta": "apsorpcija",
+     "cilj": {
+      "E_f": 12.09
+     },
+     "tekst": "Atom vodika upije foton od 12,09 eV. **Odaberi skok** elektrona: dodirni početnu, pa završnu razinu."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 518
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "jezgra-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta jezgra."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "jezgra 1",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "karta",
+     "nacin": "raspad",
+     "pocetak": {
+      "simbol": "Th",
+      "A": 232
+     },
+     "niz": [
+      "alfa",
+      "beta-"
+     ],
+     "tekst": "Torij-232 raspada se najprije **α-raspadom**, a nastala jezgra zatim **β⁻-raspadom**. Dodirni na karti jezgru koja nastaje nakon svakog raspada."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "sastav",
+      "nacin": "istrazi",
+      "tekst": "Dodaj ili makni protone i neutrone. Što se dogodi s elementom kad promijeniš broj **protona**, a što kad promijeniš broj **neutrona**?",
+      "pocetak": {
+       "p": 53,
+       "n": 78,
+       "e": 53
+      },
+      "izotopi": [
+       {
+        "simbol": "I",
+        "A": 127
+       },
+       {
+        "simbol": "I",
+        "A": 131
+       },
+       {
+        "simbol": "Xe",
+        "A": 131
+       }
+      ]
+     },
+     {
+      "tip": "jezgra",
+      "scena": "krivulja",
+      "nacin": "prikaz",
+      "oznaci": [
+       {
+        "simbol": "He",
+        "A": 4
+       },
+       {
+        "simbol": "U",
+        "A": 235
+       }
+      ],
+      "tekst": "Helij-4 i uran-235 na krivulji energije vezanja: obje strane „penju se“ prema željezu."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 519
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "jezgra 2",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "sastav",
+     "nacin": "slozi",
+     "tekst": "Složi neutralni atom **joda-131**: namjesti broj protona, neutrona i elektrona. Redni broj potraži u periodnom sustavu (knjižica, str. 6).",
+     "ciljevi": [
+      {
+       "simbol": "I",
+       "A": 131
+      },
+      {
+       "simbol": "I",
+       "A": 127,
+       "mijenja": [
+        "n"
+       ],
+       "tekst": "A sad običan **jod-127**: koliko mu treba neutrona?"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "sastav",
+      "nacin": "prikaz",
+      "tekst": "Kobalt-60 i kobalt-59 su **izotopi**: isti broj protona (27), drukčiji broj neutrona.",
+      "atom": {
+       "simbol": "Co",
+       "A": 60
+      },
+      "izotopi": [
+       {
+        "simbol": "Co",
+        "A": 59
+       },
+       {
+        "simbol": "Co",
+        "A": 60
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 520
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "jezgra 3",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "reakcija",
+     "nacin": "dovrsi",
+     "tekst": "Koja čestica **X** nastaje? Odaberi je tako da zbroj masenih i zbroj rednih brojeva bude isti s obje strane.",
+     "lijevo": [
+      {
+       "simbol": "N",
+       "A": 14
+      },
+      {
+       "simbol": "He",
+       "A": 4
+      }
+     ],
+     "desno": [
+      {
+       "simbol": "O",
+       "A": 17
+      },
+      {
+       "nepoznato": true
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "reakcija",
+      "nacin": "istrazi",
+      "tekst": "Isprobaj čestice u praznom mjestu i gledaj vage: kad su **obje** u ravnoteži, reakcija je moguća.",
+      "lijevo": [
+       {
+        "simbol": "Li",
+        "A": 6
+       },
+       {
+        "cestica": "n"
+       }
+      ],
+      "desno": [
+       {
+        "simbol": "H",
+        "A": 3
+       },
+       {
+        "nepoznato": true
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 521
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "jezgra-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta jezgra."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "jezgra 4",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "reakcija",
+     "nacin": "dovrsi",
+     "tekst": "Pri fisiji urana odvija se ova reakcija. Kojom je česticom **X** pogođena jezgra urana?",
+     "lijevo": [
+      {
+       "nepoznato": true
+      },
+      {
+       "simbol": "U",
+       "A": 235
+      }
+     ],
+     "desno": [
+      {
+       "simbol": "Xe",
+       "A": 140
+      },
+      {
+       "simbol": "Sr",
+       "A": 94
+      },
+      {
+       "cestica": "n",
+       "broj": 2
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "reakcija",
+      "nacin": "prikaz",
+      "tekst": "**Fuzija**: deuterij i tricij spoje se u helij i izleti neutron. Zbrojevi A i Z isti su s obje strane.",
+      "lijevo": [
+       {
+        "simbol": "H",
+        "A": 2
+       },
+       {
+        "simbol": "H",
+        "A": 3
+       }
+      ],
+      "desno": [
+       {
+        "simbol": "He",
+        "A": 4
+       },
+       {
+        "cestica": "n"
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 522
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "jezgra 5",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "karta",
+     "nacin": "raspad",
+     "pocetak": {
+      "simbol": "Co",
+      "A": 60
+     },
+     "niz": [
+      "beta-",
+      "gama"
+     ],
+     "tekst": "Kobalt-60 raspada se najprije **β⁻-raspadom**, a nastala jezgra zatim **γ-raspadom**. Dodirni jezgru nakon svakog raspada."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "karta",
+      "nacin": "istrazi",
+      "pocetak": {
+       "simbol": "U",
+       "A": 238
+      },
+      "tekst": "Raspadaj uran-238 gumbima i prati kamo se jezgra pomiče po karti pri α, β⁻ i γ."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 523
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "jezgra 6",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "karta",
+     "nacin": "koji_raspad",
+     "pocetak": {
+      "simbol": "Bi",
+      "A": 214
+     },
+     "kraj": {
+      "simbol": "Po",
+      "A": 214
+     },
+     "tekst": "Bizmut-214 pretvorio se u polonij-214. Kojim raspadom?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "karta",
+      "nacin": "prikaz",
+      "pocetak": {
+       "simbol": "Ra",
+       "A": 226
+      },
+      "niz": [
+       "alfa",
+       "alfa"
+      ],
+      "tekst": "Radij-226 raspada se dvaput zaredom α-raspadom: svaki put jezgra skoči 2 polja dolje i 2 lijevo."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 524
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "jezgra-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta jezgra."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "jezgra 7",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "vezanje",
+     "nacin": "izracunaj",
+     "jezgra": {
+      "simbol": "He",
+      "A": 4,
+      "m": 4.00151
+     },
+     "pitaj": [
+      {
+       "velicina": "dm"
+      },
+      {
+       "velicina": "E"
+      },
+      {
+       "velicina": "E_A"
+      }
+     ],
+     "tekst": "Masa protona je 1,00728 u, masa neutrona 1,00866 u, a masa jezgre ⁴He je 4,00151 u. Koliki je **defekt mase**, kolika je **energija vezanja** u MeV i kolika je energija vezanja **po nukleonu**?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "vezanje",
+      "nacin": "prikaz",
+      "jezgra": {
+       "simbol": "Fe",
+       "A": 56,
+       "m": 55.92067
+      },
+      "tekst": "Jezgra željeza-56 lakša je od svojih 26 protona i 30 neutrona. Prati kako se taj **defekt mase** pretvara u energiju vezanja."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 525
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "jezgra 8",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "krivulja",
+     "nacin": "odaberi",
+     "cilj": "fuzija",
+     "tekst": "Dodirni na krivulji jezgru koja **fuzijom** (spajanjem) može osloboditi energiju."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "vezanje",
+      "nacin": "istrazi",
+      "tekst": "Odaberi jezgru i usporedi energiju vezanja **po nukleonu**: koja jezgra je najčvršće povezana?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 526
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "jezgra 9",
+    "pitanje": {
+     "tip": "jezgra",
+     "scena": "krivulja",
+     "nacin": "odaberi",
+     "cilj": "najstabilnija",
+     "tekst": "Dodirni na krivulji **najstabilniju** jezgru."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "krivulja",
+      "nacin": "istrazi",
+      "tekst": "Povuci točku po krivulji. Gdje je energija vezanja po nukleonu **najveća**? Zašto i spajanje lakih i cijepanje teških jezgara oslobađa energiju?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 527
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "poluraspad-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta poluraspad."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "poluraspad 1",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "izracunaj",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 15
+      },
+      {
+       "oznaka": "Y",
+       "T": 45
+      }
+     ],
+     "jedinica_t": "min",
+     "t": 90,
+     "pitaj": [
+      {
+       "velicina": "udio",
+       "uzorak": "X"
+      },
+      {
+       "velicina": "udio",
+       "uzorak": "Y"
+      },
+      {
+       "velicina": "omjer"
+      }
+     ],
+     "tekst": "Dva uzorka imaju jednako jezgara: izotop X ima vrijeme poluraspada 15 min, a izotop Y 45 min. Koliki dio jezgara svakog uzorka ostane nakon **90 min** i koliki je tada omjer $N_X : N_Y$?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "uzorci",
+      "nacin": "istrazi",
+      "uzorci": [
+       {
+        "oznaka": "X",
+        "T": 6
+       },
+       {
+        "oznaka": "Y",
+        "T": 30
+       }
+      ],
+      "jedinica_t": "s",
+      "t_max": 60,
+      "tekst": "Izotop X (T = 6 s) i izotop Y (T = 30 s). Pokreni sat ili povuci kursor po grafu i gledaj koliko jezgara ostaje. Koliko kockica X ostane nakon 60 s?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 528
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "poluraspad 2",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "postavi",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 15
+      }
+     ],
+     "jedinica_t": "min",
+     "klizaci": [
+      {
+       "id": "t",
+       "oznaka": "vrijeme",
+       "min": 0,
+       "max": 180,
+       "korak": 5,
+       "pocetak": 0
+      }
+     ],
+     "cilj": {
+      "uzorak": "X",
+      "udio": "1/64"
+     },
+     "tekst": "Izotop X ima vrijeme poluraspada 15 min. Namjesti sat na trenutak kad od uzorka ostane **1/64** jezgara."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "uzorci",
+      "nacin": "istrazi",
+      "uzorci": [
+       {
+        "oznaka": "X",
+        "T": 20
+       }
+      ],
+      "jedinica_t": "min",
+      "N0_prikaz": 256,
+      "t_max": 120,
+      "klizaci": [
+       {
+        "id": "T_X",
+        "oznaka": "vrijeme poluraspada",
+        "min": 10,
+        "max": 40,
+        "korak": 5,
+        "pocetak": 20
+       }
+      ],
+      "tekst": "Mijenjaj vrijeme poluraspada i pusti sat: kraće T znači brži raspad, ali svaki put nakon T ostane polovica."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 529
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "poluraspad 3",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "zaustavi",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 15
+      }
+     ],
+     "jedinica_t": "min",
+     "cilj": {
+      "uzorak": "X",
+      "udio": "1/4"
+     },
+     "N0_prikaz": 256,
+     "tekst": "Pokreni sat i pritisni **Stop** u trenutku kad od uzorka X (T = 15 min) ostane **četvrtina** jezgara."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "uzorci",
+      "nacin": "prikaz",
+      "uzorci": [
+       {
+        "oznaka": "X",
+        "T": 5
+       },
+       {
+        "oznaka": "Y",
+        "T": 20
+       }
+      ],
+      "jedinica_t": "min",
+      "t": 40,
+      "tekst": "Gledaj dva uzorka 40 minuta: X (T = 5 min) i Y (T = 20 min). Svaki poluraspad prepolovi ono što je ostalo."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 530
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "poluraspad-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta poluraspad."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "poluraspad 4",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "izracunaj",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 12
+      },
+      {
+       "oznaka": "Y",
+       "T": 24
+      }
+     ],
+     "jedinica_t": "h",
+     "t": 72,
+     "pitaj": [
+      {
+       "velicina": "udio",
+       "uzorak": "X"
+      },
+      {
+       "velicina": "udio",
+       "uzorak": "Y"
+      },
+      {
+       "velicina": "omjer"
+      }
+     ],
+     "tekst": "Izotop X ima vrijeme poluraspada 12 h, a izotop Y 24 h; na početku imaju jednako jezgara. Koliki dio svakog ostane nakon **72 h** i koliki je omjer $N_X : N_Y$?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "aktivnost",
+      "nacin": "istrazi",
+      "izotop": {
+       "simbol": "Ga",
+       "A": 68,
+       "ime": "galij"
+      },
+      "T": 68,
+      "jedinica_T": "min",
+      "A0": 150,
+      "jedinica_A": "MBq",
+      "t_max": 240,
+      "klizaci": [
+       {
+        "id": "T",
+        "oznaka": "vrijeme poluraspada",
+        "min": 20,
+        "max": 140,
+        "korak": 4,
+        "pocetak": 68
+       }
+      ],
+      "tekst": "Galij-68 (T = 68 min, 150 MBq). Pusti sat i slušaj brojač; zatim mijenjaj vrijeme poluraspada: uz isti broj jezgara kraće T daje veću aktivnost."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 531
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "poluraspad 5",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "izracunaj",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 6
+      }
+     ],
+     "jedinica_t": "s",
+     "t": 60,
+     "N0": 10240,
+     "pitaj": [
+      {
+       "velicina": "n"
+      },
+      {
+       "velicina": "N"
+      }
+     ],
+     "tekst": "Uzorak ima 10 240 jezgara izotopa s vremenom poluraspada 6 s. Koliko poluraspada prođe za 60 s i koliko jezgara tada ostane?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "aktivnost",
+      "nacin": "prikaz",
+      "izotop": {
+       "simbol": "Tl",
+       "A": 201,
+       "ime": "talij"
+      },
+      "T": 73,
+      "jedinica_T": "h",
+      "A0": 80,
+      "jedinica_A": "MBq",
+      "t": 219,
+      "tekst": "Talij-201 (T = 73 h) početne aktivnosti 80 MBq. Gledaj kako nakon svakih 73 h aktivnost i broj jezgara padnu na pola."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 532
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "poluraspad 6",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "uzorci",
+     "nacin": "postavi",
+     "uzorci": [
+      {
+       "oznaka": "X",
+       "T": 4
+      },
+      {
+       "oznaka": "Y",
+       "T": 8
+      }
+     ],
+     "jedinica_t": "dan",
+     "klizaci": [
+      {
+       "id": "t",
+       "oznaka": "vrijeme",
+       "min": 0,
+       "max": 48,
+       "korak": 2,
+       "pocetak": 0
+      }
+     ],
+     "cilj": {
+      "omjer": "1/16"
+     },
+     "tekst": "X ima vrijeme poluraspada 4 dana, a Y 8 dana. Namjesti sat na trenutak kad je omjer $N_X : N_Y = 1 : 16$."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 533
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "poluraspad-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta poluraspad."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "poluraspad 7",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "aktivnost",
+     "nacin": "izracunaj",
+     "izotop": {
+      "simbol": "Y",
+      "A": 90,
+      "ime": "itrij"
+     },
+     "T": 64,
+     "jedinica_T": "h",
+     "A0": 200,
+     "jedinica_A": "MBq",
+     "pitaj": [
+      {
+       "velicina": "lambda"
+      },
+      {
+       "velicina": "N0"
+      }
+     ],
+     "tekst": "Pacijentu se ubrizga itrij-90 s vremenom poluraspada 64 h i početnom aktivnošću 200 MBq. Kolika je konstanta raspada i koliko je jezgara ubrizgano?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 534
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "poluraspad 8",
+    "pitanje": {
+     "tip": "poluraspad",
+     "scena": "aktivnost",
+     "nacin": "izracunaj",
+     "izotop": {
+      "simbol": "I",
+      "A": 131,
+      "ime": "jod"
+     },
+     "T": 8,
+     "jedinica_T": "dan",
+     "A0": 3700,
+     "jedinica_A": "MBq",
+     "pitaj": [
+      {
+       "velicina": "T_s"
+      },
+      {
+       "velicina": "lambda"
+      },
+      {
+       "velicina": "N0"
+      }
+     ],
+     "tekst": "Za liječenje štitnjače ubrizga se jod-131 (T = 8 dana) aktivnosti 3700 MBq. Izrazi T u sekundama, izračunaj konstantu raspada i broj ubrizganih jezgara."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 535
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "relativnost-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta relativnost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "relativnost 1",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "postulat",
+     "nacin": "predvidi",
+     "beta": 0.6,
+     "smjer": "prema",
+     "signal": "laser",
+     "tekst": "Svemirski brod leti brzinom 0,6c prema Zemlji i u smjeru Zemlje pošalje laserski puls. Kolikom brzinom puls stiže na Zemlju, prema mjerenju na Zemlji?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "postulat",
+      "nacin": "istrazi",
+      "beta": 0.5,
+      "smjer": "od",
+      "signal": "radio",
+      "tekst": "Brod se udaljava od Zemlje i šalje radiosignal prema Zemlji (1272). **Mijenjaj brzinu i smjer** broda i pošalji signal: koliku brzinu izmjeri detektor na Zemlji?"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 536
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "relativnost 2",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "postulat",
+     "nacin": "predvidi",
+     "beta": 0.9,
+     "smjer": "od",
+     "signal": "laser",
+     "tekst": "Svemirski brod leti brzinom 0,9c od Zemlje i u smjeru Zemlje pošalje laserski puls. Kolikom brzinom puls stiže na Zemlju, prema mjerenju na Zemlji?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "svjetlosni_sat",
+      "nacin": "istrazi",
+      "beta": 0.6,
+      "pogled": "zemlja",
+      "tekst": "Svjetlosni sat: foton putuje između dva zrcala, a svaki povratak je jedan tik. **Usporedi** sat u brodu sa satom na Zemlji i prebaci pogled u brod."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 537
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "relativnost 3",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "mion",
+     "nacin": "izracunaj",
+     "beta": 0.995,
+     "T0": 2.2,
+     "pitaj": [
+      {
+       "velicina": "T",
+       "jedinica": "µs"
+      },
+      {
+       "velicina": "s",
+       "jedinica": "m"
+      }
+     ],
+     "tekst": "Mion nastane visoko u atmosferi i giba se prema tlu brzinom 0,995c. U sustavu u kojem miruje živi 2,2 µs. Koliko živi prema mjerenju sa Zemlje i koliki put za to vrijeme prijeđe?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "mion",
+      "nacin": "istrazi",
+      "beta": 0.98,
+      "T0": 2.2,
+      "tekst": "Mion (1272) leti brzinom 0,98c. Pusti ga i **usporedi dva sata**. Zatim uključi pogled iz miona."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 538
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "relativnost-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta relativnost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "relativnost 4",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "brod",
+     "nacin": "postavi",
+     "L0": 150,
+     "beta": 0.3,
+     "T": 50,
+     "cilj": {
+      "velicina": "L",
+      "vrijednost": 90
+     },
+     "tekst": "Brod je dug 150 m dok miruje (1276). Izračunaj i **namjesti brzinu** broda tako da ga promatrač na Zemlji izmjeri dugog 90 m."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "brod",
+      "nacin": "istrazi",
+      "L0": 100,
+      "beta": 0.3,
+      "T": 25,
+      "tekst": "Brod dug 100 m leti pokraj ravnala na Zemlji (1277). **Povećavaj brzinu** i usporedi omjer duljina L/L₀ s omjerom vremena T₀/T."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 539
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "relativnost 5",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "brod",
+     "nacin": "izracunaj",
+     "L0": 150,
+     "L": 90,
+     "T": 50,
+     "pitaj": [
+      {
+       "velicina": "T0",
+       "jedinica": "min"
+      }
+     ],
+     "tekst": "Svemirski brod dugačak je 150 m dok miruje. Dok leti pokraj Zemlje, promatrač na Zemlji izmjeri da je dugačak 90 m. Isti promatrač izmjeri da je astronautov ručak trajao 50 min. Koliko je ručak trajao prema satu u brodu?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "energija",
+      "nacin": "istrazi",
+      "cestica": "elektron",
+      "tekst": "Dodaj elektronu energije koliko želiš (1281 c). **Možeš li ga dovesti do brzine svjetlosti?**"
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 540
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "relativnost 6",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "brod",
+     "nacin": "izracunaj",
+     "L0": 250,
+     "L": 70,
+     "T": 50,
+     "pitaj": [
+      {
+       "velicina": "beta"
+      },
+      {
+       "velicina": "T0",
+       "jedinica": "min"
+      }
+     ],
+     "tekst": "Brod dug 250 m dok miruje promatrač na Zemlji izmjeri dugog 70 m, a ručak na brodu po zemaljskim satovima traje 50 min (1279). Kolika je brzina broda i koliko ručak traje prema satu u brodu?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "energija",
+      "nacin": "prikaz",
+      "cestica": "elektron",
+      "beta": 0.96,
+      "tekst": "Elektron pri 0,96c (1283): ukupna energija je više od tri puta veća od energije mirovanja."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 541
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "relativnost-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta relativnost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "relativnost 7",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "energija",
+     "nacin": "izracunaj",
+     "cestica": "elektron",
+     "beta": 0.8,
+     "pitaj": [
+      {
+       "velicina": "E0",
+       "jedinica": "J"
+      },
+      {
+       "velicina": "E",
+       "jedinica": "J"
+      }
+     ],
+     "tekst": "a) Kolika je energija mirovanja elektrona? b) Elektron se giba brzinom 0,8c. Kolika mu je ukupna energija?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 542
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "relativnost 8",
+    "pitanje": {
+     "tip": "relativnost",
+     "scena": "energija",
+     "nacin": "izracunaj",
+     "cestica": "proton",
+     "beta": 0.28,
+     "pitaj": [
+      {
+       "velicina": "E0",
+       "jedinica": "J"
+      },
+      {
+       "velicina": "E",
+       "jedinica": "J"
+      }
+     ],
+     "tekst": "a) Kolika je energija mirovanja protona? b) Proton se giba brzinom 0,28c. Kolika mu je ukupna energija?"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je?",
+     "odgovor": 543
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
  }
 }

@@ -24,7 +24,7 @@ class LessonUiFizikaTest {
         try (InputStream in = getClass().getResourceAsStream("/lesson/fizika-widgeti.json")) {
             lekcije = new ObjectMapper().readTree(in);
         }
-        assertTrue(lekcije.size() >= 27, "premalo lekcija: " + lekcije.size());
+        assertTrue(lekcije.size() >= 32, "premalo lekcija: " + lekcije.size());
         List<String> greske = new ArrayList<>();
         Iterator<Map.Entry<String, JsonNode>> it = lekcije.fields();
         while (it.hasNext()) {
