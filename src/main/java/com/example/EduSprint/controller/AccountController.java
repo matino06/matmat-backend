@@ -3,6 +3,7 @@ package com.example.EduSprint.controller;
 import com.example.EduSprint.dto.AccountDeleteRequest;
 import com.example.EduSprint.dto.AiConsentDTO;
 import com.example.EduSprint.dto.AiConsentRequest;
+import com.example.EduSprint.dto.ChosenCoursesRequest;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.UserCourseGoal;
@@ -37,8 +38,10 @@ public class AccountController {
 
     private final AiConsentService aiConsentService;
     private final AccountDeletionService accountDeletionService;
+    private final ChosenCoursesService chosenCoursesService;
 
-    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService, AiConsentService aiConsentService, AccountDeletionService accountDeletionService) {
+    public AccountController(AccountRepository accountRepository, AccountService accountService, AccountObjectiveService accountObjectiveService, CourseService courseService, UserCourseGoalService userCourseGoalService, EmailService emailService, AiConsentService aiConsentService, AccountDeletionService accountDeletionService, ChosenCoursesService chosenCoursesService) {
+        this.chosenCoursesService = chosenCoursesService;
         this.aiConsentService = aiConsentService;
         this.accountDeletionService = accountDeletionService;
         this.accountRepository = accountRepository;
@@ -203,6 +206,21 @@ public class AccountController {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
         return aiConsentService.set(accountId, request.granted(), request.version(), request.source());
+    }
+
+    /** Official courses the student chose to study, for the course switcher; see ChosenCoursesService. */
+    @GetMapping("/courses")
+    public List<Long> chosenCourses(Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        return chosenCoursesService.get(accountService.getAccount(principal.getEmail()).getAccountId());
+    }
+
+    /** {"courseIds": [1, 4]}: replaces the choice. The current course is set separately (POST /current-course). */
+    @PutMapping("/courses")
+    public List<Long> setChosenCourses(Authentication authentication, @RequestBody ChosenCoursesRequest request) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
+        return chosenCoursesService.set(accountId, request == null ? null : request.courseIds());
     }
 
     /**
