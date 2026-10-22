@@ -180,17 +180,23 @@ function compile(expr) {
   return new Function("x", `const {sqrt, sin, cos, abs} = Math; return (${js.replace(/,/g, ".")});`);
 }
 
-function axes(T, [x0, x1], [y0, y1], xName, yName) {
-  const sx = niceStep(x1 - x0);
-  const sy = niceStep(y1 - y0);
+// mreza: [korak x, korak y] zadan u opisu (da vrijednosti koje učenik očitava leže na crtama), inače lijep korak;
+// kod guste mreže brojevi idu na svaku drugu crtu.
+function axes(T, [x0, x1], [y0, y1], xName, yName, mreza) {
+  const sx = positive(mreza?.[0]) && (x1 - x0) / mreza[0] <= 40 ? mreza[0] : niceStep(x1 - x0);
+  const sy = positive(mreza?.[1]) && (y1 - y0) / mreza[1] <= 40 ? mreza[1] : niceStep(y1 - y0);
+  const every = (n) => (n > 12 ? 2 : 1);
+  const lx = every((x1 - x0) / sx) * sx;
+  const ly = every((y1 - y0) / sy) * sy;
+  const labelled = (v, step, a) => Math.abs((v - a) / step - Math.round((v - a) / step)) < 1e-6 || Math.abs(v / step - Math.round(v / step)) < 1e-6;
   let body = "";
   for (const x of ticks(x0, x1, sx)) body += line(T([x, y0]), T([x, y1]), "grid");
   for (const y of ticks(y0, y1, sy)) body += line(T([x0, y]), T([x1, y]), "grid");
   const ox = x0 <= 0 && x1 >= 0 ? 0 : x0;
   const oy = y0 <= 0 && y1 >= 0 ? 0 : y0;
   body += line(T([x0, oy]), T([x1, oy]), "axis") + line(T([ox, y0]), T([ox, y1]), "axis");
-  for (const x of ticks(x0, x1, sx)) if (x !== ox) body += label([T([x, oy])[0], T([x, oy])[1] + 12], num(x), "tick");
-  for (const y of ticks(y0, y1, sy)) if (y !== oy) body += label([T([ox, y])[0] - 8, T([ox, y])[1]], num(y), "tick", "end");
+  for (const x of ticks(x0, x1, sx)) if (x !== ox && labelled(x, lx, x0)) body += label([T([x, oy])[0], T([x, oy])[1] + 12], num(x), "tick");
+  for (const y of ticks(y0, y1, sy)) if (y !== oy && labelled(y, ly, y0)) body += label([T([ox, y])[0] - 8, T([ox, y])[1]], num(y), "tick", "end");
   body += label([T([x1, oy])[0], T([x1, oy])[1] + 24], xName ?? "x", "tick", "end");
   body += label([T([ox, y1])[0] + 8, T([ox, y1])[1] + 2], yName ?? "y", "tick", "start");
   return body;
@@ -210,7 +216,7 @@ function graph(s, text) {
   checks.push(...numbersInText((s.tocke ?? []).filter((p) => p.zadana).map((p) => `${p.x} ${p.y}`), text));
   if (checks.some((x) => !x.ok)) return { checks };
   const T = axesFit(s.x, s.y);
-  let body = axes(T, s.x, s.y, s.os_x, s.os_y);
+  let body = axes(T, s.x, s.y, s.os_x, s.os_y, s.mreza);
   fns.forEach((fn, i) => {
     const pts = [];
     for (let k = 0; k <= 240; k++) {

@@ -104,7 +104,8 @@ public class VariationPrompt {
             - Tipovi (točno ovakav JSON; null gdje nešto ne treba):
               graf: {"tip":"graf","x":[0,70],"y":[0,140],"os_x":"V (cm³)","os_y":"m (g)","funkcije":[{"izraz":"1.7*x","oznaka":"A"}],
                 "tocke":[{"x":30,"y":51,"oznaka":"(30, 51)","na":"A","zadana":true}]} (izraz: x, brojevi, + - * / ^ i zagrade;
-                točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka)
+                točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka;
+                po želji "mreza":[korak x, korak y], tako da vrijednosti koje učenik očitava leže na crtama mreže)
               koordinatni: {"tip":"koordinatni","x":[-6,7],"y":[-2,9],"tocke":[{"oznaka":"A","x":-5,"y":3,"zadana":true}],
                 "duzine":[["A","B"]],"polovista":[{"tocka":"M","od":["A","B"]}]}
               trokut: {"tip":"trokut","stranice":{"a":9,"b":12,"c":15},"pravi_kut":"C","oznake":{"a":"9 cm","b":"12 cm","c":"?"},"kutovi":{"α":"?"}}
