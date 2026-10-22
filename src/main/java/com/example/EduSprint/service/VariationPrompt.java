@@ -187,7 +187,8 @@ public class VariationPrompt {
                 "otopina":"CuSO₄(aq)","uloga":"katoda","pol":"+"},"most":"KNO₃(aq)","elektroni":"desno",
                 "uredaj":{"vrsta":"V","oznaka":"1,10 V"}} (vrsta: galvanski ili elektroliza; posuda: dvije_case, u_cijev ili casa;
                 elektroliza: "otopina" uz posudu, "uredaj":{"vrsta":"izvor"}, uz elektrodu "plin" i "boja" otopine: crvena,
-                ružičasta, žuta, narančasta, zelena, plava ili bezbojna; "elektroni" izostavi kad učenik smjer tek treba odrediti)
+                ružičasta, ljubičasta, žuta, narančasta, zelena, plava ili bezbojna; "elektroni" izostavi kad učenik smjer tek treba
+                odrediti)
               ljuske: {"tip":"ljuske","cestice":[{"simbol":"Na","protoni":11,"elektroni":[2,8,1]},{"simbol":"Na⁺","protoni":11,
                 "elektroni":[2,8]}],"raspored":true} (do tri čestice; "polumjer" u pm crta veličine u pravom omjeru)
               cestice: {"tip":"cestice","posude":[{"oznaka":"prije","cestice":[{"vrsta":"H₂","broj":4},{"vrsta":"O₂","broj":3}]},
