@@ -70,7 +70,7 @@ public class LearningObjectiveService {
                 .map(ObjectiveDTO::getTitle)
                 .collect(Collectors.toSet());
 
-        List<Object[]> weakObjectives = learningObjectiveRepository.findWeakObjectivesWithLastQ(accountId, courseId);
+        List<Object[]> weakObjectives = learningObjectiveRepository.findWeakObjectivesWithLastGrade(accountId, courseId);
         List<ObjectiveDTO> weakObjectiveDTOS = weakObjectives.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
@@ -122,7 +122,7 @@ public class LearningObjectiveService {
             String objectiveName = (String) row[5];
             boolean unlocked = Boolean.TRUE.equals(row[6]);
             boolean mastered = Boolean.TRUE.equals(row[7]);
-            Short lastQ = row[8] == null ? null : ((Number) row[8]).shortValue();
+            Short lastGrade = row[8] == null ? null : ((Number) row[8]).shortValue();
 
             if (currentField == null || !currentField.getFieldId().equals(fieldId)) {
                 currentField = new StudyMapFieldDTO(fieldId, fieldName, false, new ArrayList<>());
@@ -130,7 +130,7 @@ public class LearningObjectiveService {
             }
 
             currentField.getObjectives().add(
-                    new StudyMapObjectiveDTO(objectiveId, objectiveName, subfieldId, subfieldName, unlocked, mastered, lastQ));
+                    new StudyMapObjectiveDTO(objectiveId, objectiveName, subfieldId, subfieldName, unlocked, mastered, lastGrade));
 
             if (unlocked) {
                 currentField.setUnlocked(true);
@@ -144,16 +144,10 @@ public class LearningObjectiveService {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
 
-        LearningObjective weakObjective = learningObjectiveRepository.findWeakObjectivesWithLastQNotZero(accountId, courseId);
-
-        if (weakObjective != null) {
-            return weakObjective;
-        }
-
-        return learningObjectiveRepository.findWeakObjectivesWithLastQEqualZero(accountId, courseId);
+        return learningObjectiveRepository.findWeakObjective(accountId, courseId);
     }
 
-    public Short calculateExamProgress(Account account, LearningObjective objective, short lastQ) {
+    public Short calculateExamProgress(Account account, LearningObjective objective, short lastGrade) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
         Short tempo = account.getTempo();
@@ -178,7 +172,7 @@ public class LearningObjectiveService {
             objectivesWithStatus.stream()
                     .filter(dto -> dto.getObjectiveId().equals(objective.getObjectiveId()))
                     .findFirst()
-                    .ifPresent(dto -> dto.setIsMastered(lastQ >= 4));
+                    .ifPresent(dto -> dto.setIsMastered(lastGrade >= Fsrs.GOOD));
         }
 
         Map<String, FieldGroup> grouped = objectivesWithStatus.stream()

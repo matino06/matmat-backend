@@ -5,12 +5,12 @@ import java.time.LocalDate;
 public class ObjectiveDTO {
     private String title;
     private LocalDate dueDate;
-    private Short lastQ;
+    private Short lastGrade;
 
-    public ObjectiveDTO(String title, LocalDate dueDate, Short lastQ) {
+    public ObjectiveDTO(String title, LocalDate dueDate, Short lastGrade) {
         this.title = title;
         this.dueDate = dueDate;
-        this.lastQ = lastQ;
+        this.lastGrade = lastGrade;
     }
 
     public String getTitle() {
@@ -29,12 +29,12 @@ public class ObjectiveDTO {
         this.dueDate = dueDate;
     }
 
-    public Short getLastQ() {
-        return lastQ;
+    public Short getLastGrade() {
+        return lastGrade;
     }
 
-    public void setLastQ(Short lastQ) {
-        this.lastQ = lastQ;
+    public void setLastGrade(Short lastGrade) {
+        this.lastGrade = lastGrade;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ObjectiveDTO {
         return "TaskDTO{" +
                 "title='" + title + '\'' +
                 ", dueDate=" + dueDate +
-                ", lastQ=" + lastQ +
+                ", lastGrade=" + lastGrade +
                 '}';
     }
 }

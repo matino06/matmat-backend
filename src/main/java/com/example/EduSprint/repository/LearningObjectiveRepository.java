@@ -50,7 +50,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                        lo.objective_id,
                        lo.objective_name,
                        NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id) AS is_unlocked,
-                       COALESCE(ao_o.last_q > 3, false) AS is_sufficient
+                       COALESCE(ao_o.last_grade >= 3, false) AS is_sufficient
                 FROM learning_objective lo
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
@@ -105,8 +105,8 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                        lo.objective_id,
                        lo.objective_name,
                        NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id) AS is_unlocked,
-                       COALESCE(ao_o.last_q > 3, false) AS is_mastered,
-                       ao_o.last_q AS last_q
+                       COALESCE(ao_o.last_grade >= 3, false) AS is_mastered,
+                       ao_o.last_grade AS last_grade
                 FROM learning_objective lo
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
@@ -146,7 +146,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
     LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
@@ -189,7 +189,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
     LearningObjective findNextLearningObjectiveInField(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo, @Param("fieldId") Long fieldId);
@@ -210,7 +210,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     FROM objective_prerequisite op
                     JOIN blocked b ON op.prerequisite_id = b.objective_id
                 )
-                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
+                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_grade
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
@@ -218,7 +218,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                ORDER BY ao.ef ASC, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
+                ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
     List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
 
@@ -238,7 +238,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     FROM objective_prerequisite op
                     JOIN blocked b ON op.prerequisite_id = b.objective_id
                 )
-                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_q
+                SELECT lo.objective_name, (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE, ao.last_grade
                 FROM account_objective ao
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
@@ -263,7 +263,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
     short findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = """
-                    SELECT lo.objective_name, ao.last_q
+                    SELECT lo.objective_name, ao.last_grade
                     FROM learning_objective lo
                     INNER JOIN course_objective co 
                         ON lo.objective_id = co.objective_id 
@@ -277,47 +277,27 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         WHERE wo.account_id = :accountId
                     )
                 """, nativeQuery = true)
-    List<Object[]> findWeakObjectivesWithLastQ(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    List<Object[]> findWeakObjectivesWithLastGrade(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
+    // Weak objective (rated again or hard today) to practise once nothing is due: the one solved longest ago first.
     @Query(value = """
                     SELECT lo.*
                     FROM learning_objective lo
-                    INNER JOIN course_objective co 
-                        ON lo.objective_id = co.objective_id 
+                    INNER JOIN course_objective co
+                        ON lo.objective_id = co.objective_id
                         AND co.course_id = :courseId
-                    JOIN account_objective ao 
+                    JOIN account_objective ao
                         ON ao.objective_id = lo.objective_id
                             AND ao.account_id = :accountId
-                            AND ao.last_q != 0
                     WHERE lo.objective_id IN (
-                        SELECT wo.objective_id 
-                        FROM weak_objectives wo 
-                        WHERE wo.account_id = :accountId
-                    )
-                    ORDER BY ao.last_q ASC, ao.last_solved_date ASC
-                    LIMIT 1
-                """, nativeQuery = true)
-    LearningObjective findWeakObjectivesWithLastQNotZero(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
-
-    @Query(value = """
-                    SELECT lo.*
-                    FROM learning_objective lo
-                    INNER JOIN course_objective co 
-                        ON lo.objective_id = co.objective_id 
-                        AND co.course_id = :courseId
-                    JOIN account_objective ao 
-                        ON ao.objective_id = lo.objective_id
-                            AND ao.account_id = :accountId
-                            AND ao.last_q = 0
-                    WHERE lo.objective_id IN (
-                        SELECT wo.objective_id 
-                        FROM weak_objectives wo 
+                        SELECT wo.objective_id
+                        FROM weak_objectives wo
                         WHERE wo.account_id = :accountId
                     )
                     ORDER BY ao.last_solved_date ASC
                     LIMIT 1
                 """, nativeQuery = true)
-    LearningObjective findWeakObjectivesWithLastQEqualZero(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
+    LearningObjective findWeakObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     // Admin dependency graph: all objectives belonging to a course, with field/subfield and task count.
     @Query(value = """

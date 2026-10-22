@@ -4,10 +4,10 @@ import com.example.EduSprint.config.AppTime;
 import com.example.EduSprint.entity.*;
 import com.example.EduSprint.repository.AccountObjectiveRepository;
 import com.example.EduSprint.repository.AccountRepository;
+import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -20,11 +20,13 @@ public class AccountObjectiveService {
     public final AccountObjectiveRepository accountObjectiveRepository;
     public final AccountRepository accountRepository;
     public final LearningObjectiveService learningObjectiveService;
+    private final SolvedTaskRepository solvedTaskRepository;
 
-    public AccountObjectiveService(AccountObjectiveRepository accountObjectiveRepository, AccountRepository accountRepository, LearningObjectiveService learningObjectiveService) {
+    public AccountObjectiveService(AccountObjectiveRepository accountObjectiveRepository, AccountRepository accountRepository, LearningObjectiveService learningObjectiveService, SolvedTaskRepository solvedTaskRepository) {
         this.accountObjectiveRepository = accountObjectiveRepository;
         this.accountRepository = accountRepository;
         this.learningObjectiveService = learningObjectiveService;
+        this.solvedTaskRepository = solvedTaskRepository;
     }
 
     @Transactional
@@ -36,7 +38,6 @@ public class AccountObjectiveService {
                 AccountObjective accountObjective = new AccountObjective();
                 accountObjective.setAccount(account);
                 accountObjective.setObjective(objective);
-                accountObjective.setEf(2.5F);
                 accountObjective.setI((short) 0);
                 accountObjective.setN((short) 0);
                 accountObjective.setLastSolvedDate(Instant.now());
@@ -63,32 +64,19 @@ public class AccountObjectiveService {
         }
 
         AccountObjective accountObjective = accountObjectiveOptional.get();
-        Float oldEF = accountObjective.getEf();
-        Short oldN = accountObjective.getN();
-        Short q = newSolvedTask.getQ();
-        Short lastQ = accountObjective.getLastQ();
-        Instant newSolvedTaskEndTime = newSolvedTask.getEndTime();
+        short grade = newSolvedTask.getGrade();
+        Instant solvedAt = newSolvedTask.getEndTime();
+        Fsrs.Memory before = memoryBefore(accountObjective, solvedAt);
+        Fsrs.Memory after = next(before, grade, accountObjective.getLastSolvedDate(), solvedAt);
 
         Course course = newSolvedTask.getCourse();
-        accountObjective.setI(capToExam(nextInterval(accountObjective, q, newSolvedTaskEndTime), q,
-                newSolvedTaskEndTime, course == null ? null : course.getExamDate()));
-        if (q >= 3) {
-            if (lastQ == null && q.equals((short)5)) {
-                accountObjective.setN((short)2);
-            } else {
-                accountObjective.setN(++oldN);
-            }
-        } else {
-            accountObjective.setN((short) 0);
-        }
-
-        Float newEF = (float) (oldEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
-        newEF = (float) Math.max(newEF, 1.3);
-        newEF = (float) Math.min(newEF, 2.5);
-
-        accountObjective.setEf(newEF);
-        accountObjective.setLastQ(q);
-        accountObjective.setLastSolvedDate(newSolvedTaskEndTime);
+        accountObjective.setI(capToExam(Fsrs.interval(after.stability()), after.stability(), solvedAt,
+                course == null ? null : course.getExamDate()));
+        accountObjective.setN(nextStreak(before, accountObjective.getN(), grade));
+        accountObjective.setStability((float) after.stability());
+        accountObjective.setDifficulty((float) after.difficulty());
+        accountObjective.setLastGrade(grade);
+        accountObjective.setLastSolvedDate(solvedAt);
 
         try {
             accountObjectiveRepository.save(accountObjective);
@@ -99,9 +87,9 @@ public class AccountObjectiveService {
     }
 
     /**
-     * Days until the objective comes back for each possible rating q = 0..5 if the user rated it
-     * right now. Same computation as {@link #updateAccountObjective}, so the rating picker can show
-     * the real interval instead of a guess. Returns null if the account has no state for the objective.
+     * Days until the objective comes back for each possible grade 1..4 if the user rated it right now (index
+     * grade - 1). Same computation as {@link #updateAccountObjective}, so the rating picker can show the real
+     * interval instead of a guess. Returns null if the account has no state for the objective.
      */
     public short[] previewIntervals(Account account, LearningObjective objective) {
         Optional<AccountObjective> accountObjective = accountObjectiveRepository.findByAccountAndObjective(account, objective);
@@ -111,9 +99,12 @@ public class AccountObjectiveService {
 
         Instant now = Instant.now();
         Course course = account.getCurrentCourse();
-        short[] intervals = new short[6];
-        for (short q = 0; q <= 5; q++) {
-            intervals[q] = capToExam(nextInterval(accountObjective.get(), q, now), q, now, course == null ? null : course.getExamDate());
+        Fsrs.Memory before = memoryBefore(accountObjective.get(), now);
+        short[] intervals = new short[4];
+        for (int grade = Fsrs.AGAIN; grade <= Fsrs.EASY; grade++) {
+            Fsrs.Memory after = next(before, grade, accountObjective.get().getLastSolvedDate(), now);
+            intervals[grade - 1] = capToExam(Fsrs.interval(after.stability()), after.stability(), now,
+                    course == null ? null : course.getExamDate());
         }
         return intervals;
     }
@@ -124,83 +115,76 @@ public class AccountObjectiveService {
      */
     public boolean isReview(Account account, LearningObjective objective) {
         return accountObjectiveRepository.findByAccountAndObjective(account, objective)
-                .map(accountObjective -> accountObjective.getLastQ() != null)
+                .map(accountObjective -> accountObjective.getLastGrade() != null)
                 .orElse(false);
     }
+
+    /**
+     * FSRS stanje lekcije prije ocjene u trenutku {@code at}, ili null ako je još nije rješavao. Lekcija ocijenjena
+     * prije FSRS-a nema S i D, pa se izračunaju iz njezine povijesti u solved_task (ocjene prije {@code at}).
+     */
+    private Fsrs.Memory memoryBefore(AccountObjective accountObjective, Instant at) {
+        if (accountObjective.getStability() != null && accountObjective.getDifficulty() != null) {
+            return new Fsrs.Memory(accountObjective.getStability(), accountObjective.getDifficulty());
+        }
+        List<SolvedTask> history = solvedTaskRepository.findObjectiveHistory(
+                accountObjective.getAccount().getAccountId(), accountObjective.getObjective().getObjectiveId());
+        return replay(history.stream().filter(solved -> solved.getEndTime().isBefore(at)).toList());
+    }
+
+    /** FSRS stanje nakon svih ocjena iz povijesti (najstarija prva), ili null ako povijesti nema. */
+    static Fsrs.Memory replay(List<SolvedTask> history) {
+        Fsrs.Memory memory = null;
+        Instant last = null;
+        for (SolvedTask solved : history) {
+            if (solved.getGrade() == null) continue;
+            memory = next(memory, solved.getGrade(), last, solved.getEndTime());
+            last = solved.getEndTime();
+        }
+        return memory;
+    }
+
+    /** FSRS stanje nakon ocjene {@code grade} u {@code solvedAt}; {@code before} je null za prvu ocjenu. */
+    static Fsrs.Memory next(Fsrs.Memory before, int grade, Instant lastSolved, Instant solvedAt) {
+        if (before == null) {
+            return Fsrs.first(grade);
+        }
+        return Fsrs.review(before, grade, ChronoUnit.DAYS.between(AppTime.dateOf(lastSolved), AppTime.dateOf(solvedAt)));
+    }
+
+    /**
+     * Uzastopna uspješna rješavanja (n): lekcija otključava one koje se na nju nadovezuju kad je n barem tempo
+     * učenika. Prva ocjena „lako“ odmah vrijedi kao dva.
+     */
+    static short nextStreak(Fsrs.Memory before, short n, int grade) {
+        if (grade == Fsrs.AGAIN) return 0;
+        if (before == null && grade == Fsrs.EASY) return 2;
+        return (short) (n + 1);
+    }
+
+    /**
+     * Na ispitu učenik treba znati lekciju barem s ovom vjerojatnošću. Ista je kao {@link Fsrs#DESIRED_RETENTION},
+     * pa interval koji prelazi ispit već znači da je učenik zna i na dan ispita.
+     */
+    static final double EXAM_RETENTION = 0.9;
 
     /**
      * Datum ispita: dan prije ispita ponavlja se samo ono što bi inače bilo upitno na ispitu, ne sve lekcije.
      * <ul>
      *   <li>ponavljanje koje bi palo na dan ispita dolazi dan ranije, jer na dan ispita učenik možda ne stigne;</li>
-     *   <li>lekcija ocijenjena s 3 ili manje kojoj bi ponavljanje palo nakon ispita dolazi najkasnije dan prije ispita;</li>
-     *   <li>lekcija ocijenjena s 4 ili 5 kojoj ponavljanje pada nakon ispita zadržava SM-2 interval: po njemu je
-     *   učenik zna i na dan ispita.</li>
+     *   <li>lekcija kojoj bi ponavljanje palo nakon ispita, a vjerojatnost da je zna na dan ispita bila bi ispod
+     *   {@link #EXAM_RETENTION}, dolazi najkasnije dan prije ispita;</li>
+     *   <li>ostale zadržavaju FSRS interval.</li>
      * </ul>
-     * Bez datuma, na dan ispita i nakon njega SM-2 interval ostaje kakav jest.
+     * Bez datuma, na dan ispita i nakon njega interval ostaje kakav jest.
      */
-    static short capToExam(short interval, short q, Instant solvedAt, LocalDate examDate) {
-        if (examDate == null) return interval;
-        LocalDate solvedDay = solvedAt.atZone(AppTime.ZONE).toLocalDate();
-        if (!solvedDay.isBefore(examDate)) return interval;
+    static short capToExam(int interval, double stability, Instant solvedAt, LocalDate examDate) {
+        if (examDate == null) return (short) interval;
+        LocalDate solvedDay = AppTime.dateOf(solvedAt);
+        if (!solvedDay.isBefore(examDate)) return (short) interval;
         long untilExam = ChronoUnit.DAYS.between(solvedDay, examDate);
-        if (interval < untilExam) return interval;
-        if (interval > untilExam && q > 3) return interval;
+        if (interval < untilExam) return (short) interval;
+        if (interval > untilExam && Fsrs.retrievability(untilExam, stability) >= EXAM_RETENTION) return (short) interval;
         return (short) Math.max(1, untilExam - 1);
-    }
-
-    /** SM-2 interval (in days) the objective gets after being rated q at the given time. */
-    static short nextInterval(AccountObjective accountObjective, short q, Instant solvedAt) {
-        if (q < 3) {
-            return 1;
-        }
-
-        short oldN = accountObjective.getN();
-        if (accountObjective.getLastQ() == null && q == 5) {
-            return 6;
-        } else if (oldN == 0) {
-            return 1;
-        } else if (oldN == 1) {
-            return 6;
-        }
-
-        long elapsedDays = Math.max(0, Duration.between(accountObjective.getLastSolvedDate(), solvedAt).toDays());
-        return computeElapsedAwareInterval(accountObjective.getI(), accountObjective.getEf(), elapsedDays, q);
-    }
-
-    /**
-     * Computes the next SM-2 interval for a successful review from the time that actually elapsed, not only the
-     * scheduled interval.
-     * <ul>
-     *   <li>Early (elapsedDays &lt; oldI): growth scales with how much of the interval elapsed, so reviewing an
-     *   I=20 objective after 2 days (e.g. via the map) does not stretch it to ~50 as if the full interval had
-     *   passed. Never shrinks below oldI.</li>
-     *   <li>Late (elapsedDays &gt; oldI): the student remembered for longer than scheduled, so part of the delay
-     *   counts towards the base, as in Anki's SM-2: q=5 all of it, q=4 half, q=3 none (it took effort, which
-     *   says nothing about the longer gap). The delay counts up to {@link #MAX_LATE_BASE}×oldI, so coming back
-     *   after months does not jump the interval to most of a year.</li>
-     * </ul>
-     * On time keeps the classic {@code round(oldI * ef)}.
-     */
-    static short computeElapsedAwareInterval(short oldI, float ef, long elapsedDays, short q) {
-        int fullI = Math.round(oldI * ef);
-        if (oldI <= 0) {
-            return (short) fullI;
-        }
-        if (elapsedDays >= oldI) {
-            long late = Math.min(elapsedDays, (long) MAX_LATE_BASE * oldI) - oldI;
-            double base = oldI + late * lateCredit(q);
-            return (short) Math.round(base * ef);
-        }
-        double ratio = (double) elapsedDays / oldI;     // 0..1
-        int scaled = (int) Math.round(oldI + ratio * (fullI - oldI));
-        return (short) Math.max(scaled, oldI);          // never shrink below the current interval
-    }
-
-    /** The late review's base counts the delay up to this many times the old interval. */
-    static final int MAX_LATE_BASE = 3;
-
-    /** How much of a late review's delay counts towards the next interval's base. */
-    private static double lateCredit(short q) {
-        return q >= 5 ? 1.0 : q == 4 ? 0.5 : 0.0;
     }
 }

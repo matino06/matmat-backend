@@ -1,106 +1,147 @@
 package com.example.EduSprint.service;
 
+import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.AccountObjective;
+import com.example.EduSprint.entity.LearningObjective;
+import com.example.EduSprint.entity.SolvedTask;
+import com.example.EduSprint.entity.Task;
+import com.example.EduSprint.repository.AccountObjectiveRepository;
+import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AccountObjectiveServiceTest {
 
-    @Test
-    void onTimeReviewKeepsClassicSm2Growth() {
-        // elapsedDays == oldI → classic round(oldI * ef)
-        assertEquals((short) 50, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 20, (short) 4));
+    private static final Instant DAY0 = Instant.parse("2026-10-01T10:00:00Z");
+
+    private final AccountObjectiveRepository accountObjectives = mock(AccountObjectiveRepository.class);
+    private final SolvedTaskRepository solvedTasks = mock(SolvedTaskRepository.class);
+    private final AccountObjectiveService service = new AccountObjectiveService(accountObjectives, null, null, solvedTasks);
+
+    private final Account account = new Account();
+    private final LearningObjective objective = new LearningObjective();
+    private final Task task = new Task();
+    private final AccountObjective state = new AccountObjective();
+    private final List<SolvedTask> history = new ArrayList<>();
+
+    AccountObjectiveServiceTest() {
+        task.setObjective(objective);
+        state.setAccount(account);
+        state.setObjective(objective);
+        state.setI((short) 0);
+        state.setN((short) 0);
+        state.setLastSolvedDate(DAY0);
+        when(accountObjectives.findByAccountAndObjective(account, objective)).thenReturn(Optional.of(state));
+        when(solvedTasks.findObjectiveHistory(any(), any())).thenReturn(history);
+    }
+
+    private static Instant day(int days) {
+        return DAY0.plus(Duration.ofDays(days));
+    }
+
+    private SolvedTask solved(int grade, Instant at) {
+        return new SolvedTask(account, task, (short) grade, at.minusSeconds(60), at, null, null, null, (short) 2);
+    }
+
+    /** Ocjena kakvu sprema kontroler: najprije u povijest, zatim u stanje lekcije. */
+    private void rate(int grade, Instant at) {
+        SolvedTask solved = solved(grade, at);
+        history.add(solved);
+        service.updateAccountObjective(solved);
     }
 
     @Test
-    void lateReviewCountsTheDelayByRating() {
-        // I=6, ef=2.5, 14 days elapsed (8 late): q=5 counts all of it, q=4 half, q=3 none
-        assertEquals((short) 35, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 5));
-        assertEquals((short) 25, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 4));
-        assertEquals((short) 15, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 14, (short) 3));
+    void newLessonStartsFromTheFirstRating() {
+        rate(Fsrs.GOOD, DAY0);
+        assertEquals((short) 2, state.getI());
+        assertEquals((short) 1, state.getN());
+        assertEquals((short) Fsrs.GOOD, state.getLastGrade());
+        assertEquals(2.3065, state.getStability(), 1e-4);
     }
 
     @Test
-    void lateBaseIsCappedAtThreeTimesTheOldInterval() {
-        // 90 days elapsed on I=6: the base stops at 18 → 45, not 225
-        assertEquals((short) 45, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 90, (short) 5));
-        // q=4: 6 + (18 - 6) / 2 = 12 → 30
-        assertEquals((short) 30, AccountObjectiveService.computeElapsedAwareInterval((short) 6, 2.5f, 90, (short) 4));
+    void firstRatingEasyCountsAsTwoSuccesses() {
+        rate(Fsrs.EASY, DAY0);
+        assertEquals((short) 8, state.getI());
+        assertEquals((short) 2, state.getN());
     }
 
     @Test
-    void earlyReviewScalesGrowthProportionally() {
-        // I=20, ef=2.5, full would be 50 (+30). After 2 days: 20 + 0.10*30 = 23
-        assertEquals((short) 23, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 2, (short) 4));
-        // After 10 days: 20 + 0.5*30 = 35
-        assertEquals((short) 35, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 10, (short) 4));
+    void againResetsTheStreak() {
+        rate(Fsrs.GOOD, DAY0);
+        rate(Fsrs.GOOD, day(2));
+        rate(Fsrs.AGAIN, day(13));
+        assertEquals((short) 0, state.getN());
+        assertEquals((short) Fsrs.AGAIN, state.getLastGrade());
     }
 
     @Test
-    void zeroElapsedKeepsCurrentInterval() {
-        // No time passed → no ballooning, interval stays the same
-        assertEquals((short) 20, AccountObjectiveService.computeElapsedAwareInterval((short) 20, 2.5f, 0, (short) 4));
+    void storedStateMatchesTheReferenceSequence() {
+        rate(Fsrs.GOOD, DAY0);
+        rate(Fsrs.GOOD, day(2));
+        rate(Fsrs.GOOD, day(13));
+        assertEquals(46.280217, state.getStability(), 1e-3);
+        assertEquals((short) 46, state.getI());
+        assertEquals((short) 3, state.getN());
     }
 
     @Test
-    void neverShrinksBelowCurrentInterval() {
-        // Even with a low ef, an early success must not reduce the interval below oldI
-        short oldI = 20;
-        short result = AccountObjectiveService.computeElapsedAwareInterval(oldI, 1.3f, 1, (short) 4);
-        assertTrue(result >= oldI, "interval must never shrink below oldI, was " + result);
-    }
+    void lessonRatedBeforeFsrsIsReplayedFromItsHistory() {
+        // dvije ocjene iz vremena SM-2: stanje ima samo zadnju ocjenu, bez S i D
+        history.add(solved(Fsrs.GOOD, DAY0));
+        history.add(solved(Fsrs.GOOD, day(2)));
+        state.setLastGrade((short) Fsrs.GOOD);
+        state.setN((short) 2);
+        state.setI((short) 6);
+        state.setLastSolvedDate(day(2));
 
-    private static AccountObjective state(float ef, int i, int n, Short lastQ, Instant lastSolved) {
-        AccountObjective ao = new AccountObjective();
-        ao.setEf(ef);
-        ao.setI((short) i);
-        ao.setN((short) n);
-        ao.setLastQ(lastQ);
-        ao.setLastSolvedDate(lastSolved);
-        return ao;
-    }
+        rate(Fsrs.GOOD, day(13));
 
-    @Test
-    void failedRatingsAlwaysComeBackTomorrow() {
-        Instant now = Instant.now();
-        AccountObjective ao = state(2.5f, 20, 4, (short) 5, now.minus(Duration.ofDays(20)));
-        for (short q = 0; q <= 2; q++) {
-            assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, q, now));
-        }
+        Fsrs.Memory expected = Fsrs.review(Fsrs.review(Fsrs.first(Fsrs.GOOD), Fsrs.GOOD, 2), Fsrs.GOOD, 11);
+        assertEquals(expected.stability(), state.getStability(), 1e-4);
+        assertEquals(expected.difficulty(), state.getDifficulty(), 1e-4);
+        assertEquals((short) 3, state.getN());
     }
 
     @Test
-    void newObjectiveRatedPerfectJumpsToSixDays() {
-        Instant now = Instant.now();
-        AccountObjective ao = state(2.5f, 0, 0, null, now);
-        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 5, now));
-        assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, (short) 4, now));
-        assertEquals((short) 1, AccountObjectiveService.nextInterval(ao, (short) 3, now));
+    void replayIgnoresTheRatingBeingSaved() {
+        history.add(solved(Fsrs.GOOD, DAY0));
+        state.setLastGrade((short) Fsrs.GOOD);
+        rate(Fsrs.GOOD, day(2));
+        assertEquals(10.964332, state.getStability(), 1e-3);
     }
 
     @Test
-    void secondSuccessfulReviewIsSixDays() {
-        Instant now = Instant.now();
-        AccountObjective ao = state(2.5f, 1, 1, (short) 4, now.minus(Duration.ofDays(1)));
-        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 3, now));
-        assertEquals((short) 6, AccountObjectiveService.nextInterval(ao, (short) 5, now));
+    void elapsedDaysAreZagrebCalendarDays() {
+        // 23:30 i 00:30 u Zagrebu: različiti dani, iako je prošao samo sat
+        Instant evening = Instant.parse("2026-10-12T21:30:00Z");
+        Instant afterMidnight = Instant.parse("2026-10-12T22:30:00Z");
+        Fsrs.Memory first = Fsrs.first(Fsrs.GOOD);
+        assertEquals(Fsrs.review(first, Fsrs.GOOD, 1).stability(),
+                AccountObjectiveService.next(first, Fsrs.GOOD, evening, afterMidnight).stability(), 1e-9);
+        assertEquals(Fsrs.review(first, Fsrs.GOOD, 0).stability(),
+                AccountObjectiveService.next(first, Fsrs.GOOD, evening, evening.plusSeconds(600)).stability(), 1e-9);
     }
 
     @Test
-    void laterReviewsUseEaseFactorAndElapsedTime() {
-        Instant now = Instant.now();
-        AccountObjective onTime = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(6)));
-        assertEquals((short) 15, AccountObjectiveService.nextInterval(onTime, (short) 4, now));
+    void replayOfNoHistoryIsANewLesson() {
+        assertNull(AccountObjectiveService.replay(List.of()));
+    }
 
-        AccountObjective early = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(3)));
-        assertEquals((short) 11, AccountObjectiveService.nextInterval(early, (short) 4, now));
-
-        AccountObjective late = state(2.5f, 6, 2, (short) 5, now.minus(Duration.ofDays(14)));
-        assertEquals((short) 35, AccountObjectiveService.nextInterval(late, (short) 5, now));
+    @Test
+    void previewGivesOneIntervalPerGrade() {
+        assertArrayEquals(new short[]{1, 1, 2, 8}, service.previewIntervals(account, objective));
     }
 }
