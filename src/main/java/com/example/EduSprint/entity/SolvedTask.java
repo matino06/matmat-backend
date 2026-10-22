@@ -22,8 +22,9 @@ public class SolvedTask {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    @Column(name = "q", nullable = false)
-    private Short q;
+    // ocjena 1–4 (ponovno, teško, dobro, lako); stari stupac q (0–5, SM-2) ostaje samo u povijesti
+    @Column(name = "grade", nullable = false)
+    private Short grade;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "start_time", nullable = false)
@@ -46,10 +47,10 @@ public class SolvedTask {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    public SolvedTask(Account account, Task task, Short q, Instant startTime, Instant endTime, Course course, Short progress, String device, Short tempo) {
+    public SolvedTask(Account account, Task task, Short grade, Instant startTime, Instant endTime, Course course, Short progress, String device, Short tempo) {
         this.account = account;
         this.task = task;
-        this.q = q;
+        this.grade = grade;
         this.startTime = startTime;
         this.endTime = endTime;
         this.progress = progress;
@@ -81,12 +82,12 @@ public class SolvedTask {
         this.task = task;
     }
 
-    public Short getQ() {
-        return q;
+    public Short getGrade() {
+        return grade;
     }
 
-    public void setQ(Short q) {
-        this.q = q;
+    public void setGrade(Short grade) {
+        this.grade = grade;
     }
 
     public Instant getStartTime() {
@@ -143,7 +144,7 @@ public class SolvedTask {
                 "id=" + id +
                 ", account=" + account +
                 ", task=" + task +
-                ", q=" + q +
+                ", grade=" + grade +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 ", progress=" + progress +

@@ -11,6 +11,10 @@ import java.util.List;
 @Repository
 public interface SolvedTaskRepository extends JpaRepository<SolvedTask, Long> {
 
+    // Every rating of one objective by one account, oldest first: the history FSRS replays.
+    @Query("SELECT s FROM SolvedTask s WHERE s.account.accountId = :accountId AND s.task.objective.objectiveId = :objectiveId ORDER BY s.endTime")
+    List<SolvedTask> findObjectiveHistory(@Param("accountId") Long accountId, @Param("objectiveId") Long objectiveId);
+
     // Last solved task per account: [accountId, endTime]
     @Query("SELECT s.account.accountId, MAX(s.endTime) FROM SolvedTask s GROUP BY s.account.accountId")
     List<Object[]> findLastEndTimePerAccount();

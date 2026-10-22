@@ -17,13 +17,13 @@ import static org.mockito.Mockito.when;
 class ReviewStateTest {
 
     private final AccountObjectiveRepository repository = mock(AccountObjectiveRepository.class);
-    private final AccountObjectiveService service = new AccountObjectiveService(repository, null, null);
+    private final AccountObjectiveService service = new AccountObjectiveService(repository, null, null, null);
     private final Account account = new Account();
     private final LearningObjective objective = new LearningObjective();
 
-    private void state(Short lastQ) {
+    private void state(Short lastGrade) {
         AccountObjective accountObjective = new AccountObjective();
-        accountObjective.setLastQ(lastQ);
+        accountObjective.setLastGrade(lastGrade);
         when(repository.findByAccountAndObjective(account, objective)).thenReturn(Optional.of(accountObjective));
     }
 
@@ -35,7 +35,7 @@ class ReviewStateTest {
 
     @Test
     void ratedBeforeIsAReview() {
-        state((short) 4);
+        state((short) 3);
         assertTrue(service.isReview(account, objective));
     }
 

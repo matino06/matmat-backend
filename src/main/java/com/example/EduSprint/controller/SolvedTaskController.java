@@ -53,15 +53,15 @@ public class SolvedTaskController {
         try {
             AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
             Long taskId = ((Number) taskData.get("taskId")).longValue();
-            Short q = ((Number) taskData.get("q")).shortValue();
+            Short grade = ((Number) taskData.get("grade")).shortValue();
             String startTimeString = (String) taskData.get("startTime");
             String endTimeString = (String) taskData.get("endTime");
             String device = (String) taskData.get("device");
             Short tempo = ((Number) taskData.get("tempo")).shortValue();
 
-            if (q < 0 || q > 5) {
+            if (grade < 1 || grade > 4) {
                 return ResponseEntity.badRequest()
-                        .body("Q has to be between 0 i 5");
+                        .body("Grade has to be between 1 and 4");
             }
 
             // Craeting new Solved Task and Saving it
@@ -70,9 +70,9 @@ public class SolvedTaskController {
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);
             Instant endTime = Instant.parse(endTimeString);
-            Short currentProgress = learningObjectiveService.calculateExamProgress(account, task.getObjective(), q);
+            Short currentProgress = learningObjectiveService.calculateExamProgress(account, task.getObjective(), grade);
 
-            SolvedTask solvedTask = new SolvedTask(account, task, q, startTime, endTime, course, currentProgress, device, tempo);
+            SolvedTask solvedTask = new SolvedTask(account, task, grade, startTime, endTime, course, currentProgress, device, tempo);
             solvedTaskRepository.save(solvedTask);
 
             accountObjectiveService.updateAccountObjective(solvedTask);
@@ -98,8 +98,8 @@ public class SolvedTaskController {
         }
     }
 
-    // Days until the task's objective comes back for each rating q = 0..5, so the rating picker
-    // can show the real SM-2 interval before the user commits to a rating.
+    // Days until the task's objective comes back for each grade 1..4 (index grade - 1), so the rating
+    // picker can show the real FSRS interval before the user commits to a rating.
     @GetMapping("/next-intervals/{taskId}")
     public ResponseEntity<short[]> getNextIntervals(Authentication authentication, @PathVariable Long taskId) {
         AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
