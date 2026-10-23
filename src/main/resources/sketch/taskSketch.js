@@ -265,7 +265,9 @@ function graph(s, text) {
     for (const sp of spots) {
       const x0 = sp[2] === "start" ? q[0] + sp[0] : q[0] + sp[0] - w;
       const [y0, y1] = [q[1] + sp[1] - 8, q[1] + sp[1] + 8];
-      const out = x0 < 4 || x0 + w > W - 4 || y0 < 4 || y1 > H - 4 ? 1000 : 0;
+      // izvan crteža ili preko osi (lijevo i dolje) ne dolazi u obzir
+      const [axL, axB] = T([s.x[0], s.y[0]]);
+      const out = x0 < 4 || x0 + w > W - 4 || y0 < 4 || y1 > H - 4 || x0 < axL + 2 || y1 > axB - 1 ? 1000 : 0;
       const hits = out + curvePts.filter((c) => c[0] >= x0 && c[0] <= x0 + w && c[1] >= y0 && c[1] <= y1).length;
       if (hits < fewest) [best, fewest] = [sp, hits];
     }
