@@ -104,7 +104,8 @@ public class VariationPrompt {
             - Tipovi (točno ovakav JSON; null gdje nešto ne treba):
               graf: {"tip":"graf","x":[0,70],"y":[0,140],"os_x":"V (cm³)","os_y":"m (g)","funkcije":[{"izraz":"1.7*x","oznaka":"A"}],
                 "tocke":[{"x":30,"y":51,"oznaka":"(30, 51)","na":"A","zadana":true}]} (izraz: x, brojevi, + - * / ^ i zagrade;
-                točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka)
+                točke moraju ležati na funkciji; "zadana" ako je točka u tekstu zadatka;
+                po želji "mreza":[korak x, korak y], tako da vrijednosti koje učenik očitava leže na crtama mreže)
               koordinatni: {"tip":"koordinatni","x":[-6,7],"y":[-2,9],"tocke":[{"oznaka":"A","x":-5,"y":3,"zadana":true}],
                 "duzine":[["A","B"]],"polovista":[{"tocka":"M","od":["A","B"]}]}
               trokut: {"tip":"trokut","stranice":{"a":9,"b":12,"c":15},"pravi_kut":"C","oznake":{"a":"9 cm","b":"12 cm","c":"?"},"kutovi":{"α":"?"}}
@@ -121,7 +122,7 @@ public class VariationPrompt {
               sile: {"tip":"sile","podloga":{"vrsta":"kosina","kut":37},"sile":[{"oznaka":"G","smjer":"dolje","iznos":65,"zadana":false}],
                 "rastav":"G"} (vrsta: kosina ili vodoravna; smjer: dolje, gore, okomito_od_podloge, uz_kosinu, niz_kosinu, desno, lijevo)
               strujni_krug: {"tip":"strujni_krug","izvor":{"oznaka":"U = 9 V"},"spoj":{"serijski":[{"R":"R₁ = 7 Ω"},
-                {"paralelno":[{"R":"R₂ = 15 Ω"},{"R":"R₃ = 10 Ω"}]}]},"instrumenti":[{"vrsta":"A"}]}
+                {"paralelno":[{"R":"R₂ = 15 Ω"},{"R":"R₃ = 10 Ω"}]}]},"instrumenti":[{"vrsta":"A"}]}%s
 
             Odgovori isključivo kao json objekt {"zadatak":"markdown teksta zadatka","objasnjenje":"markdown objašnjenja",
             "rezultati":{"a":"konačan odgovor","b":"…"},"skica":opis skice ili null}. U rezultatima za računske podzadatke broj
@@ -163,6 +164,46 @@ public class VariationPrompt {
               (umjesto 50 kg : 0,05 m³ uzmi 50 000 g i 50 000 cm³).
             - Najviše jedan podzadatak traži objašnjenje „zašto“; ostali traže broj ili kratak odgovor. Objasniti „zašto“
               prosječnom je učeniku najteže i najzamornije.""";
+    // Kemijske skice (taskSketch.js crta ih i provjerava: oktet i naboj, razlike energija, očuvanje atoma, pH krivulje).
+    static final String CHEMISTRY_SKETCHES = """
+
+              U kemiji crtež često uči više od riječi: entalpijski dijagram, Lewisova ili strukturna formula, članak ili
+              elektroliza, ljuske atoma, čestice prije i poslije reakcije, kromatogram, titracijska krivulja.
+              energijski_dijagram: {"tip":"energijski_dijagram","os":"H","razine":[{"oznaka":"CH₄(g) + 2 O₂(g)","vrijednost":-75},
+                {"oznaka":"CO₂(g) + 2 H₂O(ℓ)","vrijednost":-966}],"prijelazi":[{"od":0,"do":1,"oznaka":"ΔᵣH = −891 kJ/mol"}]}
+                (razine slijeva nadesno, na visini svoje vrijednosti; prijelaz je strelica od razine do razine, a broj u oznaci
+                mora biti razlika vrijednosti s točnim predznakom; profil reakcije: "vrhovi":[{"od":0,"do":1,"vrijednost":90,
+                "oznaka":"bez katalizatora","isprekidano":false}] i energija aktivacije kao prijelaz {"od":0,"vrh":0,"oznaka":"Eₐ"};
+                "\n" lomi oznaku u dva retka)
+              strukturna_formula: {"tip":"strukturna_formula","atomi":[{"id":"C","simbol":"C","x":0,"y":0,"nevezni":0},
+                {"id":"O1","simbol":"O","x":0,"y":1,"nevezni":2}],"veze":[["C","O1",2]],"zagrade":true,"naboj":"2−",
+                "kutovi":[{"atomi":["O2","C","O3"],"oznaka":"120°"}]} (x, y u duljinama veze, y prema gore; veza 1, 2, 3, "klin",
+                "crtkano" ili "vodikova" (između molekula); "nevezni" = broj neveznih parova, samo u Lewisovoj formuli i tada uz
+                svaki atom, a provjerava se oktet i naboj; skupina poput "CH₃" ili "OH" smije biti jedan atom; asimetrični C-atom:
+                "istaknut":true i "zvjezdica":true; "broj": broj C-atoma u lancu; "naboj" na atomu; prsten:
+                "prsten":{"atomi":["C1",…],"krug":true} složi atome bez x, y u pravilan mnogokut, a atom s "uz":"C1" stavi izvan
+                njega; "zrcalo":true dodaje zrcalnu sliku; "natpisi":[{"x":0,"y":-2,"tekst":"…"}])
+              elektrokemijski_clanak: {"tip":"elektrokemijski_clanak","vrsta":"galvanski","posuda":"dvije_case",
+                "lijevo":{"elektroda":"Zn","otopina":"ZnSO₄(aq)","uloga":"anoda","pol":"−"},"desno":{"elektroda":"Cu",
+                "otopina":"CuSO₄(aq)","uloga":"katoda","pol":"+"},"most":"KNO₃(aq)","elektroni":"desno",
+                "uredaj":{"vrsta":"V","oznaka":"1,10 V"}} (vrsta: galvanski ili elektroliza; posuda: dvije_case, u_cijev ili casa;
+                elektroliza: "otopina" uz posudu, "uredaj":{"vrsta":"izvor"}, uz elektrodu "plin" i "boja" otopine: crvena,
+                ružičasta, ljubičasta, žuta, narančasta, zelena, plava ili bezbojna; "elektroni" izostavi kad učenik smjer tek treba
+                odrediti)
+              ljuske: {"tip":"ljuske","cestice":[{"simbol":"Na","protoni":11,"elektroni":[2,8,1]},{"simbol":"Na⁺","protoni":11,
+                "elektroni":[2,8]}],"raspored":true} (do tri čestice; "polumjer" u pm crta veličine u pravom omjeru)
+              cestice: {"tip":"cestice","posude":[{"oznaka":"prije","cestice":[{"vrsta":"H₂","broj":4},{"vrsta":"O₂","broj":3}]},
+                {"oznaka":"poslije","cestice":[{"vrsta":"H₂O","broj":4},{"vrsta":"O₂","broj":1}]}],"strelica":true,"ocuvanje":true}
+                (do tri posude, najviše 30 čestica u posudi; "ocuvanje" provjerava da je atoma jednako u svim posudama;
+                "prikaz":"cestice" crta svaku česticu kao jednu kuglicu, npr. molekule plina u smjesi)
+              kromatogram: {"tip":"kromatogram","podloga":"papir","fronta":6.0,"jedinica":"cm","mrlje":[{"udaljenost":4.5,
+                "boja":"plava","oznaka":"plava"}]} (udaljenosti od startne linije; podloga papir ili kreda; "kote":false skriva
+                udaljenosti kad ih učenik ne smije vidjeti)
+              titracija: {"tip":"titracija","kiselina":{"formula":"HCl","c":0.1,"V":20,"Ka":null,"protoni":1},
+                "luzina":{"formula":"NaOH","c":0.1},"indikator":"fenolftalein"} (krivulju pH aplikacija sama izračuna; slaba
+                kiselina: Ka; dvije kiseline za usporedbu: "kiselina":[…]; indikator: fenolftalein, metiloranž ili bromtimolplavo;
+                volumen lužine u točki ekvivalencije mora pisati u tekstu)
+            """.stripTrailing();
     static final String PHYSICS_MISTAKES = """
 
             - Težina NIJE sila teža: sila teža je sila kojom Zemlja privlači tijelo, težina je sila kojom tijelo
@@ -212,11 +253,12 @@ public class VariationPrompt {
         PlanSupport.CourseInfo course = plan.course(courseId);
         String material = plan.availableOnExam(courseId);
         boolean physics = "fizika".equals(course.subject());
+        boolean chemistry = "kemija".equals(course.subject());
         boolean primary = "os78".equals(course.level());
         return SYSTEM.formatted(course.describe(), physics ? PHYSICS_NUMBERS : "", primary ? PRIMARY_MATH : "",
                 primary ? LENGTH_PRIMARY : LENGTH_SECONDARY, String.join("; ", plan.assumedKnowledge(course)),
                 material.isEmpty() ? FORMULA_WITHOUT_MATERIAL : FORMULA_FROM_MATERIAL, primary ? FORMULA_TEXTBOOK : FORMULA_DERIVATION,
-                physics ? PHYSICS_MISTAKES : "", material);
+                physics ? PHYSICS_MISTAKES : "", chemistry ? CHEMISTRY_SKETCHES : "", material);
     }
 
     public String templateSystem(long courseId) {

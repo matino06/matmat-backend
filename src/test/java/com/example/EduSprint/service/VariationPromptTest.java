@@ -14,7 +14,11 @@ class VariationPromptTest {
     private final VariationPrompt prompt = new VariationPrompt(mock(NamedParameterJdbcTemplate.class), plan);
 
     private String system(String level) {
-        when(plan.course(5)).thenReturn(new PlanSupport.CourseInfo(5, "Fizika 7", "fizika", level, 7));
+        return system("fizika", level);
+    }
+
+    private String system(String subject, String level) {
+        when(plan.course(5)).thenReturn(new PlanSupport.CourseInfo(5, "Predmet", subject, level, 7));
         when(plan.availableOnExam(5)).thenReturn("");
         when(plan.assumedKnowledge(any())).thenReturn(List.of("matematika do 6. razreda"));
         return prompt.system(5);
@@ -34,5 +38,12 @@ class VariationPromptTest {
         assertFalse(secondary.contains("Nikad ne traži sustav jednadžbi"));
         assertTrue(secondary.contains("Preuređivanje formule pokaži korak po korak"));
         assertTrue(secondary.contains("SKICE U OBJAŠNJENJU"));
+    }
+
+    @Test
+    void chemistryPromptListsChemistrySketches() {
+        assertTrue(system("kemija", "ss").contains("energijski_dijagram"));
+        assertTrue(system("kemija", "ss").contains("titracija"));
+        assertFalse(system("fizika", "ss").contains("energijski_dijagram"));
     }
 }
