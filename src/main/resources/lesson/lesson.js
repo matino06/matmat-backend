@@ -12620,6 +12620,8 @@ prikazi?: ["p", "V", "T", "pV", "U", "W", "Q"] očitanja uživo (U = 3/2 pV), te
     { oks: "Sn²⁺", red: "Sn", e: 2, E: -0.137, reakcija: "Sn²⁺ + 2 e⁻ ⇌ Sn" },
     { oks: "Ni²⁺", red: "Ni", e: 2, E: -0.257, reakcija: "Ni²⁺ + 2 e⁻ ⇌ Ni" },
     { oks: "Co²⁺", red: "Co", e: 2, E: -0.28, reakcija: "Co²⁺ + 2 e⁻ ⇌ Co" },
+    // −0,352 V kako piše na ispitnom listu (provjereno 2026-10-25 na dvije stranice lista); literaturna vrijednost je
+    // −0,403 V, ali učenik na maturi računa s brojem s lista
     { oks: "Cd²⁺", red: "Cd", e: 2, E: -0.352, reakcija: "Cd²⁺ + 2 e⁻ ⇌ Cd" },
     { oks: "Fe²⁺", red: "Fe", e: 2, E: -0.447, reakcija: "Fe²⁺ + 2 e⁻ ⇌ Fe" },
     { oks: "Cr³⁺", red: "Cr", e: 3, E: -0.744, reakcija: "Cr³⁺ + 3 e⁻ ⇌ Cr" },
@@ -40038,7 +40040,7 @@ nacin:
         poruka: `Svi atomi imaju oktet, ali u ključu mature ${naziv4(sredisnjiProsiren.el)} ima prošireni oktet (${M.lewis.ljuska[sredisnjiProsiren.spoj]} elektrona): ${ime2(M)} se crta s ${opisVisestrukih(M, tocniRed)}.`,
         krivi: []
       };
-    return { tocno: false, poruka: `Svi atomi imaju oktet, ali tražena je struktura s ${opisVisestrukih(M, tocniRed)}. Rasporedi veze drukčije.`, krivi: [] };
+    return { tocno: false, poruka: `${M.atomi.some((a) => a.golo && a.el !== "H" && (M.lewis.ljuska[a.spoj] ?? 8) < 8) ? "Svaki atom ima dopušten broj elektrona" : "Svi atomi imaju oktet"}, ali tražena je struktura s ${opisVisestrukih(M, tocniRed)}. Rasporedi veze drukčije.`, krivi: [] };
   }
   function porukaOblika(M, ob, kriv) {
     if (ob.dvoatomna) return "Dva atoma uvijek leže na jednom pravcu: čestica je linearna.";
@@ -40377,7 +40379,12 @@ nacin:
         const crtica = r.reduce((a, b) => a + b, 0);
         const par3 = Object.values(tocniParovi(M)).reduce((a, b) => a + b, 0);
         const prosiren = M.atomi.find((a) => a.golo && (M.lewis.ljuska[a.spoj] ?? 8) > 8);
-        return `${ime2(M)}: ${mn(crtica, ["vezna crtica", "vezne crtice", "veznih crtica"])} (s ${opisVisestrukih(M, r)}) i ${mn(par3, ["nevezni par", "nevezna para", "neveznih parova"])}; ${prosiren ? `${naziv4(prosiren.el)} ima prošireni oktet (${M.lewis.ljuska[prosiren.spoj]} elektrona), ostali atomi oktet` : "svi atomi imaju oktet"}${M.atomi.some((a) => a.el === "H") ? " (vodik duet)" : ""}.`;
+        const nepotpun = M.atomi.find((a) => a.golo && a.el !== "H" && (M.lewis.ljuska[a.spoj] ?? 8) < 8);
+        const iznimka = prosiren ? `${naziv4(prosiren.el)} ima prošireni oktet (${M.lewis.ljuska[prosiren.spoj]} elektrona)` : nepotpun ? `${naziv4(nepotpun.el)} ima nepotpuni oktet (${M.lewis.ljuska[nepotpun.spoj]} elektrona)` : null;
+        const imaH = M.atomi.some((a) => a.el === "H");
+        const samoH = iznimka && M.atomi.every((a) => a === (prosiren ?? nepotpun) || a.el === "H");
+        const oktet = !iznimka ? `svi atomi imaju oktet${imaH ? " (vodik duet)" : ""}` : samoH ? `${iznimka}, vodik duet` : `${iznimka}, ostali atomi oktet${imaH ? " (vodik duet)" : ""}`;
+        return `${ime2(M)}: ${mn(crtica, ["vezna crtica", "vezne crtice", "veznih crtica"])} (s ${opisVisestrukih(M, r)}) i ${mn(par3, ["nevezni par", "nevezna para", "neveznih parova"])}; ${oktet}.`;
       }
       if (s.nacin === "oblik") {
         const p = pitajOd2(s);
@@ -40607,10 +40614,13 @@ nacin:
     return "neutralna";
   }
   var traziOf3 = (s) => [].concat(s?.trazi ?? []).map((t) => typeof t === "string" ? t : t?.velicina);
+  var OPCE_KISELINE = ["HA", "HX"];
   function otopinaOf2(o) {
     if (!o || typeof o !== "object") return { greska: "otopina mora biti {formula, c, …}" };
     if (!isText(o.formula)) return { greska: 'otopina treba formulu (npr. "HCl", "CH₃COOH")' };
-    if (!atomiOd(o.formula.replace(/[⁺⁻+−-]+$/, ""))) return { greska: `formula „${o.formula}“ se ne da pročitati` };
+    const opca = OPCE_KISELINE.includes(o.formula);
+    if (opca && !isNum(o.Ka) && o.vrsta !== "kiselina") return { greska: `„${o.formula}“ je opća slaba kiselina: zadaj Ka ili vrsta: "kiselina" (uz alfa ili izmjereni pH)` };
+    if (!opca && !atomiOd(o.formula.replace(/[⁺⁻+−-]+$/, ""))) return { greska: `formula „${o.formula}“ se ne da pročitati` };
     const t = tvar(o.formula);
     const Kzadan = isNum(o.Ka) ? o.Ka : isNum(o.Kb) ? o.Kb : null;
     let vrsta2 = t?.vrsta ?? null;
@@ -40618,6 +40628,7 @@ nacin:
       if (isNum(o.Ka)) vrsta2 = "slaba_kiselina";
       else if (isNum(o.Kb)) vrsta2 = "slaba_baza";
       else if (isNum(o.alfa) && (o.vrsta === "kiselina" || o.vrsta === "baza")) vrsta2 = o.vrsta === "kiselina" ? "slaba_kiselina" : "slaba_baza";
+      else if (opca) vrsta2 = "slaba_kiselina";
       else
         return {
           greska: `„${o.formula}“ nije u popisu jakih kiselina, lužina, slabih kiselina i baza ni soli; za slabu kiselinu zadaj Ka, za slabu bazu Kb (ili alfa i vrsta: "kiselina" | "baza")`
@@ -41626,6 +41637,12 @@ Poruke za tipične greške (zaboravljen minus u pH = −log c, ln umjesto log, p
   }
   var zapisMl = (v, dec = 2) => isNum(v) ? v.toFixed(dec).replace(".", ",") : "";
   var zapisN = (v) => zapisC(v);
+  var JEDINICA_KORAKA = {
+    V_t: /\s*(mL|ml)\s*$/,
+    c_a: /\s*(mol\s*\/\s*dm³|mol\s*\/\s*dm3|mol\s*dm⁻³|mol\/L)\s*$/i,
+    n: /\s*mol\s*$/i,
+    sve: /\s*(mol\s*\/\s*dm³|mol\s*\/\s*dm3|mol\s*dm⁻³|mol\/L|mol|mL|ml|L|dm³|g)\s*$/i
+  };
   var zapisVrijednosti4 = (id, v) => id === "V_t" ? `${zapisMl(v, 1)} mL` : id === "c_a" ? `${zapisC(v)} mol/dm³` : `${zapisN(v)} mol`;
   function validateZapis2(z, v, at, need) {
     if (z == null) return;
@@ -41901,7 +41918,7 @@ tekst, nacin:
           const poslije = zapisPH(m.pH(m.Vekv + KAP));
           return {
             tocno: false,
-            poruka: `Nije sve. Kod titracije jake kiseline jakom lužinom pH oko točke ekvivalencije skoči naglo: kap prije je pH ${prije}, a kap poslije ${poslije}. U tom skoku boju mijenja i ${INDIKATORI[nedostaju[0]].naziv}.`,
+            poruka: `Nije sve. Kod titracije ${m.an.priroda === "kiselina" ? "jake kiseline jakom lužinom" : "jake lužine jakom kiselinom"} pH oko točke ekvivalencije skoči naglo: kap prije je pH ${prije}, a kap poslije ${poslije}. U tom skoku boju mijenja i ${INDIKATORI[nedostaju[0]].naziv}.`,
             nedostaju
           };
         }
@@ -41924,10 +41941,12 @@ tekst, nacin:
         const krivo = greske3(kor.id, s.koraci === false ? {} : k, s, m).filter((g) => !prihvaceno.some((v) => near(g.v, v, tol2(v)))).map((g) => ({ vrijednost: g.v, poruka: g.poruka, tolerancija: tol2(g.v) }));
         let ulaz = String(unosi[i] ?? "").trim();
         if (ulaz.includes("=")) ulaz = ulaz.slice(ulaz.lastIndexOf("=") + 1).trim();
-        ulaz = ulaz.replace(/\s*(mol\s*\/\s*dm³|mol\s*\/\s*dm3|mol\s*dm⁻³|mol\/L|mol|mL|ml)\s*$/i, "").trim();
+        ulaz = ulaz.replace(JEDINICA_KORAKA[kor.id === "V_t" || kor.id === "c_a" ? kor.id : "n"], "").trim();
         const broj9 = parseNumber(ulaz);
         let r;
-        if (isNum(broj9) && prihvaceno.some((v) => near(broj9, v, tol2(v)))) r = { tocno: true };
+        const tuda = ulaz.match(JEDINICA_KORAKA.sve);
+        if (!isNum(broj9) && tuda && isNum(parseNumber(ulaz.slice(0, tuda.index)))) r = { tocno: false, poruka: `Jedinica nije dobra: ${kor.oznaka} je u ${kor.jed}, a ne u ${tuda[1]}.` };
+        else if (isNum(broj9) && prihvaceno.some((v) => near(broj9, v, tol2(v)))) r = { tocno: true };
         else r = checkNumber({ input: broj9 ?? ulaz, answer: kor.vrijednost, tol: tol2(kor.vrijednost), unit: "", krivo, savjet: s.savjet || `Pogledaj: ${kor.formula}.` });
         if (!r.tocno) return koraci.length > 1 ? { ...r, praznina: i, poruka: `${kor.oznaka}: ${r.poruka}` } : { ...r, praznina: 0 };
         k[kor.id] = broj9;
@@ -42570,16 +42589,21 @@ tekst, nacin:
       const c = BOJE_TALOGA.find((b) => b !== o.talog.boja && !iz.slice(0, 2).some((x) => x.kljuc.includes(`talog:${b}`)));
       if (c) kandidati2.push(sint({ ...prazno, talog: { boja: c }, boja: o.boja }, `Talog nastaje, ali nije ${BOJE3[c].m}.`));
     }
+    if (o.zamucenje) {
+      const c = BOJE_TALOGA.find((b) => b !== o.zamucenje.boja);
+      if (c) kandidati2.push(sint({ ...prazno, talog: { boja: c }, boja: o.boja }, `Nastaju sitne čestice, ali nisu ${BOJE3[c].z.replace(/a$/, "e")}.`));
+    }
     if (!o.plamen) {
       if (!o.plin && !o.indikator) kandidati2.push(sint({ ...prazno, plin: { formula: "?", jakost: 3 } }, "Ovdje se ne razvija plin."));
       if (imaPromjenu(o)) kandidati2.push(sint(prazno, "Ovdje se vidi promjena."));
       if (!o.talog && !o.indikator) kandidati2.push(sint({ ...prazno, talog: { boja: "bijela" } }, "Ovdje ne nastaje talog."));
     }
     kandidati2.push(...iz.slice(2));
+    const isto = (kljuc3) => o.zamucenje && kljuc3.replace(`talog:${o.zamucenje.boja}`, "zamucenje") === tocna.kljuc || o.talog && kljuc3.replace("zamucenje", `talog:${o.talog.boja}`) === tocna.kljuc;
     const krive = [];
     for (const k of kandidati2) {
       if (krive.length >= n - 1) break;
-      if (vidjeno.has(k.kljuc) || tekstovi.has(k.tekst)) continue;
+      if (vidjeno.has(k.kljuc) || tekstovi.has(k.tekst) || isto(k.kljuc)) continue;
       vidjeno.add(k.kljuc);
       tekstovi.add(k.tekst);
       krive.push(k);
@@ -43095,7 +43119,8 @@ tekst, nacin:
     const xi = dosegDoRavnoteze(s, por.c, por.K);
     const rel = Math.log(Q / por.K);
     const smjer = Math.abs(rel) < 1e-9 ? "nema" : rel < 0 ? "udesno" : "ulijevo";
-    return { prije: st, poremeceno: por, poslije: { ...por, c: pomakni(s, por.c, Math.abs(rel) < 1e-9 ? 0 : xi) }, xi: Math.abs(rel) < 1e-9 ? 0 : xi, Q, smjer };
+    const x = Math.abs(rel) < 1e-9 ? 0 : xi;
+    return { prije: st, poremeceno: por, poslije: { ...por, c: pomakni(s, por.c, x) }, xi: x, Q, smjer };
   }
   var bojaVrste = (s, f2) => s?.boje && typeof s.boje === "object" ? s.boje[f2] ?? null : null;
   var obojena = (s) => ukljucene(s).filter((x) => {
@@ -43135,7 +43160,7 @@ tekst, nacin:
     const naStrani = (strana2) => {
       const x = o.filter((v) => v.strana === strana2);
       const b2 = bojaVrste(s, x[0].formula);
-      return `prevladava ${BOJE3[b2].z} boja (${x.map((v) => `⟦${v.formula}⟧`).join(", ")})`;
+      return `boja se mijenja prema ${BOJE3[b2].z.replace(/a$/, "oj")} (${x.map((v) => `⟦${v.formula}⟧`).join(", ")})`;
     };
     if (vr === "dvije") return [{ kljuc: "L", tekst: naStrani("L") }, { kljuc: "D", tekst: naStrani("D") }, { kljuc: "ista", tekst: "boja se ne mijenja" }];
     const b = BOJE3[bojaVrste(s, o[0].formula)].z;
@@ -43152,12 +43177,20 @@ tekst, nacin:
     { kljuc: "ista", tekst: "ne mijenja se" }
   ];
   var pitanjaOd = (s) => Array.isArray(s.pitaj) && s.pitaj.length ? s.pitaj : ["smjer"];
+  function praviloBoje(s, p = pomak(s, s.promjena)) {
+    if (vrstaBoje(s) !== "dvije" || s.ravnotezne) return null;
+    const pr = procitajPromjenu(s.promjena);
+    const x = (pr?.vrsta === "dodaj" || pr?.vrsta === "ukloni") && obojena(s).find((y) => y.formula === pr.formula);
+    if (x) return pr.vrsta === "dodaj" ? x.strana : x.strana === "L" ? "D" : "L";
+    return { udesno: "D", ulijevo: "L", nema: "ista" }[p?.smjer] ?? null;
+  }
   function rjesenjePomaka(s) {
     const st = pocetnoStanje6(s);
     const sim = simuliraj(s, st, s.promjena);
     const p = pomak(s, s.promjena);
     const out = { smjer: p?.smjer, sim, pomak: p };
     out.boja = promjenaBoje(s, st.c, sim.poslije.c);
+    out.pravilo = praviloBoje(s, p);
     if (isText(s.tvar) && s.tvar in st.c) {
       const a = st.c[s.tvar];
       const b = sim.poslije.c[s.tvar];
@@ -43513,6 +43546,8 @@ tekst, nacin:
           if (need(vr, "pitanje o boji treba boje obojenih vrsta koje ulaze u ravnotežu")) {
             const p = procitajPromjenu(s.promjena);
             need(!(vr === "jedna" && ["povecanje_tlaka", "smanjenje_tlaka", "razrjedivanje"].includes(p.vrsta)), "uz promjenu tlaka ili razrjeđivanje boja jedne obojene tvari nije jednoznačna (smjesa se najprije zgusne ili razrijedi, a pomak to samo djelomično poništi): pitaj smjer ili koncentraciju");
+            const rj = rjesenjePomaka(s);
+            need(rj.pravilo == null || rj.pravilo === rj.boja, `boja bez zadanih koncentracija ovdje nije jednoznačna (omjer obojenih tvari ${rj.boja === "ista" ? "ostaje isti" : "ne slijedi pravilo"}): zadaj ravnotezne ili pitaj smjer`);
           }
         }
         if (pit.includes("koncentracija")) {
@@ -43569,7 +43604,9 @@ tekst, nacin:
           const x = p.formula && vrste(s).find((y) => y.formula === p.formula);
           let poruka2;
           if (x && bojaVrste(s, x.formula) && bojaVrste(s, x.formula) !== "bezbojna" && (p.vrsta === "dodaj" || p.vrsta === "ukloni"))
-            poruka2 = `Pomak samo djelomično poništi promjenu: ${x.formula} (${BOJE3[bojaVrste(s, x.formula)].z} boja) ostane ${p.vrsta === "dodaj" ? "više" : "manje"} nego prije.`;
+            poruka2 = `Ravnoteža se pomiče ${rj.smjer === "udesno" ? "udesno" : "ulijevo"}, ali pomak samo djelomično poništi promjenu: ${x.formula} (${BOJE3[bojaVrste(s, x.formula)].z} boja) ipak ostane ${p.vrsta === "dodaj" ? "više" : "manje"} nego prije.`;
+          else if (vrstaBoje(s) === "dvije" && rj.smjer !== "nema")
+            poruka2 = "Boja prati pomak ravnoteže: strana prema kojoj se ravnoteža pomiče dobiva više svoje obojene tvari, pa se boja mijenja prema boji te strane.";
           else if (rj.smjer === "nema") poruka2 = "Ravnoteža se ne pomiče, pa ni omjer obojenih tvari ostaje isti.";
           else poruka2 = `Boju daju obojene tvari (${obojena(s).map((y) => `${y.formula} ${BOJE3[bojaVrste(s, y.formula)].z}`).join(", ")}): kojih ima više kad se ravnoteža pomakne?`;
           return { tocno: false, poruka: poruka2, krivo: "boja" };
@@ -43689,6 +43726,12 @@ tekst, nacin:
   var S_VODOM = /* @__PURE__ */ new Set(["Na", "K", "Ca", "Ba", "Cs"]);
   var SAMO_ELEKTROLIZA = /* @__PURE__ */ new Set(["O₂/H₂O", "O₂/OH⁻", "H₂O/H₂"]);
   var NEMETALNI = { "H⁺/H₂": "vodikova elektroda", "Cl₂/Cl⁻": "klorova elektroda", "Br₂/Br⁻": "bromova elektroda", "I₂/I⁻": "jodova elektroda" };
+  var NE_DO_METALA = {
+    "Fe³⁺": "se metalom najprije reducira do Fe²⁺, a ne do željeza (npr. Cu + 2 Fe³⁺ → Cu²⁺ + 2 Fe²⁺)",
+    "Cu⁺": "nije postojan u vodi (prelazi u Cu²⁺ i Cu) i njegove soli su slabo topljive",
+    "Cr²⁺": "nije postojan (oksidira se u Cr³⁺)",
+    "Ti²⁺": "nije postojan (reducira vodu)"
+  };
   var ION_METALA2 = { Cu: "Cu²⁺", Fe: "Fe²⁺", Cr: "Cr³⁺" };
   function infoPara(p) {
     const kljuc3 = kljucPara(p);
@@ -44277,6 +44320,8 @@ tekst, nacin:
       if (!need(ioni2, `otopina „${s.otopina}“ mora biti formula soli ili kiseline s kationom s lista (npr. "CuSO₄", "AgNO₃", "HCl")`)) return;
       need(ioni2.anion !== "OH⁻" && ioni2.anion !== "O²⁻", "otopina mora biti sol ili kiselina, ne lužina ili oksid");
       need(ioni2.par.red !== s.metal, `${pm.naziv} u otopini vlastite soli ne reagira: to nije pitanje istiskivanja`);
+      const ne = NE_DO_METALA[ioni2.kation];
+      need(!ne, `${ioni2.kation} u otopini ${s.otopina} ${ne}: to nije istiskivanje metala po paru ${ioni2.par.kljuc}; zadaj sol iona koji se reducira do metala (npr. ${ioni2.kation === "Fe³⁺" ? "FeSO₄" : "CuSO₄"})`);
       if (s.jednadzba != null) need(typeof s.jednadzba === "boolean", "jednadzba je true ili false");
       if (s.jednadzba) need(istiskivanje(s.metal, s.otopina)?.jednadzba, "ionska jednadžba istiskivanja ne može se izjednačiti");
       return;
@@ -44446,7 +44491,7 @@ otopine?: [formula, formula] (npr. ["ZnSO₄", "CuSO₄"]; zadano piše samo ion
 - "istrazi" (nije zadatak): padajući popis za svaku čašu (izbor?: parovi, zadano ${IZBOR_CLANKA.join(", ")}), crtež s elektronima u žici i ionima u mostu, voltmetar s ΔE°, polureakcije, ukupno, shema, Voltin niz i istiskivanje u oba smjera;
 - "polovi": učenik označi anodu/katodu, pol (+/−) i smjer elektrona; pitaj?: podskup ["uloge", "polovi", "elektroni", "most"] (zadano prva tri; "most" = kamo idu kationi iz mosta). Prije provjere crtež nema oznaka ni strelica;
 - "napon": učenik upisuje ΔE° (tri decimale kao na listu); poruke za negativan napon (zamijenjene elektrode), zbrojene potencijale, potencijal pomnožen koeficijentom ili brojem elektrona, samo E° jedne elektrode; krivo?: [{vrijednost, poruka}];
-- "istiskivanje": metal ("Zn") uronjen u otopina (sol "CuSO₄" ili kiselina "HCl"); učenik bira reagira li; jednadzba?: true – uz „reagira“ upisuje i koeficijente ionske jednadžbe (npr. Cu + 2 Ag⁺ → Cu²⁺ + 2 Ag). Bez elektrode i otopine istog metala.
+- "istiskivanje": metal ("Zn") uronjen u otopina (sol "CuSO₄" ili kiselina "HCl"); učenik bira reagira li (sol iona koji se ne reducira do metala, Fe³⁺ ili Cu⁺, validate odbija: Cu + FeCl₃ ide u Fe²⁺); jednadzba?: true – uz „reagira“ upisuje i koeficijente ionske jednadžbe (npr. Cu + 2 Ag⁺ → Cu²⁺ + 2 Ag). Bez elektrode i otopine istog metala.
 Elektroliza: elektrolit (formula: "CuSO₄", "NaCl", "Na₂SO₄", "H₂SO₄", "NaOH", "Al₂O₃", "AgNO₃", "ZnCl₂"…), stanje: "aq" (vodena otopina) | "l" (talina), anoda?/katoda?: "grafit" (zadano) | "Pt" | simbol metala (metalna anoda se otapa, npr. "Cu" za pročišćavanje bakra).
 Školska pravila: katoda u talini – metal; u otopini – metal ako mu je E° veći od E°(H₂O/H₂) = −0,828 V (Zn, Fe, Ni, Cu, Ag…), inače vodik (alkalijski i zemnoalkalijski metali, Al); kiselina – vodik. Anoda: Cl⁻, Br⁻, I⁻ daju halogen; SO₄²⁻, NO₃⁻ (u otopini) ne, nego kisik iz vode; O²⁻ i OH⁻ daju kisik; metalna anoda se otapa.
 serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijski (isti naboj); plin?: {uvjeti: "normirani"} ili {p, jedinica ("kPa"…), t (°C) ili T (K)} za volumen plina.
@@ -44691,6 +44736,27 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
   var ALKALIJSKI = /* @__PURE__ */ new Set(["Li", "Na", "K", "Rb", "Cs", "Fr"]);
   var ZEMNOALKALIJSKI = /* @__PURE__ */ new Set(["Be", "Mg", "Ca", "Sr", "Ba", "Ra"]);
   var jeMetal = (el) => element(el)?.vrsta === "metal";
+  var manjeEnOdH = (el) => (element(el)?.en ?? 9) < (element("H")?.en ?? 2.2) - 0.1;
+  var OKS_METALA = {
+    Al: [3],
+    Ti: [2, 3, 4],
+    V: [2, 3, 4, 5],
+    Cr: [2, 3, 6],
+    Mn: [2, 3, 4, 6, 7],
+    Fe: [2, 3, 6],
+    Co: [2, 3],
+    Ni: [2, 3],
+    Cu: [1, 2],
+    Zn: [2],
+    Ag: [1],
+    Cd: [2],
+    Sn: [2, 4],
+    Pb: [2, 4],
+    Hg: [1, 2],
+    Au: [1, 3]
+  };
+  var obicanZaMetal = (el, v) => !OKS_METALA[el] || v === 0 || OKS_METALA[el].includes(v);
+  var DISULFIDNI_METALI = /* @__PURE__ */ new Set(["Fe", "Co", "Ni", "Mn", "Cu", "Zn"]);
   function raspon4(el) {
     const e = element(el);
     if (!e) return [-8, 8];
@@ -44765,6 +44831,7 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
     if (n.H != null) {
       const ostali = els.filter((e) => e !== "H");
       if (ostali.every(jeMetal)) postavi("H", -1, "hidrid", `Vodik vezan samo na metal (hidrid metala) ima −1: metal je manje elektronegativan od vodika.`);
+      else if (ostali.every(manjeEnOdH)) postavi("H", -1, "hidrid", `Vodik je ovdje vezan na ${nabrajanje3(ostali.map(naziv5))}, ${ostali.length > 1 ? "koji su manje elektronegativni" : "koji je manje elektronegativan"} od vodika, pa vodik ima −1 (kao u hidridu).`);
       else postavi("H", 1, "H", "Vodik vezan na nemetal ima +1.");
     }
     const zbrojPoznatih = () => Object.entries(ox).reduce((a, [el, v]) => a + n[el] * v, 0);
@@ -44797,11 +44864,17 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
       const [a, b] = U;
       const en = (e) => element(e)?.en ?? 0;
       const neg = en(a) >= en(b) ? a : b;
+      const pos = neg === a ? b : a;
       const g = element(neg)?.skupina;
       if (g >= 15 && g <= 17) {
         const v = g - 18;
-        const ion = zapisIona2(neg, v);
-        postavi(neg, v, "binarni", `U ${opis2} je ${naziv5(neg)} elektronegativniji element, pa ima negativan oksidacijski broj kao u ionu ${ion}: ${zapisOks(v)}.`);
+        const vPos = (Q - n[neg] * v) / n[pos];
+        if (neg === "S" && Q === 0 && n.S === 2 * n[pos] && DISULFIDNI_METALI.has(pos) && !obicanZaMetal(pos, vPos)) {
+          postavi("S", -1, "disulfid", `${velikoSlovo5(opis2)} je disulfid (kao pirit FeS₂): sumpor je u ionu S₂²⁻ (veza S–S), pa naboj −2 dijele dva atoma sumpora, svaki −1.`);
+        } else {
+          const ion = zapisIona2(neg, v);
+          postavi(neg, v, "binarni", `U ${opis2} je ${naziv5(neg)} elektronegativniji element, pa ima negativan oksidacijski broj kao u ionu ${ion}: ${zapisOks(v)}.`);
+        }
         U = nepoznati();
       }
     }
@@ -44810,11 +44883,13 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
       const [el] = U;
       const v = (Q - zbrojPoznatih()) / n[el];
       if (!Number.isInteger(v)) return { greska: `u ${opis2} ${naziv5(el)} bi imao prosjek ${Q - zbrojPoznatih()}/${n[el]}: pravila ne daju cijeli broj (atomi imaju različite oksidacijske brojeve)` };
+      if (v === 0 && n[el] > 1) return { greska: `u ${opis2} ${naziv5(el)} bi imao prosjek 0: atomi imaju različite oksidacijske brojeve (npr. +1 i −1), a pravila daju samo prosjek` };
       postavi(el, v, "racun", racun(el, v));
     }
     for (const el of els) {
       const [min, max] = raspon4(el);
       if (ox[el] < min || ox[el] > max) return { greska: `u ${opis2} ${naziv5(el)} bi imao ${zapisOks(ox[el])}, a to ne može: pravila ovdje ne daju smislen rezultat (provjeri formulu i naboj)` };
+      if (!obicanZaMetal(el, ox[el])) return { greska: `u ${opis2} ${naziv5(el)} bi imao ${zapisOks(ox[el])}, a taj oksidacijski broj ${genitiv(naziv5(el))} nije uobičajen: pravila ovdje ne daju pouzdan rezultat` };
     }
     if (zbrojPoznatih() !== Q) return { greska: `u ${opis2} zbroj oksidacijskih brojeva (${zapisOks(zbrojPoznatih())}) nije jednak naboju (${zapisOks(Q)}): provjeri formulu` };
     return { ox, pravilo: pravilo4 };
@@ -44856,7 +44931,7 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
         const n = ostatak.reduce((a, k) => a + T4[k].eff, 0);
         const v = Qo / n;
         const [min, max] = raspon4(el);
-        if (!Number.isInteger(v) || v < min || v > max) return null;
+        if (!Number.isInteger(v) || v < min || v > max || !obicanZaMetal(el, v)) return null;
         const tekst = `${velikoSlovo5(opis2)} sadrži ${ioni2}; ${nadeni.length === 1 && nadeni[0].puta === 1 ? "on nosi" : "oni nose"} ukupno ${zapisOks(nabojIona)}, pa ${n > 1 ? `${n} atoma ${genitiv(naziv5(el))} nose ${zapisOks(Qo)}, svaki` : naziv5(el)} ${zapisOks(v)} (zbroj ${Q === 0 ? "u neutralnoj tvari je 0" : `je ${zapisOks(Q)}`}).`;
         for (const k of ostatak) poTokenu[k] = { v, vrsta: "ionski", tekst, jedinka: { ks, Q, opis: opis2 } };
       } else {
@@ -44992,7 +45067,8 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
     if (T4.some((t) => t.t === "tekst")) return { greska: `formula „${f2}“ ima znak koji nije dio formule` };
     const Q = c.naboj;
     const brojC = c.atomi.C ?? 0;
-    if (brojC >= 2) {
+    const oksalat = T4.some((t, k) => t.t === "el" && t.el === "C" && t.n === 2 && T4[k + 1]?.t === "el" && T4[k + 1].el === "O" && T4[k + 1].n === 4);
+    if (brojC >= 2 && !(brojC === 2 && oksalat)) {
       const s = poStrukturi(f2, T4);
       if (s.greska) return s;
       T4.forEach((t, k) => t.t === "el" && Object.assign(t, razlogOd(s.poTokenu[k])));
@@ -45436,7 +45512,7 @@ serijski?: {elektrolit, stanje, anoda?, katoda?} – drugi članak spojen serijs
     uloga: (s) => s.nacin === "istrazi" ? POGLEDAJ : ODGOVOR,
     istrazi: (s) => s.nacin === "istrazi",
     opis: `Oksidacijski brojevi i redoks-reakcije. Brojevi se pišu iznad simbola, arapski s predznakom (+6, −2, 0); učenik smije upisati i rimski (VI, −II).
-Kod sve računa sam: oksidacijske brojeve po školskim pravilima (element 0; jednoatomni ion = naboj; F −1; alkalijski +1, zemnoalkalijski +2; H +1, uz metal −1; O −2, u peroksidu −1, s fluorom +2; zbroj = naboj; s dvije nepoznanice preko poznatog iona (CuSO₄ = Cu²⁺ + SO₄²⁻, NH₄NO₃) ili u binarnom spoju), za formule s više C-atoma po vezama iz sažete strukturne formule (CH₃CH₂CHO, CH₃COOH, (CH₃)₂CHCH₂CH₂OH; ne C₃H₆O), što se oksidira i reducira, sredstva, polureakcije i ukupnu jednadžbu (logika widgeta jednadzba). Formula za koju pravila daju samo prosjek (Fe₃O₄) se odbija.
+Kod sve računa sam: oksidacijske brojeve po školskim pravilima (element 0; jednoatomni ion = naboj; F −1; alkalijski +1, zemnoalkalijski +2; H +1, uz metal ili manje elektronegativan element −1 (NaH, SiH₄); O −2, u peroksidu −1, s fluorom +2; zbroj = naboj; s dvije nepoznanice preko poznatog iona (CuSO₄ = Cu²⁺ + SO₄²⁻, NH₄NO₃) ili u binarnom spoju; disulfid FeS₂: Fe +2, S −1), za formule s više C-atoma po vezama iz sažete strukturne formule (CH₃CH₂CHO, CH₃COOH, (CH₃)₂CHCH₂CH₂OH; ne C₃H₆O), što se oksidira i reducira, sredstva, polureakcije i ukupnu jednadžbu (logika widgeta jednadzba). Oksalat (H₂C₂O₄, C₂O₄²⁻) ide po pravilima (C +3). Formula za koju pravila daju samo prosjek (Fe₃O₄, CaOCl₂) ili metal s neuobičajenim oksidacijskim brojem se odbija.
 Formula: Unicode indeksi i naboj („K₂Cr₂O₇“, „SO₄²⁻“, „CuSO₄·5H₂O“, „H₂O₂“, „NaH“). Reakcija: reaktanti, produkti, strelica?, iznad?, koeficijenti?, stanja? kao u widgetu jednadzba (kod je izjednačuje i prikazuje s koeficijentima).
 tekst, nacin:
 - "istrazi" (nije zadatak): formula, ili formule: [do ${NAJVISE_FORMULA}] (učenik ih prebacuje), ili reakcija. Brojevi stoje iznad atoma; dodir atoma pokaže pravilo i račun. Uz reakciju: koji se element oksidira, a koji reducira (boje), koliko elektrona, sredstva i polureakcije (ako ih kod može sastaviti ili ih autor zada);
@@ -47910,6 +47986,13 @@ Kod računa termogram, sve korake, prihvaća i račun iz učenikova prethodnog k
           Array.isArray(T4.vrijednosti[f2]) && T4.vrijednosti[f2].length === T4.t.length && T4.vrijednosti[f2].every((v) => isNum(v) && v >= 0),
           `tablica.vrijednosti[„${f2}“] mora imati ${T4.t.length} nenegativnih brojeva (kao t)`
         );
+        const nu = R4.vrste.find((v) => v.f === f2)?.nu ?? 0;
+        const niz = T4.vrijednosti[f2];
+        if (nu && Array.isArray(niz) && niz.every(isNum))
+          need(
+            !niz.some((x, i) => i && (nu < 0 ? x > niz[i - 1] : x < niz[i - 1])),
+            nu < 0 ? `tablica.vrijednosti[„${f2}“]: ${f2} je reaktant i troši se, pa vrijednosti s vremenom ne smiju rasti` : `tablica.vrijednosti[„${f2}“]: ${f2} je produkt i nastaje, pa vrijednosti s vremenom ne smiju padati`
+          );
       }
       if (T4.zapisi != null) {
         if (need(
@@ -50347,7 +50430,9 @@ provjerava da se zadani podaci slažu i daje poruke za tipične greške: zamijen
         const f2 = faktor3(kor.velicina, kor.jedinica);
         const izUcenika = kor.pravilo.f(k) / f2;
         const ulaz = String(unosi[i] ?? "");
-        const broj9 = parseNumber(ulaz, kor.jedinica);
+        const uPostocima = kor.jedinica === "" && rastavi2(kor.velicina)?.baza === "w" && /%\s*$/.test(ulaz);
+        const uPost = uPostocima ? parseNumber(ulaz.replace(/\s*%\s*$/, "")) : null;
+        const broj9 = uPostocima ? isNum(uPost) ? uPost / 100 : null : parseNumber(ulaz, kor.jedinica);
         const ime4 = kor.oznaka ?? oznaka2(kor.velicina, s);
         const prihvati = (b) => near(b, kor.vrijednost, Math.abs(kor.vrijednost) * pct) || near(b, izUcenika, Math.abs(izUcenika) * pct);
         if (isNum(broj9) && prihvati(broj9)) {
@@ -50366,7 +50451,7 @@ provjerava da se zadani podaci slažu i daje poruke za tipične greške: zamijen
           }
         } else
           r = checkNumber({
-            input: ulaz,
+            input: uPostocima && isNum(broj9) ? broj9 : ulaz,
             answer: izUcenika,
             tol: Math.abs(izUcenika) * pct,
             unit: kor.jedinica,
@@ -53292,7 +53377,7 @@ pokazi_tocke?: true crta zadanu točku ili put i prije provjere (zadano: tek nak
   function provjeriOcitanje(M, r, dio, ulaz, tol2, s, i) {
     const pitaT = r.pita === "t" || r.pita === "trojna" && dio === 0;
     const jed3 = pitaT ? r.pita === "t" ? r.jed : M.os.jx : M.os.jy;
-    const tocno = tocnoOcitanja(M, r, dio);
+    const tocno = pitaT ? Number(zaokruzi4(tocnoOcitanja(M, r, dio), ZAOKRUZI(M)[0]).toPrecision(10)) : tocnoOcitanja(M, r, dio);
     const krivo = [];
     const autor = (s.krivo ?? []).filter(
       (k) => (k.korak ?? traziOf8(s).length - 1) === i
