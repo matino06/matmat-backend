@@ -4369,6 +4369,44 @@
        "T",
        "W"
       ]
+     },
+     {
+      "tip": "plin_posuda",
+      "nacin": "istrazi",
+      "tekst": "U boci obujma 1,24 L pri 25 °C je 0,0501 mol propena. Otvori ventil i dodaj dušik (do 0,150 mol), pa ga opet ispusti. Gledaj parcijalni tlak svakog plina i ukupni tlak.",
+      "smjesa": {
+       "plinovi": [
+        {
+         "formula": "C₃H₆",
+         "naziv": "propen",
+         "n": 0.0501,
+         "zapis": "0,0501"
+        },
+        {
+         "formula": "N₂",
+         "naziv": "dušik",
+         "n": 0
+        }
+       ],
+       "V": 1.24,
+       "t": 25,
+       "zapis": {
+        "V": "1,24"
+       }
+      },
+      "jedinice": {
+       "p": "kPa",
+       "V": "L"
+      },
+      "kontrole": [
+       "N₂"
+      ],
+      "raspon": {
+       "N₂": [
+        0,
+        0.2
+       ]
+      }
      }
     ],
     "blizanac": {
@@ -4416,6 +4454,347 @@
      "tip": "broj",
      "tekst": "Koliko je 12 + 1?",
      "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "plin_posuda-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta plin_posuda."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "plin_posuda 4",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "U boci obujma 1,24 L pri 25 °C nalazi se 0,0501 mol propena, \\(\\mathrm{C_3H_6}\\), i 0,150 mol dušika. Izračunaj parcijalni tlak svakog plina i ukupni tlak u boci.",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "C₃H₆",
+        "naziv": "propen",
+        "n": 0.0501,
+        "zapis": "0,0501"
+       },
+       {
+        "formula": "N₂",
+        "naziv": "dušik",
+        "n": 0.15,
+        "zapis": "0,150"
+       }
+      ],
+      "V": 1.24,
+      "t": 25,
+      "zapis": {
+       "V": "1,24"
+      }
+     },
+     "jedinice": {
+      "p": "kPa",
+      "V": "L"
+     },
+     "trazi": [
+      {
+       "velicina": "p",
+       "plin": "C₃H₆"
+      },
+      {
+       "velicina": "p",
+       "plin": "N₂"
+      },
+      {
+       "velicina": "p"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "plin_posuda 5",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "U bocu s 0,0501 mol propena dodano je 0,150 mol dušika, pa je ukupni tlak porastao na 400 kPa. Koliki je množinski udio propena i koliki je sada njegov parcijalni tlak?",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "C₃H₆",
+        "naziv": "propen",
+        "n": 0.0501,
+        "zapis": "0,0501"
+       },
+       {
+        "formula": "N₂",
+        "naziv": "dušik",
+        "n": 0.15,
+        "zapis": "0,150"
+       }
+      ],
+      "p": 400
+     },
+     "jedinice": {
+      "p": "kPa"
+     },
+     "trazi": [
+      {
+       "velicina": "x",
+       "plin": "C₃H₆"
+      },
+      {
+       "velicina": "p",
+       "plin": "C₃H₆"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "plin_posuda 6",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "U boci je 2,10 g propena, \\(\\mathrm{C_3H_6}\\), i 4,20 g dušika. Ukupni tlak u boci je 400 kPa. Izračunaj množinski udio propena i njegov parcijalni tlak.",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "C₃H₆",
+        "naziv": "propen",
+        "m": 2.1,
+        "zapis": "2,10"
+       },
+       {
+        "formula": "N₂",
+        "naziv": "dušik",
+        "m": 4.2,
+        "zapis": "4,20"
+       }
+      ],
+      "p": 400
+     },
+     "jedinice": {
+      "p": "kPa"
+     },
+     "trazi": [
+      {
+       "velicina": "x",
+       "plin": "C₃H₆"
+      },
+      {
+       "velicina": "p",
+       "plin": "C₃H₆"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "plin_posuda-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta plin_posuda."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "plin_posuda 7",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "Koliko iznosi parcijalni tlak kisika u plinskoj smjesi kisika i dušika ako je ukupni tlak plinske smjese 1200 hPa, a množinski udio dušika u smjesi 75,00 %?",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "N₂",
+        "naziv": "dušik",
+        "x": 0.75,
+        "zapis": "75,00 %"
+       },
+       {
+        "formula": "O₂",
+        "naziv": "kisik"
+       }
+      ],
+      "p": 1200
+     },
+     "jedinice": {
+      "p": "hPa"
+     },
+     "trazi": {
+      "velicina": "p",
+      "plin": "O₂"
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "plin_posuda 8",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "Zrak je smjesa plinova. Množinski udjeli u suhome zraku su: \\(x(\\mathrm{N_2}) = 0{,}78\\), \\(x(\\mathrm{O_2}) = 0{,}21\\), a ostali plinovi 0,01 (uzmi da je to samo argon). Izračunaj parcijalni tlak kisika pri tlaku \\(10^5\\) Pa i relativnu molekulsku masu suhoga zraka.",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "N₂",
+        "naziv": "dušik",
+        "x": 0.78,
+        "zapis": "0,78"
+       },
+       {
+        "formula": "O₂",
+        "naziv": "kisik",
+        "x": 0.21,
+        "zapis": "0,21"
+       },
+       {
+        "formula": "Ar",
+        "naziv": "ostali plinovi (argon)",
+        "x": 0.01,
+        "zapis": "0,01"
+       }
+      ],
+      "p": 100000,
+      "zapis": {
+       "p": "10⁵"
+      }
+     },
+     "jedinice": {
+      "p": "Pa"
+     },
+     "trazi": [
+      {
+       "velicina": "p",
+       "plin": "O₂"
+      },
+      {
+       "velicina": "Mr"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "plin_posuda 9",
+    "pitanje": {
+     "tip": "plin_posuda",
+     "nacin": "izracunaj",
+     "tekst": "U zatvorenoj posudi volumena 10 L nalazi se smjesa metana i ugljikova(IV) oksida. Ukupni tlak smjese je \\(8{,}31\\cdot10^{4}\\) Pa pri 27 °C. Kolika je množina ugljikova(IV) oksida ako je u smjesi 0,22 mol metana?",
+     "smjesa": {
+      "plinovi": [
+       {
+        "formula": "CH₄",
+        "naziv": "metan",
+        "n": 0.22,
+        "zapis": "0,22"
+       },
+       {
+        "formula": "CO₂",
+        "naziv": "ugljikov(IV) oksid"
+       }
+      ],
+      "V": 10,
+      "t": 27,
+      "p": 83100,
+      "zapis": {
+       "p": "8,31·10⁴"
+      }
+     },
+     "jedinice": {
+      "p": "Pa",
+      "V": "L"
+     },
+     "trazi": {
+      "velicina": "n",
+      "plin": "CO₂"
+     },
+     "tolerancija_posto": 3
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -6603,54 +6982,6 @@
        "y"
       ],
       "ubrzanje": 0.25
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 11
-    }
-   },
-   {
-    "id": "b",
-    "naslov": "titranje 2",
-    "pitanje": {
-     "tip": "titranje",
-     "scena": "tocka",
-     "nacin": "izracunaj",
-     "tekst": "Tijelo titra po jednadžbi $y = 5\\ \\text{cm} \\cdot \\sin(15{,}7\\ \\text{s}^{-1} \\cdot t)$. Izračunaj period, frekvenciju i elongaciju u trenutku $t = 0{,}3$ s.",
-     "A": 5,
-     "jedinica_A": "cm",
-     "omega": 15.7,
-     "prikazi": [
-      "y-t",
-      "kruznica"
-     ],
-     "brojaci": [
-      "t",
-      "y"
-     ],
-     "ubrzanje": 0.25,
-     "pitaj": [
-      {
-       "velicina": "T"
-      },
-      {
-       "velicina": "f"
-      },
-      {
-       "velicina": "y",
-       "t": 0.3,
-       "jedinica": "cm"
-      }
-     ]
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "titranje",
@@ -6672,43 +7003,6 @@
        "v",
        "a"
       ]
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 12
-    }
-   },
-   {
-    "id": "c",
-    "naslov": "titranje 3",
-    "pitanje": {
-     "tip": "titranje",
-     "scena": "tocka",
-     "nacin": "zaustavi",
-     "tekst": "Tijelo krene iz ravnoteže. Zaustavi ga kad prijeđe put od **6 amplituda**. Koliko je vremena prošlo?",
-     "A": 3,
-     "jedinica_A": "cm",
-     "T": 8,
-     "prikazi": [
-      "y-t"
-     ],
-     "brojaci": [
-      "t",
-      "put"
-     ],
-     "cilj": {
-      "uvjet": "put",
-      "vrijednost": 6
-     }
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "titranje",
@@ -6751,40 +7045,41 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 13
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
-   }
-  ],
-  "zapamti": [
-   "Zapamti."
-  ]
- },
- "titranje-2": {
-  "verzija": 1,
-  "zadatak": {
-   "tekst": "Provjera widgeta titranje."
-  },
-  "podzadaci": [
+   },
    {
-    "id": "a",
-    "naslov": "titranje 4",
+    "id": "b",
+    "naslov": "titranje 2",
     "pitanje": {
      "tip": "titranje",
-     "scena": "njihalo",
-     "ikona": "ljuljacka",
-     "nacin": "odaberi_polozaj",
-     "tekst": "Dodirni **sve** položaje u kojima je traženo najveće.",
-     "A": 10,
+     "scena": "tocka",
+     "nacin": "izracunaj",
+     "tekst": "Tijelo titra po jednadžbi $y = 5\\ \\text{cm} \\cdot \\sin(15{,}7\\ \\text{s}^{-1} \\cdot t)$. Izračunaj period, frekvenciju i elongaciju u trenutku $t = 0{,}3$ s.",
+     "A": 5,
      "jedinica_A": "cm",
-     "T": 1.6,
-     "g": 10,
-     "pitanja": [
+     "omega": 15.7,
+     "prikazi": [
+      "y-t",
+      "kruznica"
+     ],
+     "brojaci": [
+      "t",
+      "y"
+     ],
+     "ubrzanje": 0.25,
+     "pitaj": [
       {
-       "trazi": "v_max"
+       "velicina": "T"
       },
       {
-       "trazi": "a_max"
+       "velicina": "f"
+      },
+      {
+       "velicina": "y",
+       "t": 0.3,
+       "jedinica": "cm"
       }
      ]
     },
@@ -6836,7 +7131,91 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "titranje 3",
+    "pitanje": {
+     "tip": "titranje",
+     "scena": "tocka",
+     "nacin": "zaustavi",
+     "tekst": "Tijelo krene iz ravnoteže. Zaustavi ga kad prijeđe put od **6 amplituda**. Koliko je vremena prošlo?",
+     "A": 3,
+     "jedinica_A": "cm",
+     "T": 8,
+     "prikazi": [
+      "y-t"
+     ],
+     "brojaci": [
+      "t",
+      "put"
+     ],
+     "cilj": {
+      "uvjet": "put",
+      "vrijednost": 6
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "titranje-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta titranje."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "titranje 4",
+    "pitanje": {
+     "tip": "titranje",
+     "scena": "njihalo",
+     "ikona": "ljuljacka",
+     "nacin": "odaberi_polozaj",
+     "tekst": "Dodirni **sve** položaje u kojima je traženo najveće.",
+     "A": 10,
+     "jedinica_A": "cm",
+     "T": 1.6,
+     "g": 10,
+     "pitanja": [
+      {
+       "trazi": "v_max"
+      },
+      {
+       "trazi": "a_max"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
      "odgovor": 14
     }
    },
@@ -6880,7 +7259,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 14 + 1?",
      "odgovor": 15
     }
    },
@@ -6937,7 +7316,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 15 + 1?",
      "odgovor": 16
     }
    }
@@ -6991,7 +7370,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 16 + 1?",
      "odgovor": 17
     }
    },
@@ -7034,7 +7413,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 17 + 1?",
      "odgovor": 18
     }
    },
@@ -7080,7 +7459,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 18 + 1?",
      "odgovor": 19
     }
    }
@@ -7132,7 +7511,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 19 + 1?",
      "odgovor": 20
     }
    },
@@ -7183,7 +7562,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 20 + 1?",
      "odgovor": 21
     }
    },
@@ -7232,7 +7611,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 21 + 1?",
      "odgovor": 22
     }
    }
@@ -7284,7 +7663,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 22 + 1?",
      "odgovor": 23
     }
    },
@@ -7326,7 +7705,7 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
+     "tekst": "Koliko je 23 + 1?",
      "odgovor": 24
     }
    }
@@ -7401,44 +7780,6 @@
         "jedinica": "m"
        }
       ]
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 25
-    }
-   },
-   {
-    "id": "b",
-    "naslov": "val_uze 2",
-    "pitanje": {
-     "tip": "val_uze",
-     "scena": "putujuci",
-     "nacin": "izracunaj",
-     "tekst": "Valna duljina je 1,2 m, a crvenoj kuglici od vrha brijega do ravnotežnog položaja treba 0,1 s. Kolika je frekvencija izvora i kolika je brzina vala?",
-     "L": 4.8,
-     "v": 3,
-     "T": 0.4,
-     "A": 0.15,
-     "istaknute": [
-      2.4
-     ],
-     "pitaj": [
-      {
-       "velicina": "f"
-      },
-      {
-       "velicina": "v"
-      }
-     ]
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "val_uze",
@@ -7488,12 +7829,80 @@
        "lambda",
        "f"
       ]
+     },
+     {
+      "tip": "val_uze",
+      "scena": "puls",
+      "nacin": "istrazi",
+      "tekst": "Napravi puls i gledaj kako se odbija. Promijeni kraj užeta: zid ili prsten koji klizi po šipki.",
+      "L": 12,
+      "v": 16,
+      "A": 0.4,
+      "kraj": "ucvrscen"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 26
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "val_uze 2",
+    "pitanje": {
+     "tip": "val_uze",
+     "scena": "putujuci",
+     "nacin": "izracunaj",
+     "tekst": "Valna duljina je 1,2 m, a crvenoj kuglici od vrha brijega do ravnotežnog položaja treba 0,1 s. Kolika je frekvencija izvora i kolika je brzina vala?",
+     "L": 4.8,
+     "v": 3,
+     "T": 0.4,
+     "A": 0.15,
+     "istaknute": [
+      2.4
+     ],
+     "pitaj": [
+      {
+       "velicina": "f"
+      },
+      {
+       "velicina": "v"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "val_uze",
+      "scena": "stojni",
+      "nacin": "istrazi",
+      "tekst": "Polako mijenjaj frekvenciju vibratora. Kad nit „zapleše“, prebroji trbuhe.",
+      "L": 1.2,
+      "v": 432,
+      "f": "f",
+      "klizaci": [
+       {
+        "id": "f",
+        "oznaka": "frekvencija vibratora",
+        "min": 50,
+        "max": 1000,
+        "korak": 10,
+        "pocetak": 300,
+        "jedinica": "Hz"
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -7516,22 +7925,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "val_uze",
-      "scena": "puls",
-      "nacin": "istrazi",
-      "tekst": "Napravi puls i gledaj kako se odbija. Promijeni kraj užeta: zid ili prsten koji klizi po šipki.",
-      "L": 12,
-      "v": 16,
-      "A": 0.4,
-      "kraj": "ucvrscen"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 27
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -7573,32 +7972,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "val_uze",
-      "scena": "stojni",
-      "nacin": "istrazi",
-      "tekst": "Polako mijenjaj frekvenciju vibratora. Kad nit „zapleše“, prebroji trbuhe.",
-      "L": 1.2,
-      "v": 432,
-      "f": "f",
-      "klizaci": [
-       {
-        "id": "f",
-        "oznaka": "frekvencija vibratora",
-        "min": 50,
-        "max": 1000,
-        "korak": 10,
-        "pocetak": 300,
-        "jedinica": "Hz"
-       }
-      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 28
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -7639,8 +8018,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 29
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -7674,8 +8053,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 30
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -7715,8 +8094,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 31
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -7747,8 +8126,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 32
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -7787,8 +8166,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 33
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -7838,8 +8217,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 34
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
     }
    },
    {
@@ -7865,8 +8244,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 35
+     "tekst": "Koliko je 20 + 1?",
+     "odgovor": 21
     }
    },
    {
@@ -7892,8 +8271,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 36
+     "tekst": "Koliko je 21 + 1?",
+     "odgovor": 22
     }
    }
   ],
@@ -7937,8 +8316,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 37
+     "tekst": "Koliko je 22 + 1?",
+     "odgovor": 23
     }
    },
    {
@@ -7968,8 +8347,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 38
+     "tekst": "Koliko je 23 + 1?",
+     "odgovor": 24
     }
    }
   ],
@@ -8062,12 +8441,34 @@
         "jedinica": "mm"
        }
       ]
+     },
+     {
+      "tip": "valne_fronte",
+      "scena": "pokretni_izvor",
+      "nacin": "istrazi",
+      "tekst": "Sirena svira $800$ Hz. **Mijenjaj brzinu vozila** i gledaj fronte ispred i iza njega i frekvenciju koju čuješ. Uključi i zvuk.",
+      "izvor": {
+       "f": 800,
+       "v": "vi"
+      },
+      "ikona": "vozilo",
+      "klizaci": [
+       {
+        "id": "vi",
+        "oznaka": "brzina vozila $v_i$",
+        "min": 0,
+        "max": 150,
+        "korak": 5,
+        "pocetak": 20,
+        "jedinica": "m/s"
+       }
+      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 39
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -8099,34 +8500,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "valne_fronte",
-      "scena": "pokretni_izvor",
-      "nacin": "istrazi",
-      "tekst": "Sirena svira $800$ Hz. **Mijenjaj brzinu vozila** i gledaj fronte ispred i iza njega i frekvenciju koju čuješ. Uključi i zvuk.",
-      "izvor": {
-       "f": 800,
-       "v": "vi"
-      },
-      "ikona": "vozilo",
-      "klizaci": [
-       {
-        "id": "vi",
-        "oznaka": "brzina vozila $v_i$",
-        "min": 0,
-        "max": 150,
-        "korak": 5,
-        "pocetak": 20,
-        "jedinica": "m/s"
-       }
-      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 40
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -8176,8 +8555,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 41
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -8228,8 +8607,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 42
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -8269,8 +8648,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 43
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -8304,8 +8683,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 44
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -8353,8 +8732,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 45
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -8396,8 +8775,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 46
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    }
   ],
@@ -8484,8 +8863,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 47
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -8529,8 +8908,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 48
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -8570,8 +8949,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 49
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -8621,8 +9000,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 50
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -8661,8 +9040,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 51
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -8697,8 +9076,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 52
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -8743,8 +9122,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 53
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -8784,8 +9163,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 54
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -8832,8 +9211,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 55
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -8893,12 +9272,47 @@
        "kut_povrsina",
        "izmedu"
       ]
+     },
+     {
+      "tip": "zrake",
+      "scena": "zrcalo_slika",
+      "nacin": "istrazi",
+      "tekst": "Povuci **oko** i promijeni udaljenost svijeće. Gdje se sijeku crtkani produžeci zraka?",
+      "udaljenost": 80,
+      "predmet": "svijeca",
+      "klizaci": [
+       {
+        "id": "udaljenost",
+        "min": 20,
+        "max": 150,
+        "korak": 10
+       }
+      ]
+     },
+     {
+      "tip": "zrake",
+      "scena": "lom",
+      "nacin": "istrazi",
+      "tekst": "Okreći laser i mijenjaj indeks loma donjeg sredstva. Prati omjer sinusa i točkice svjetlosti: gdje putuju sporije?",
+      "sredstvo2": {
+       "naziv": "voda",
+       "n": 1.33
+      },
+      "kut": 35,
+      "klizaci": [
+       {
+        "id": "n2",
+        "min": 1,
+        "max": 2.5,
+        "korak": 0.01
+       }
+      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 56
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -8928,25 +9342,69 @@
      },
      {
       "tip": "zrake",
-      "scena": "zrcalo_slika",
+      "scena": "ploca",
       "nacin": "istrazi",
-      "tekst": "Povuci **oko** i promijeni udaljenost svijeće. Gdje se sijeku crtkani produžeci zraka?",
-      "udaljenost": 80,
-      "predmet": "svijeca",
+      "tekst": "Mijenjaj debljinu ploče i indeks loma. Što se mijenja na izlaznoj zraci, a što ostaje isto?",
+      "ploca": {
+       "naziv": "staklo",
+       "n": 1.5,
+       "debljina": 2
+      },
+      "kut": 39,
       "klizaci": [
        {
-        "id": "udaljenost",
-        "min": 20,
-        "max": 150,
-        "korak": 10
+        "id": "debljina",
+        "min": 0.5,
+        "max": 4,
+        "korak": 0.5
+       },
+       {
+        "id": "n",
+        "min": 1.1,
+        "max": 2.5,
+        "korak": 0.05
        }
+      ]
+     },
+     {
+      "tip": "zrake",
+      "scena": "lom",
+      "nacin": "istrazi",
+      "tekst": "Zraka izlazi iz kristala (n = 1,6) u zrak. **Povećavaj upadni kut** i gledaj lomljenu i odbijenu zraku oko graničnog kuta.",
+      "sredstvo1": {
+       "naziv": "kristal",
+       "n": 1.6
+      },
+      "sredstvo2": {
+       "naziv": "zrak",
+       "n": 1
+      },
+      "kut": 25
+     },
+     {
+      "tip": "zrake",
+      "scena": "lom",
+      "nacin": "prikaz",
+      "tekst": "Iz kristala (n = 1,33) pod 60°: kut je veći od graničnog (48,8°), pa je to totalna refleksija.",
+      "sredstvo1": {
+       "naziv": "kristal",
+       "n": 1.33
+      },
+      "sredstvo2": {
+       "naziv": "zrak",
+       "n": 1
+      },
+      "kut": 60,
+      "prikazi": [
+       "kutovi",
+       "granicni"
       ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 57
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -8968,31 +9426,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "zrake",
-      "scena": "lom",
-      "nacin": "istrazi",
-      "tekst": "Okreći laser i mijenjaj indeks loma donjeg sredstva. Prati omjer sinusa i točkice svjetlosti: gdje putuju sporije?",
-      "sredstvo2": {
-       "naziv": "voda",
-       "n": 1.33
-      },
-      "kut": 35,
-      "klizaci": [
-       {
-        "id": "n2",
-        "min": 1,
-        "max": 2.5,
-        "korak": 0.01
-       }
-      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 58
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -9027,38 +9466,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "zrake",
-      "scena": "ploca",
-      "nacin": "istrazi",
-      "tekst": "Mijenjaj debljinu ploče i indeks loma. Što se mijenja na izlaznoj zraci, a što ostaje isto?",
-      "ploca": {
-       "naziv": "staklo",
-       "n": 1.5,
-       "debljina": 2
-      },
-      "kut": 39,
-      "klizaci": [
-       {
-        "id": "debljina",
-        "min": 0.5,
-        "max": 4,
-        "korak": 0.5
-       },
-       {
-        "id": "n",
-        "min": 1.1,
-        "max": 2.5,
-        "korak": 0.05
-       }
-      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 59
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -9084,27 +9497,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "zrake",
-      "scena": "lom",
-      "nacin": "istrazi",
-      "tekst": "Zraka izlazi iz kristala (n = 1,6) u zrak. **Povećavaj upadni kut** i gledaj lomljenu i odbijenu zraku oko graničnog kuta.",
-      "sredstvo1": {
-       "naziv": "kristal",
-       "n": 1.6
-      },
-      "sredstvo2": {
-       "naziv": "zrak",
-       "n": 1
-      },
-      "kut": 25
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 60
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -9125,31 +9523,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "zrake",
-      "scena": "lom",
-      "nacin": "prikaz",
-      "tekst": "Iz kristala (n = 1,33) pod 60°: kut je veći od graničnog (48,8°), pa je to totalna refleksija.",
-      "sredstvo1": {
-       "naziv": "kristal",
-       "n": 1.33
-      },
-      "sredstvo2": {
-       "naziv": "zrak",
-       "n": 1
-      },
-      "kut": 60,
-      "prikazi": [
-       "kutovi",
-       "granicni"
-      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 61
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -9188,8 +9567,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 62
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -9216,8 +9595,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 63
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -9253,8 +9632,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 64
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -9293,8 +9672,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 65
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
     }
    },
    {
@@ -9328,8 +9707,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 66
+     "tekst": "Koliko je 20 + 1?",
+     "odgovor": 21
     }
    },
    {
@@ -9365,8 +9744,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 67
+     "tekst": "Koliko je 21 + 1?",
+     "odgovor": 22
     }
    }
   ],
@@ -9404,8 +9783,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 68
+     "tekst": "Koliko je 22 + 1?",
+     "odgovor": 23
     }
    }
   ],
@@ -9453,35 +9832,6 @@
        40
       ],
       "tekst": "**Vuci predmet** prema leći i gledaj kako se slika mijenja: gdje je realna, gdje uvećana, a kad postane virtualna (povećalo)."
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 69
-    }
-   },
-   {
-    "id": "b",
-    "naslov": "leca 2",
-    "pitanje": {
-     "tip": "leca",
-     "nacin": "zastor",
-     "f": 12.5,
-     "a": [
-      30,
-      35,
-      40,
-      65
-     ],
-     "tekst": "Za svaki položaj svijeće **pomakni zastor dok plamen ne bude oštar** i zabilježi udaljenost zastora od leće."
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "leca",
@@ -9490,30 +9840,6 @@
       "a": 44,
       "y": 4,
       "tekst": "Predmet visok 4 cm, 44 cm ispred leće žarišne daljine 28 cm: tri karakteristične zrake sijeku se u vrhu slike."
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 70
-    }
-   },
-   {
-    "id": "c",
-    "naslov": "leca 3",
-    "pitanje": {
-     "tip": "leca",
-     "nacin": "zastor",
-     "f": 12.5,
-     "a": 10,
-     "tekst": "Svijeća je sad samo 10 cm ispred iste leće. **Potraži oštru sliku** plamena na zastoru."
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "leca",
@@ -9538,8 +9864,61 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 71
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "leca 2",
+    "pitanje": {
+     "tip": "leca",
+     "nacin": "zastor",
+     "f": 12.5,
+     "a": [
+      30,
+      35,
+      40,
+      65
+     ],
+     "tekst": "Za svaki položaj svijeće **pomakni zastor dok plamen ne bude oštar** i zabilježi udaljenost zastora od leće."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "leca 3",
+    "pitanje": {
+     "tip": "leca",
+     "nacin": "zastor",
+     "f": 12.5,
+     "a": 10,
+     "tekst": "Svijeća je sad samo 10 cm ispred iste leće. **Potraži oštru sliku** plamena na zastoru."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -9597,8 +9976,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 72
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -9629,8 +10008,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 73
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -9665,8 +10044,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 74
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -9709,8 +10088,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 75
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -9738,8 +10117,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 76
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -9767,8 +10146,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 77
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -9832,35 +10211,6 @@
        }
       ],
       "tekst": "Povuci sondu **P** po zastoru i gledaj kako dva vala stižu: kolika je razlika putova i jesu li u fazi. Zatim mijenjaj λ, d i a i gledaj razmak pruga."
-     }
-    ],
-    "blizanac": {
-     "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 78
-    }
-   },
-   {
-    "id": "b",
-    "naslov": "interferencija 2",
-    "pitanje": {
-     "tip": "interferencija",
-     "vrsta": "young",
-     "nacin": "odaberi",
-     "lambda": 400,
-     "d": 80,
-     "a": 4.4,
-     "cilj": {
-      "faza": "pi"
-     },
-     "tekst": "Dodirni na zastoru mjesto u koje dva vala stižu **u protufazi** (razlika u fazi π)."
-    },
-    "zasto": "Zato.",
-    "objasnjenje": "Objašnjenje.",
-    "pomoc": [
-     {
-      "tip": "pojam",
-      "tekst": "Pojam."
      },
      {
       "tip": "interferencija",
@@ -9894,8 +10244,37 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 79
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "interferencija 2",
+    "pitanje": {
+     "tip": "interferencija",
+     "vrsta": "young",
+     "nacin": "odaberi",
+     "lambda": 400,
+     "d": 80,
+     "a": 4.4,
+     "cilj": {
+      "faza": "pi"
+     },
+     "tekst": "Dodirni na zastoru mjesto u koje dva vala stižu **u protufazi** (razlika u fazi π)."
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -9924,8 +10303,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 80
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -9974,8 +10353,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 81
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -10012,8 +10391,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 82
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -10047,8 +10426,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 83
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -10092,8 +10471,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 84
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -10130,8 +10509,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 85
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    }
   ],
@@ -10171,12 +10550,27 @@
       "smjer_sirenja": "sjever",
       "E": "gore-dolje",
       "tekst": "Val se širi prema sjeveru, električno polje titra gore-dolje. **Zakreni crtež** i promijeni smjer širenja: gdje je uvijek magnetsko polje?"
+     },
+     {
+      "tip": "em_val",
+      "scena": "polja",
+      "nacin": "prikaz",
+      "smjer_sirenja": "zapad",
+      "E": "sjever-jug",
+      "tekst": "Val se širi prema zapadu, E titra sjever-jug, pa B titra gore-dolje."
+     },
+     {
+      "tip": "em_val",
+      "scena": "spektar",
+      "nacin": "istrazi",
+      "lambda": 5e-7,
+      "tekst": "Vuci oznaku po spektru i gledaj kako se mijenjaju valna duljina i frekvencija. Isprobaj i uređaje ispod."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 86
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -10199,17 +10593,38 @@
      },
      {
       "tip": "em_val",
-      "scena": "polja",
+      "scena": "spektar",
       "nacin": "prikaz",
-      "smjer_sirenja": "zapad",
-      "E": "sjever-jug",
-      "tekst": "Val se širi prema zapadu, E titra sjever-jug, pa B titra gore-dolje."
+      "f": 6000000000000000000,
+      "tekst": "Rendgenski uređaj: $f = 6\\cdot10^{18}$ Hz, pa je $\\lambda = 0{,}05$ nm, između ultraljubičastog i gama-zračenja."
+     },
+     {
+      "tip": "em_val",
+      "scena": "sredstvo",
+      "nacin": "istrazi",
+      "lambda": 580,
+      "sredstvo": {
+       "naziv": "dijamant",
+       "n": 2.42
+      },
+      "tekst": "Žuta svjetlost ulazi u dijamant. Mijenjaj **indeks loma** i **valnu duljinu**: što se mijenja, a što ostaje isto?"
+     },
+     {
+      "tip": "em_val",
+      "scena": "sredstvo",
+      "nacin": "prikaz",
+      "lambda": 610,
+      "sredstvo": {
+       "naziv": "plastika",
+       "n": 1.58
+      },
+      "tekst": "Narančasta svjetlost u plastici: brjegovi su 1,58 puta bliže, a boja je ista."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 87
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -10231,19 +10646,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "em_val",
-      "scena": "spektar",
-      "nacin": "istrazi",
-      "lambda": 5e-7,
-      "tekst": "Vuci oznaku po spektru i gledaj kako se mijenjaju valna duljina i frekvencija. Isprobaj i uređaje ispod."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 88
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -10273,19 +10681,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "em_val",
-      "scena": "spektar",
-      "nacin": "prikaz",
-      "f": 6000000000000000000,
-      "tekst": "Rendgenski uređaj: $f = 6\\cdot10^{18}$ Hz, pa je $\\lambda = 0{,}05$ nm, između ultraljubičastog i gama-zračenja."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 89
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -10304,23 +10705,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "em_val",
-      "scena": "sredstvo",
-      "nacin": "istrazi",
-      "lambda": 580,
-      "sredstvo": {
-       "naziv": "dijamant",
-       "n": 2.42
-      },
-      "tekst": "Žuta svjetlost ulazi u dijamant. Mijenjaj **indeks loma** i **valnu duljinu**: što se mijenja, a što ostaje isto?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 90
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -10339,23 +10729,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "em_val",
-      "scena": "sredstvo",
-      "nacin": "prikaz",
-      "lambda": 610,
-      "sredstvo": {
-       "naziv": "plastika",
-       "n": 1.58
-      },
-      "tekst": "Narančasta svjetlost u plastici: brjegovi su 1,58 puta bliže, a boja je ista."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 91
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -10399,8 +10778,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 92
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -10428,8 +10807,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 93
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -10457,8 +10836,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 94
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -10503,8 +10882,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 95
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
     }
    }
   ],
@@ -10562,12 +10941,39 @@
       ],
       "mijenja": 1,
       "tekst": "Svjetlost svijeće prolazi kroz dva polarizacijska filtra. **Okreći drugi filtar** i prati svjetlinu iza njega i krugove iznad zrake (smjer titranja gledan uzduž zrake)."
+     },
+     {
+      "tip": "polarizacija",
+      "scena": "filtri",
+      "nacin": "istrazi",
+      "izvor": "sunce",
+      "filtri": [
+       {
+        "kut": 0
+       },
+       {
+        "kut": 45
+       },
+       {
+        "kut": 90
+       }
+      ],
+      "prikazi_postotak": true,
+      "tekst": "Iznenađenje: prvi i zadnji filtar su okomiti, a ipak nešto prolazi. **Okreći srednji filtar** i gledaj što se događa iza zadnjeg."
+     },
+     {
+      "tip": "polarizacija",
+      "scena": "prorez",
+      "nacin": "istrazi",
+      "izvor_zvuka": "zvucnik",
+      "prorez": 0,
+      "tekst": "Uže tresemo gore-dolje, a zvučnik šalje zvuk. **Okreći prorez** i usporedi koji val prolazi."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 96
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -10591,28 +10997,27 @@
      },
      {
       "tip": "polarizacija",
-      "scena": "filtri",
+      "scena": "odsjaj",
       "nacin": "istrazi",
-      "izvor": "sunce",
-      "filtri": [
-       {
-        "kut": 0
-       },
-       {
-        "kut": 45
-       },
-       {
-        "kut": 90
-       }
-      ],
-      "prikazi_postotak": true,
-      "tekst": "Iznenađenje: prvi i zadnji filtar su okomiti, a ipak nešto prolazi. **Okreći srednji filtar** i gledaj što se događa iza zadnjeg."
+      "povrsina": "jezero (voda)",
+      "n": 1.33,
+      "kut": 30,
+      "naocale": 90,
+      "tekst": "Sunčeva svjetlost odbija se od jezera. **Mijenjaj upadni kut** i prati krug na odbijenoj zraci; **okreći naočale** i gledaj odsjaj kroz njih."
+     },
+     {
+      "tip": "polarizacija",
+      "scena": "odsjaj",
+      "nacin": "prikaz",
+      "povrsina": "lakirani stol",
+      "n": 1.55,
+      "tekst": "Odsjaj pod Brewsterovim kutom: odbijena zraka titra samo vodoravno, a odbijena i lomljena zraka zatvaraju 90°."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 97
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -10637,20 +11042,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "polarizacija",
-      "scena": "prorez",
-      "nacin": "istrazi",
-      "izvor_zvuka": "zvucnik",
-      "prorez": 0,
-      "tekst": "Uže tresemo gore-dolje, a zvučnik šalje zvuk. **Okreći prorez** i usporedi koji val prolazi."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 98
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -10686,22 +11083,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "polarizacija",
-      "scena": "odsjaj",
-      "nacin": "istrazi",
-      "povrsina": "jezero (voda)",
-      "n": 1.33,
-      "kut": 30,
-      "naocale": 90,
-      "tekst": "Sunčeva svjetlost odbija se od jezera. **Mijenjaj upadni kut** i prati krug na odbijenoj zraci; **okreći naočale** i gledaj odsjaj kroz njih."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 99
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -10722,20 +11109,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "polarizacija",
-      "scena": "odsjaj",
-      "nacin": "prikaz",
-      "povrsina": "lakirani stol",
-      "n": 1.55,
-      "tekst": "Odsjaj pod Brewsterovim kutom: odbijena zraka titra samo vodoravno, a odbijena i lomljena zraka zatvaraju 90°."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 100
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -10760,8 +11139,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 101
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -10797,8 +11176,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 102
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    }
   ],
@@ -10862,12 +11241,34 @@
        }
       ],
       "tekst": "Mijenjaj **boju** lasera i gledaj kovanicu energije koju nosi svaki foton. Onda pojačaj svjetlo: što se mijenja, broj fotona ili njihova energija?"
+     },
+     {
+      "tip": "kvant",
+      "scena": "elektronvolt",
+      "nacin": "prikaz",
+      "U": 1,
+      "tekst": "**Elektronvolt** je energija koju elektron dobije kad prođe napon od 1 V."
+     },
+     {
+      "tip": "kvant",
+      "scena": "elektronvolt",
+      "nacin": "istrazi",
+      "klizaci": [
+       {
+        "id": "U",
+        "min": 0.5,
+        "max": 5,
+        "korak": 0.5,
+        "pocetak": 1
+       }
+      ],
+      "tekst": "Mijenjaj napon između ploča i gledaj koliko energije elektron dobije."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 500
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -10903,16 +11304,90 @@
      },
      {
       "tip": "kvant",
-      "scena": "elektronvolt",
-      "nacin": "prikaz",
-      "U": 1,
-      "tekst": "**Elektronvolt** je energija koju elektron dobije kad prođe napon od 1 V."
+      "scena": "fotoefekt",
+      "nacin": "istrazi",
+      "lambda": 300,
+      "U_z": 1.5,
+      "klizaci": [
+       {
+        "id": "U",
+        "min": 0,
+        "max": 3,
+        "korak": 0.05,
+        "pocetak": 0
+       },
+       {
+        "id": "jakost",
+        "min": 10,
+        "max": 100,
+        "korak": 10,
+        "pocetak": 60
+       }
+      ],
+      "tekst": "Pločicu obasjava UV-zračenje od 300 nm. **Povećavaj zaustavni napon** i gledaj elektrone i ampermetar: pri kojem naponu struja padne na nulu?"
+     },
+     {
+      "tip": "kvant",
+      "scena": "fotoefekt",
+      "nacin": "istrazi",
+      "lambda": 450,
+      "metali": [
+       {
+        "naziv": "cezij",
+        "W_i": 2.1
+       },
+       {
+        "naziv": "natrij",
+        "W_i": 2.3
+       },
+       {
+        "naziv": "cink",
+        "W_i": 4.3
+       }
+      ],
+      "klizaci": [
+       {
+        "id": "lambda",
+        "min": 200,
+        "max": 700,
+        "korak": 1,
+        "pocetak": 450
+       },
+       {
+        "id": "jakost",
+        "min": 10,
+        "max": 100,
+        "korak": 10,
+        "pocetak": 60
+       }
+      ],
+      "tekst": "Odaberi metal i mijenjaj valnu duljinu. Kod koje valne duljine elektroni prestanu izlaziti? Pomaže li jače svjetlo?"
+     },
+     {
+      "tip": "kvant",
+      "scena": "de_broglie",
+      "nacin": "istrazi",
+      "cestice": [
+       "elektron",
+       "proton",
+       "loptica"
+      ],
+      "klizaci": [
+       {
+        "id": "v",
+        "min": 2000000,
+        "max": 20000000,
+        "korak": 100000,
+        "pocetak": 7300000
+       }
+      ],
+      "tekst": "Mijenjaj brzinu elektrona i usporedi njegovu valnu duljinu s razmakom atoma u kristalu. Probaj i proton i tenisku lopticu."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 501
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -10942,27 +11417,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "kvant",
-      "scena": "elektronvolt",
-      "nacin": "istrazi",
-      "klizaci": [
-       {
-        "id": "U",
-        "min": 0.5,
-        "max": 5,
-        "korak": 0.5,
-        "pocetak": 1
-       }
-      ],
-      "tekst": "Mijenjaj napon između ploča i gledaj koliko energije elektron dobije."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 502
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -11003,36 +11463,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "kvant",
-      "scena": "fotoefekt",
-      "nacin": "istrazi",
-      "lambda": 300,
-      "U_z": 1.5,
-      "klizaci": [
-       {
-        "id": "U",
-        "min": 0,
-        "max": 3,
-        "korak": 0.05,
-        "pocetak": 0
-       },
-       {
-        "id": "jakost",
-        "min": 10,
-        "max": 100,
-        "korak": 10,
-        "pocetak": 60
-       }
-      ],
-      "tekst": "Pločicu obasjava UV-zračenje od 300 nm. **Povećavaj zaustavni napon** i gledaj elektrone i ampermetar: pri kojem naponu struja padne na nulu?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 503
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -11058,49 +11494,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "kvant",
-      "scena": "fotoefekt",
-      "nacin": "istrazi",
-      "lambda": 450,
-      "metali": [
-       {
-        "naziv": "cezij",
-        "W_i": 2.1
-       },
-       {
-        "naziv": "natrij",
-        "W_i": 2.3
-       },
-       {
-        "naziv": "cink",
-        "W_i": 4.3
-       }
-      ],
-      "klizaci": [
-       {
-        "id": "lambda",
-        "min": 200,
-        "max": 700,
-        "korak": 1,
-        "pocetak": 450
-       },
-       {
-        "id": "jakost",
-        "min": 10,
-        "max": 100,
-        "korak": 10,
-        "pocetak": 60
-       }
-      ],
-      "tekst": "Odaberi metal i mijenjaj valnu duljinu. Kod koje valne duljine elektroni prestanu izlaziti? Pomaže li jače svjetlo?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 504
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -11130,32 +11529,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "kvant",
-      "scena": "de_broglie",
-      "nacin": "istrazi",
-      "cestice": [
-       "elektron",
-       "proton",
-       "loptica"
-      ],
-      "klizaci": [
-       {
-        "id": "v",
-        "min": 2000000,
-        "max": 20000000,
-        "korak": 100000,
-        "pocetak": 7300000
-       }
-      ],
-      "tekst": "Mijenjaj brzinu elektrona i usporedi njegovu valnu duljinu s razmakom atoma u kristalu. Probaj i proton i tenisku lopticu."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 505
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -11202,8 +11581,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 506
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -11234,8 +11613,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 507
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -11265,8 +11644,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 508
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -11311,8 +11690,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 509
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
     }
    },
    {
@@ -11348,8 +11727,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 510
+     "tekst": "Koliko je 20 + 1?",
+     "odgovor": 21
     }
    }
   ],
@@ -11398,12 +11777,27 @@
       "nacin": "istrazi",
       "pocetna": 3,
       "tekst": "**Povuci elektron** na drugu razinu (ili dodirni oznaku razine). Gledaj kakav foton izleti pri skoku dolje, a kakav treba za skok gore. Pošalji i foton iz topa desno."
+     },
+     {
+      "tip": "atom",
+      "scena": "razine",
+      "nacin": "prikaz",
+      "od": 2,
+      "do": "ionizacija",
+      "tekst": "Elektron na 2. stazi je 3,4 eV „duboko“ u bunaru. Toliko mu energije treba dovesti da izađe na rub, do 0 eV."
+     },
+     {
+      "tip": "atom",
+      "scena": "staze",
+      "nacin": "istrazi",
+      "pocetna": 2,
+      "tekst": "Bohrove staze: **dodirni stazu** i gledaj kako elektron skače i kakav foton pri tome nastaje. Prebaci na „u mjerilu“: staze rastu s n²."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 511
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -11433,17 +11827,17 @@
      },
      {
       "tip": "atom",
-      "scena": "razine",
+      "scena": "staze",
       "nacin": "prikaz",
-      "od": 2,
-      "do": "ionizacija",
-      "tekst": "Elektron na 2. stazi je 3,4 eV „duboko“ u bunaru. Toliko mu energije treba dovesti da izađe na rub, do 0 eV."
+      "od": 3,
+      "do": 2,
+      "tekst": "Elektron skoči s 3. na 2. stazu i atom ispusti foton crvene svjetlosti."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 512
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -11476,19 +11870,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "atom",
-      "scena": "staze",
-      "nacin": "istrazi",
-      "pocetna": 2,
-      "tekst": "Bohrove staze: **dodirni stazu** i gledaj kako elektron skače i kakav foton pri tome nastaje. Prebaci na „u mjerilu“: staze rastu s n²."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 513
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -11522,20 +11909,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "atom",
-      "scena": "staze",
-      "nacin": "prikaz",
-      "od": 3,
-      "do": 2,
-      "tekst": "Elektron skoči s 3. na 2. stazu i atom ispusti foton crvene svjetlosti."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 514
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -11563,8 +11942,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 515
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -11591,8 +11970,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 516
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -11630,8 +12009,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 517
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -11657,8 +12036,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 518
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    }
   ],
@@ -11723,25 +12102,53 @@
      },
      {
       "tip": "jezgra",
-      "scena": "krivulja",
+      "scena": "sastav",
       "nacin": "prikaz",
-      "oznaci": [
+      "tekst": "Kobalt-60 i kobalt-59 su **izotopi**: isti broj protona (27), drukčiji broj neutrona.",
+      "atom": {
+       "simbol": "Co",
+       "A": 60
+      },
+      "izotopi": [
        {
-        "simbol": "He",
-        "A": 4
+        "simbol": "Co",
+        "A": 59
        },
        {
-        "simbol": "U",
-        "A": 235
+        "simbol": "Co",
+        "A": 60
+       }
+      ]
+     },
+     {
+      "tip": "jezgra",
+      "scena": "reakcija",
+      "nacin": "istrazi",
+      "tekst": "Isprobaj čestice u praznom mjestu i gledaj vage: kad su **obje** u ravnoteži, reakcija je moguća.",
+      "lijevo": [
+       {
+        "simbol": "Li",
+        "A": 6
+       },
+       {
+        "cestica": "n"
        }
       ],
-      "tekst": "Helij-4 i uran-235 na krivulji energije vezanja: obje strane „penju se“ prema željezu."
+      "desno": [
+       {
+        "simbol": "H",
+        "A": 3
+       },
+       {
+        "nepoznato": true
+       }
+      ]
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 519
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -11776,29 +12183,58 @@
      },
      {
       "tip": "jezgra",
-      "scena": "sastav",
+      "scena": "reakcija",
       "nacin": "prikaz",
-      "tekst": "Kobalt-60 i kobalt-59 su **izotopi**: isti broj protona (27), drukčiji broj neutrona.",
-      "atom": {
-       "simbol": "Co",
-       "A": 60
-      },
-      "izotopi": [
+      "tekst": "**Fuzija**: deuterij i tricij spoje se u helij i izleti neutron. Zbrojevi A i Z isti su s obje strane.",
+      "lijevo": [
        {
-        "simbol": "Co",
-        "A": 59
+        "simbol": "H",
+        "A": 2
        },
        {
-        "simbol": "Co",
-        "A": 60
+        "simbol": "H",
+        "A": 3
+       }
+      ],
+      "desno": [
+       {
+        "simbol": "He",
+        "A": 4
+       },
+       {
+        "cestica": "n"
        }
       ]
+     },
+     {
+      "tip": "jezgra",
+      "scena": "karta",
+      "nacin": "istrazi",
+      "pocetak": {
+       "simbol": "U",
+       "A": 238
+      },
+      "tekst": "Raspadaj uran-238 gumbima i prati kamo se jezgra pomiče po karti pri α, β⁻ i γ."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "karta",
+      "nacin": "prikaz",
+      "pocetak": {
+       "simbol": "Ra",
+       "A": 226
+      },
+      "niz": [
+       "alfa",
+       "alfa"
+      ],
+      "tekst": "Radij-226 raspada se dvaput zaredom α-raspadom: svaki put jezgra skoči 2 polja dolje i 2 lijevo."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 520
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -11838,33 +12274,32 @@
      },
      {
       "tip": "jezgra",
-      "scena": "reakcija",
+      "scena": "vezanje",
+      "nacin": "prikaz",
+      "jezgra": {
+       "simbol": "Fe",
+       "A": 56,
+       "m": 55.92067
+      },
+      "tekst": "Jezgra željeza-56 lakša je od svojih 26 protona i 30 neutrona. Prati kako se taj **defekt mase** pretvara u energiju vezanja."
+     },
+     {
+      "tip": "jezgra",
+      "scena": "vezanje",
       "nacin": "istrazi",
-      "tekst": "Isprobaj čestice u praznom mjestu i gledaj vage: kad su **obje** u ravnoteži, reakcija je moguća.",
-      "lijevo": [
-       {
-        "simbol": "Li",
-        "A": 6
-       },
-       {
-        "cestica": "n"
-       }
-      ],
-      "desno": [
-       {
-        "simbol": "H",
-        "A": 3
-       },
-       {
-        "nepoznato": true
-       }
-      ]
+      "tekst": "Odaberi jezgru i usporedi energiju vezanja **po nukleonu**: koja jezgra je najčvršće povezana?"
+     },
+     {
+      "tip": "jezgra",
+      "scena": "krivulja",
+      "nacin": "istrazi",
+      "tekst": "Povuci točku po krivulji. Gdje je energija vezanja po nukleonu **najveća**? Zašto i spajanje lakih i cijepanje teških jezgara oslobađa energiju?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 521
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -11919,34 +12354,25 @@
      },
      {
       "tip": "jezgra",
-      "scena": "reakcija",
+      "scena": "krivulja",
       "nacin": "prikaz",
-      "tekst": "**Fuzija**: deuterij i tricij spoje se u helij i izleti neutron. Zbrojevi A i Z isti su s obje strane.",
-      "lijevo": [
-       {
-        "simbol": "H",
-        "A": 2
-       },
-       {
-        "simbol": "H",
-        "A": 3
-       }
-      ],
-      "desno": [
+      "oznaci": [
        {
         "simbol": "He",
         "A": 4
        },
        {
-        "cestica": "n"
+        "simbol": "U",
+        "A": 235
        }
-      ]
+      ],
+      "tekst": "Helij-4 i uran-235 na krivulji energije vezanja: obje strane „penju se“ prema željezu."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 522
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -11972,22 +12398,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "jezgra",
-      "scena": "karta",
-      "nacin": "istrazi",
-      "pocetak": {
-       "simbol": "U",
-       "A": 238
-      },
-      "tekst": "Raspadaj uran-238 gumbima i prati kamo se jezgra pomiče po karti pri α, β⁻ i γ."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 523
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -12013,26 +12429,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "jezgra",
-      "scena": "karta",
-      "nacin": "prikaz",
-      "pocetak": {
-       "simbol": "Ra",
-       "A": 226
-      },
-      "niz": [
-       "alfa",
-       "alfa"
-      ],
-      "tekst": "Radij-226 raspada se dvaput zaredom α-raspadom: svaki put jezgra skoči 2 polja dolje i 2 lijevo."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 524
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -12077,23 +12479,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "jezgra",
-      "scena": "vezanje",
-      "nacin": "prikaz",
-      "jezgra": {
-       "simbol": "Fe",
-       "A": 56,
-       "m": 55.92067
-      },
-      "tekst": "Jezgra željeza-56 lakša je od svojih 26 protona i 30 neutrona. Prati kako se taj **defekt mase** pretvara u energiju vezanja."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 525
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -12112,18 +12503,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "jezgra",
-      "scena": "vezanje",
-      "nacin": "istrazi",
-      "tekst": "Odaberi jezgru i usporedi energiju vezanja **po nukleonu**: koja jezgra je najčvršće povezana?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 526
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
@@ -12142,18 +12527,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "jezgra",
-      "scena": "krivulja",
-      "nacin": "istrazi",
-      "tekst": "Povuci točku po krivulji. Gdje je energija vezanja po nukleonu **najveća**? Zašto i spajanje lakih i cijepanje teških jezgara oslobađa energiju?"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 527
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
    }
   ],
@@ -12225,12 +12604,55 @@
       "jedinica_t": "s",
       "t_max": 60,
       "tekst": "Izotop X (T = 6 s) i izotop Y (T = 30 s). Pokreni sat ili povuci kursor po grafu i gledaj koliko jezgara ostaje. Koliko kockica X ostane nakon 60 s?"
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "uzorci",
+      "nacin": "istrazi",
+      "uzorci": [
+       {
+        "oznaka": "X",
+        "T": 20
+       }
+      ],
+      "jedinica_t": "min",
+      "N0_prikaz": 256,
+      "t_max": 120,
+      "klizaci": [
+       {
+        "id": "T_X",
+        "oznaka": "vrijeme poluraspada",
+        "min": 10,
+        "max": 40,
+        "korak": 5,
+        "pocetak": 20
+       }
+      ],
+      "tekst": "Mijenjaj vrijeme poluraspada i pusti sat: kraće T znači brži raspad, ali svaki put nakon T ostane polovica."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "uzorci",
+      "nacin": "prikaz",
+      "uzorci": [
+       {
+        "oznaka": "X",
+        "T": 5
+       },
+       {
+        "oznaka": "Y",
+        "T": 20
+       }
+      ],
+      "jedinica_t": "min",
+      "t": 40,
+      "tekst": "Gledaj dva uzorka 40 minuta: X (T = 5 min) i Y (T = 20 min). Svaki poluraspad prepolovi ono što je ostalo."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 528
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -12272,34 +12694,51 @@
      },
      {
       "tip": "poluraspad",
-      "scena": "uzorci",
+      "scena": "aktivnost",
       "nacin": "istrazi",
-      "uzorci": [
-       {
-        "oznaka": "X",
-        "T": 20
-       }
-      ],
-      "jedinica_t": "min",
-      "N0_prikaz": 256,
-      "t_max": 120,
+      "izotop": {
+       "simbol": "Ga",
+       "A": 68,
+       "ime": "galij"
+      },
+      "T": 68,
+      "jedinica_T": "min",
+      "A0": 150,
+      "jedinica_A": "MBq",
+      "t_max": 240,
       "klizaci": [
        {
-        "id": "T_X",
+        "id": "T",
         "oznaka": "vrijeme poluraspada",
-        "min": 10,
-        "max": 40,
-        "korak": 5,
-        "pocetak": 20
+        "min": 20,
+        "max": 140,
+        "korak": 4,
+        "pocetak": 68
        }
       ],
-      "tekst": "Mijenjaj vrijeme poluraspada i pusti sat: kraće T znači brži raspad, ali svaki put nakon T ostane polovica."
+      "tekst": "Galij-68 (T = 68 min, 150 MBq). Pusti sat i slušaj brojač; zatim mijenjaj vrijeme poluraspada: uz isti broj jezgara kraće T daje veću aktivnost."
+     },
+     {
+      "tip": "poluraspad",
+      "scena": "aktivnost",
+      "nacin": "prikaz",
+      "izotop": {
+       "simbol": "Tl",
+       "A": 201,
+       "ime": "talij"
+      },
+      "T": 73,
+      "jedinica_T": "h",
+      "A0": 80,
+      "jedinica_A": "MBq",
+      "t": 219,
+      "tekst": "Talij-201 (T = 73 h) početne aktivnosti 80 MBq. Gledaj kako nakon svakih 73 h aktivnost i broj jezgara padnu na pola."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 529
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -12329,30 +12768,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "poluraspad",
-      "scena": "uzorci",
-      "nacin": "prikaz",
-      "uzorci": [
-       {
-        "oznaka": "X",
-        "T": 5
-       },
-       {
-        "oznaka": "Y",
-        "T": 20
-       }
-      ],
-      "jedinica_t": "min",
-      "t": 40,
-      "tekst": "Gledaj dva uzorka 40 minuta: X (T = 5 min) i Y (T = 20 min). Svaki poluraspad prepolovi ono što je ostalo."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 530
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -12406,38 +12827,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "poluraspad",
-      "scena": "aktivnost",
-      "nacin": "istrazi",
-      "izotop": {
-       "simbol": "Ga",
-       "A": 68,
-       "ime": "galij"
-      },
-      "T": 68,
-      "jedinica_T": "min",
-      "A0": 150,
-      "jedinica_A": "MBq",
-      "t_max": 240,
-      "klizaci": [
-       {
-        "id": "T",
-        "oznaka": "vrijeme poluraspada",
-        "min": 20,
-        "max": 140,
-        "korak": 4,
-        "pocetak": 68
-       }
-      ],
-      "tekst": "Galij-68 (T = 68 min, 150 MBq). Pusti sat i slušaj brojač; zatim mijenjaj vrijeme poluraspada: uz isti broj jezgara kraće T daje veću aktivnost."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 531
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -12472,28 +12867,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "poluraspad",
-      "scena": "aktivnost",
-      "nacin": "prikaz",
-      "izotop": {
-       "simbol": "Tl",
-       "A": 201,
-       "ime": "talij"
-      },
-      "T": 73,
-      "jedinica_T": "h",
-      "A0": 80,
-      "jedinica_A": "MBq",
-      "t": 219,
-      "tekst": "Talij-201 (T = 73 h) početne aktivnosti 80 MBq. Gledaj kako nakon svakih 73 h aktivnost i broj jezgara padnu na pola."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 532
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -12539,8 +12918,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 533
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -12590,8 +12969,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 534
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -12633,8 +13012,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 535
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    }
   ],
@@ -12675,12 +13054,28 @@
       "smjer": "od",
       "signal": "radio",
       "tekst": "Brod se udaljava od Zemlje i šalje radiosignal prema Zemlji (1272). **Mijenjaj brzinu i smjer** broda i pošalji signal: koliku brzinu izmjeri detektor na Zemlji?"
+     },
+     {
+      "tip": "relativnost",
+      "scena": "svjetlosni_sat",
+      "nacin": "istrazi",
+      "beta": 0.6,
+      "pogled": "zemlja",
+      "tekst": "Svjetlosni sat: foton putuje između dva zrcala, a svaki povratak je jedan tik. **Usporedi** sat u brodu sa satom na Zemlji i prebaci pogled u brod."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "mion",
+      "nacin": "istrazi",
+      "beta": 0.98,
+      "T0": 2.2,
+      "tekst": "Mion (1272) leti brzinom 0,98c. Pusti ga i **usporedi dva sata**. Zatim uključi pogled iz miona."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 536
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
     }
    },
    {
@@ -12704,17 +13099,33 @@
      },
      {
       "tip": "relativnost",
-      "scena": "svjetlosni_sat",
+      "scena": "brod",
       "nacin": "istrazi",
-      "beta": 0.6,
-      "pogled": "zemlja",
-      "tekst": "Svjetlosni sat: foton putuje između dva zrcala, a svaki povratak je jedan tik. **Usporedi** sat u brodu sa satom na Zemlji i prebaci pogled u brod."
+      "L0": 100,
+      "beta": 0.3,
+      "T": 25,
+      "tekst": "Brod dug 100 m leti pokraj ravnala na Zemlji (1277). **Povećavaj brzinu** i usporedi omjer duljina L/L₀ s omjerom vremena T₀/T."
+     },
+     {
+      "tip": "relativnost",
+      "scena": "energija",
+      "nacin": "istrazi",
+      "cestica": "elektron",
+      "tekst": "Dodaj elektronu energije koliko želiš (1281 c). **Možeš li ga dovesti do brzine svjetlosti?**"
+     },
+     {
+      "tip": "relativnost",
+      "scena": "energija",
+      "nacin": "prikaz",
+      "cestica": "elektron",
+      "beta": 0.96,
+      "tekst": "Elektron pri 0,96c (1283): ukupna energija je više od tri puta veća od energije mirovanja."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 537
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
     }
    },
    {
@@ -12744,20 +13155,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "relativnost",
-      "scena": "mion",
-      "nacin": "istrazi",
-      "beta": 0.98,
-      "T0": 2.2,
-      "tekst": "Mion (1272) leti brzinom 0,98c. Pusti ga i **usporedi dva sata**. Zatim uključi pogled iz miona."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 538
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
     }
    }
   ],
@@ -12793,21 +13196,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "relativnost",
-      "scena": "brod",
-      "nacin": "istrazi",
-      "L0": 100,
-      "beta": 0.3,
-      "T": 25,
-      "tekst": "Brod dug 100 m leti pokraj ravnala na Zemlji (1277). **Povećavaj brzinu** i usporedi omjer duljina L/L₀ s omjerom vremena T₀/T."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 539
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
     }
    },
    {
@@ -12834,19 +13228,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "relativnost",
-      "scena": "energija",
-      "nacin": "istrazi",
-      "cestica": "elektron",
-      "tekst": "Dodaj elektronu energije koliko želiš (1281 c). **Možeš li ga dovesti do brzine svjetlosti?**"
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 540
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
@@ -12876,20 +13263,12 @@
      {
       "tip": "pojam",
       "tekst": "Pojam."
-     },
-     {
-      "tip": "relativnost",
-      "scena": "energija",
-      "nacin": "prikaz",
-      "cestica": "elektron",
-      "beta": 0.96,
-      "tekst": "Elektron pri 0,96c (1283): ukupna energija je više od tri puta veća od energije mirovanja."
      }
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 541
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
    }
   ],
@@ -12934,8 +13313,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 542
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
    },
    {
@@ -12969,8 +13348,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je?",
-     "odgovor": 543
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    }
   ],

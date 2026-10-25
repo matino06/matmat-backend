@@ -639,14 +639,19 @@ function energyDiagram(s, text) {
   checks.push(...numbersInText(allLabels.filter(Boolean).flatMap(lines), text));
   if (checks.some((x) => !x.ok)) return { checks };
 
-  const far = steps.filter((t) => t.vrh == null && Math.abs(t.do - t.od) > 1);
+  // desno: true crta i prijelaz između susjednih razina desno od dijagrama (ΔH uz energijski profil, da ne
+  // leži na strelici energije aktivacije); raspon: [od, do] drži mjerilo osi stalnim dok se razine pomiču
+  const far = steps.filter((t) => t.vrh == null && (Math.abs(t.do - t.od) > 1 || t.desno === true));
   const left = 46;
-  const right = far.length ? 124 : 16;
+  const onlySide = far.length > 0 && far.every((t) => t.desno === true);
+  const sideW = onlySide ? Math.max(0, ...far.flatMap((t) => lines(t.oznaka).map((l) => [...l].length * 6.6))) : 0;
+  const right = far.length ? (onlySide ? Math.min(124, 34 + 30 * (far.length - 1) + sideW) : 124) : 16;
   const top = 46;
   const bottom = 232;
   const vals = [...levels.map((l) => l.vrijednost), ...peaks.map((p) => p.vrijednost)];
-  let lo = Math.min(...vals);
-  let hi = Math.max(...vals);
+  const span = Array.isArray(s.raspon) ? s.raspon.filter((v) => typeof v === "number" && isFinite(v)) : [];
+  let lo = Math.min(...vals, ...span);
+  let hi = Math.max(...vals, ...span);
   if (hi - lo < 1e-9) [lo, hi] = [lo - 1, hi + 1];
   const Y = (v) => bottom - ((v - lo) / (hi - lo)) * (bottom - top);
   const colW = (W - left - right) / levels.length;
@@ -697,7 +702,7 @@ function energyDiagram(s, text) {
   const shafts = steps
     .filter((t) => t.vrh == null && isLevel(t.do))
     .map((t) => {
-      const x = Math.abs(t.do - t.od) === 1 ? left + colW * Math.max(t.od, t.do) : W - right + 22 + 30 * far.indexOf(t);
+      const x = !far.includes(t) ? left + colW * Math.max(t.od, t.do) : W - right + 22 + 30 * far.indexOf(t);
       return [x, Y(levels[t.od].vrijednost), Y(levels[t.do].vrijednost)];
     });
   const crosses = (x0, x1, y0, y1) =>
@@ -734,7 +739,7 @@ function energyDiagram(s, text) {
       return;
     }
     const y1 = Y(levels[t.do].vrijednost);
-    if (Math.abs(t.do - t.od) === 1) {
+    if (!far.includes(t)) {
       const bx = left + colW * Math.max(t.od, t.do);
       body += line([ends(t.od)[t.od < t.do ? 1 : 0], y0], [bx, y0], "ln thin dash");
       body += line([bx, y1], [ends(t.do)[t.od < t.do ? 0 : 1], y1], "ln thin dash");
@@ -770,19 +775,22 @@ function allowedValence(el, q) {
   return 0;
 }
 
-function structure(s, text) {
+// Raspored strukturne formule: atomi s koordinatama (prsten i „uz“ izračunati), veze i problemi geometrije (duljina
+// veze, preklapanje). Zajedničko skici i widgetu lekcije „molekula“ (katalog/kemija/molekula.js), pa se ista
+// molekula u objašnjenju i u lekciji složi jednako. Vraća { greska } ako se opis ne da složiti.
+export function structureLayout(s) {
   const atoms = (s.atomi ?? []).map((a) => ({ ...a, id: String(a.id) }));
-  if (!atoms.length || atoms.length > 40) return { checks: [fail("formula treba 1 do 40 atoma")] };
+  if (!atoms.length || atoms.length > 40) return { greska: "formula treba 1 do 40 atoma" };
   const byId = new Map();
   for (const a of atoms) {
-    if (a.id === "undefined" || byId.has(a.id)) return { checks: [fail(`atom bez oznake ili s ponovljenom oznakom „${a.id}“`)] };
+    if (a.id === "undefined" || byId.has(a.id)) return { greska: `atom bez oznake ili s ponovljenom oznakom „${a.id}“` };
     byId.set(a.id, a);
   }
   const rings = [].concat(s.prsten ?? []);
   for (const r of rings) {
     const ids = (r.atomi ?? []).map(String);
     if (ids.length < 3 || ids.length > 8 || !ids.every((id) => byId.has(id))) {
-      return { checks: [fail("prsten treba 3 do 8 postojećih atoma")] };
+      return { greska: "prsten treba 3 do 8 postojećih atoma" };
     }
     const [c0, c1] = r.sredina ?? [0, 0];
     const R = 1 / (2 * Math.sin(Math.PI / ids.length));
@@ -797,39 +805,96 @@ function structure(s, text) {
   for (const a of atoms) {
     if (typeof a.x === "number" || a.uz == null) continue;
     const b = byId.get(String(a.uz));
-    if (!b?.ring) return { checks: [fail(`„uz“ atoma ${a.id} mora biti atom prstena`)] };
+    if (!b?.ring) return { greska: `„uz“ atoma ${a.id} mora biti atom prstena` };
     const d = [b.x - b.ring[0], b.y - b.ring[1]];
     const l = Math.hypot(...d) || 1;
     [a.x, a.y] = [b.x + d[0] / l, b.y + d[1] / l];
   }
   if (!atoms.every((a) => typeof a.x === "number" && typeof a.y === "number" && isFinite(a.x) && isFinite(a.y))) {
-    return { checks: [fail("svaki atom treba koordinate x, y (ili je u prstenu)")] };
+    return { greska: "svaki atom treba koordinate x, y (ili je u prstenu)" };
   }
   const bonds = [];
   for (const b of s.veze ?? []) {
     const [a, c, red] = Array.isArray(b) ? b : [b.od, b.do, b.red];
     const order = red ?? 1;
     if (!byId.has(String(a)) || !byId.has(String(c)) || String(a) === String(c)) {
-      return { checks: [fail(`veza ${a}–${c} spaja atom koji ne postoji`)] };
+      return { greska: `veza ${a}–${c} spaja atom koji ne postoji` };
     }
-    if (!(order in BOND_ORDER)) return { checks: [fail(`nepoznata vrsta veze „${order}“ (1, 2, 3, klin, crtkano, vodikova)`)] };
+    if (!(order in BOND_ORDER)) return { greska: `nepoznata vrsta veze „${order}“ (1, 2, 3, klin, crtkano, vodikova)` };
     if (bonds.some((x) => (x.a === String(a) && x.b === String(c)) || (x.a === String(c) && x.b === String(a)))) {
-      return { checks: [fail(`veza ${a}–${c} navedena je dvaput`)] };
+      return { greska: `veza ${a}–${c} navedena je dvaput` };
     }
     bonds.push({ a: String(a), b: String(c), red: order });
   }
-  const checks = [];
+  const problemi = [];
   for (const b of bonds) {
     const [p, q] = [byId.get(b.a), byId.get(b.b)];
     const d = Math.hypot(p.x - q.x, p.y - q.y);
     const ok = b.red === "vodikova" ? d <= 3 : d >= 0.6 && d <= 1.8;
-    if (!ok) checks.push(fail(`veza ${b.a}–${b.b} duga je ${num(d)} (treba oko 1)`));
+    if (!ok) problemi.push(`veza ${b.a}–${b.b} duga je ${num(d)} (treba oko 1)`);
   }
   for (let i = 0; i < atoms.length; i++) {
     for (let j = i + 1; j < atoms.length; j++) {
-      if (Math.hypot(atoms[i].x - atoms[j].x, atoms[i].y - atoms[j].y) < 0.5) checks.push(fail(`atomi ${atoms[i].id} i ${atoms[j].id} preklapaju se`));
+      if (Math.hypot(atoms[i].x - atoms[j].x, atoms[i].y - atoms[j].y) < 0.5) problemi.push(`atomi ${atoms[i].id} i ${atoms[j].id} preklapaju se`);
     }
   }
+  return { atoms, byId, rings, bonds, problemi };
+}
+
+// Pola širine oznake atoma u pikselima (font skice), za skraćivanje veze do oznake.
+export function labelHalfWidth(t) {
+  const c = [...String(t ?? "")];
+  if (!c.length) return 0;
+  return 5 + c.reduce((w, ch) => w + (SUB.includes(ch) || SUP[ch] ? 2.6 : 4.4), 0);
+}
+
+// Slobodan smjer za nevezni par oko atoma: najdalje od veza i već zauzetih smjerova (prvo gore, dolje, lijevo,
+// desno). taken = kutovi (rad) veza i već postavljenih parova; novi smjer se dodaje u taken.
+const PAIR_CAND = [-90, 90, 180, 0, -45, -135, 45, 135].map((d) => (d * Math.PI) / 180);
+const angDist = (x, y) => {
+  const d = Math.abs(x - y) % (2 * Math.PI);
+  return d > Math.PI ? 2 * Math.PI - d : d;
+};
+export function freePairDirection(taken) {
+  let best = PAIR_CAND[0];
+  let score = -1;
+  for (const c of PAIR_CAND) {
+    const sc2 = taken.length ? Math.min(...taken.map((t) => angDist(c, t))) : Math.PI;
+    if (sc2 > score + 1e-6) [best, score] = [c, sc2];
+  }
+  taken.push(best);
+  return best;
+}
+// Dvije točke neveznog para u smjeru t (rad, y prema dolje) od središta p; r = razmak od središta oznake.
+export function pairDots(p, t, r) {
+  const u = [Math.cos(t), Math.sin(t)];
+  const rr = Math.abs(u[0]) > 0.5 ? r : 13;
+  const c = [p[0] + u[0] * rr, p[1] + u[1] * rr];
+  return [
+    [c[0] - u[1] * 3.4, c[1] + u[0] * 3.4],
+    [c[0] + u[1] * 3.4, c[1] - u[0] * 3.4],
+  ];
+}
+
+// Crte jedne veze od točke a do c (već skraćene do oznaka): dvostruka i trostruka kao usporedne crte, klin kao
+// trokut. [{crta: [p, q], cls}] ili [{klin: [točke]}].
+export function bondParts(a, c, red) {
+  const L = Math.hypot(c[0] - a[0], c[1] - a[1]) || 1;
+  const n = [-(c[1] - a[1]) / L, (c[0] - a[0]) / L];
+  const off = (pt, d) => [pt[0] + n[0] * d, pt[1] + n[1] * d];
+  if (red === 2) return [{ crta: [off(a, 3), off(c, 3)], cls: "ln" }, { crta: [off(a, -3), off(c, -3)], cls: "ln" }];
+  if (red === 3) return [{ crta: [a, c], cls: "ln" }, { crta: [off(a, 4.5), off(c, 4.5)], cls: "ln" }, { crta: [off(a, -4.5), off(c, -4.5)], cls: "ln" }];
+  if (red === "klin") return [{ klin: [a, off(c, 4.5), off(c, -4.5)] }];
+  if (red === "crtkano") return [{ crta: [a, c], cls: "ln dash" }];
+  if (red === "vodikova") return [{ crta: [a, c], cls: "ln dot acc" }];
+  return [{ crta: [a, c], cls: "ln" }];
+}
+
+function structure(s, text) {
+  const L = structureLayout(s);
+  if (L.greska) return { checks: [fail(L.greska)] };
+  const { atoms, byId, rings, bonds } = L;
+  const checks = L.problemi.map(fail);
   const bondSum = (id) => bonds.reduce((t, b) => t + (b.a === id || b.b === id ? BOND_ORDER[b.red] : 0), 0);
   const lewis = atoms.some((a) => typeof a.nevezni === "number");
   const perAtomCharge = atoms.some((a) => a.naboj);
@@ -903,11 +968,7 @@ function structure(s, text) {
   const P = new Map(all.map((a) => [a.id, T(a.x, a.y)]));
   const A = new Map(all.map((a) => [a.id, a]));
   const shown = (a) => `${a.simbol ?? ""}${a.zvjezdica ? "*" : ""}`;
-  const halfW = (a) => {
-    const t = [...shown(a)];
-    if (!t.length) return 0;
-    return 5 + t.reduce((w, c) => w + (SUB.includes(c) || SUP[c] ? 2.6 : 4.4), 0);
-  };
+  const halfW = (a) => labelHalfWidth(shown(a));
   const trim = (id, u) => {
     const a = A.get(id);
     const hw = halfW(a);
@@ -930,42 +991,14 @@ function structure(s, text) {
     const t2 = trim(b.b, u) + (b.red === "vodikova" ? 3 : 1);
     const a = [p[0] + u[0] * t1, p[1] + u[1] * t1];
     const c = [q[0] - u[0] * t2, q[1] - u[1] * t2];
-    const n = [-u[1], u[0]];
-    const off = (pt, d) => [pt[0] + n[0] * d, pt[1] + n[1] * d];
-    if (b.red === 2) body += line(off(a, 3), off(c, 3)) + line(off(a, -3), off(c, -3));
-    else if (b.red === 3) body += line(a, c) + line(off(a, 4.5), off(c, 4.5)) + line(off(a, -4.5), off(c, -4.5));
-    else if (b.red === "klin") body += poly([a, off(c, 4.5), off(c, -4.5)], "wedge");
-    else if (b.red === "crtkano") body += line(a, c, "ln dash");
-    else if (b.red === "vodikova") body += line(a, c, "ln dot acc");
-    else body += line(a, c);
+    for (const x of bondParts(a, c, b.red)) body += x.klin ? poly(x.klin, "wedge") : line(x.crta[0], x.crta[1], x.cls);
   }
-  // slobodan smjer oko atoma: najdalje od veza i već zauzetih smjerova (prvo gore, dolje, lijevo, desno)
-  const CAND = [-90, 90, 180, 0, -45, -135, 45, 135].map((d) => (d * Math.PI) / 180);
-  const angDist = (x, y) => {
-    const d = Math.abs(x - y) % (2 * Math.PI);
-    return d > Math.PI ? 2 * Math.PI - d : d;
-  };
-  const free = (id) => {
-    const taken = dirs.get(id);
-    let best = CAND[0];
-    let score = -1;
-    for (const c of CAND) {
-      const sc2 = taken.length ? Math.min(...taken.map((t) => angDist(c, t))) : Math.PI;
-      if (sc2 > score + 1e-6) [best, score] = [c, sc2];
-    }
-    taken.push(best);
-    return best;
-  };
+  const free = (id) => freePairDirection(dirs.get(id));
   for (const a of all) {
     const p = P.get(a.id);
     const r = Math.max(13, halfW(a) + 5);
     for (let k = 0; k < (a.nevezni ?? 0); k++) {
-      const t = free(a.id);
-      const u = [Math.cos(t), Math.sin(t)];
-      const rr = Math.abs(u[0]) > 0.5 ? r : 13;
-      const c = [p[0] + u[0] * rr, p[1] + u[1] * rr];
-      body += `<circle class="pt" cx="${f(c[0] - u[1] * 3.4)}" cy="${f(c[1] + u[0] * 3.4)}" r="1.9"/>`;
-      body += `<circle class="pt" cx="${f(c[0] + u[1] * 3.4)}" cy="${f(c[1] - u[0] * 3.4)}" r="1.9"/>`;
+      for (const d of pairDots(p, free(a.id), r)) body += `<circle class="pt" cx="${f(d[0])}" cy="${f(d[1])}" r="1.9"/>`;
     }
     if (shown(a)) body += label([p[0], p[1] + 1], shown(a), a.istaknut ? "lbl acc-t" : "lbl");
     if (a.naboj) body += label([p[0] + halfW(a) + 3, p[1] - 10], a.naboj, "lbl small", "start");
@@ -1131,7 +1164,8 @@ function shells(s, text) {
     const want = p.protoni - chargeOf(p.simbol);
     checks.push({ ok: total === want, text: `${p.simbol}: ${total} elektrona ${total === want ? "=" : "≠"} ${p.protoni} protona − naboj (${want})` });
     e.forEach((n, i) => {
-      const max = Math.min(2 * (i + 1) ** 2, i === e.length - 1 ? 8 : Infinity, i === 0 ? 2 : Infinity);
+      // prijelazni: true (kation prijelaznog metala, npr. Fe³⁺ 2, 8, 13): vanjska ljuska smije imati više od 8
+      const max = Math.min(2 * (i + 1) ** 2, i === e.length - 1 && !p.prijelazni ? 8 : Infinity, i === 0 ? 2 : Infinity);
       if (n > max) checks.push(fail(`${p.simbol}: u ${i + 1}. ljusci ${n} elektrona (najviše ${max})`));
     });
   }
@@ -1265,37 +1299,54 @@ function particles(s, text) {
 
 // Kromatogram: traka (kreda ili papir) u čaši s otapalom, startna linija, fronta otapala i mrlje na
 // udaljenostima od startne linije; kote prikazuju te udaljenosti.
-const SPOT = { "žuta": "k2 light", "narančasta": "k2", zelena: "k3", plava: "k1", crvena: "k4", "ljubičasta": "k1", siva: "k5" };
+export const SPOT = { "žuta": "k2 light", "narančasta": "k2", zelena: "k3", plava: "k1", crvena: "k4", "ljubičasta": "k1", siva: "k5" };
+export const SKETCH_DEFS = defs;
 
-function chromatogram(s, text) {
+// Raspored kromatograma, zajednički skici i widgetu „kromatografija“ (lekcije). Neobavezno (samo widget):
+// napredak 0–1 (koliko se otapalo već podiglo), staze (broj uzoraka na širokom papiru), kreda (oblik trake).
+export function chromatogramLayout(s, o = {}) {
+  const [ys, yf] = [202, 62];
+  const p = o.napredak ?? 1;
+  const Y = (d) => ys - ((d * p) / s.fronta) * (ys - yf);
+  const chalk = o.kreda ?? s.podloga !== "papir";
+  const n = o.staze ?? 1;
+  const pitch = n > 3 ? 30 : n > 2 ? 38 : 44;
+  const [sx0, sx1] = n > 1 ? [160 - (pitch * n) / 2 - 4, 160 + (pitch * n) / 2 + 4] : chalk ? [146, 174] : [142, 178];
+  const cx = Array.from({ length: n }, (_, i) => 160 + (i - (n - 1) / 2) * pitch);
+  return { ys, yf, Y, yFronta: ys - p * (ys - yf), chalk, sx0, sx1, cx, rx: chalk || n > 1 ? 11 : 13 };
+}
+
+// Tijelo SVG-a kromatograma. Bez opcija crta točno skicu; widget dodaje: napredak, staze [{naziv, mrlje}], kote,
+// razina (y površine otapala), mokro (navlaženi dio trake), vidljivost (0–1, mrlje otopljene u čaši), tinta
+// (startna linija kemijskom olovkom: tinta se razdvaja s otapalom), fronta: false (otapalo još nije krenulo).
+export function chromatogramBody(s, o = {}) {
   const spots = s.mrlje ?? [];
-  const checks = [];
-  if (!positive(s.fronta)) return { checks: [fail("fronta otapala mora biti pozitivan broj")] };
-  if (spots.length < 1 || spots.length > 5) checks.push(fail("kromatogram treba 1 do 5 mrlja"));
-  for (const m of spots) {
-    const ok = typeof m.udaljenost === "number" && m.udaljenost > 0 && m.udaljenost < s.fronta;
-    checks.push({ ok, text: `mrlja ${m.oznaka ?? ""} na ${num(m.udaljenost)} ${ok ? "je" : "NIJE"} između startne linije i fronte (${num(s.fronta)})` });
-  }
-  if (s.kote !== false) checks.push(...numbersInText([s.fronta, ...spots.map((m) => m.udaljenost)].map(String), text));
-  if (checks.some((x) => !x.ok)) return { checks };
+  const staze = o.staze ?? null;
+  const L = chromatogramLayout(s, { ...o, staze: staze ? staze.length : 1 });
+  const { ys, Y, chalk, sx0, sx1, cx, rx } = L;
+  const yf = L.yFronta;
+  const kote = o.kote ?? s.kote !== false;
   const unit = s.jedinica ? ` ${s.jedinica}` : "";
   const dec = Math.max(...[s.fronta, ...spots.map((m) => m.udaljenost)].map((v) => (String(v).split(".")[1] ?? "").length));
   const fmt = (v) => v.toFixed(dec).replace(".", ",");
-  const [ys, yf] = [202, 62];
-  const Y = (d) => ys - (d / s.fronta) * (ys - yf);
-  const chalk = s.podloga !== "papir";
-  const [sx0, sx1] = chalk ? [146, 174] : [142, 178];
-  let body = `<rect class="liquid" x="92" y="218" width="136" height="24"/>`;
+  const razina = o.razina ?? 218;
+  let body = `<rect class="liquid" x="92" y="${f(razina)}" width="136" height="${f(242 - razina)}"/>`;
   body += `<path class="ln" d="M90,40 V244 H230 V40"/>`;
   body += `<rect class="strip" x="${sx0}" y="20" width="${sx1 - sx0}" height="220" rx="${chalk ? 10 : 1}"/>`;
-  body += line([sx0 - 6, ys], [sx1 + 6, ys], "ln thin") + label([84, ys], "startna linija", "lbl small dim-t", "end");
-  body += line([sx0 - 6, yf], [sx1 + 6, yf], "ln dash acc") + label([84, yf], "fronta otapala", "lbl small acc-t", "end");
-  spots.forEach((m) => {
+  if (o.mokro && o.fronta !== false) body += `<rect class="wet" x="${sx0}" y="${f(yf)}" width="${sx1 - sx0}" height="${f(240 - yf)}" rx="${chalk ? 10 : 1}"/>`;
+  // nazivi staza iznad trake; dugi nazivi naizmjence i u retku na vrhu trake, da se ne preklapaju
+  const gusto = staze && staze.some((t, i) => i && (String(t.naziv ?? "").length + String(staze[i - 1].naziv ?? "").length) * 3.6 > cx[1] - cx[0] - 4);
+  if (staze) staze.forEach((t, i) => t.naziv && (body += label([cx[i], gusto && i % 2 ? 31 : 11], t.naziv, "lbl small", "middle")));
+  body += line([sx0 - 6, ys], [sx1 + 6, ys], o.tinta ? "ln thin ink" : "ln thin") + label([84, ys], "startna linija", "lbl small dim-t", "end");
+  if (o.fronta !== false) body += line([sx0 - 6, yf], [sx1 + 6, yf], "ln dash acc") + label([84, yf], "fronta otapala", "lbl small acc-t", "end");
+  if (o.tinta && o.fronta !== false && yf < ys - 4) body += `<rect class="spot k1 ink-band" x="${sx0 + 2}" y="${f(Y(0.55 * s.fronta) - 4)}" width="${sx1 - sx0 - 4}" height="8" rx="4"/>`;
+  const op = o.vidljivost != null && o.vidljivost < 1 ? ` opacity="${f(Math.max(0, o.vidljivost) * 100) / 100}"` : "";
+  (staze ?? [{ mrlje: spots }]).forEach((t, i) => (t.mrlje ?? []).forEach((m) => {
     const y = Y(m.udaljenost);
-    body += `<ellipse class="spot ${SPOT[m.boja] ?? "k5"}" cx="160" cy="${f(y)}" rx="${chalk ? 11 : 13}" ry="6"/>`;
-    if (m.oznaka) body += label([136, y], m.oznaka, "lbl small", "end");
-  });
-  if (s.kote !== false) {
+    body += `<ellipse class="spot ${SPOT[m.boja] ?? "k5"}" cx="${f(cx[i])}" cy="${f(y)}" rx="${rx}" ry="6"${op}/>`;
+    if (m.oznaka && !staze) body += label([136, y], m.oznaka, "lbl small", "end");
+  }));
+  if (kote && !staze) {
     const marks = [...spots.map((m) => ({ d: m.udaljenost, t: `d${SUB[1]}` })), { d: s.fronta, t: `d${SUB[2]}` }];
     marks.forEach((m, i) => {
       const x = 244 + 15 * i;
@@ -1313,7 +1364,21 @@ function chromatogram(s, text) {
       body += label([lx, ly[i]], `${m.t} = ${fmt(m.d)}${unit}`, i === marks.length - 1 ? "lbl small acc-t" : "lbl small c2-t", "start");
     });
   }
-  return { svg: svg(body, 252), checks };
+  return body;
+}
+
+function chromatogram(s, text) {
+  const spots = s.mrlje ?? [];
+  const checks = [];
+  if (!positive(s.fronta)) return { checks: [fail("fronta otapala mora biti pozitivan broj")] };
+  if (spots.length < 1 || spots.length > 5) checks.push(fail("kromatogram treba 1 do 5 mrlja"));
+  for (const m of spots) {
+    const ok = typeof m.udaljenost === "number" && m.udaljenost > 0 && m.udaljenost < s.fronta;
+    checks.push({ ok, text: `mrlja ${m.oznaka ?? ""} na ${num(m.udaljenost)} ${ok ? "je" : "NIJE"} između startne linije i fronte (${num(s.fronta)})` });
+  }
+  if (s.kote !== false) checks.push(...numbersInText([s.fronta, ...spots.map((m) => m.udaljenost)].map(String), text));
+  if (checks.some((x) => !x.ok)) return { checks };
+  return { svg: svg(chromatogramBody(s), 252), checks };
 }
 
 // Titracijska krivulja: pH otopine kiseline dok joj se dodaje lužina, izračunan iz koncentracija (jaka kiselina,
