@@ -1,0 +1,6309 @@
+{
+ "jednadzba-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta jednadzba."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "jednadzba 1",
+    "pitanje": {
+     "tip": "jednadzba",
+     "nacin": "izjednaci",
+     "tekst": "Propen (C₃H₆) potpuno izgara u kisiku. Izjednači jednadžbu: upiši najmanje cijele koeficijente.",
+     "reaktanti": [
+      "C₃H₆",
+      "O₂"
+     ],
+     "produkti": [
+      "CO₂",
+      "H₂O"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "jednadzba",
+      "nacin": "istrazi",
+      "tekst": "Bakar i sumpor daju bakrov(I) sulfid. Mijenjaj koeficijente gumbima + i − i gledaj kad se broj atoma lijevo i desno slaže.",
+      "reaktanti": [
+       "Cu",
+       "S"
+      ],
+      "produkti": [
+       "Cu₂S"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "jednadzba 2",
+    "pitanje": {
+     "tip": "jednadzba",
+     "nacin": "stanja",
+     "tekst": "Zagrijavanjem se rastaljeni kalijev nitrat raspada na čvrsti kalijev nitrit i kisik. Odaberi agregacijsko stanje svake tvari.",
+     "reaktanti": [
+      "KNO₃"
+     ],
+     "produkti": [
+      "KNO₂",
+      "O₂"
+     ],
+     "iznad": "zagrijavanje",
+     "stanja": {
+      "KNO₃": "l",
+      "KNO₂": "s",
+      "O₂": "g"
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "jednadzba 3",
+    "pitanje": {
+     "tip": "jednadzba",
+     "nacin": "izjednaci_stanja",
+     "tekst": "U otopinu srebrova nitrata dodana je otopina natrijeva klorida i nastao je bijeli talog. Napiši ionsku jednadžbu taloženja: koeficijente i stanja.",
+     "reaktanti": [
+      "Ag⁺",
+      "Cl⁻"
+     ],
+     "produkti": [
+      "AgCl"
+     ],
+     "stanja": [
+      "aq",
+      "aq",
+      "s"
+     ],
+     "krivo": [
+      {
+       "tvar": "AgCl",
+       "stanje": "aq",
+       "poruka": "AgCl je bijeli talog: ne ostaje otopljen, nego se izdvaja kao čvrsta tvar."
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "jednadzba-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta jednadzba."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "jednadzba 4",
+    "pitanje": {
+     "tip": "jednadzba",
+     "nacin": "izjednaci",
+     "tekst": "Željezo se oksidira u željezove(II) ione. Izjednači polureakciju oksidacije: pazi i na atome i na naboj.",
+     "reaktanti": [
+      "Fe"
+     ],
+     "produkti": [
+      "Fe²⁺",
+      "e⁻"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "mol_racun-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta mol_racun."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "mol_racun 1",
+    "pitanje": {
+     "tip": "mol_racun",
+     "nacin": "izracunaj",
+     "tekst": "U 1,00 L fiziološke otopine otopljeno je 9,0 g natrijeva klorida. Izračunaj množinu NaCl i množinsku koncentraciju otopine.",
+     "tvar": "NaCl",
+     "naziv": "natrijev klorid",
+     "zadano": {
+      "velicina": "m",
+      "vrijednost": 9,
+      "jedinica": "g",
+      "zapis": "9,0"
+     },
+     "otopina": {
+      "V": 1,
+      "jedinica": "L",
+      "zapis": "1,00"
+     },
+     "trazi": [
+      {
+       "velicina": "n",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "c",
+       "jedinica": "mol/dm³"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "mol_racun",
+      "nacin": "istrazi",
+      "tekst": "Pomiči klizač mase vode i gledaj kako se mijenjaju množina i broj molekula.",
+      "tvar": "H₂O",
+      "naziv": "voda",
+      "zadano": {
+       "velicina": "m",
+       "vrijednost": 9,
+       "jedinica": "g",
+       "zapis": "9,0"
+      },
+      "raspon": [
+       1,
+       36
+      ],
+      "trazi": [
+       {
+        "velicina": "n",
+        "jedinica": "mol"
+       },
+       {
+        "velicina": "N",
+        "jedinica": "molekula"
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "mol_racun 2",
+    "pitanje": {
+     "tip": "mol_racun",
+     "nacin": "molarna_masa",
+     "tekst": "Izračunaj molarnu masu modre galice.",
+     "tvar": "CuSO₄·5H₂O",
+     "naziv": "modra galica"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "mol_racun 3",
+    "pitanje": {
+     "tip": "mol_racun",
+     "nacin": "izracunaj",
+     "tekst": "Koliki volumen pri normiranim uvjetima zauzima 0,25 mol ugljikova dioksida?",
+     "tvar": "CO₂",
+     "zadano": {
+      "velicina": "n",
+      "vrijednost": 0.25,
+      "jedinica": "mol"
+     },
+     "plin": {
+      "uvjeti": "normirani"
+     },
+     "trazi": [
+      {
+       "velicina": "V",
+       "jedinica": "L"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "mol_racun-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta mol_racun."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "mol_racun 4",
+    "pitanje": {
+     "tip": "mol_racun",
+     "nacin": "izracunaj",
+     "tekst": "U boci obujma 1,24 L nalazi se 2,10 g plinovitog ugljikovodika pri 25 °C i 100 kPa. Izračunaj množinu plina i njegovu molarnu masu.",
+     "naziv": "plinoviti ugljikovodik",
+     "zadano": [
+      {
+       "velicina": "V",
+       "vrijednost": 1.24,
+       "jedinica": "L"
+      },
+      {
+       "velicina": "m",
+       "vrijednost": 2.1,
+       "jedinica": "g",
+       "zapis": "2,10"
+      }
+     ],
+     "plin": {
+      "p": 100,
+      "jedinica": "kPa",
+      "t": 25
+     },
+     "trazi": [
+      {
+       "velicina": "n",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "M",
+       "jedinica": "g/mol"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "periodni_sustav-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta periodni_sustav."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "periodni_sustav 1",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "procitaj",
+     "tekst": "Koliko valentnih elektrona ima atom kalcija?",
+     "element": "Ca",
+     "pitaj": "valentni"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "periodni_sustav",
+      "nacin": "istrazi",
+      "tekst": "Boja ćelije pokazuje elektronegativnost: što je tamnija, to atom jače privlači elektrone u vezi. Dodirni nekoliko elemenata i usporedi.",
+      "prikazi": [
+       "en",
+       "vrsta"
+      ],
+      "odabran": "F"
+     },
+     {
+      "tip": "periodni_sustav",
+      "nacin": "istrazi",
+      "tekst": "Dodirni element u glavnim skupinama i pogledaj kako se mijenja polumjer atoma.",
+      "prikaz": "glavne",
+      "prikazi": [
+       "polumjer",
+       "ie1"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "periodni_sustav 2",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "procitaj",
+     "tekst": "Koliko elektrona ima kloridni ion Cl⁻?",
+     "element": "Cl⁻",
+     "pitaj": "elektroni"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "periodni_sustav 3",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "procitaj",
+     "tekst": "Koliko protona, neutrona i elektrona ima ion $^{37}\\mathrm{Cl}^{-}$?",
+     "element": "Cl⁻",
+     "A": 37,
+     "pitaj": [
+      "protoni",
+      "neutroni",
+      "elektroni"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "periodni_sustav-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta periodni_sustav."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "periodni_sustav 4",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "pronadji",
+     "tekst": "Dodirni element 3. periode čiji atom ima 2 valentna elektrona.",
+     "uvjet": {
+      "perioda": 3,
+      "valentni": 2
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "periodni_sustav 5",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "pronadji",
+     "tekst": "Dodirni sve halogene elemente (17. skupina) od 2. do 5. periode.",
+     "prikaz": "glavne",
+     "tocno": [
+      "F",
+      "Cl",
+      "Br",
+      "I"
+     ],
+     "viseTocnih": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "periodni_sustav 6",
+    "pitanje": {
+     "tip": "periodni_sustav",
+     "nacin": "poredaj",
+     "tekst": "Poredaj litij, natrij i kalij od najmanje do najveće prve energije ionizacije.",
+     "elementi": [
+      "Li",
+      "Na",
+      "K"
+     ],
+     "svojstvo": "ie1"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "molekula-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta molekula."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "molekula 1",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "parovi",
+     "tekst": "Složi Lewisovu formulu nitritnog iona NO₂⁻: dodaj nevezne parove i promijeni red veze, dok svi atomi nemaju oktet.",
+     "formula": "NO₂⁻"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "molekula",
+      "nacin": "istrazi",
+      "tekst": "Karbonatni ion iz vapnenca. Dodirni atome i pogledaj koliko elektrona ima svaki; uključi oblik i pogledaj zašto je ion plošan.",
+      "formula": "CO₃²⁻",
+      "en": {
+       "C": 2.6,
+       "O": 3.4
+      }
+     },
+     {
+      "tip": "molekula",
+      "nacin": "istrazi",
+      "tekst": "Butan-2-ol. Dodirni C-atome i pogledaj koji ima četiri različite skupine; uključi numeraciju lanca.",
+      "formula": "C₄H₁₀O",
+      "atomi": [
+       {
+        "id": "C1",
+        "simbol": "CH₃",
+        "x": 0,
+        "y": 0
+       },
+       {
+        "id": "C2",
+        "simbol": "CH",
+        "x": 0.87,
+        "y": 0.5
+       },
+       {
+        "id": "O",
+        "simbol": "OH",
+        "x": 0.87,
+        "y": 1.5
+       },
+       {
+        "id": "C3",
+        "simbol": "CH₂",
+        "x": 1.74,
+        "y": 0
+       },
+       {
+        "id": "C4",
+        "simbol": "CH₃",
+        "x": 2.61,
+        "y": 0.5
+       }
+      ],
+      "veze": [
+       [
+        "C1",
+        "C2"
+       ],
+       [
+        "C2",
+        "O"
+       ],
+       [
+        "C2",
+        "C3"
+       ],
+       [
+        "C3",
+        "C4"
+       ]
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "molekula 2",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "oblik",
+     "tekst": "Kakav je oblik sulfitnog iona SO₃²⁻?",
+     "formula": "SO₃²⁻"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "molekula 3",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "oblik",
+     "tekst": "Kakav je oblik molekule amonijaka i je li molekula polarna?",
+     "formula": "NH₃",
+     "pitaj": [
+      "oblik",
+      "polarnost"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "molekula-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta molekula."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "molekula 4",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "oznaci",
+     "tekst": "2-Metilbutan-1-ol. Dodirni asimetrično supstituirani C-atom.",
+     "formula": "C₅H₁₂O",
+     "trazi": "asimetricni_c",
+     "atomi": [
+      {
+       "id": "C1",
+       "simbol": "CH₂",
+       "x": 0,
+       "y": 0
+      },
+      {
+       "id": "O",
+       "simbol": "HO",
+       "x": -0.87,
+       "y": 0.5
+      },
+      {
+       "id": "C2",
+       "simbol": "CH",
+       "x": 0.87,
+       "y": 0.5
+      },
+      {
+       "id": "M",
+       "simbol": "CH₃",
+       "x": 0.87,
+       "y": 1.5
+      },
+      {
+       "id": "C3",
+       "simbol": "CH₂",
+       "x": 1.74,
+       "y": 0
+      },
+      {
+       "id": "C4",
+       "simbol": "CH₃",
+       "x": 2.61,
+       "y": 0.5
+      }
+     ],
+     "veze": [
+      [
+       "O",
+       "C1"
+      ],
+      [
+       "C1",
+       "C2"
+      ],
+      [
+       "C2",
+       "M"
+      ],
+      [
+       "C2",
+       "C3"
+      ],
+      [
+       "C3",
+       "C4"
+      ]
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "molekula 5",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "oznaci",
+     "tekst": "Mliječna kiselina ima dvije skupine s kisikom. Dodirni atome hidroksilne skupine (ne one u karboksilnoj).",
+     "formula": "C₃H₆O₃",
+     "trazi": "hidroksilna",
+     "atomi": [
+      {
+       "id": "C3",
+       "simbol": "CH₃",
+       "x": 0,
+       "y": 0
+      },
+      {
+       "id": "C2",
+       "simbol": "C",
+       "x": 0.87,
+       "y": 0.5
+      },
+      {
+       "id": "H",
+       "simbol": "H",
+       "x": 0.87,
+       "y": -0.5
+      },
+      {
+       "id": "O2",
+       "simbol": "OH",
+       "x": 0.87,
+       "y": 1.5
+      },
+      {
+       "id": "C1",
+       "simbol": "C",
+       "x": 1.74,
+       "y": 0
+      },
+      {
+       "id": "Od",
+       "simbol": "O",
+       "x": 1.74,
+       "y": -1
+      },
+      {
+       "id": "Ok",
+       "simbol": "OH",
+       "x": 2.61,
+       "y": 0.5
+      }
+     ],
+     "veze": [
+      [
+       "C3",
+       "C2"
+      ],
+      [
+       "C2",
+       "H"
+      ],
+      [
+       "C2",
+       "O2"
+      ],
+      [
+       "C2",
+       "C1"
+      ],
+      [
+       "C1",
+       "Od",
+       2
+      ],
+      [
+       "C1",
+       "Ok"
+      ]
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "molekula 6",
+    "pitanje": {
+     "tip": "molekula",
+     "nacin": "oznaci",
+     "tekst": "3-Hidroksipentanska kiselina. Dodirni C-atom koji u imenu dobiva broj 1.",
+     "formula": "C₅H₁₀O₃",
+     "trazi": "c1",
+     "atomi": [
+      {
+       "id": "a",
+       "simbol": "CH₃",
+       "x": 0,
+       "y": 0.5
+      },
+      {
+       "id": "b",
+       "simbol": "CH₂",
+       "x": 0.87,
+       "y": 0
+      },
+      {
+       "id": "c",
+       "simbol": "CH",
+       "x": 1.74,
+       "y": 0.5
+      },
+      {
+       "id": "o",
+       "simbol": "OH",
+       "x": 1.74,
+       "y": 1.5
+      },
+      {
+       "id": "d",
+       "simbol": "CH₂",
+       "x": 2.61,
+       "y": 0
+      },
+      {
+       "id": "e",
+       "simbol": "COOH",
+       "x": 3.55,
+       "y": 0.5
+      }
+     ],
+     "veze": [
+      [
+       "a",
+       "b"
+      ],
+      [
+       "b",
+       "c"
+      ],
+      [
+       "c",
+       "o"
+      ],
+      [
+       "c",
+       "d"
+      ],
+      [
+       "d",
+       "e"
+      ]
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ph_skala-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ph_skala."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ph_skala 1",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "izracunaj",
+     "tekst": "U otopini natrijeva acetata izmjereno je c(OH⁻) = 2,0·10⁻⁵ mol/dm³. Izračunaj pOH i pH te otopine.",
+     "zadano": {
+      "velicina": "c_OH",
+      "vrijednost": 0.00002,
+      "zapis": "2,0·10⁻⁵"
+     },
+     "trazi": [
+      "pOH",
+      "pH"
+     ],
+     "kiselost": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "ph_skala",
+      "nacin": "istrazi",
+      "tekst": "Pomiči klizač pH i gledaj kako se mijenjaju koncentracije oksonijevih i hidroksidnih iona i boje indikatora.",
+      "zadano": {
+       "velicina": "pH",
+       "vrijednost": 7
+      }
+     },
+     {
+      "tip": "ph_skala",
+      "nacin": "istrazi",
+      "tekst": "Mijenjaj koncentraciju oksonijevih iona. Za koliko se promijeni pH kad je c(H₃O⁺) deset puta veća?",
+      "zadano": {
+       "velicina": "c_H3O",
+       "vrijednost": 0.001
+      },
+      "klizac": "c_H3O",
+      "indikatori": [
+       "univerzalni"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ph_skala 2",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "izracunaj",
+     "tekst": "Izmjereni pH otopine octene kiseline, c₀(CH₃COOH) = 0,100 mol/dm³, iznosi 2,88. Izračunaj c(H₃O⁺), stupanj ionizacije i konstantu ionizacije octene kiseline.",
+     "zadano": {
+      "velicina": "pH",
+      "vrijednost": 2.88,
+      "zapis": "2,88"
+     },
+     "otopina": {
+      "formula": "CH₃COOH",
+      "c": 0.1,
+      "zapis": "0,100"
+     },
+     "trazi": [
+      "c_H3O",
+      "alfa",
+      "Ka"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ph_skala 3",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "izracunaj",
+     "tekst": "Izračunaj c(OH⁻), pOH i pH otopine barijeva hidroksida koncentracije 0,0050 mol/dm³.",
+     "otopina": {
+      "formula": "Ba(OH)₂",
+      "c": 0.005,
+      "zapis": "0,0050"
+     },
+     "trazi": [
+      "c_OH",
+      "pOH",
+      "pH"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ph_skala-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ph_skala."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ph_skala 4",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "izracunaj",
+     "tekst": "Pomiješa se 20,0 mL otopine octene kiseline i 10,0 mL otopine natrijeva acetata iste koncentracije, 0,100 mol/dm³. Ka(CH₃COOH) = 1,76·10⁻⁵ mol/dm³. Koliki je pH nastale otopine?",
+     "pufer": {
+      "Ka": 0.0000176,
+      "kiselina": {
+       "formula": "CH₃COOH",
+       "c": 0.1,
+       "zapis": "0,100",
+       "V": 20,
+       "zapis_V": "20,0"
+      },
+      "sol": {
+       "formula": "CH₃COONa",
+       "c": 0.1,
+       "zapis": "0,100",
+       "V": 10,
+       "zapis_V": "10,0"
+      }
+     },
+     "trazi": [
+      "c_H3O",
+      "pH"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ph_skala 5",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "izracunaj",
+     "tekst": "Pri 60 °C otopina u točki ekvivalencije ima pH = 6,50. Izračunaj c(H₃O⁺) i konstantu ionizacije vode pri 60 °C. Je li ta otopina kisela?",
+     "zadano": {
+      "velicina": "pH",
+      "vrijednost": 6.5,
+      "zapis": "6,50"
+     },
+     "neutralna": true,
+     "t": 60,
+     "trazi": [
+      "c_H3O",
+      "Kw"
+     ],
+     "kiselost": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ph_skala 6",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "indikator",
+     "tekst": "U otopini natrijeva acetata c(OH⁻) = 2,0·10⁻⁵ mol/dm³. Koje će boje biti univerzalni indikatorski papir i je li otopina kisela, neutralna ili lužnata?",
+     "zadano": {
+      "velicina": "c_OH",
+      "vrijednost": 0.00002,
+      "zapis": "2,0·10⁻⁵"
+     },
+     "indikatori": [
+      "univerzalni"
+     ],
+     "kiselost": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ph_skala-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ph_skala."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ph_skala 7",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "indikator",
+     "tekst": "U tri epruvete s otopinom perklorne kiseline, c(HClO₄) = 2,0·10⁻⁴ mol/dm³, doda se metiloranž, fenolftalein i lakmus. Koje je boje svaka otopina?",
+     "otopina": {
+      "formula": "HClO₄",
+      "c": 0.0002,
+      "zapis": "2,0·10⁻⁴"
+     },
+     "indikatori": [
+      "metiloranz",
+      "fenolftalein",
+      "lakmus"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ph_skala 8",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "poredaj",
+     "tekst": "Otopine imaju jednaku množinsku koncentraciju, 0,10 mol/dm³. Poredaj ih od najnižeg do najvišeg pH.",
+     "otopine": [
+      {
+       "formula": "NaCl",
+       "c": 0.1,
+       "zapis": "0,10"
+      },
+      {
+       "formula": "CH₃COOH",
+       "c": 0.1,
+       "zapis": "0,10"
+      },
+      {
+       "formula": "NaOH",
+       "c": 0.1,
+       "zapis": "0,10"
+      },
+      {
+       "formula": "HCl",
+       "c": 0.1,
+       "zapis": "0,10"
+      },
+      {
+       "formula": "NH₃",
+       "c": 0.1,
+       "zapis": "0,10"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ph_skala 9",
+    "pitanje": {
+     "tip": "ph_skala",
+     "nacin": "poredaj",
+     "tekst": "Bočice sadrže vodene otopine etanola, etanske kiseline i metilamina jednake koncentracije. Poredaj ih od najnižeg do najvišeg pH.",
+     "otopine": [
+      {
+       "formula": "CH₃NH₂",
+       "c": 0.1,
+       "naziv": "metilamin"
+      },
+      {
+       "formula": "CH₃CH₂OH",
+       "c": 0.1,
+       "naziv": "etanol"
+      },
+      {
+       "formula": "CH₃COOH",
+       "c": 0.1,
+       "naziv": "etanska kiselina"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "titracija-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta titracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "titracija 1",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "ekvivalencija",
+     "tekst": "U tikvici je 20,0 mL octene kiseline nepoznate koncentracije i nekoliko kapi fenolftaleina. Dodaji natrijevu lužinu, c(NaOH) = 0,100 mol/dm³, i zaustavi se čim otopina ostane (svijetlo)ljubičasta.",
+     "analit": {
+      "formula": "CH₃COOH",
+      "c": 0.0875,
+      "V": 20,
+      "zapis_V": "20,0"
+     },
+     "titrant": {
+      "formula": "NaOH",
+      "c": 0.1,
+      "zapis": "0,100"
+     },
+     "indikator": "fenolftalein"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "titracija",
+      "nacin": "istrazi",
+      "tekst": "U tikvici je 25,0 mL klorovodične kiseline i nekoliko kapi fenolftaleina. Dodaj natrijevu lužinu iz birete i prati kako se mijenja pH. Kad se fenolftalein oboji?",
+      "analit": {
+       "formula": "HCl",
+       "c": 0.08,
+       "zapis": "0,0800",
+       "V": 25,
+       "zapis_V": "25,0"
+      },
+      "titrant": {
+       "formula": "NaOH",
+       "c": 0.1,
+       "zapis": "0,100"
+      },
+      "indikator": "fenolftalein"
+     },
+     {
+      "tip": "titracija",
+      "nacin": "istrazi",
+      "tekst": "Octena kiselina titrira se natrijevom lužinom. Pogledaj kako se pH mijenja na početku, u puferskom području i oko točke ekvivalencije. Je li pH u točki ekvivalencije 7?",
+      "analit": {
+       "formula": "CH₃COOH",
+       "c": 0.1,
+       "zapis": "0,100",
+       "V": 20,
+       "zapis_V": "20,0"
+      },
+      "titrant": {
+       "formula": "NaOH",
+       "c": 0.1,
+       "zapis": "0,100"
+      },
+      "indikator": "fenolftalein"
+     },
+     {
+      "tip": "titracija",
+      "nacin": "pufer",
+      "tekst": "Acetatni pufer (20 mL octene kiseline i 20 mL natrijeva acetata, oba 1,0 mol/dm³) i destilirana voda, po 10 mL. Kapaj jednako klorovodične kiseline ili natrijeve lužine u obje epruvete i usporedi pH.",
+      "pufer": {
+       "kiselina": {
+        "formula": "CH₃COOH",
+        "c": 1,
+        "zapis": "1,0",
+        "V": 20,
+        "zapis_V": "20"
+       },
+       "sol": {
+        "formula": "CH₃COONa",
+        "c": 1,
+        "zapis": "1,0",
+        "V": 20,
+        "zapis_V": "20"
+       }
+      },
+      "uzorak": 10
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "titracija 2",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "izracunaj",
+     "tekst": "Uzorku klorovodične kiseline volumena 25,0 mL dodano je nekoliko kapi fenolftaleina pa je titriran otopinom natrijeva hidroksida, c(NaOH) = 0,100 mol/dm³. Do promjene boje utrošeno je 20,0 mL lužine. Kolika je množinska koncentracija klorovodične kiseline?",
+     "analit": {
+      "formula": "HCl",
+      "V": 25,
+      "zapis_V": "25,0"
+     },
+     "titrant": {
+      "formula": "NaOH",
+      "c": 0.1,
+      "zapis": "0,100"
+     },
+     "utroseno": {
+      "V": 20,
+      "zapis": "20,0"
+     },
+     "indikator": "fenolftalein"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "titracija 3",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "izracunaj",
+     "tekst": "Koliko bi mL iste lužine, c(NaOH) = 0,100 mol/dm³, trebalo za 25,0 mL sumporne kiseline koncentracije 0,0800 mol/dm³?",
+     "analit": {
+      "formula": "H₂SO₄",
+      "c": 0.08,
+      "zapis": "0,0800",
+      "V": 25,
+      "zapis_V": "25,0"
+     },
+     "titrant": {
+      "formula": "NaOH",
+      "c": 0.1,
+      "zapis": "0,100"
+     },
+     "trazi": "V_titrant",
+     "indikator": "fenolftalein"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "titracija-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta titracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "titracija 4",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "izracunaj",
+     "tekst": "Za titraciju 20,0 mL sumporne kiseline utrošeno je 16,0 mL natrijeve lužine, c(NaOH) = 0,150 mol/dm³. Kolika je koncentracija sumporne kiseline?",
+     "analit": {
+      "formula": "H₂SO₄",
+      "V": 20,
+      "zapis_V": "20,0"
+     },
+     "titrant": {
+      "formula": "NaOH",
+      "c": 0.15,
+      "zapis": "0,150"
+     },
+     "utroseno": {
+      "V": 16,
+      "zapis": "16,0"
+     },
+     "koraci": false
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "titracija 5",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "indikator",
+     "tekst": "Octena kiselina titrira se natrijevom lužinom. Koji je indikator prikladan za tu titraciju?",
+     "analit": {
+      "formula": "CH₃COOH",
+      "c": 0.1,
+      "zapis": "0,100",
+      "V": 20,
+      "zapis_V": "20,0"
+     },
+     "titrant": {
+      "formula": "NaOH",
+      "c": 0.1,
+      "zapis": "0,100"
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "titracija 6",
+    "pitanje": {
+     "tip": "titracija",
+     "nacin": "indikator",
+     "tekst": "Otopina amonijaka titrira se klorovodičnom kiselinom. Odaberi sve prikladne indikatore.",
+     "analit": {
+      "formula": "NH₃",
+      "c": 0.1,
+      "zapis": "0,100",
+      "V": 25,
+      "zapis_V": "25,0"
+     },
+     "titrant": {
+      "formula": "HCl",
+      "c": 0.1,
+      "zapis": "0,100"
+     },
+     "ponudeni": [
+      "fenolftalein",
+      "metiloranz",
+      "lakmus"
+     ],
+     "krivulja": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "pokus-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta pokus."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "pokus 1",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "opazanje",
+     "tekst": "U epruveti je otopina kalcijeva klorida (nastala otapanjem ljuske jajeta u klorovodičnoj kiselini). U nju se dokapa otopina srebrova nitrata. Što će se vidjeti?",
+     "tvar": "CaCl₂",
+     "reagens": "AgNO₃"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "pokus",
+      "nacin": "istrazi",
+      "tekst": "Halogenidni i sulfatni ioni dokazuju se taloženjem. Odaberi reagens i dodaj ga u epruvete, pa usporedi opažanja.",
+      "tvari": [
+       "NaCl",
+       "NaBr",
+       "NaI",
+       "Na₂SO₄"
+      ],
+      "reagensi": [
+       "AgNO₃",
+       "BaCl₂"
+      ]
+     },
+     {
+      "tip": "pokus",
+      "nacin": "istrazi",
+      "tekst": "Ubaci jednako velike komadiće metala u razrijeđenu klorovodičnu kiselinu i u otopine soli. Kad se razvija vodik, a kad se izlučuje drugi metal?",
+      "tvari": [
+       "Mg",
+       "Zn",
+       "Fe",
+       "Cu"
+      ],
+      "reagensi": [
+       "HCl",
+       "CuSO₄",
+       "AgNO₃"
+      ]
+     },
+     {
+      "tip": "pokus",
+      "nacin": "istrazi",
+      "tekst": "Kapni indikator u kiselinu, vodu i lužinu i usporedi boje.",
+      "tvari": [
+       "HCl",
+       "voda",
+       "NaOH"
+      ],
+      "reagensi": [
+       "fenolftalein",
+       "metiloranž",
+       "lakmus",
+       "univerzalni indikator"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "pokus 2",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "opazanje",
+     "tekst": "Plin koji nastaje otapanjem ljuske jajeta u klorovodičnoj kiselini uvodi se u vapnenu vodu. Što će se vidjeti?",
+     "tvar": "vapnena voda",
+     "reagens": "CO₂"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "pokus",
+      "nacin": "istrazi",
+      "tekst": "Plavozelena otopina bakrovih kompleksa razdijeljena je u tri epruvete. Epruvetu 1 ostavi za usporedbu, epruvetu 2 zagrij u vrućoj vodi, a epruvetu 3 ohladi u ledu.",
+      "tvari": [
+       "bakrovi kompleksi",
+       "bakrovi kompleksi",
+       "bakrovi kompleksi"
+      ],
+      "reagensi": [
+       "zagrijavanje",
+       "hlađenje",
+       "voda"
+      ],
+      "oznake": [
+       "1",
+       "2",
+       "3"
+      ]
+     },
+     {
+      "tip": "pokus",
+      "nacin": "istrazi",
+      "tekst": "Unesi sol svakog metala u plamen i usporedi boje plamena.",
+      "tvari": [
+       "LiCl",
+       "NaCl",
+       "KCl",
+       "BaCl₂"
+      ],
+      "reagensi": [
+       "plamen"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "pokus 3",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "opazanje",
+     "tekst": "Plin propen uvodi se u smeđu jodnu vodu. Što će se vidjeti?",
+     "tvar": "jodna voda",
+     "reagens": "propen"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "pokus-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta pokus."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "pokus 4",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "opazanje",
+     "tekst": "Komadić bakra uroni se u otopinu srebrova nitrata. Što će se vidjeti nakon nekog vremena?",
+     "tvar": "AgNO₃",
+     "reagens": "Cu"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "pokus 5",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "dokazi",
+     "tekst": "U dvije epruvete su bezbojne otopine glukoze i saharoze, ali ne znaš u kojoj je koja. Kojim ćeš ih reagensom razlikovati?",
+     "tvari": [
+      "glukoza",
+      "saharoza"
+     ],
+     "reagensi": [
+      "Lugolova otopina",
+      "Fehlingov reagens",
+      "biuretski reagens"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "pokus 6",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "dokazi",
+     "tekst": "U jednoj epruveti je otopina natrijeva klorida, a u drugoj natrijeva sulfata. Kojim reagensom ćeš ih razlikovati?",
+     "tvari": [
+      "NaCl",
+      "Na₂SO₄"
+     ],
+     "reagensi": [
+      "HCl",
+      "BaCl₂",
+      "NaOH"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "pokus-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta pokus."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "pokus 7",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "prepoznaj",
+     "tekst": "U bezbojnu otopinu natrijeve soli dokapan je srebrov nitrat. Koja je sol bila u epruveti?",
+     "tvar": "NaBr",
+     "reagens": "AgNO₃",
+     "tvari": [
+      "NaCl",
+      "NaBr",
+      "NaI"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "pokus 8",
+    "pitanje": {
+     "tip": "pokus",
+     "nacin": "prepoznaj",
+     "tekst": "U bezbojnu otopinu dodana je natrijeva lužina i kap otopine bakrova(II) sulfata. Što je bilo u epruveti?",
+     "tvar": "bjelanjak",
+     "reagens": "biuretski reagens",
+     "tvari": [
+      "glukoza",
+      "škrob",
+      "bjelanjak"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ravnoteza-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ravnoteza."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ravnoteza 1",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "pomak",
+     "tekst": "Epruveta s plavozelenom otopinom bakrovih kompleksa stavi se u vruću vodu. Kamo se pomiče ravnoteža i kakva postaje otopina?",
+     "reakcija": {
+      "reaktanti": [
+       "[Cu(H₂O)₄]²⁺",
+       "Cl⁻"
+      ],
+      "produkti": [
+       "[CuCl₄]²⁻",
+       "H₂O"
+      ],
+      "stanja": [
+       "aq",
+       "aq",
+       "aq",
+       "l"
+      ]
+     },
+     "dH": "+",
+     "boje": {
+      "[Cu(H₂O)₄]²⁺": "plava",
+      "[CuCl₄]²⁻": "zutozelena"
+     },
+     "promjena": "zagrijavanje",
+     "pitaj": [
+      "smjer",
+      "boja"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "ravnoteza",
+      "nacin": "istrazi",
+      "tekst": "U otopini bakrova(II) sulfata s koncentriranom klorovodičnom kiselinom uspostavi se ravnoteža plavog i žutozelenog kompleksnog iona. Zagrij ili ohladi otopinu, dodaj kloridne ione ili je razrijedi i gledaj kako se mijenjaju boja i koncentracije.",
+      "reakcija": {
+       "reaktanti": [
+        "[Cu(H₂O)₄]²⁺",
+        "Cl⁻"
+       ],
+       "produkti": [
+        "[CuCl₄]²⁻",
+        "H₂O"
+       ],
+       "stanja": [
+        "aq",
+        "aq",
+        "aq",
+        "l"
+       ]
+      },
+      "dH": "+",
+      "boje": {
+       "[Cu(H₂O)₄]²⁺": "plava",
+       "[CuCl₄]²⁻": "zutozelena"
+      },
+      "promjene": [
+       "zagrijavanje",
+       "hladenje",
+       "dodaj Cl⁻",
+       "dodaj [Cu(H₂O)₄]²⁺",
+       "razrjedivanje",
+       "katalizator"
+      ]
+     },
+     {
+      "tip": "ravnoteza",
+      "nacin": "istrazi",
+      "tekst": "U zatvorenoj posudi je ravnotežna smjesa bezbojnog N₂O₄ i smeđeg NO₂. Mijenjaj tlak i temperaturu i gledaj boju, koncentracije i Kc.",
+      "reakcija": {
+       "reaktanti": [
+        "N₂O₄"
+       ],
+       "produkti": [
+        "NO₂"
+       ],
+       "stanja": [
+        "g",
+        "g"
+       ]
+      },
+      "dH": "+",
+      "boje": {
+       "N₂O₄": "bezbojna",
+       "NO₂": "smeda"
+      },
+      "ravnotezne": {
+       "N₂O₄": {
+        "vrijednost": 0.08,
+        "zapis": "0,080"
+       },
+       "NO₂": {
+        "vrijednost": 0.04,
+        "zapis": "0,040"
+       }
+      },
+      "promjene": [
+       "povecanje_tlaka",
+       "smanjenje_tlaka",
+       "zagrijavanje",
+       "hladenje",
+       "dodaj NO₂",
+       "katalizator"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ravnoteza 2",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "pomak",
+     "tekst": "U treću epruvetu s plavozelenom otopinom dolije se jednak volumen vode. Kamo se pomiče ravnoteža i kako se mijenja boja?",
+     "reakcija": {
+      "reaktanti": [
+       "[Cu(H₂O)₄]²⁺",
+       "Cl⁻"
+      ],
+      "produkti": [
+       "[CuCl₄]²⁻",
+       "H₂O"
+      ],
+      "stanja": [
+       "aq",
+       "aq",
+       "aq",
+       "l"
+      ]
+     },
+     "dH": "+",
+     "boje": {
+      "[Cu(H₂O)₄]²⁺": "plava",
+      "[CuCl₄]²⁻": "zutozelena"
+     },
+     "promjena": "razrjedivanje",
+     "pitaj": [
+      "smjer",
+      "boja"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ravnoteza 3",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "pomak",
+     "tekst": "Amonijak se industrijski dobiva iz dušika i vodika. Kamo se pomiče ravnoteža kad se tlak u reaktoru poveća?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂",
+       "H₂"
+      ],
+      "produkti": [
+       "NH₃"
+      ],
+      "stanja": [
+       "g",
+       "g",
+       "g"
+      ]
+     },
+     "dH": -92.6,
+     "promjena": "povecanje_tlaka"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ravnoteza-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ravnoteza."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ravnoteza 4",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "kc_izraz",
+     "tekst": "Napiši izraz za koncentracijsku konstantu ravnoteže sinteze amonijaka.",
+     "reakcija": {
+      "reaktanti": [
+       "N₂",
+       "H₂"
+      ],
+      "produkti": [
+       "NH₃"
+      ],
+      "stanja": [
+       "g",
+       "g",
+       "g"
+      ]
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ravnoteza 5",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "kc_izraz",
+     "tekst": "Napiši izraz za koncentracijsku konstantu ravnoteže bakrovih kompleksa.",
+     "reakcija": {
+      "reaktanti": [
+       "[Cu(H₂O)₄]²⁺",
+       "Cl⁻"
+      ],
+      "produkti": [
+       "[CuCl₄]²⁻",
+       "H₂O"
+      ],
+      "stanja": [
+       "aq",
+       "aq",
+       "aq",
+       "l"
+      ]
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ravnoteza 6",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "izracunaj",
+     "tekst": "U ravnoteži je c(N₂O₄) = 0,080 mol/dm³ i c(NO₂) = 0,040 mol/dm³. Izračunaj koncentracijsku konstantu ravnoteže.",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₄"
+      ],
+      "produkti": [
+       "NO₂"
+      ],
+      "stanja": [
+       "g",
+       "g"
+      ]
+     },
+     "ravnotezne": {
+      "N₂O₄": {
+       "vrijednost": 0.08,
+       "zapis": "0,080"
+      },
+      "NO₂": {
+       "vrijednost": 0.04,
+       "zapis": "0,040"
+      }
+     },
+     "trazi": [
+      "K"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ravnoteza-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ravnoteza."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "ravnoteza 7",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "izracunaj",
+     "tekst": "Pri istoj temperaturi (Kc = 0,020 mol/dm³) u ravnoteži je c(N₂O₄) = 0,045 mol/dm³. Kolika je ravnotežna koncentracija NO₂?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₄"
+      ],
+      "produkti": [
+       "NO₂"
+      ],
+      "stanja": [
+       "g",
+       "g"
+      ]
+     },
+     "K": {
+      "vrijednost": 0.02,
+      "zapis": "0,020"
+     },
+     "ravnotezne": {
+      "N₂O₄": {
+       "vrijednost": 0.045,
+       "zapis": "0,045"
+      }
+     },
+     "trazi": [
+      "NO₂"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ravnoteza 8",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "izracunaj",
+     "tekst": "U posudu se uvede samo NO₂, c = 0,100 mol/dm³. U ravnoteži je c(NO₂) = 0,020 mol/dm³. Izračunaj ravnotežnu koncentraciju N₂O₄ i Kc.",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₄"
+      ],
+      "produkti": [
+       "NO₂"
+      ],
+      "stanja": [
+       "g",
+       "g"
+      ]
+     },
+     "pocetne": {
+      "NO₂": {
+       "vrijednost": 0.1,
+       "zapis": "0,100"
+      }
+     },
+     "ravnotezne": {
+      "NO₂": {
+       "vrijednost": 0.02,
+       "zapis": "0,020"
+      }
+     },
+     "trazi": [
+      "N₂O₄",
+      "K"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "ravnoteza 9",
+    "pitanje": {
+     "tip": "ravnoteza",
+     "nacin": "izracunaj",
+     "tekst": "Za ravnotežu 2 A ⇌ B + 3 C ravnotežne su koncentracije A 0,58, B 0,21 i C 0,63 mol dm⁻³. Izračunaj Kc.",
+     "reakcija": {
+      "reaktanti": [
+       "A"
+      ],
+      "produkti": [
+       "B",
+       "C"
+      ],
+      "koeficijenti": [
+       2,
+       1,
+       3
+      ],
+      "opce": true
+     },
+     "ravnotezne": {
+      "A": 0.58,
+      "B": 0.21,
+      "C": 0.63
+     },
+     "trazi": [
+      "K"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektrokemija-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektrokemija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektrokemija 1",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "clanak",
+     "nacin": "polovi",
+     "tekst": "Galvanski članak složen je od niklove pločice u otopini niklova(II) sulfata i srebrne pločice u otopini srebrova nitrata. Označi anodu i katodu, polove i smjer elektrona u žici.",
+     "elektrode": [
+      "Ni²⁺/Ni",
+      "Ag⁺/Ag"
+     ],
+     "otopine": [
+      "NiSO₄",
+      "AgNO₃"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "elektrokemija",
+      "vrsta": "clanak",
+      "nacin": "istrazi",
+      "tekst": "Daniellov članak: cinkova pločica u otopini cinkova sulfata i bakrena u otopini bakrova(II) sulfata. Promijeni elektrode i gledaj kamo idu elektroni i koliki je napon.",
+      "elektrode": [
+       "Zn²⁺/Zn",
+       "Cu²⁺/Cu"
+      ],
+      "otopine": [
+       "ZnSO₄",
+       "CuSO₄"
+      ]
+     },
+     {
+      "tip": "elektrokemija",
+      "vrsta": "elektroliza",
+      "nacin": "istrazi",
+      "tekst": "Odaberi elektrolit, mijenjaj jakost struje i vrijeme, i gledaj što nastaje na elektrodama i koliko.",
+      "elektrolit": "CuSO₄",
+      "stanje": "aq",
+      "struja": {
+       "I": 1
+      },
+      "vrijeme": {
+       "min": 10
+      },
+      "izbor": [
+       {
+        "elektrolit": "NaCl",
+        "stanje": "l"
+       },
+       {
+        "elektrolit": "CuSO₄",
+        "stanje": "aq"
+       },
+       {
+        "elektrolit": "NaCl",
+        "stanje": "aq"
+       },
+       {
+        "elektrolit": "Na₂SO₄",
+        "stanje": "aq"
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "elektrokemija 2",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "clanak",
+     "nacin": "napon",
+     "tekst": "Izračunaj razliku standardnih elektrodnih potencijala članka Ni | Ni²⁺ ‖ Ag⁺ | Ag.",
+     "elektrode": [
+      "Ni²⁺/Ni",
+      "Ag⁺/Ag"
+     ],
+     "otopine": [
+      "NiSO₄",
+      "AgNO₃"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "elektrokemija 3",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "clanak",
+     "nacin": "istiskivanje",
+     "tekst": "Komadić bakra uroni se u otopinu srebrova nitrata. Hoće li doći do promjene? Ako hoće, napiši ionsku jednadžbu.",
+     "metal": "Cu",
+     "otopina": "AgNO₃",
+     "jednadzba": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektrokemija-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektrokemija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektrokemija 4",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "elektroliza",
+     "nacin": "produkti",
+     "tekst": "Elektrolizira se talina natrijeva klorida s grafitnim elektrodama. Što nastaje na katodi, a što na anodi?",
+     "elektrolit": "NaCl",
+     "stanje": "l"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "elektrokemija 5",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "elektroliza",
+     "nacin": "produkti",
+     "tekst": "Elektrolizira se vodena otopina bakrova(II) sulfata s grafitnim elektrodama. Što nastaje na katodi, a što na anodi?",
+     "elektrolit": "CuSO₄",
+     "stanje": "aq"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "elektrokemija 6",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "elektroliza",
+     "nacin": "faraday",
+     "tekst": "Vodena otopina natrijeva sulfata elektrolizira se strujom jakosti 2,00 A tijekom 16 min 5 s, pri 20 °C i 10⁵ Pa. Koliko je mililitara vodika nastalo?",
+     "elektrolit": "Na₂SO₄",
+     "stanje": "aq",
+     "struja": {
+      "I": 2,
+      "zapis": "2,00"
+     },
+     "vrijeme": {
+      "min": 16,
+      "s": 5
+     },
+     "plin": {
+      "p": 100,
+      "jedinica": "kPa",
+      "t": 20
+     },
+     "trazi": [
+      {
+       "velicina": "Q",
+       "jedinica": "C"
+      },
+      {
+       "velicina": "ne",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "n",
+       "tvar": "H₂",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "V",
+       "tvar": "H₂",
+       "jedinica": "mL"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektrokemija-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektrokemija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektrokemija 7",
+    "pitanje": {
+     "tip": "elektrokemija",
+     "vrsta": "elektroliza",
+     "nacin": "faraday",
+     "tekst": "Dva elektrolizna članka spojena su serijski: u prvom je vodena otopina srebrova nitrata, a u drugom cinkova klorida. Koliki se volumen klora pri normiranim uvjetima razvije u drugom članku ako se na katodi prvoga istaloži 25,5 g srebra?",
+     "elektrolit": "AgNO₃",
+     "stanje": "aq",
+     "serijski": {
+      "elektrolit": "ZnCl₂",
+      "stanje": "aq"
+     },
+     "izluceno": {
+      "tvar": "Ag",
+      "m": 25.5
+     },
+     "plin": {
+      "uvjeti": "normirani"
+     },
+     "trazi": [
+      {
+       "velicina": "ne",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "V",
+       "tvar": "Cl₂",
+       "jedinica": "L"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "redoks-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta redoks."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "redoks 1",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "oks_broj",
+     "tekst": "Modra galica je bakrov(II) sulfat pentahidrat. Odredi oksidacijski broj sumpora u njoj.",
+     "formula": "CuSO₄·5H₂O",
+     "trazi": [
+      "S"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "redoks",
+      "nacin": "istrazi",
+      "tekst": "Dodirni atom i pogledaj kojim je pravilom dobiven njegov oksidacijski broj. Prebaci se na drugu formulu: gdje kisik nema −2, a vodik nema +1?",
+      "formule": [
+       "K₂Cr₂O₇",
+       "H₂O₂",
+       "NaH",
+       "OF₂",
+       "CuSO₄·5H₂O",
+       "CH₃CH₂CHO"
+      ]
+     },
+     {
+      "tip": "redoks",
+      "nacin": "istrazi",
+      "tekst": "Permanganatni ioni u kiseloj otopini oksidiraju željezove(II) ione. Pogledaj kojem se atomu oksidacijski broj povećava, a kojem smanjuje.",
+      "reaktanti": [
+       "MnO₄⁻",
+       "Fe²⁺",
+       "H⁺"
+      ],
+      "produkti": [
+       "Mn²⁺",
+       "Fe³⁺",
+       "H₂O"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "redoks 2",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "oks_broj",
+     "tekst": "Odredi oksidacijske brojeve svih atoma u kalijevu dikromatu.",
+     "formula": "K₂Cr₂O₇"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "redoks 3",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "oks_broj",
+     "tekst": "Cink reagira s klorovodičnom kiselinom. Odredi oksidacijske brojeve atoma u svim tvarima.",
+     "reaktanti": [
+      "Zn",
+      "HCl"
+     ],
+     "produkti": [
+      "ZnCl₂",
+      "H₂"
+     ],
+     "stanja": [
+      "s",
+      "aq",
+      "aq",
+      "g"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "redoks-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta redoks."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "redoks 4",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "oks_broj",
+     "tekst": "Koliki je oksidacijski broj atoma ugljika karbonilne skupine u propanalu?",
+     "formula": "CH₃CH₂CHO",
+     "trazi": [
+      "C3"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "redoks 5",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "uloge",
+     "tekst": "Otopina modre galice ostavljena je preko noći u željeznoj kanti i na stijenci je nastala crvenkasta prevlaka bakra. Što se oksidira, što se reducira i što je oksidacijsko, a što redukcijsko sredstvo?",
+     "reaktanti": [
+      "Fe",
+      "Cu²⁺"
+     ],
+     "produkti": [
+      "Fe²⁺",
+      "Cu"
+     ],
+     "stanja": [
+      "s",
+      "aq",
+      "aq",
+      "s"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "redoks 6",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "uloge",
+     "tekst": "Kalijev dikromat reagira s klorovodičnom kiselinom. Koji je reaktant oksidacijsko sredstvo?",
+     "reaktanti": [
+      "K₂Cr₂O₇",
+      "HCl"
+     ],
+     "produkti": [
+      "CrCl₃",
+      "Cl₂",
+      "KCl",
+      "H₂O"
+     ],
+     "pitaj": [
+      "oksidacijsko"
+     ],
+     "prikazi_oks": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "redoks-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta redoks."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "redoks 7",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "polureakcije",
+     "tekst": "Permanganatni ioni u kiseloj otopini oksidiraju željezove(II) ione u željezove(III). Izjednači polureakcije oksidacije i redukcije, pa ukupnu jednadžbu.",
+     "reaktanti": [
+      "MnO₄⁻",
+      "Fe²⁺",
+      "H⁺"
+     ],
+     "produkti": [
+      "Mn²⁺",
+      "Fe³⁺",
+      "H₂O"
+     ],
+     "sredina": "kisela"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "redoks 8",
+    "pitanje": {
+     "tip": "redoks",
+     "nacin": "polureakcije",
+     "tekst": "Bakar se otapa u razrijeđenoj dušičnoj kiselini, a nastaje dušikov(II) oksid. Izjednači polureakcije, pa ukupnu jednadžbu.",
+     "reaktanti": [
+      "Cu",
+      "HNO₃"
+     ],
+     "produkti": [
+      "Cu(NO₃)₂",
+      "NO",
+      "H₂O"
+     ],
+     "oksidacija": {
+      "reaktanti": [
+       "Cu"
+      ],
+      "produkti": [
+       "Cu²⁺",
+       "e⁻"
+      ]
+     },
+     "redukcija": {
+      "reaktanti": [
+       "NO₃⁻",
+       "H⁺",
+       "e⁻"
+      ],
+      "produkti": [
+       "NO",
+       "H₂O"
+      ]
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "energijski_dijagram-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta energijski_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "energijski_dijagram 1",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "hess",
+     "tekst": "Izračunaj reakcijsku entalpiju gorenja metana iz entalpija stvaranja: ΔfH(CH₄, g) = −75 kJ/mol, ΔfH(CO₂, g) = −394 kJ/mol, ΔfH(H₂O, ℓ) = −286 kJ/mol.",
+     "reakcija": {
+      "reaktanti": "CH₄(g) + 2 O₂(g)",
+      "produkti": "CO₂(g) + 2 H₂O(ℓ)",
+      "dfH": {
+       "CH₄(g)": -75,
+       "CO₂(g)": -394,
+       "H₂O(ℓ)": -286
+      }
+     },
+     "koraci": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "energijski_dijagram",
+      "nacin": "istrazi",
+      "tekst": "Energijski profil razgradnje vodikova peroksida. Uključi katalizator i usporedi energije aktivacije, pa pogledaj i povratnu reakciju.",
+      "reakcija": {
+       "reaktanti": "reaktanti",
+       "produkti": "produkti",
+       "H0": 40,
+       "dH": -25,
+       "Ea": 55,
+       "Ea_kat": 20
+      }
+     },
+     {
+      "tip": "energijski_dijagram",
+      "nacin": "istrazi",
+      "tekst": "Usporedi entalpijske dijagrame gorenja metana i otapanja amonijeva klorida.",
+      "reakcije": [
+       {
+        "oznaka": "gorenje metana",
+        "reaktanti": "CH₄(g) + 2 O₂(g)",
+        "produkti": "CO₂(g) + 2 H₂O(ℓ)",
+        "dfH": {
+         "CH₄(g)": -75,
+         "CO₂(g)": -394,
+         "H₂O(ℓ)": -286
+        }
+       },
+       {
+        "oznaka": "otapanje NH₄Cl",
+        "reaktanti": "NH₄Cl(s)",
+        "produkti": "NH₄⁺(aq) + Cl⁻(aq)",
+        "stupnjevi": [
+         {
+          "do": "NH₄⁺(g) + Cl⁻(g)",
+          "dH": 705,
+          "oznaka": "razaranje"
+         },
+         {
+          "dH": -690,
+          "oznaka": "hidratacija"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "energijski_dijagram 2",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "hess",
+     "tekst": "Kolika je reakcijska entalpija gorenja metana kad voda nastaje kao para? Odaberi koje jednadžbe treba obrnuti ili pomnožiti, pa izračunaj ΔrH.",
+     "reakcija": {
+      "reaktanti": "CH₄(g) + 2 O₂(g)",
+      "produkti": "CO₂(g) + 2 H₂O(g)"
+     },
+     "jednadzbe": [
+      {
+       "reaktanti": "CH₄(g) + 2 O₂(g)",
+       "produkti": "CO₂(g) + 2 H₂O(ℓ)",
+       "dH": -891
+      },
+      {
+       "reaktanti": "H₂O(ℓ)",
+       "produkti": "H₂O(g)",
+       "dH": 44
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "energijski_dijagram 3",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "hess",
+     "tekst": "Izračunaj entalpiju stvaranja ugljikova monoksida iz entalpija gorenja ugljika i ugljikova monoksida.",
+     "reakcija": {
+      "reaktanti": "C(s) + ½ O₂(g)",
+      "produkti": "CO(g)"
+     },
+     "jednadzbe": [
+      {
+       "reaktanti": "C(s) + O₂(g)",
+       "produkti": "CO₂(g)",
+       "dH": -394
+      },
+      {
+       "reaktanti": "2 CO(g) + O₂(g)",
+       "produkti": "2 CO₂(g)",
+       "dH": -566
+      }
+     ],
+     "zbroj": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "energijski_dijagram-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta energijski_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "energijski_dijagram 4",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "ocitaj",
+     "tekst": "S dijagrama očitaj energiju aktivacije i reakcijsku entalpiju, pa izračunaj energiju aktivacije povratne reakcije.",
+     "reakcija": {
+      "reaktanti": "reaktanti",
+      "produkti": "produkti",
+      "H0": 40,
+      "dH": -25,
+      "Ea": 55
+     },
+     "trazi": [
+      "Ea",
+      "dH",
+      "Ea_povratne"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "energijski_dijagram 5",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "ocitaj",
+     "tekst": "Za koliko katalizator snizuje energiju aktivacije?",
+     "reakcija": {
+      "reaktanti": "reaktanti",
+      "produkti": "produkti",
+      "H0": 40,
+      "dH": -25,
+      "Ea": 55,
+      "Ea_kat": 20
+     },
+     "zadano": [
+      "Ea",
+      "Ea_kat"
+     ],
+     "trazi": [
+      "snizenje"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "energijski_dijagram 6",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "slozi",
+     "tekst": "Složi entalpijski dijagram gorenja metana (ΔrH = −891 kJ/mol): postavi razinu produkata.",
+     "reakcija": {
+      "reaktanti": "CH₄(g) + 2 O₂(g)",
+      "produkti": "CO₂(g) + 2 H₂O(ℓ)",
+      "dH": -891
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "energijski_dijagram-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta energijski_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "energijski_dijagram 7",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "slozi",
+     "tekst": "Otapanje NH₄Cl ide u dva stupnja: razaranje kristalne strukture (+705 kJ/mol) i hidratacija iona (−690 kJ/mol). Postavi razine plinovitih i hidratiziranih iona.",
+     "reakcija": {
+      "reaktanti": "NH₄Cl(s)",
+      "produkti": "NH₄⁺(aq) + Cl⁻(aq)",
+      "stupnjevi": [
+       {
+        "do": "NH₄⁺(g) + Cl⁻(g)",
+        "dH": 705,
+        "oznaka": "razaranje"
+       },
+       {
+        "dH": -690,
+        "oznaka": "hidratacija"
+       }
+      ]
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "energijski_dijagram 8",
+    "pitanje": {
+     "tip": "energijski_dijagram",
+     "nacin": "slozi",
+     "tekst": "Endotermna reakcija ima energiju aktivacije 80 kJ/mol i ΔrH = +30 kJ/mol. Postavi razinu produkata i oba vrha: bez katalizatora i s katalizatorom.",
+     "reakcija": {
+      "reaktanti": "reaktanti",
+      "produkti": "produkti",
+      "dH": 30,
+      "Ea": 80,
+      "Ea_kat": 50
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kalorimetar-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kalorimetar."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kalorimetar 1",
+    "pitanje": {
+     "tip": "kalorimetar",
+     "nacin": "izracunaj",
+     "tekst": "U kalorimetar od stiropora s 50,0 g vode doda se 0,0200 mol amonijeva klorida. Temperatura padne s 21,0 °C na 19,5 °C. Izračunaj toplinski kapacitet kalorimetra, izmijenjenu toplinu i reakcijsku entalpiju otapanja.",
+     "tvar": "NH₄Cl",
+     "naziv": "amonijev klorid",
+     "voda": {
+      "m": 50,
+      "zapis": "50,0"
+     },
+     "uzorak": {
+      "n": 0.02,
+      "zapis": "0,0200"
+     },
+     "T_pocetna": 21,
+     "T_konacna": 19.5,
+     "trazi": [
+      "C",
+      "Q",
+      "dH"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kalorimetar",
+      "nacin": "istrazi",
+      "tekst": "Odaberi sol, množinu uzorka i masu vode, pa pokreni pokus. Gledaj termometar i termogram.",
+      "voda": {
+       "m": 50,
+       "zapis": "50,0"
+      },
+      "uzorak": {
+       "n": 0.02,
+       "zapis": "0,0200"
+      },
+      "tvari": [
+       "NH4NO3",
+       "NH4Cl",
+       "KNO3",
+       "NaOH",
+       "CaCl2"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kalorimetar 2",
+    "pitanje": {
+     "tip": "kalorimetar",
+     "nacin": "ocitaj",
+     "tekst": "U kalorimetar od stiropora s 50,0 g vode doda se 0,0200 mol amonijeva klorida, a temperatura se bilježi svakih pola minute. Očitaj s termograma početnu i konačnu temperaturu i promjenu temperature. Je li otapanje endotermno ili egzotermno?",
+     "tvar": "NH₄Cl",
+     "voda": {
+      "m": 50,
+      "zapis": "50,0"
+     },
+     "uzorak": {
+      "n": 0.02,
+      "zapis": "0,0200"
+     },
+     "T_pocetna": 21,
+     "T_konacna": 19.5,
+     "proces": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kalorimetar 3",
+    "pitanje": {
+     "tip": "kalorimetar",
+     "nacin": "izracunaj",
+     "tekst": "U kalorimetar od stiropora sa 60,0 g vode doda se 1,11 g bezvodnog kalcijeva klorida. Temperatura poraste s 19,0 °C na 22,0 °C. Izračunaj toplinski kapacitet kalorimetra, izmijenjenu toplinu, množinu CaCl₂ i reakcijsku entalpiju otapanja.",
+     "tvar": "CaCl₂",
+     "voda": {
+      "m": 60,
+      "zapis": "60,0"
+     },
+     "uzorak": {
+      "m": 1.11,
+      "zapis": "1,11"
+     },
+     "T_pocetna": 19,
+     "T_konacna": 22,
+     "trazi": [
+      "C",
+      "Q",
+      "n",
+      "dH"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kalorimetar-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kalorimetar."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kalorimetar 4",
+    "pitanje": {
+     "tip": "kalorimetar",
+     "nacin": "izracunaj",
+     "tekst": "Reakcijska entalpija otapanja amonijeva klorida je +15,7 kJ mol⁻¹, a toplinski kapacitet kalorimetra s 50,0 g vode 209,5 J K⁻¹. Za koliko bi pala temperatura (početna 21,0 °C) da se u istih 50,0 g vode otopi 0,0400 mol NH₄Cl?",
+     "tvar": "NH₄Cl",
+     "voda": {
+      "m": 50,
+      "zapis": "50,0"
+     },
+     "uzorak": {
+      "n": 0.04,
+      "zapis": "0,0400"
+     },
+     "T_pocetna": 21,
+     "dsolH": {
+      "vrijednost": 15.7,
+      "zapis": "+15,7"
+     },
+     "poznato": [
+      "C"
+     ],
+     "trazi": [
+      "Q",
+      "dT",
+      "T_konacna"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "brzina_reakcije-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta brzina_reakcije."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "brzina_reakcije 1",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "prosjecna",
+     "tekst": "Očitaj koncentraciju N₂O na početku i nakon 100 s pa izračunaj prosječnu brzinu trošenja N₂O u tih 100 s.",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O"
+      ],
+      "produkti": [
+       "N₂",
+       "O₂"
+      ]
+     },
+     "pocetne": {
+      "N₂O": 0.04
+     },
+     "poluvrijeme": 100,
+     "os_x": [
+      0,
+      300
+     ],
+     "os_y": [
+      0,
+      0.05
+     ],
+     "mreza": [
+      50,
+      0.01
+     ],
+     "interval": [
+      0,
+      100
+     ],
+     "za": "N₂O"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "brzina_reakcije",
+      "nacin": "istrazi",
+      "tekst": "Didušikov oksid raspada se u zatvorenoj posudi. Pomiči t₁ i t₂ i gledaj kako se prosječna brzina mijenja kad je interval na početku, a kako kad je na kraju.",
+      "reakcija": {
+       "reaktanti": [
+        "N₂O"
+       ],
+       "produkti": [
+        "N₂",
+        "O₂"
+       ]
+      },
+      "pocetne": {
+       "N₂O": 0.04,
+       "O₂": 0
+      },
+      "poluvrijeme": 100,
+      "os_x": [
+       0,
+       300
+      ],
+      "os_y": [
+       0,
+       0.05
+      ],
+      "mreza": [
+       50,
+       0.01
+      ],
+      "interval": [
+       0,
+       100
+      ],
+      "tangenta": true
+     },
+     {
+      "tip": "brzina_reakcije",
+      "nacin": "istrazi",
+      "prikaz": "sudari",
+      "tekst": "Čestice dvaju reaktanata sudaraju se u posudi. Mijenjaj temperaturu i koncentraciju, uključi katalizator i gledaj koliko je sudara uspješno."
+     },
+     {
+      "tip": "brzina_reakcije",
+      "nacin": "istrazi",
+      "prikaz": "sudari",
+      "tekst": "Cink (čvrsto) reagira s klorovodičnom kiselinom. Usporedi komad i prah iste mase.",
+      "sudari": {
+       "cvrsto": true,
+       "klizaci": [
+        "povrsina",
+        "koncentracija"
+       ]
+      }
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "brzina_reakcije 2",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "prosjecna",
+     "tekst": "Kolika je prosječna brzina reakcije 2 N₂O → 2 N₂ + O₂ između 100 s i 200 s?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O"
+      ],
+      "produkti": [
+       "N₂",
+       "O₂"
+      ]
+     },
+     "pocetne": {
+      "N₂O": 0.04
+     },
+     "poluvrijeme": 100,
+     "os_x": [
+      0,
+      300
+     ],
+     "os_y": [
+      0,
+      0.05
+     ],
+     "mreza": [
+      50,
+      0.01
+     ],
+     "interval": [
+      100,
+      200
+     ],
+     "za": "reakcija"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "brzina_reakcije",
+      "nacin": "istrazi",
+      "prikaz": "pokus",
+      "tekst": "Pokus 17: u epruveti je 1 mL otopine natrijeva tiosulfata i 4 mL vode. Zagrij je na odabranu temperaturu, dodaj 1 mL sumporne kiseline i mjeri vrijeme dok znak X ne nestane.",
+      "pokus": {
+       "mijenja": "temperatura",
+       "t_ref": 160
+      }
+     },
+     {
+      "tip": "brzina_reakcije",
+      "nacin": "istrazi",
+      "prikaz": "pokus",
+      "tekst": "Pokus 17: mijenjaj volumen otopine tiosulfata (voda dopunjava do 5 mL), dodaj 1 mL sumporne kiseline i mjeri vrijeme do nestanka znaka X.",
+      "pokus": {
+       "mijenja": "koncentracija",
+       "t_ref": 160
+      }
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "brzina_reakcije 3",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "prosjecna",
+     "tekst": "Graf prikazuje raspad N₂O₅: 2 N₂O₅ → 4 NO₂ + O₂. Kolika je prosječna brzina nastajanja NO₂ u prvih 15 minuta?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₅"
+      ],
+      "produkti": [
+       "NO₂",
+       "O₂"
+      ]
+     },
+     "pocetne": {
+      "N₂O₅": 12
+     },
+     "poluvrijeme": 7.5,
+     "jedinica_t": "min",
+     "os_x": [
+      0,
+      30
+     ],
+     "os_y": [
+      0,
+      14
+     ],
+     "mreza": [
+      5,
+      1
+     ],
+     "interval": [
+      0,
+      15
+     ],
+     "za": "NO₂",
+     "preko": "N₂O₅",
+     "operacije": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "brzina_reakcije-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta brzina_reakcije."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "brzina_reakcije 4",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "prosjecna",
+     "tekst": "Koncentracija N₂O₅ tijekom 80 s padne s 4,537·10⁻² na 4,460·10⁻² mol/dm³ (2 N₂O₅ → 4 NO₂ + O₂). Kolika je prosječna brzina reakcije?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₅"
+      ],
+      "produkti": [
+       "NO₂",
+       "O₂"
+      ]
+     },
+     "tablica": {
+      "t": [
+       0,
+       80
+      ],
+      "vrijednosti": {
+       "N₂O₅": [
+        0.04537,
+        0.0446
+       ]
+      },
+      "zapisi": {
+       "N₂O₅": [
+        "4,537·10⁻²",
+        "4,460·10⁻²"
+       ]
+      }
+     },
+     "interval": [
+      0,
+      80
+     ],
+     "za": "reakcija",
+     "tolerancija_posto": 1
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "brzina_reakcije 5",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "prosjecna",
+     "tekst": "Fosfin se raspada: 4 PH₃ → P₄ + 6 H₂. Prosječna brzina reakcije je 1,56·10⁻³ mol dm⁻³ s⁻¹. Kolika je prosječna brzina nastajanja vodika?",
+     "reakcija": {
+      "reaktanti": [
+       "PH₃"
+      ],
+      "produkti": [
+       "P₄",
+       "H₂"
+      ]
+     },
+     "zadana_brzina": {
+      "za": "reakcija",
+      "v": 0.00156,
+      "zapis": "1,56·10⁻³"
+     },
+     "za": "H₂"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "brzina_reakcije 6",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "iz_grafa",
+     "tekst": "U zatvorenoj posudi su plinovi A, B, C i D. Iz grafa odredi koje tvari reagiraju i napiši jednadžbu reakcije s najmanjim cijelim koeficijentima.",
+     "reakcija": {
+      "reaktanti": [
+       "A",
+       "B"
+      ],
+      "produkti": [
+       "C"
+      ],
+      "koeficijenti": [
+       3,
+       1,
+       2
+      ],
+      "opce": true,
+      "strelica": "⇌"
+     },
+     "pocetne": {
+      "A": 0.6,
+      "B": 0.5,
+      "C": 0,
+      "D": 0.1
+     },
+     "doseg": 0.1,
+     "poluvrijeme": 2,
+     "jedinica_t": "min",
+     "os_x": [
+      0,
+      20
+     ],
+     "os_y": [
+      0,
+      0.6
+     ],
+     "mreza": [
+      5,
+      0.1
+     ],
+     "promjene": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "brzina_reakcije-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta brzina_reakcije."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "brzina_reakcije 7",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "iz_grafa",
+     "tekst": "Graf prikazuje koncentracije triju plinova u posudi. Napiši jednadžbu reakcije.",
+     "reakcija": {
+      "reaktanti": [
+       "N₂O₅"
+      ],
+      "produkti": [
+       "NO₂",
+       "O₂"
+      ]
+     },
+     "pocetne": {
+      "N₂O₅": 0.4,
+      "NO₂": 0,
+      "O₂": 0
+     },
+     "poluvrijeme": 5,
+     "jedinica_t": "min",
+     "os_x": [
+      0,
+      30
+     ],
+     "os_y": [
+      0,
+      0.8
+     ],
+     "mreza": [
+      5,
+      0.1
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "brzina_reakcije 8",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "utjecaj",
+     "tekst": "Smjesa otopina natrijeva tiosulfata i sumporne kiseline zagrije se s 20 °C na 40 °C. Kako se mijenja brzina reakcije i zašto?",
+     "promjena": "temperatura_gore"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "brzina_reakcije 9",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "utjecaj",
+     "tekst": "Raspadu vodikova peroksida doda se malo manganova(IV) oksida. Kako se mijenja brzina reakcije i zašto?",
+     "promjena": "katalizator"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "brzina_reakcije-4": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta brzina_reakcije."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "brzina_reakcije 10",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "utjecaj",
+     "tekst": "Umjesto komadića cinka u klorovodičnu kiselinu stavi se jednaka masa cinka u prahu. Zašto se vodik razvija brže?",
+     "promjena": "usitnjavanje",
+     "pitaj": "razlog"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "brzina_reakcije 11",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "omjer",
+     "tekst": "Slika prikazuje vrijeme zamućenja pri različitim temperaturama. Očitaj vrijeme pri 20 °C i pri 40 °C. Koliko je puta reakcija pri 40 °C brža?",
+     "pokus": {
+      "mijenja": "temperatura",
+      "t_ref": 160,
+      "ref": 20
+     },
+     "usporedi": [
+      40,
+      20
+     ],
+     "os_x": [
+      10,
+      70
+     ],
+     "os_y": [
+      0,
+      180
+     ],
+     "mreza": [
+      10,
+      20
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 20 + 1?",
+     "odgovor": 21
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "brzina_reakcije 12",
+    "pitanje": {
+     "tip": "brzina_reakcije",
+     "nacin": "omjer",
+     "tekst": "U jednoj epruveti je tiosulfat koncentracije 0,10 mol/dm³, a u drugoj 0,050 mol/dm³. Pomiješaj obje s kiselinom i izmjeri vremena. Koliko je puta reakcija u prvoj epruveti brža?",
+     "pokus": {
+      "mijenja": "koncentracija",
+      "t_ref": 60,
+      "ref": 0.1,
+      "otopina": {
+       "c": 0.3,
+       "kiselina_mL": 1,
+       "ukupno_mL": 6
+      }
+     },
+     "usporedi": [
+      0.1,
+      0.05
+     ],
+     "prikaz": "pokus"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 21 + 1?",
+     "odgovor": 22
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektronska_konfiguracija-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektronska_konfiguracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektronska_konfiguracija 1",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "popuni",
+     "tekst": "Ucrtaj elektrone atoma kisika u kućice.",
+     "element": "O"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "elektronska_konfiguracija",
+      "nacin": "istrazi",
+      "tekst": "Pomiči klizač i gledaj kako elektroni pune orbitale. Kod kalija (Z = 19) zadnji elektron ne ide u 3d, nego u 4s. Isprobaj i ione željeza.",
+      "element": "Fe"
+     },
+     {
+      "tip": "elektronska_konfiguracija",
+      "nacin": "istrazi",
+      "tekst": "Kućice su poredane po ljuskama. Usporedi atom Fe i ione Fe²⁺ i Fe³⁺: iz koje podljuske odlaze elektroni?",
+      "element": "Fe",
+      "raspored": "ljuske",
+      "ljuske": false
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "elektronska_konfiguracija 2",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "popuni",
+     "tekst": "Ucrtaj elektrone atoma kalija (Z = 19) u kućice.",
+     "element": "K"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "elektronska_konfiguracija 3",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "popuni",
+     "tekst": "Unutrašnji elektroni željeza već su ucrtani kao [Ar]. Ucrtaj ostale elektrone iona Fe³⁺.",
+     "element": "Fe³⁺",
+     "jezgra": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektronska_konfiguracija-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektronska_konfiguracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektronska_konfiguracija 4",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "zapisi",
+     "tekst": "Napiši elektronsku konfiguraciju atoma kalcija.",
+     "element": "Ca",
+     "oblik": "puni",
+     "tocno": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s²"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "elektronska_konfiguracija 5",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "zapisi",
+     "tekst": "Napiši skraćenu elektronsku konfiguraciju iona Fe³⁺.",
+     "element": "Fe³⁺",
+     "oblik": "skraceni"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "elektronska_konfiguracija 6",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "zapisi",
+     "tekst": "Napiši elektronsku konfiguraciju atoma srebra.",
+     "element": "Ag"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektronska_konfiguracija-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektronska_konfiguracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektronska_konfiguracija 7",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "zapisi",
+     "tekst": "Napiši elektronsku konfiguraciju sulfidnog iona S²⁻.",
+     "element": "S²⁻"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "elektronska_konfiguracija 8",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "nespareni",
+     "tekst": "Koliko nesparenih elektrona ima atom željeza u osnovnom stanju?",
+     "element": "Fe",
+     "pitaj": "nespareni",
+     "konfiguracija": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "elektronska_konfiguracija 9",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "nespareni",
+     "tekst": "Kakav je raspored elektrona po ljuskama iona Ca²⁺?",
+     "element": "Ca²⁺",
+     "pitaj": "raspored"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "elektronska_konfiguracija-4": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta elektronska_konfiguracija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "elektronska_konfiguracija 10",
+    "pitanje": {
+     "tip": "elektronska_konfiguracija",
+     "nacin": "nespareni",
+     "tekst": "Koliko valentnih i koliko nesparenih elektrona ima atom kisika?",
+     "element": "O",
+     "pitaj": [
+      "valentni",
+      "nespareni"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "otopina-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta otopina."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "otopina 1",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "tekst": "Fiziološka otopina je vodena otopina natrijeva klorida masenog udjela 0,90 % i gustoće 1,00 g cm⁻³. Zamisli 1 dm³ te otopine i izračunaj redom masu otopine, masu NaCl, množinu NaCl i množinsku koncentraciju.",
+     "tvar": "NaCl",
+     "naziv": "natrijev klorid",
+     "zadano": [
+      {
+       "velicina": "w",
+       "vrijednost": 0.9,
+       "jedinica": "%",
+       "zapis": "0,90"
+      },
+      {
+       "velicina": "rho",
+       "vrijednost": 1,
+       "jedinica": "g/cm³",
+       "zapis": "1,00"
+      },
+      {
+       "velicina": "V",
+       "vrijednost": 1,
+       "jedinica": "dm³",
+       "pretpostavka": true
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "m_otopine",
+       "jedinica": "g"
+      },
+      {
+       "velicina": "m",
+       "jedinica": "g"
+      },
+      {
+       "velicina": "n",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "c",
+       "jedinica": "mol/dm³"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "otopina",
+      "nacin": "istrazi",
+      "tekst": "Odaberi tikvicu i koncentraciju otopine modre galice. Gledaj koliko treba izvagati i kako je otopina plava.",
+      "tvar": "CuSO₄·5H₂O",
+      "naziv": "modra galica",
+      "zadano": [
+       {
+        "velicina": "c",
+        "vrijednost": 0.1,
+        "jedinica": "mol/dm³",
+        "zapis": "0,100"
+       },
+       {
+        "velicina": "V",
+        "vrijednost": 250,
+        "jedinica": "mL"
+       }
+      ],
+      "klizaci": [
+       {
+        "velicina": "c",
+        "raspon": [
+         0.02,
+         0.5
+        ]
+       },
+       {
+        "velicina": "V"
+       }
+      ],
+      "trazi": [
+       {
+        "velicina": "n",
+        "jedinica": "mol"
+       },
+       {
+        "velicina": "m",
+        "jedinica": "g"
+       }
+      ]
+     },
+     {
+      "tip": "otopina",
+      "nacin": "istrazi",
+      "vrsta": "razrjedivanje",
+      "tekst": "Iz otopine bakrova(II) sulfata koncentracije 0,500 mol dm⁻³ pripremaš 100 mL razrijeđene otopine. Mijenjaj volumen polazne otopine i gledaj koncentraciju i boju.",
+      "tvar": "CuSO₄",
+      "zadano": [
+       {
+        "velicina": "V1",
+        "vrijednost": 20,
+        "jedinica": "mL"
+       },
+       {
+        "velicina": "c1",
+        "vrijednost": 0.5,
+        "jedinica": "mol/dm³",
+        "zapis": "0,500"
+       },
+       {
+        "velicina": "V2",
+        "vrijednost": 100,
+        "jedinica": "mL"
+       }
+      ],
+      "klizaci": [
+       {
+        "velicina": "V1",
+        "raspon": [
+         5,
+         80
+        ]
+       }
+      ],
+      "trazi": [
+       {
+        "velicina": "c2",
+        "jedinica": "mol/dm³"
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "otopina 2",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "vrsta": "razrjedivanje",
+     "tekst": "Koliki volumen otopine NaCl koncentracije 2,00 mol dm⁻³ treba odmjeriti da se razrjeđivanjem pripremi 500 mL fiziološke otopine koncentracije 0,154 mol dm⁻³?",
+     "tvar": "NaCl",
+     "zadano": [
+      {
+       "velicina": "c1",
+       "vrijednost": 2,
+       "jedinica": "mol/dm³",
+       "zapis": "2,00"
+      },
+      {
+       "velicina": "c2",
+       "vrijednost": 0.154,
+       "jedinica": "mol/dm³"
+      },
+      {
+       "velicina": "V2",
+       "vrijednost": 500,
+       "jedinica": "mL"
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "V1",
+       "jedinica": "mL"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "otopina 3",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "tekst": "Treba pripremiti 100 mL otopine natrijeva acetata koncentracije 1,0 mol dm⁻³ otapanjem čvrstog natrijeva acetata. Izračunaj množinu i masu natrijeva acetata koju treba izvagati.",
+     "tvar": "CH₃COONa",
+     "naziv": "natrijev acetat",
+     "zadano": [
+      {
+       "velicina": "c",
+       "vrijednost": 1,
+       "jedinica": "mol/dm³",
+       "zapis": "1,0"
+      },
+      {
+       "velicina": "V",
+       "vrijednost": 100,
+       "jedinica": "mL"
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "n",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "m",
+       "jedinica": "g"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "otopina-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta otopina."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "otopina 4",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "vrsta": "razrjedivanje",
+     "tekst": "Iz alkoholnog octa (w = 9 %, ρ = 1,01 g cm⁻³) treba razrjeđivanjem pripremiti 100 mL otopine octene kiseline koncentracije 1,0 mol dm⁻³. Izračunaj množinu i masu octene kiseline, masu octa koja je sadrži i volumen octa koji treba odmjeriti.",
+     "tvar": "CH₃COOH",
+     "naziv": "octena kiselina",
+     "zadano": [
+      {
+       "velicina": "c2",
+       "vrijednost": 1,
+       "jedinica": "mol/dm³",
+       "zapis": "1,0"
+      },
+      {
+       "velicina": "V2",
+       "vrijednost": 100,
+       "jedinica": "mL"
+      },
+      {
+       "velicina": "w1",
+       "vrijednost": 9,
+       "jedinica": "%"
+      },
+      {
+       "velicina": "rho1",
+       "vrijednost": 1.01,
+       "jedinica": "g/cm³"
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "n",
+       "jedinica": "mol"
+      },
+      {
+       "velicina": "m",
+       "jedinica": "g"
+      },
+      {
+       "velicina": "m_otopine1",
+       "jedinica": "g"
+      },
+      {
+       "velicina": "V1",
+       "jedinica": "mL"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "otopina 5",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "tekst": "Otopina kalcijeva klorida ima koncentraciju 0,0999 mol dm⁻³. Kolika je koncentracija svih otopljenih čestica? Tolika mora biti koncentracija otopine glukoze istog osmotskog tlaka.",
+     "tvar": "CaCl₂",
+     "zadano": [
+      {
+       "velicina": "c",
+       "vrijednost": 0.0999,
+       "jedinica": "mol/dm³"
+      }
+     ],
+     "ioni": [
+      {
+       "ion": "Ca²⁺",
+       "broj": 1
+      },
+      {
+       "ion": "Cl⁻",
+       "broj": 2
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "c_cestica",
+       "jedinica": "mol/dm³",
+       "oznaka": "c(glukoze)"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "otopina 6",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "tekst": "U 1500 g vode otopi se 330,0 g natrijeva klorida. Gustoća nastale otopine je 1,130 g cm⁻³. Izračunaj masu otopine, njezin volumen i masenu koncentraciju NaCl.",
+     "tvar": "NaCl",
+     "zadano": [
+      {
+       "velicina": "m",
+       "vrijednost": 330,
+       "jedinica": "g",
+       "zapis": "330,0"
+      },
+      {
+       "velicina": "m_vode",
+       "vrijednost": 1500,
+       "jedinica": "g"
+      },
+      {
+       "velicina": "rho",
+       "vrijednost": 1.13,
+       "jedinica": "g/cm³",
+       "zapis": "1,130"
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "m_otopine",
+       "jedinica": "g"
+      },
+      {
+       "velicina": "V",
+       "jedinica": "cm³"
+      },
+      {
+       "velicina": "gama",
+       "jedinica": "g/dm³"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "otopina-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta otopina."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "otopina 7",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "izracunaj",
+     "vrsta": "mijesanje",
+     "tekst": "Pomiješa se 100 mL otopine NaCl koncentracije 0,200 mol dm⁻³ i 300 mL otopine NaCl koncentracije 0,100 mol dm⁻³. Izračunaj množinu NaCl u svakoj otopini, ukupnu množinu i koncentraciju nastale otopine (volumeni se zbrajaju).",
+     "tvar": "NaCl",
+     "zadano": [
+      {
+       "velicina": "c1",
+       "vrijednost": 0.2,
+       "jedinica": "mol/dm³",
+       "zapis": "0,200"
+      },
+      {
+       "velicina": "V1",
+       "vrijednost": 100,
+       "jedinica": "mL"
+      },
+      {
+       "velicina": "c2",
+       "vrijednost": 0.1,
+       "jedinica": "mol/dm³",
+       "zapis": "0,100"
+      },
+      {
+       "velicina": "V2",
+       "vrijednost": 300,
+       "jedinica": "mL"
+      }
+     ],
+     "trazi": [
+      {
+       "velicina": "n1",
+       "jedinica": "mmol"
+      },
+      {
+       "velicina": "n2",
+       "jedinica": "mmol"
+      },
+      {
+       "velicina": "n",
+       "jedinica": "mmol"
+      },
+      {
+       "velicina": "c",
+       "jedinica": "mol/dm³"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "otopina 8",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "postupak",
+     "tekst": "Poredaj korake pripreme 100 mL otopine natrijeva acetata koncentracije 1,0 mol dm⁻³ otapanjem čvrste tvari.",
+     "tvar": "CH₃COONa"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "otopina 9",
+    "pitanje": {
+     "tip": "otopina",
+     "nacin": "postupak",
+     "vrsta": "razrjedivanje",
+     "tekst": "Poredaj korake pripreme 100 mL otopine octene kiseline razrjeđivanjem alkoholnog octa.",
+     "tvar": "CH₃COOH",
+     "bez_racuna": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "topljivost-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta topljivost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "topljivost 1",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "istalozi",
+     "tekst": "U 150 g vode pri 60 °C otopljeno je 90 g kalijeva nitrata. Koliko se KNO₃ istaloži kad se otopina ohladi na 20 °C?",
+     "tvar": "KNO₃",
+     "t1": 60,
+     "t2": 20,
+     "otopina": {
+      "m_sol": 90,
+      "m_vode": 150
+     },
+     "trazi": [
+      "top2",
+      "m_max2",
+      "m_istalozeno"
+     ],
+     "proces": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "topljivost",
+      "nacin": "istrazi",
+      "tekst": "Pomiči temperaturu i masu soli (ili povuci točku po grafu) i gledaj epruvetu: kada je otopina nezasićena, a kada se na dnu pojave kristali?",
+      "tvar": "KNO₃",
+      "otopina": {
+       "m_vode": 150,
+       "m_sol": 90
+      },
+      "t": 60,
+      "tvari": [
+       "KNO₃",
+       "NH₄Cl",
+       "Ba(NO₃)₂"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "topljivost 2",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "ocitaj",
+     "tekst": "Očitaj s grafa topljivost kalijeva oksalata pri 20 °C, 40 °C i 60 °C.",
+     "tvar": "K₂C₂O₄",
+     "trazi": [
+      {
+       "t": 20
+      },
+      {
+       "t": 40
+      },
+      {
+       "t": 60
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "topljivost 3",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "ocitaj",
+     "tekst": "Pri kojoj je temperaturi maseni udio kalijeva nitrata u zasićenoj otopini 0,375?",
+     "tvar": "KNO₃",
+     "trazi": [
+      {
+       "vrijednost": 0.375
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "topljivost-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta topljivost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "topljivost 4",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "vrsta",
+     "tekst": "U 150 g vode pri 60 °C otopi se 90 g KNO₃. Je li ta otopina nezasićena, zasićena ili prezasićena? Koliko bi se KNO₃ u njoj još moglo otopiti pri 60 °C?",
+     "tvar": "KNO₃",
+     "t": 60,
+     "otopina": {
+      "m_sol": 90,
+      "m_vode": 150
+     },
+     "jos": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "topljivost 5",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "vrsta",
+     "tekst": "Kakva je s obzirom na zasićenost bistra vodena otopina u kojoj je maseni udio kalijeva oksalata 28,6 % pri 20 °C?",
+     "tvar": "K₂C₂O₄",
+     "t": 20,
+     "otopina": {
+      "w": {
+       "vrijednost": 0.286,
+       "zapis": "28,6 %"
+      }
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "topljivost 6",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "istalozi",
+     "tekst": "U 144 g vode pri 80 °C otopi se 81 g amonijeva klorida. Otopina se polako hladi. Izračunaj maseni udio NH₄Cl u otopini i očitaj pri kojoj se temperaturi pojave prvi kristalići.",
+     "tvar": "NH₄Cl",
+     "t1": 80,
+     "otopina": {
+      "m_sol": 81,
+      "m_vode": 144
+     },
+     "trazi": [
+      "sastav",
+      "t_kristali"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "topljivost-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta topljivost."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "topljivost 7",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "istalozi",
+     "tekst": "Kolika se masa olovova(II) nitrata istaloži hlađenjem 300 g otopine zasićene pri 50 °C na 20 °C?",
+     "tvar": "Pb(NO₃)₂",
+     "t1": 50,
+     "t2": 20,
+     "otopina": {
+      "m_otopine": 300,
+      "zasicena": true
+     },
+     "trazi": [
+      "m_sol",
+      "m_vode",
+      "m_max2",
+      "m_istalozeno"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "topljivost 8",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "istalozi",
+     "tekst": "Maseni udio kalijeva bikromata u zasićenoj vodenoj otopini pri 90 °C iznosi 41,2 %. Izračunaj masu kalijeva bikromata koja se otopi u 150 g vode pri 90 °C.",
+     "tvar": "K₂Cr₂O₇",
+     "krivulja": {
+      "iskaz": "w",
+      "tocke": [
+       [
+        90,
+        0.412
+       ]
+      ],
+      "izvor": "ispit KEM IK-2 D-S055, zadatak 4"
+     },
+     "postotak": true,
+     "t1": 90,
+     "otopina": {
+      "m_vode": 150,
+      "zasicena": true
+     },
+     "trazi": [
+      "m_sol"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "topljivost 9",
+    "pitanje": {
+     "tip": "topljivost",
+     "nacin": "pokus",
+     "tekst": "U pokusu 4 u epruveti je 4,0 g kalijeva nitrata, a voda se dodaje po 2,5 mL (ρ = 1 g/mL). Zabilježena je temperatura pri kojoj se pojave prvi kristalići. Izračunaj \\( w_\\mathrm{sat} \\) kalijeva nitrata za svako mjerenje.",
+     "tvar": "KNO₃",
+     "mjerenja": [
+      {
+       "m_sol": {
+        "vrijednost": 4,
+        "zapis": "4,0"
+       },
+       "m_vode": {
+        "vrijednost": 5,
+        "zapis": "5,0"
+       }
+      },
+      {
+       "m_sol": {
+        "vrijednost": 4,
+        "zapis": "4,0"
+       },
+       "m_vode": {
+        "vrijednost": 7.5,
+        "zapis": "7,5"
+       }
+      },
+      {
+       "m_sol": {
+        "vrijednost": 4,
+        "zapis": "4,0"
+       },
+       "m_vode": {
+        "vrijednost": 10,
+        "zapis": "10,0"
+       }
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kromatografija-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kromatografija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kromatografija 1",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "rf",
+     "tekst": "Petroleter se od startne linije podigao 8,0 cm, a na kredi su nastale žuta mrlja na 7,2 cm i zelena na 3,2 cm od startne linije. Izračunaj \\(R_\\mathrm{f}\\)-vrijednosti mrlja.",
+     "podloga": "kreda",
+     "fronta": 8,
+     "mrlje": [
+      {
+       "udaljenost": 7.2,
+       "boja": "žuta",
+       "oznaka": "žuta"
+      },
+      {
+       "udaljenost": 3.2,
+       "boja": "zelena",
+       "oznaka": "zelena"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "kromatografija",
+      "nacin": "istrazi",
+      "tekst": "Zeleni ekstrakt špinata nanesen je na startnu liniju krede, a kreda je uspravljena u čašu s petroleterom. Pusti otapalo i gledaj kako se ekstrakt razdvaja. Uključi i pogrešku pa usporedi.",
+      "podloga": "kreda",
+      "fronta": 8,
+      "mrlje": [
+       {
+        "udaljenost": 7.2,
+        "boja": "žuta",
+        "oznaka": "žuta"
+       },
+       {
+        "udaljenost": 3.2,
+        "boja": "zelena",
+        "oznaka": "zelena"
+       }
+      ],
+      "pogreske": true
+     },
+     {
+      "tip": "kromatografija",
+      "nacin": "istrazi",
+      "tekst": "Na startnu liniju kromatografskog papira naneseni su ekstrakti lišća peršina i mrkve. Odaberi uzorke, pusti petroleter i usporedi mrlje.",
+      "podloga": "papir",
+      "fronta": 10,
+      "trake": [
+       {
+        "naziv": "peršin",
+        "mrlje": [
+         {
+          "udaljenost": 8.8,
+          "boja": "narančasta"
+         },
+         {
+          "udaljenost": 3.5,
+          "boja": "zelena"
+         }
+        ]
+       },
+       {
+        "naziv": "mrkva",
+        "mrlje": [
+         {
+          "udaljenost": 8.8,
+          "boja": "narančasta"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kromatografija 2",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "rf",
+     "tekst": "Traka papira izvađena je iz čaše s petroleterom i položena uz ravnalo. Dodirni oznake da očitaš ravnalo, pa izračunaj \\(R_\\mathrm{f}\\)-vrijednost zelene mrlje.",
+     "podloga": "papir",
+     "fronta": 10,
+     "mrlje": [
+      {
+       "udaljenost": 8.8,
+       "boja": "narančasta",
+       "oznaka": "narančasta"
+      },
+      {
+       "udaljenost": 3.5,
+       "boja": "zelena",
+       "oznaka": "zelena"
+      }
+     ],
+     "trazi": [
+      "zelena"
+     ],
+     "mjerenje": "ravnalo",
+     "start": 1
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kromatografija 3",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "prepoznaj",
+     "pitanje": "tvari",
+     "tekst": "Na startnu liniju papira naneseni su uzorak i tri čiste tvari A, B i C. Nakon kromatografije papir je poprskan otopinom ninhidrina, pa su se mrlje obojile ljubičasto. Koje su tvari u uzorku?",
+     "podloga": "papir",
+     "fronta": 8,
+     "trake": [
+      {
+       "naziv": "uzorak",
+       "mrlje": [
+        {
+         "udaljenost": 5.6,
+         "boja": "ljubičasta"
+        },
+        {
+         "udaljenost": 2,
+         "boja": "ljubičasta"
+        }
+       ]
+      },
+      {
+       "naziv": "A",
+       "mrlje": [
+        {
+         "udaljenost": 5.6,
+         "boja": "ljubičasta"
+        }
+       ]
+      },
+      {
+       "naziv": "B",
+       "mrlje": [
+        {
+         "udaljenost": 3.6,
+         "boja": "ljubičasta"
+        }
+       ]
+      },
+      {
+       "naziv": "C",
+       "mrlje": [
+        {
+         "udaljenost": 2,
+         "boja": "ljubičasta"
+        }
+       ]
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kromatografija-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kromatografija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kromatografija 4",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "prepoznaj",
+     "pitanje": "cista",
+     "tekst": "Ekstrakt lišća koprive na kredi u petroleteru dao je kromatogram na slici. Je li ekstrakt čista tvar?",
+     "podloga": "kreda",
+     "fronta": 6,
+     "mrlje": [
+      {
+       "udaljenost": 5.7,
+       "boja": "žuta",
+       "oznaka": "žuta"
+      },
+      {
+       "udaljenost": 2.7,
+       "boja": "zelena",
+       "oznaka": "zelena"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kromatografija 5",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "prepoznaj",
+     "pitanje": "otapanje",
+     "tekst": "Na slici je kreda nakon kromatografije ekstrakta lišća blitve u petroleteru. Koja se tvar iz ekstrakta najbolje otapa u petroleteru?",
+     "podloga": "kreda",
+     "fronta": 7.5,
+     "mrlje": [
+      {
+       "udaljenost": 6.9,
+       "boja": "žuta",
+       "oznaka": "žuta"
+      },
+      {
+       "udaljenost": 2.4,
+       "boja": "zelena",
+       "oznaka": "zelena"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kromatografija 6",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "prepoznaj",
+     "pitanje": "vezanje",
+     "tekst": "Na slici je papir nakon kromatografije ekstrakta lišća kelja u petroleteru. Koja se tvar najjače veže za papir?",
+     "podloga": "papir",
+     "fronta": 9,
+     "mrlje": [
+      {
+       "udaljenost": 8.6,
+       "boja": "žuta",
+       "oznaka": "žuta"
+      },
+      {
+       "udaljenost": 4.5,
+       "boja": "zelena",
+       "oznaka": "zelena"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "kromatografija-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta kromatografija."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "kromatografija 7",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "postupak",
+     "pitanje": "razina",
+     "podloga": "kreda"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "kromatografija 8",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "postupak",
+     "pitanje": "olovka",
+     "podloga": "papir"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "kromatografija 9",
+    "pitanje": {
+     "tip": "kromatografija",
+     "nacin": "postupak",
+     "pitanje": "faze",
+     "podloga": "kreda",
+     "otapalo": "petroleter"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "fazni_dijagram-1": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta fazni_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "fazni_dijagram 1",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "put",
+     "tekst": "Komad suhog leda (čvrsti \\( \\mathrm{CO_2} \\)) leži na stolu pri 101 kPa i polako se zagrijava od −90 °C do −30 °C. Koje fazne promjene se događaju i pri kojoj temperaturi?",
+     "dijagram": "CO2",
+     "od": {
+      "t": -90,
+      "p": 101
+     },
+     "do": {
+      "t": -30,
+      "p": 101
+     },
+     "vrijednosti": true
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     },
+     {
+      "tip": "fazni_dijagram",
+      "nacin": "istrazi",
+      "tekst": "Povuci točku po dijagramu i gledaj u kojem je stanju tvar. Stavi je na krivulju ili u trojnu točku, pa probaj grijanje pri stalnom tlaku i tlačenje pri stalnoj temperaturi.",
+      "dijagram": "CO2",
+      "tocka": {
+       "t": -70,
+       "p": 400
+      },
+      "tvari": [
+       "CO2",
+       "H2O"
+      ]
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 10 + 1?",
+     "odgovor": 11
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "fazni_dijagram 2",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "stanje",
+     "tekst": "Očitaj u kojem je agregacijskom stanju \\( \\mathrm{CO_2} \\) pri −70 °C i 400 kPa. Koje su faze u ravnoteži u točki T?",
+     "dijagram": "CO2",
+     "tocke": [
+      {
+       "t": -70,
+       "p": 400
+      },
+      "trojna"
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 11 + 1?",
+     "odgovor": 12
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "fazni_dijagram 3",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "stanje",
+     "tekst": "Koje su faze u ravnoteži u trojnoj točki vode?",
+     "dijagram": "H2O",
+     "tocka": "trojna"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 12 + 1?",
+     "odgovor": 13
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "fazni_dijagram-2": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta fazni_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "fazni_dijagram 4",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "ocitaj",
+     "tekst": "Plinoviti \\( \\mathrm{CO_2} \\) tlači se pri stalnoj temperaturi od −50 °C. Očitaj pri kojem tlaku počinje prelaziti u tekućinu. Očitaj i koordinate trojne točke T.",
+     "dijagram": "CO2",
+     "trazi": [
+      {
+       "t": -50
+      },
+      {
+       "trojna": true
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "fazni_dijagram 5",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "ocitaj",
+     "tekst": "Pri kojoj su temperaturi tekuća i plinovita faza tvari X u ravnoteži ako tlak iznosi 7 bar?",
+     "dijagram": "X_2025",
+     "trazi": [
+      {
+       "p": 7,
+       "krivulja": "isparavanje"
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
+    }
+   },
+   {
+    "id": "c",
+    "naslov": "fazni_dijagram 6",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "put",
+     "tekst": "Na slici je fazni dijagram čiste tvari. Koja se fazna promjena odvija ako se tlak promijeni s \\( 5 \\times 10^{6} \\) Pa i temperature −123 °C na tlak od \\( 5 \\times 10^{4} \\) Pa i temperaturu 77 °C?",
+     "dijagram": "X_2021",
+     "od": {
+      "t": -123,
+      "p": {
+       "vrijednost": 5000000,
+       "zapis": "5 × 10⁶"
+      }
+     },
+     "do": {
+      "t": 77,
+      "p": {
+       "vrijednost": 50000,
+       "zapis": "5 × 10⁴"
+      }
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "fazni_dijagram-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta fazni_dijagram."
+  },
+  "podzadaci": [
+   {
+    "id": "a",
+    "naslov": "fazni_dijagram 7",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "put",
+     "tekst": "Led se pri stalnom tlaku od 101,325 kPa grije od niske temperature dok ne postane vodena para. Koje fazne promjene se događaju redom?",
+     "dijagram": "H2O",
+     "od": {
+      "t": "min",
+      "p": 101.325
+     },
+     "do": {
+      "t": "max",
+      "p": 101.325
+     }
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "fazni_dijagram 8",
+    "pitanje": {
+     "tip": "fazni_dijagram",
+     "nacin": "uvjeti",
+     "tekst": "Slika prikazuje fazni dijagram čiste tvari X. Pri kojim od navedenih uvjeta tlaka i temperature dolazi do prijelaza tvari X iz plinovitoga u tekuće agregacijsko stanje?",
+     "dijagram": "X_2026",
+     "prijelaz": "ukapljivanje",
+     "putevi": [
+      {
+       "od": {
+        "t": "T1",
+        "p": "p3"
+       },
+       "do": {
+        "t": "T4",
+        "p": "p3"
+       }
+      },
+      {
+       "od": {
+        "t": "T3",
+        "p": "p2"
+       },
+       "do": {
+        "t": "T1",
+        "p": "p2"
+       }
+      },
+      {
+       "od": {
+        "t": "T3",
+        "p": "p1"
+       },
+       "do": {
+        "t": "T3",
+        "p": "p4"
+       }
+      },
+      {
+       "od": {
+        "t": "T2",
+        "p": "p4"
+       },
+       "do": {
+        "t": "T2",
+        "p": "p1"
+       }
+      }
+     ]
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
+    }
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ }
+}
