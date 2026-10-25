@@ -2195,23 +2195,30 @@
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "pomak",
-     "tekst": "Amonijak se industrijski dobiva iz dušika i vodika. Kamo se pomiče ravnoteža kad se tlak u reaktoru poveća?",
+     "tekst": "U epruveti je crvena ravnotežna otopina željezovih(III) i tiocijanatnih iona. Doda se nekoliko kapi otopine željezova(III) klorida. Kamo se pomiče ravnoteža i kako se mijenja boja?",
      "reakcija": {
       "reaktanti": [
-       "N₂",
-       "H₂"
+       "Fe³⁺",
+       "SCN⁻"
       ],
       "produkti": [
-       "NH₃"
+       "[Fe(SCN)]²⁺"
       ],
       "stanja": [
-       "g",
-       "g",
-       "g"
+       "aq",
+       "aq",
+       "aq"
       ]
      },
-     "dH": -92.6,
-     "promjena": "povecanje_tlaka"
+     "boje": {
+      "Fe³⁺": "zuckasta",
+      "[Fe(SCN)]²⁺": "crvena"
+     },
+     "promjena": "dodaj Fe³⁺",
+     "pitaj": [
+      "smjer",
+      "boja"
+     ]
     },
     "zasto": "Zato.",
     "objasnjenje": "Objašnjenje.",
@@ -2243,6 +2250,44 @@
     "naslov": "ravnoteza 4",
     "pitanje": {
      "tip": "ravnoteza",
+     "nacin": "pomak",
+     "tekst": "Amonijak se industrijski dobiva iz dušika i vodika. Kamo se pomiče ravnoteža kad se tlak u reaktoru poveća?",
+     "reakcija": {
+      "reaktanti": [
+       "N₂",
+       "H₂"
+      ],
+      "produkti": [
+       "NH₃"
+      ],
+      "stanja": [
+       "g",
+       "g",
+       "g"
+      ]
+     },
+     "dH": -92.6,
+     "promjena": "povecanje_tlaka"
+    },
+    "zasto": "Zato.",
+    "objasnjenje": "Objašnjenje.",
+    "pomoc": [
+     {
+      "tip": "pojam",
+      "tekst": "Pojam."
+     }
+    ],
+    "blizanac": {
+     "tip": "broj",
+     "tekst": "Koliko je 13 + 1?",
+     "odgovor": 14
+    }
+   },
+   {
+    "id": "b",
+    "naslov": "ravnoteza 5",
+    "pitanje": {
+     "tip": "ravnoteza",
      "nacin": "kc_izraz",
      "tekst": "Napiši izraz za koncentracijsku konstantu ravnoteže sinteze amonijaka.",
      "reakcija": {
@@ -2270,13 +2315,13 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 13 + 1?",
-     "odgovor": 14
+     "tekst": "Koliko je 14 + 1?",
+     "odgovor": 15
     }
    },
    {
-    "id": "b",
-    "naslov": "ravnoteza 5",
+    "id": "c",
+    "naslov": "ravnoteza 6",
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "kc_izraz",
@@ -2308,13 +2353,24 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 14 + 1?",
-     "odgovor": 15
+     "tekst": "Koliko je 15 + 1?",
+     "odgovor": 16
     }
-   },
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ravnoteza-3": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ravnoteza."
+  },
+  "podzadaci": [
    {
-    "id": "c",
-    "naslov": "ravnoteza 6",
+    "id": "a",
+    "naslov": "ravnoteza 7",
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "izracunaj",
@@ -2355,24 +2411,13 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 15 + 1?",
-     "odgovor": 16
+     "tekst": "Koliko je 16 + 1?",
+     "odgovor": 17
     }
-   }
-  ],
-  "zapamti": [
-   "Zapamti."
-  ]
- },
- "ravnoteza-3": {
-  "verzija": 1,
-  "zadatak": {
-   "tekst": "Provjera widgeta ravnoteza."
-  },
-  "podzadaci": [
+   },
    {
-    "id": "a",
-    "naslov": "ravnoteza 7",
+    "id": "b",
+    "naslov": "ravnoteza 8",
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "izracunaj",
@@ -2413,13 +2458,13 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 16 + 1?",
-     "odgovor": 17
+     "tekst": "Koliko je 17 + 1?",
+     "odgovor": 18
     }
    },
    {
-    "id": "b",
-    "naslov": "ravnoteza 8",
+    "id": "c",
+    "naslov": "ravnoteza 9",
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "izracunaj",
@@ -2463,13 +2508,24 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 17 + 1?",
-     "odgovor": 18
+     "tekst": "Koliko je 18 + 1?",
+     "odgovor": 19
     }
-   },
+   }
+  ],
+  "zapamti": [
+   "Zapamti."
+  ]
+ },
+ "ravnoteza-4": {
+  "verzija": 1,
+  "zadatak": {
+   "tekst": "Provjera widgeta ravnoteza."
+  },
+  "podzadaci": [
    {
-    "id": "c",
-    "naslov": "ravnoteza 9",
+    "id": "a",
+    "naslov": "ravnoteza 10",
     "pitanje": {
      "tip": "ravnoteza",
      "nacin": "izracunaj",
@@ -2508,8 +2564,8 @@
     ],
     "blizanac": {
      "tip": "broj",
-     "tekst": "Koliko je 18 + 1?",
-     "odgovor": 19
+     "tekst": "Koliko je 19 + 1?",
+     "odgovor": 20
     }
    }
   ],
