@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 class ReviewStateTest {
 
     private final AccountObjectiveRepository repository = mock(AccountObjectiveRepository.class);
-    private final AccountObjectiveService service = new AccountObjectiveService(repository, null, null, null);
+    private final AccountObjectiveService service = new AccountObjectiveService(repository, null, null);
     private final Account account = new Account();
     private final LearningObjective objective = new LearningObjective();
 

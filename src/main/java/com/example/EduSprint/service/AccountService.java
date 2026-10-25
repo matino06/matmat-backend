@@ -36,7 +36,9 @@ public class AccountService {
         account.setCurrentTask(taskService.getTaskById(56L));
         try {
             accountRepository.save(account);
-            accountObjectiveService.initializeAccountObjectives(account);
+            // A new account starts on the default course, so it gets that course's lessons; the courses it picks
+            // next (PUT /account/courses) or switches to (POST /account/current-course) get theirs then.
+            accountObjectiveService.addCourseObjectives(account.getAccountId(), List.of(defaultCourse.getCourseId()));
             accountResolver.linkNewAccount(loginSubject, account.getAccountId(), email);
             return true;
         } catch (Exception e) {

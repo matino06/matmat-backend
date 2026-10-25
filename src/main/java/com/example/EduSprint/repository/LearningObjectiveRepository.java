@@ -16,14 +16,6 @@ import java.util.List;
 public interface LearningObjectiveRepository extends JpaRepository<LearningObjective, Long> {
     List<LearningObjective> findAllBySubfield(SubfieldOfStudy subfield);
 
-    // Lekcije službenih predmeta (bez lekcija vlastitih predmeta drugih kreatora).
-    @Query(value = """
-                SELECT lo.* FROM learning_objective lo
-                WHERE NOT EXISTS (SELECT 1 FROM course_objective co JOIN course c ON c.course_id = co.course_id
-                                  WHERE co.objective_id = lo.objective_id AND c.owner_account_id IS NOT NULL)
-            """, nativeQuery = true)
-    List<LearningObjective> findOfficial();
-
     @Query("SELECT lo FROM LearningObjective lo " +
             "WHERE lo.subfield.subfieldId = :subfieldId " +
             "AND EXISTS (SELECT 1 FROM Task t WHERE t.objective = lo)")
