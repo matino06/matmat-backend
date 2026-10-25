@@ -220,7 +220,9 @@ public class AccountController {
     public List<Long> setChosenCourses(Authentication authentication, @RequestBody ChosenCoursesRequest request) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
-        return chosenCoursesService.set(accountId, request == null ? null : request.courseIds());
+        List<Long> chosen = chosenCoursesService.set(accountId, request == null ? null : request.courseIds());
+        accountObjectiveService.addCourseObjectives(accountId, chosen);
+        return chosen;
     }
 
     /**
@@ -280,6 +282,8 @@ public class AccountController {
         account.setCurrentCourse(course);
         account.setCurrentTask(null);
         accountRepository.save(account);
+        // iOS has no course list: it switches straight to a course, so that course gets its lessons here.
+        accountObjectiveService.addCourseObjectives(account.getAccountId(), List.of(courseId));
 
         return ResponseEntity.ok().build();
     }

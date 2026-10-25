@@ -28,7 +28,7 @@ class AccountObjectiveServiceTest {
 
     private final AccountObjectiveRepository accountObjectives = mock(AccountObjectiveRepository.class);
     private final SolvedTaskRepository solvedTasks = mock(SolvedTaskRepository.class);
-    private final AccountObjectiveService service = new AccountObjectiveService(accountObjectives, null, null, solvedTasks);
+    private final AccountObjectiveService service = new AccountObjectiveService(accountObjectives, null, solvedTasks);
 
     private final Account account = new Account();
     private final LearningObjective objective = new LearningObjective();

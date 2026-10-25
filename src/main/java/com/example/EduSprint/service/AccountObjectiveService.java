@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,36 +20,24 @@ public class AccountObjectiveService {
 
     public final AccountObjectiveRepository accountObjectiveRepository;
     public final AccountRepository accountRepository;
-    public final LearningObjectiveService learningObjectiveService;
     private final SolvedTaskRepository solvedTaskRepository;
 
-    public AccountObjectiveService(AccountObjectiveRepository accountObjectiveRepository, AccountRepository accountRepository, LearningObjectiveService learningObjectiveService, SolvedTaskRepository solvedTaskRepository) {
+    public AccountObjectiveService(AccountObjectiveRepository accountObjectiveRepository, AccountRepository accountRepository, SolvedTaskRepository solvedTaskRepository) {
         this.accountObjectiveRepository = accountObjectiveRepository;
         this.accountRepository = accountRepository;
-        this.learningObjectiveService = learningObjectiveService;
         this.solvedTaskRepository = solvedTaskRepository;
     }
 
+    /**
+     * Gives the account a new-lesson row for each lesson of these official courses it doesn't have yet: a course
+     * gets its rows only once the student picks it or switches to it. Rows already there are kept as they are, so a
+     * course taken off the list and picked again later still has its review history. Own courses are skipped; their
+     * creator gets the rows when confirming the plan.
+     */
     @Transactional
-    public boolean initializeAccountObjectives(Account account) {
-        try {
-            // lekcije vlastitih predmeta dobiva samo njihov kreator, pri potvrdi plana
-            List<LearningObjective> objectives = learningObjectiveService.findOfficial();
-            for (LearningObjective objective : objectives) {
-                AccountObjective accountObjective = new AccountObjective();
-                accountObjective.setAccount(account);
-                accountObjective.setObjective(objective);
-                accountObjective.setI((short) 0);
-                accountObjective.setN((short) 0);
-                accountObjective.setLastSolvedDate(Instant.now());
-
-                accountObjectiveRepository.save(accountObjective);
-            }
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+    public void addCourseObjectives(long accountId, Collection<Long> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) return;
+        accountObjectiveRepository.addOfficialCourseObjectives(accountId, courseIds);
     }
 
     @Transactional
