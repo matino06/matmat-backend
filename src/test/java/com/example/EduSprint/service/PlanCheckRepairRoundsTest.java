@@ -47,9 +47,14 @@ class PlanCheckRepairRoundsTest {
     }
 
     private static void row(RowCallbackHandler h, long a, long b) throws Exception {
+        row(h, a, b, null);
+    }
+
+    private static void row(RowCallbackHandler h, long a, long b, String prerequisites) throws Exception {
         ResultSet rs = mock(ResultSet.class);
         when(rs.getLong(1)).thenReturn(a);
         when(rs.getLong(2)).thenReturn(b);
+        when(rs.getString(3)).thenReturn(prerequisites);
         h.processRow(rs);
     }
 
@@ -153,5 +158,47 @@ class PlanCheckRepairRoundsTest {
         verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
                 "velicina".equals(p.getValue("k")) && String.valueOf(p.getValue("t")).equals(
                         "„Gustoća“ ima samo 1 stavku znanja; lekcija bi trebala imati barem " + PlanRepair.MIN_ITEMS + ".")));
+    }
+
+    // Na stavci 100 gradi stavka 101 (preduvjet): premještanjem bi je odvukla za sobom, pa se 100 prepravlja.
+    @Test
+    void itemOtherItemsBuildOnIsRewrittenNotMoved() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("0 stavki premješteno"), result);
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
+
+    // Lekcija „Srednja gustoća“ (20) koristi pojam iz stavke 100 lekcije „Gustoća“ (10): i ona je zato „na kojoj se
+    // gradi“, pa ne seli ni kad sama koristi pojam iz kasnije lekcije.
+    @Test
+    void itemAnotherLessonUsesIsNotMoved() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        Map<String, Object> other = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "gustoća", "taught_by", "[\"100\"]"));
+        other.put("finding_id", 2L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, other));
+
+        step.run(job(null));
+
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
     }
 }

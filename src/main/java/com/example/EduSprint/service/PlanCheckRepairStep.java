@@ -161,13 +161,29 @@ public class PlanCheckRepairStep implements BuildStep {
                 });
         Map<Long, Integer> itemLesson = new HashMap<>();
         Map<Long, Integer> lessonItems = new HashMap<>();
-        jdbc.query("SELECT item_id, objective_id FROM knowledge_item WHERE course_id = :c AND objective_id IS NOT NULL AND duplicate_of IS NULL", c, rs -> {
+        Set<Long> reliedOn = new HashSet<>(); // stavke na kojima gradi neka druga stavka: ne sele se
+        jdbc.query("""
+                SELECT item_id, objective_id, prerequisites FROM knowledge_item
+                WHERE course_id = :c AND objective_id IS NOT NULL AND duplicate_of IS NULL""", c, rs -> {
             Integer l = index.get(rs.getLong(2));
             if (l != null) {
                 itemLesson.put(rs.getLong(1), l);
                 lessonItems.merge(rs.getLong(2), 1, Integer::sum);
             }
+            plan.readJson(rs.getString(3)).forEach(n -> reliedOn.add(n.asLong()));
         });
+        // presude cijelog kruga gledaju gdje su stavke bile na početku: stavka premještena u ovom krugu ne povlači
+        // za sobom stavke koje se na nju oslanjaju
+        Map<Long, Integer> itemLessonAtStart = new HashMap<>(itemLesson);
+        List<Map<String, Object>> zeroFindings = jdbc.queryForList("""
+                SELECT finding_id, objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c);
+        for (Map<String, Object> f : zeroFindings) {
+            Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
+            for (JsonNode t : plan.readJson((String) f.get("taught_by"))) {
+                Integer l = t.canConvertToLong() || t.asText().matches("\\d+") ? itemLessonAtStart.get(t.asLong()) : null;
+                if (l != null && !l.equals(lesson)) reliedOn.add(t.asLong()); // pojam iz nje koristi druga lekcija
+            }
+        }
 
         List<Warning> warnings = new ArrayList<>();
         Map<String, Finding> findings = new LinkedHashMap<>();
@@ -175,8 +191,7 @@ public class PlanCheckRepairStep implements BuildStep {
         Set<String> seenFindings = new HashSet<>();
         int added = 0, moved = 0, rewritten = 0;
         Set<Long> movedItems = new HashSet<>();
-        for (Map<String, Object> f : jdbc.queryForList("""
-                SELECT finding_id, objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c)) {
+        for (Map<String, Object> f : zeroFindings) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             String concept = (String) f.get("concept");
             if (lesson == null || !seenFindings.add(lesson + "|" + conceptKey(concept))) continue;
@@ -189,7 +204,7 @@ public class PlanCheckRepairStep implements BuildStep {
             List<Integer> teachers = new ArrayList<>();
             for (JsonNode t : plan.readJson((String) f.get("taught_by"))) {
                 taughtBy.add(t.asText());
-                Integer l = t.canConvertToLong() || t.asText().matches("\\d+") ? itemLesson.get(t.asLong()) : null;
+                Integer l = t.canConvertToLong() || t.asText().matches("\\d+") ? itemLessonAtStart.get(t.asLong()) : null;
                 if (l != null) teachers.add(l);
             }
             Judgement j = judge(lesson, taughtBy, teachers, pre);
@@ -205,7 +220,7 @@ public class PlanCheckRepairStep implements BuildStep {
                         pre.get(lesson).add(j.teacher());
                         added++;
                     } else if (f.get("item_id") != null && moveItem(((Number) f.get("item_id")).longValue(), lesson, j.teacher(),
-                            ids, itemLesson, lessonItems)) {
+                            ids, itemLesson, lessonItems, reliedOn)) {
                         moved++;
                         movedItems.add(((Number) f.get("item_id")).longValue());
                         jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
@@ -364,11 +379,14 @@ public class PlanCheckRepairStep implements BuildStep {
 
     // Stavka koja koristi pojam iz kasnije lekcije seli se u tu lekciju, cijela: tamo učenik pojam već zna, a lekcija
     // iz koje odlazi zadržava barem MIN_ITEMS_LEFT stavki. Prepravljanje bi iz stavke izbacilo sadržaj (Stockov sustav
-    // iz nazivlja, hidrolizu iz otopina soli).
+    // iz nazivlja, hidrolizu iz otopina soli). Seli se samo stavka na kojoj ništa ne gradi: osnovna definicija koju
+    // usput spominje kasniji pojam („monomi iste vrste … zbrajaju se izlučivanjem“) odvukla bi za sobom lekcije koje je
+    // trebaju, pa se ona prepravlja.
     private boolean moveItem(long itemId, int lesson, int teacher, List<Long> ids, Map<Long, Integer> itemLesson,
-                             Map<Long, Integer> lessonItems) {
+                             Map<Long, Integer> lessonItems, Set<Long> reliedOn) {
         Integer from = itemLesson.get(itemId);
-        if (from == null || from != lesson || lessonItems.getOrDefault(ids.get(lesson), 0) <= MIN_ITEMS_LEFT) return false;
+        if (from == null || from != lesson || reliedOn.contains(itemId)
+                || lessonItems.getOrDefault(ids.get(lesson), 0) <= MIN_ITEMS_LEFT) return false;
         jdbc.update("""
                 UPDATE knowledge_item SET objective_id = :t,
                     position = (SELECT COALESCE(max(position), 0) + 1 FROM knowledge_item WHERE objective_id = :t)
