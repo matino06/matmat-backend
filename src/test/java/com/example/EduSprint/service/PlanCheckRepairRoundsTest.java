@@ -39,11 +39,16 @@ class PlanCheckRepairRoundsTest {
         doAnswer(inv -> { row(inv.getArgument(2), 100L, 10L); row(inv.getArgument(2), 200L, 20L); return null; })
                 .when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(
-                finding("homogeno tijelo/tvar"), finding("homogena tvar/tijelo")));
+                finding("homogeno tijelo/tvar"), finding("homogena tvar/tijelo", 2)));
     }
 
+    // nalaz prvog pokretanja nulte pretpostavke; drugo pokretanje isti pojam zna napisati drugim riječima
     private static Map<String, Object> finding(String concept) {
-        return new java.util.HashMap<>(Map.of("objective_id", 10L, "concept", concept, "taught_by", "[\"200\"]"));
+        return finding(concept, 1);
+    }
+
+    private static Map<String, Object> finding(String concept, int run) {
+        return new java.util.HashMap<>(Map.of("objective_id", 10L, "concept", concept, "taught_by", "[\"200\"]", "run", run));
     }
 
     private static void row(RowCallbackHandler h, long a, long b) throws Exception {
@@ -98,7 +103,7 @@ class PlanCheckRepairRoundsTest {
         }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         Map<String, Object> f = finding("homogeno tijelo");
         f.put("item_id", 100L);
-        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
 
         String result = step.run(job(null));
 
@@ -120,7 +125,7 @@ class PlanCheckRepairRoundsTest {
         }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         Map<String, Object> a = finding("homogeno tijelo");
         a.put("item_id", 100L);
-        Map<String, Object> b = finding("srednja gustoća");
+        Map<String, Object> b = finding("srednja gustoća", 2);
         b.put("item_id", 100L);
         b.put("finding_id", 2L);
         when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
@@ -143,7 +148,7 @@ class PlanCheckRepairRoundsTest {
         }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         Map<String, Object> f = finding("homogeno tijelo");
         f.put("item_id", 100L);
-        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
 
         step.run(job(null));
 
@@ -173,7 +178,7 @@ class PlanCheckRepairRoundsTest {
         }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         Map<String, Object> f = finding("homogeno tijelo");
         f.put("item_id", 100L);
-        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
 
         String result = step.run(job(null));
 
@@ -195,10 +200,28 @@ class PlanCheckRepairRoundsTest {
         f.put("item_id", 100L);
         Map<String, Object> other = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "gustoća", "taught_by", "[\"100\"]"));
         other.put("finding_id", 2L);
-        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, other));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2), other));
 
         step.run(job(null));
 
         verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
+
+    // Pojam iz kasnije lekcije našlo je samo jedno pokretanje: plan se ne mijenja (ni preduvjet, ni premještanje,
+    // ni prepravak), kreator dobije blago upozorenje.
+    @Test
+    void laterConceptFoundByOneRunOnlyBecomesAMildWarning() throws Exception {
+        plan();
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+
+        step.run(job(null));
+
+        verify(flow, never()).repairRound(anyLong(), anyLong(), anyInt(), any());
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                "nulta".equals(p.getValue("k")) && Boolean.FALSE.equals(p.getValue("s"))
+                        && String.valueOf(p.getValue("t")).contains("koji se uči tek u lekciji „Srednja gustoća“")));
     }
 }

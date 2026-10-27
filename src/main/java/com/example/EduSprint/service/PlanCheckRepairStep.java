@@ -15,7 +15,8 @@ import java.util.*;
 // mapirao pojmove na stavke koje ih uče, a presudu i popravak radi kod.
 //  - pojam se uči u lekciji ili njezinim preduvjetima → u redu;
 //  - uči se u RANIJOJ lekciji koja nije preduvjet → doda se preduvjet (lekcije se otključavaju po preduvjetima);
-//  - uči se u KASNIJOJ lekciji → lekcija ide iza nje (preduvjet + novi poredak), ako to ne stvara krug;
+//  - uči se u KASNIJOJ lekciji, a našla su ga oba pokretanja nulte pretpostavke (inače samo blago upozorenje)
+//    → lekcija ide iza nje (preduvjet + novi poredak), ako to ne stvara krug;
 //    inače stavka koja koristi pojam seli u tu kasniju lekciju, a tek kad ne može (lekcija bi ostala gotovo prazna,
 //    model nije rekao koja stavka) model prepravi stavku tako da ne koristi taj pojam;
 //  - „nigdje“ → upozorenje „rupa“.
@@ -176,12 +177,17 @@ public class PlanCheckRepairStep implements BuildStep {
         // za sobom stavke koje se na nju oslanjaju
         Map<Long, Integer> itemLessonAtStart = new HashMap<>(itemLesson);
         List<Map<String, Object>> zeroFindings = jdbc.queryForList("""
-                SELECT finding_id, objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c);
+                SELECT finding_id, objective_id, run, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c);
+        // lekcije koje po nalazima uče pojam, po pokretanju: pojam iz kasnije lekcije mijenja plan samo kad ga nađu oba
+        Map<Integer, Map<Integer, Set<Integer>>> teachersByRun = new HashMap<>();
         for (Map<String, Object> f : zeroFindings) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             for (JsonNode t : plan.readJson((String) f.get("taught_by"))) {
                 Integer l = t.canConvertToLong() || t.asText().matches("\\d+") ? itemLessonAtStart.get(t.asLong()) : null;
-                if (l != null && !l.equals(lesson)) reliedOn.add(t.asLong()); // pojam iz nje koristi druga lekcija
+                if (l != null && !l.equals(lesson)) {
+                    reliedOn.add(t.asLong()); // pojam iz nje koristi druga lekcija
+                    teachersByRun.computeIfAbsent(lesson, k -> new HashMap<>()).computeIfAbsent(run(f), k -> new HashSet<>()).add(l);
+                }
             }
         }
 
@@ -212,10 +218,15 @@ public class PlanCheckRepairStep implements BuildStep {
                 case OK -> { }
                 case NOWHERE -> collect(findings, "rupa", lesson, -1, false, false, concept);
                 case ADD_PREREQUISITE, LATER -> {
+                    boolean later = j.verdict() == Verdict.LATER;
+                    boolean confirmed = !later || confirmed(teachersByRun.get(lesson), run(f), teachers);
                     if (recheck && !fix.contains(ids.get(lesson))) {
                         // nakon izmjena kreatora samo javljamo: preduvjet je možda namjerno maknut
-                        boolean later = j.verdict() == Verdict.LATER;
-                        collect(findings, "nulta", lesson, j.teacher(), later, later, concept);
+                        collect(findings, "nulta", lesson, j.teacher(), later, later && confirmed, concept);
+                    } else if (!confirmed) {
+                        // našlo ga je samo jedno pokretanje: često krivo (uvjet B ≥ 0 kao „linearna nejednadžba“ iz
+                        // zadnje lekcije), a popravak bi premjestio lekciju ili prepravio stavku, pa kreator samo dobije upozorenje
+                        collect(findings, "nulta", lesson, j.teacher(), true, false, concept);
                     } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
@@ -327,6 +338,19 @@ public class PlanCheckRepairStep implements BuildStep {
         if (!recheck) mailer.planReady(courseId);
         return added + " preduvjeta dodano, " + moved + " stavki premješteno, " + rewritten + " stavki prepravljeno, "
                 + warnings.size() + " upozorenja";
+    }
+
+    private static int run(Map<String, Object> finding) {
+        return finding.get("run") == null ? 1 : ((Number) finding.get("run")).intValue();
+    }
+
+    // Je li drugo pokretanje nulte pretpostavke za istu lekciju našlo pojam iz neke od istih lekcija.
+    static boolean confirmed(Map<Integer, Set<Integer>> byRun, int run, List<Integer> teachers) {
+        if (byRun == null) return false;
+        for (Map.Entry<Integer, Set<Integer>> e : byRun.entrySet()) {
+            if (e.getKey() != run && teachers.stream().anyMatch(e.getValue()::contains)) return true;
+        }
+        return false;
     }
 
     private static void collect(Map<String, Finding> findings, String kind, int lesson, int other, boolean later,
