@@ -28,6 +28,9 @@ public class PlanPointsStep implements BuildStep {
             pomak vektor od početnog do konačnog položaja; put je jednak iznosu pomaka samo ako tijelo ne mijenja smjer“.
             Ne rastavljaj definiciju, jedinicu, formulu i zamku iste veličine na zasebne stavke. Jedan ishod obično ima 10–25 stavki.
             Stavka NIJE: isti zakon u drugom kontekstu, obrat iste formule, isti zadatak s drugim brojevima.
+            Riješeni primjer ili zadatak iz materijala nije stavka: iz njega uzmi pravilo ili postupak koji pokazuje
+            (npr. „prije računanja sve veličine svedi na istu jedinicu“), a sama situacija (svjetlosna godina, zrnca pijeska,
+            slavina koja kaplje) ostaje primjer i ne ulazi u stavku kao zaseban sadržaj.
             Predznanje (nije stavka): %s. Sve iz samog predmeta je stavka.
             Konstante i tablične vrijednosti iz materijala dostupnog na ispitu NISU stavke (učenik ih tamo pronađe),
             ali značenje veličine i kada se formula koristi jesu.
