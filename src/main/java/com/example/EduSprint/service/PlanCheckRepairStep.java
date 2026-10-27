@@ -174,11 +174,17 @@ public class PlanCheckRepairStep implements BuildStep {
         Set<Integer> toVerify = new TreeSet<>(); // lekcije koje se ponovno provjeravaju prije predaje kreatoru
         Set<String> seenFindings = new HashSet<>();
         int added = 0, moved = 0, rewritten = 0;
+        Set<Long> movedItems = new HashSet<>();
         for (Map<String, Object> f : jdbc.queryForList("""
-                SELECT objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c)) {
+                SELECT finding_id, objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c)) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             String concept = (String) f.get("concept");
             if (lesson == null || !seenFindings.add(lesson + "|" + conceptKey(concept))) continue;
+            if (f.get("item_id") != null && movedItems.contains(((Number) f.get("item_id")).longValue())) {
+                // stavka je u ovom krugu već preselila (model joj je prijavio više pojmova): nova lekcija se ponovno provjerava
+                jdbc.update("DELETE FROM zero_finding WHERE finding_id = :f", new MapSqlParameterSource("f", f.get("finding_id")));
+                continue;
+            }
             List<String> taughtBy = new ArrayList<>();
             List<Integer> teachers = new ArrayList<>();
             for (JsonNode t : plan.readJson((String) f.get("taught_by"))) {
@@ -201,6 +207,7 @@ public class PlanCheckRepairStep implements BuildStep {
                     } else if (f.get("item_id") != null && moveItem(((Number) f.get("item_id")).longValue(), lesson, j.teacher(),
                             ids, itemLesson, lessonItems)) {
                         moved++;
+                        movedItems.add(((Number) f.get("item_id")).longValue());
                         jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
                                 new MapSqlParameterSource("o", ids.get(lesson)).addValue("k", concept));
                         toVerify.add(lesson);

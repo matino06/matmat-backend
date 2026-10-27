@@ -84,8 +84,8 @@ public class VariationPrompt {
             ČESTE GREŠKE KOJE NE SMIJEŠ NAPRAVITI:
             - Nikakve samokorekcije u tekstu („26 N? Ne, …“). Objašnjenje je konačna verzija.
             - Ne tvrdi što piše ili ne piše u materijalu dostupnom na ispitu osim ako to doslovno vidiš u priloženom tekstu.
-            - Ne spominji ispitni katalog, kurikulum ni ispite iz materijala, ni nazivom ni stranicom: iz njih je složen plan,
-              a učenik ih nema.
+            - Ne spominji materijal iz kojeg je složen plan (ispitni katalog, kurikulum, ispiti), ni nazivom ni stranicom:
+              učenik ga nema. Iznimka je materijal dostupan na ispitu.
             - Svaka slikovita usporedba i „intuicija“ mora biti stručno točna.
             - Podaci u podzadacima ne smiju proturječiti jedni drugima; ako podzadatak mijenja uvjet, izričito reci
               vrijedi li promjena i u sljedećim podzadacima.%s

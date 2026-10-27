@@ -104,6 +104,29 @@ class PlanCheckRepairRoundsTest {
         verify(flow).repairRound(5L, 7L, 1, List.of(10L, 20L));
     }
 
+    // Model je istoj stavci prijavio dva pojma iz „Srednje gustoće“: seli jednom i ne prepravlja se zbog drugog pojma.
+    @Test
+    void itemWithTwoLaterConceptsMovesOnceAndIsNotRewritten() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća");
+        b.put("item_id", 100L);
+        b.put("finding_id", 2L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("1 stavki premješteno, 0 stavki prepravljeno"), result);
+        verify(jdbc, times(1)).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("WHERE finding_id = :f"), argThat((SqlParameterSource p) -> Long.valueOf(2L).equals(p.getValue("f"))));
+    }
+
     // Lekcija s dvije stavke ne daje nijednu: ostala bi gotovo prazna, pa se stavka prepravlja kao i prije.
     @Test
     void lessonWithTooFewItemsKeepsItsItem() throws Exception {

@@ -20,11 +20,12 @@ public class VariationChecks {
     private static final Pattern FOREIGN_SCRIPT = Pattern.compile("\\S*[\\u0400-\\u04FF\\u3000-\\u9FFF\\uAC00-\\uD7AF]\\S*");
     // riječi koje su se u mjerenjima pojavile usred hrvatskog teksta (finski); samo cijele riječi, jer \b ne zna
     // za č, ć, š, ž, pa bi „eli“ našao u „želi“
-    private static final Pattern FOREIGN_WORDS = Pattern.compile("(?<!\\p{L})(?:joten|olla|yhdessä|ratkaistaan|ensin|että|kuin|eli|noin)(?!\\p{L})");
+    private static final Pattern FOREIGN_WORDS = Pattern.compile("(?iu)(?<!\\p{L})(?:joten|olla|yhdessä|ratkaistaan|ensin|että|kuin|eli|noin)(?!\\p{L})");
     // \n iza kojeg je slovo u formuli je LaTeX naredba (\nu, \neq, \nabla)
-    private static final Pattern LITERAL_NEWLINE_IN_MATH = Pattern.compile("\\\\n(?![a-zA-Z])");
+    // (\\ ispred n je prijelom retka u aligned, pa n = …)
+    private static final Pattern LITERAL_NEWLINE_IN_MATH = Pattern.compile("(?<!\\\\)\\\\n(?![a-zA-Z])");
     // materijal iz kojeg je plan složen, a učenik ga nema
-    private static final Pattern PLAN_SOURCE = Pattern.compile("(?iu)(?<!\\p{L})(?:ispitn\\p{L}*\\s+katalog\\p{L}*|kurikul\\p{L}*)");
+    private static final Pattern PLAN_SOURCE = Pattern.compile("(?iu)(?<!\\p{L})(?:ispitn\\p{L}*[\\s\\u00A0]+katal(?:og|oz)\\p{L}*|kurikul\\p{L}*)");
 
     private final KatexChecker katex;
 
@@ -34,6 +35,11 @@ public class VariationChecks {
 
     // Popis problema; prazan znači da je varijacija prošla.
     public List<String> problems(JsonNode v) {
+        return problems(v, false);
+    }
+
+    // catalogueOnExam: učenik na ispitu ima katalog ili kurikulum, pa ga zadatak smije navesti.
+    public List<String> problems(JsonNode v, boolean catalogueOnExam) {
         String task = v.path("zadatak").asText("");
         String explanation = ExplanationSketches.strip(v.path("objasnjenje").asText("")); // skice provjerava ExplanationSketches
         List<String> out = new ArrayList<>();
@@ -58,7 +64,7 @@ public class VariationChecks {
         foreign.addAll(find(FOREIGN_WORDS, all));
         if (!foreign.isEmpty()) out.add("Strani jezik ili pismo: " + foreign.subList(0, Math.min(4, foreign.size())));
         if (literalNewline(all)) out.add("Doslovni \\n u tekstu.");
-        if (PLAN_SOURCE.matcher(all).find()) {
+        if (!catalogueOnExam && PLAN_SOURCE.matcher(all).find()) {
             out.add("Poziv na ispitni katalog ili kurikulum: učenik ga nema, pa ga zadatak i objašnjenje ne spominju.");
         }
         if (textDrawing(text)) out.add("Crtež znakovima u tekstu (graf ili shema); podatke treba zadati tablicom ili riječima.");
