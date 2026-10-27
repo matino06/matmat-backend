@@ -144,4 +144,14 @@ class PlanCheckRepairRoundsTest {
 
         verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
     }
+
+    // Lekcija s manje od MIN_ITEMS stavki (npr. nakon premještanja) dobiva upozorenje, da je kreator spoji sa susjednom.
+    @Test
+    void tooSmallLessonIsWarnedAboutAfterTheLastRound() throws Exception {
+        plan();
+        step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+        verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                "velicina".equals(p.getValue("k")) && String.valueOf(p.getValue("t")).equals(
+                        "„Gustoća“ ima samo 1 stavku znanja; lekcija bi trebala imati barem " + PlanRepair.MIN_ITEMS + ".")));
+    }
 }

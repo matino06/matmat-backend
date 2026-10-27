@@ -254,6 +254,11 @@ public class PlanCheckRepairStep implements BuildStep {
             if (n > PlanRepair.MAX_ITEMS) {
                 warnings.add(new Warning("velicina", ids.get(i), null,
                         "„" + names.get(i) + "“ ima " + n + " stavki znanja; lekcija bi trebala imati najviše " + PlanRepair.MAX_ITEMS + ".", null, false));
+            } else if (n > 0 && n < PlanRepair.MIN_ITEMS) {
+                // npr. nakon premještanja stavki u kasniju lekciju: kreator je može spojiti sa susjednom
+                warnings.add(new Warning("velicina", ids.get(i), null,
+                        "„" + names.get(i) + "“ ima samo " + n + (n == 1 ? " stavku" : " stavke") + " znanja; lekcija bi trebala imati barem "
+                                + PlanRepair.MIN_ITEMS + ".", null, false));
             }
         }
         for (Map<String, Object> t : jdbc.queryForList(
