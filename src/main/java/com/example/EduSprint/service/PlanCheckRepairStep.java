@@ -198,10 +198,15 @@ public class PlanCheckRepairStep implements BuildStep {
         int added = 0, moved = 0, rewritten = 0;
         Set<Long> movedItems = new HashSet<>();
         Set<Long> rewrittenItems = new HashSet<>(); // prepravljene u ovom krugu: drugi naziv istog pojma ne prepravlja ponovno
+        // nepotvrđen pojam iz kasnije lekcije čeka kraj petlje: drugo pokretanje za isti pojam možda nađe raniju lekciju
+        // (samo preduvjet), pa blago upozorenje ide samo ako ništa drugo nije riješilo taj pojam
+        Map<String, Object[]> unconfirmed = new LinkedHashMap<>();
         for (Map<String, Object> f : zeroFindings) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             String concept = (String) f.get("concept");
-            if (lesson == null || !seenFindings.add(lesson + "|" + conceptKey(concept))) continue;
+            if (lesson == null) continue;
+            String key = lesson + "|" + conceptKey(concept);
+            if (!seenFindings.add(key)) continue;
             if (f.get("item_id") != null && movedItems.contains(((Number) f.get("item_id")).longValue())) {
                 // stavka je u ovom krugu već preselila (model joj je prijavio više pojmova): nova lekcija se ponovno provjerava
                 jdbc.update("DELETE FROM zero_finding WHERE finding_id = :f", new MapSqlParameterSource("f", f.get("finding_id")));
@@ -227,7 +232,8 @@ public class PlanCheckRepairStep implements BuildStep {
                     } else if (!confirmed) {
                         // našlo ga je samo jedno pokretanje: često krivo (uvjet B ≥ 0 kao „linearna nejednadžba“ iz
                         // zadnje lekcije), a popravak bi premjestio lekciju ili prepravio stavku, pa kreator samo dobije upozorenje
-                        collect(findings, "nulta", lesson, j.teacher(), true, false, concept);
+                        seenFindings.remove(key);
+                        unconfirmed.putIfAbsent(key, new Object[]{lesson, j.teacher(), concept});
                     } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
@@ -239,8 +245,8 @@ public class PlanCheckRepairStep implements BuildStep {
                                 new MapSqlParameterSource("o", ids.get(lesson)).addValue("k", concept));
                         toVerify.add(lesson);
                         toVerify.add(j.teacher());
-                    } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept, rewrittenItems)
-                            : rewriteMentions(job, course, ids.get(lesson), concept, rewrittenItems)) {
+                    } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept, lastRound ? new HashSet<>() : rewrittenItems)
+                            : rewriteMentions(job, course, ids.get(lesson), concept, lastRound ? new HashSet<>() : rewrittenItems)) {
                         rewritten++;
                         // nalaz je riješen: da ga kasnija provjera ne prijavi ponovno, briše se; lekcija se još jednom provjerava
                         jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
@@ -254,6 +260,9 @@ public class PlanCheckRepairStep implements BuildStep {
             }
         }
 
+        unconfirmed.forEach((key, u) -> {
+            if (!seenFindings.contains(key)) collect(findings, "nulta", (Integer) u[0], (Integer) u[1], true, false, (String) u[2]);
+        });
         for (Finding f : findings.values()) warnings.add(toWarning(f, ids, names));
 
         // Pri izradi se lekcije slažu ispočetka; nakon izmjena kreatora redoslijed ostaje njegov i samo se javlja.
@@ -281,8 +290,8 @@ public class PlanCheckRepairStep implements BuildStep {
             if (n > PlanRepair.MAX_ITEMS) {
                 warnings.add(new Warning("velicina", ids.get(i), null,
                         "„" + names.get(i) + "“ ima " + n + " stavki znanja; lekcija bi trebala imati najviše " + PlanRepair.MAX_ITEMS + ".", null, false));
-            } else if (n > 0 && n < PlanRepair.MIN_ITEMS) {
-                // npr. nakon premještanja stavki u kasniju lekciju: kreator je može spojiti sa susjednom
+            } else if (n > 0 && n <= MIN_ITEMS_LEFT) {
+                // npr. nakon premještanja stavki u kasniju lekciju; lekcija s 3 stavke normalna je kod maloga ishoda
                 warnings.add(new Warning("velicina", ids.get(i), null,
                         "„" + names.get(i) + "“ ima samo " + n + (n == 1 ? " stavku" : " stavke") + " znanja; lekcija bi trebala imati barem "
                                 + PlanRepair.MIN_ITEMS + ".", null, false));
@@ -440,7 +449,8 @@ public class PlanCheckRepairStep implements BuildStep {
     }
 
     // Stavka prepravljena u ovom krugu (drugi naziv istog pojma iz drugog pokretanja, ili drugi pojam) ne prepravlja se
-    // ponovno: lekcija ide u idući krug, koji provjeri prepravljenu stavku.
+    // ponovno: lekcija ide u idući krug, koji provjeri prepravljenu stavku. U zadnjem krugu idućeg nema, pa se
+    // poziva s praznim skupom i svaki pojam se stvarno prepravlja.
     private boolean rewrite(BuildJob job, PlanSupport.CourseInfo course, long itemId, String concept, Set<Long> rewrittenItems) {
         if (rewrittenItems.contains(itemId)) return true;
         try {

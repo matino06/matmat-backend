@@ -137,11 +137,14 @@ public class PlanFlow {
     // Ponovna nulta pretpostavka promijenjene lekcije, dvaput kao pri izradi: popravak mijenja plan zbog pojma iz
     // kasnije lekcije samo kad ga nađu oba pokretanja. Stari nalazi lekcije brišu se ovdje, prije pokretanja, da
     // drugo pokretanje ne obriše nalaze prvoga.
+    // Ako je provjera već zakazana (ponovljeni posao popravka), ništa se ne briše: nalazi su možda već od nje.
     private void zeroRuns(long courseId, long accountId, long objectiveId, String ref, String input) {
-        jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o", new MapSqlParameterSource("o", objectiveId));
         for (int run = 1; run <= ZERO_RUNS; run++) {
-            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + objectiveId + " " + ref + " " + run,
+            Long id = queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + objectiveId + " " + ref + " " + run,
                     BuildJobQueue.PRIORITY_WAITED_ON, true, "{\"objectiveId\":" + objectiveId + ",\"run\":" + run + input + "}");
+            if (id == null) return;
+            // posao tek čeka u redu, pa ne može već imati nalaz: brisanje odmah nakon dodavanja prvoga je sigurno
+            if (run == 1) jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o", new MapSqlParameterSource("o", objectiveId));
         }
     }
 

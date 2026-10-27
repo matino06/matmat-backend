@@ -45,6 +45,8 @@ public class PlanDedupeStep implements BuildStep {
         MapSqlParameterSource c = new MapSqlParameterSource("c", job.courseId());
         jdbc.update("UPDATE knowledge_item SET duplicate_of = NULL WHERE course_id = :c", c);
         List<Map<String, Object>> items = jdbc.queryForList("SELECT item_id, text FROM knowledge_item WHERE course_id = :c ORDER BY item_id", c);
+        // svi ishodi prazni (sav materijal dodatni ili model nije odgovorio): bez ovoga izrada stoji bez greške
+        if (items.isEmpty()) throw new IllegalStateException("Nijedan ishod nema stavki znanja: u materijalu nema gradiva za učenje.");
         Set<Long> ids = new HashSet<>();
         StringBuilder list = new StringBuilder();
         for (Map<String, Object> i : items) {

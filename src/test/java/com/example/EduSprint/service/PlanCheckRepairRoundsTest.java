@@ -254,4 +254,56 @@ class PlanCheckRepairRoundsTest {
         verify(llm, times(1)).chat(any(), anyString(), anyString(), anyString(), any());
         verify(jdbc, times(1)).update(contains("UPDATE knowledge_item SET text"), any(SqlParameterSource.class));
     }
+
+    // U zadnjem krugu nema idućega da provjeri prepravljenu stavku, pa se svaki pojam stvarno prepravlja.
+    @Test
+    void lastRoundRewritesEachConceptOfTheSameItem() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća tvari", 2);
+        b.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+        when(jdbc.queryForObject(contains("SELECT text FROM knowledge_item"), any(SqlParameterSource.class), eq(String.class)))
+                .thenReturn("Gustoća homogenog tijela.");
+        when(llm.chat(any(), anyString(), anyString(), anyString(), any()))
+                .thenReturn(new OwnCourseLlm.Result("{\"tekst\":\"Gustoća tijela.\"}", java.math.BigDecimal.ZERO, 0));
+
+        step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+
+        verify(llm, times(2)).chat(any(), anyString(), anyString(), anyString(), any());
+    }
+
+    // Isti pojam: jedno pokretanje kaže da ga uči kasnija lekcija (nepotvrđeno), drugo da ga uči ranija lekcija koja
+    // nije preduvjet. Preduvjet se doda bez obzira na to koje je pokretanje prvo upisano, i nema blagoga upozorenja.
+    @Test
+    void unconfirmedLaterFindingDoesNotHideTheOtherRunsEarlierLesson() throws Exception {
+        plan();
+        when(jdbc.queryForList(contains("lo.objective_name FROM course_objective"), any(SqlParameterSource.class))).thenReturn(List.of(
+                Map.of("objective_id", 10L, "objective_name", "Masa"), Map.of("objective_id", 20L, "objective_name", "Gustoća"),
+                Map.of("objective_id", 30L, "objective_name", "Tlak")));
+        doAnswer(inv -> null).when(jdbc).query(contains("FROM objective_prerequisite"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            row(inv.getArgument(2), 300L, 30L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> later = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "masa", "taught_by", "[\"300\"]", "run", 1));
+        Map<String, Object> earlier = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "masa", "taught_by", "[\"100\"]", "run", 2));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(later, earlier));
+
+        String result = step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+
+        assertTrue(result.startsWith("1 preduvjeta dodano"), result);
+        verify(jdbc, never()).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                String.valueOf(p.getValue("t")).contains("uči tek")));
+    }
 }
