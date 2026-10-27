@@ -24,7 +24,8 @@ class PlanCheckRepairRoundsTest {
     private final NamedParameterJdbcTemplate jdbc = mock(NamedParameterJdbcTemplate.class);
     private final PlanFlow flow = mock(PlanFlow.class);
     private final TransactionTemplate tx = mock(TransactionTemplate.class);
-    private final PlanCheckRepairStep step = new PlanCheckRepairStep(jdbc, mock(OwnCourseLlm.class), new PlanSupport(jdbc, "sol", "haiku"),
+    private final OwnCourseLlm llm = mock(OwnCourseLlm.class);
+    private final PlanCheckRepairStep step = new PlanCheckRepairStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"),
             tx, mock(OwnCourseMailer.class), flow);
 
     @SuppressWarnings("unchecked")
@@ -39,17 +40,27 @@ class PlanCheckRepairRoundsTest {
         doAnswer(inv -> { row(inv.getArgument(2), 100L, 10L); row(inv.getArgument(2), 200L, 20L); return null; })
                 .when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
         when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(
-                finding("homogeno tijelo/tvar"), finding("homogena tvar/tijelo")));
+                finding("homogeno tijelo/tvar"), finding("homogena tvar/tijelo", 2)));
     }
 
+    // nalaz prvog pokretanja nulte pretpostavke; drugo pokretanje isti pojam zna napisati drugim riječima
     private static Map<String, Object> finding(String concept) {
-        return new java.util.HashMap<>(Map.of("objective_id", 10L, "concept", concept, "taught_by", "[\"200\"]"));
+        return finding(concept, 1);
+    }
+
+    private static Map<String, Object> finding(String concept, int run) {
+        return new java.util.HashMap<>(Map.of("objective_id", 10L, "concept", concept, "taught_by", "[\"200\"]", "run", run));
     }
 
     private static void row(RowCallbackHandler h, long a, long b) throws Exception {
+        row(h, a, b, null);
+    }
+
+    private static void row(RowCallbackHandler h, long a, long b, String prerequisites) throws Exception {
         ResultSet rs = mock(ResultSet.class);
         when(rs.getLong(1)).thenReturn(a);
         when(rs.getLong(2)).thenReturn(b);
+        when(rs.getString(3)).thenReturn(prerequisites);
         h.processRow(rs);
     }
 
@@ -80,5 +91,219 @@ class PlanCheckRepairRoundsTest {
         verify(jdbc, times(1)).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
                 String.valueOf(p.getValue("t")).contains("pojam „homogeno tijelo/tvar“, koji se uči tek u lekciji „Srednja gustoća“")));
         verify(jdbc).update(contains("UPDATE course SET status"), any(SqlParameterSource.class));
+    }
+
+    // Model je rekao koja stavka (100) koristi pojam: ona seli u „Srednju gustoću“, gdje se pojam uči, i ostaje cijela.
+    @Test
+    void itemThatNeedsALaterConceptMovesToTheLessonThatTeachesIt() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("1 stavki premješteno"), result);
+        verify(jdbc).update(contains("UPDATE knowledge_item SET objective_id"), argThat((SqlParameterSource p) ->
+                Long.valueOf(100L).equals(p.getValue("i")) && Long.valueOf(20L).equals(p.getValue("t"))));
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET text"), any(SqlParameterSource.class));
+        verify(flow).repairRound(5L, 7L, 1, List.of(10L, 20L));
+    }
+
+    // Model je istoj stavci prijavio dva pojma iz „Srednje gustoće“: seli jednom i ne prepravlja se zbog drugog pojma.
+    @Test
+    void itemWithTwoLaterConceptsMovesOnceAndIsNotRewritten() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća", 2);
+        b.put("item_id", 100L);
+        b.put("finding_id", 2L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("1 stavki premješteno, 0 stavki prepravljeno"), result);
+        verify(jdbc, times(1)).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("WHERE finding_id = :f"), argThat((SqlParameterSource p) -> Long.valueOf(2L).equals(p.getValue("f"))));
+    }
+
+    // Lekcija s dvije stavke ne daje nijednu: ostala bi gotovo prazna, pa se stavka prepravlja kao i prije.
+    @Test
+    void lessonWithTooFewItemsKeepsItsItem() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
+
+        step.run(job(null));
+
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
+
+    // Lekcija s manje od MIN_ITEMS stavki (npr. nakon premještanja) dobiva upozorenje, da je kreator spoji sa susjednom.
+    @Test
+    void tooSmallLessonIsWarnedAboutAfterTheLastRound() throws Exception {
+        plan();
+        step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+        verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                "velicina".equals(p.getValue("k")) && String.valueOf(p.getValue("t")).equals(
+                        "„Gustoća“ ima samo 1 stavku znanja; lekcija bi trebala imati barem " + PlanRepair.MIN_ITEMS + ".")));
+    }
+
+    // Na stavci 100 gradi stavka 101 (preduvjet): premještanjem bi je odvukla za sobom, pa se 100 prepravlja.
+    @Test
+    void itemOtherItemsBuildOnIsRewrittenNotMoved() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2)));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("0 stavki premješteno"), result);
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
+
+    // Lekcija „Srednja gustoća“ (20) koristi pojam iz stavke 100 lekcije „Gustoća“ (10): i ona je zato „na kojoj se
+    // gradi“, pa ne seli ni kad sama koristi pojam iz kasnije lekcije.
+    @Test
+    void itemAnotherLessonUsesIsNotMoved() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        Map<String, Object> other = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "gustoća", "taught_by", "[\"100\"]"));
+        other.put("finding_id", 2L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f, finding("homogeno tijelo", 2), other));
+
+        step.run(job(null));
+
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
+
+    // Pojam iz kasnije lekcije našlo je samo jedno pokretanje: plan se ne mijenja (ni preduvjet, ni premještanje,
+    // ni prepravak), kreator dobije blago upozorenje.
+    @Test
+    void laterConceptFoundByOneRunOnlyBecomesAMildWarning() throws Exception {
+        plan();
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+
+        step.run(job(null));
+
+        verify(flow, never()).repairRound(anyLong(), anyLong(), anyInt(), any());
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item"), any(SqlParameterSource.class));
+        verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                "nulta".equals(p.getValue("k")) && Boolean.FALSE.equals(p.getValue("s"))
+                        && String.valueOf(p.getValue("t")).contains("koji se uči tek u lekciji „Srednja gustoća“")));
+    }
+
+    // Dva pokretanja isti pojam nazovu drukčije („homogeno tijelo“, „homogena tvar“): stavka na kojoj se gradi
+    // prepravlja se jednom, ne dvaput.
+    @Test
+    void itemIsRewrittenOncePerRoundEvenWhenTheConceptIsNamedTwice() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća tvari", 2);
+        b.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+        when(jdbc.queryForObject(contains("SELECT text FROM knowledge_item"), any(SqlParameterSource.class), eq(String.class)))
+                .thenReturn("Gustoća homogenog tijela.");
+        when(llm.chat(any(), anyString(), anyString(), anyString(), any()))
+                .thenReturn(new OwnCourseLlm.Result("{\"tekst\":\"Gustoća tijela.\"}", java.math.BigDecimal.ZERO, 0));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("2 stavki prepravljeno"), result);
+        verify(llm, times(1)).chat(any(), anyString(), anyString(), anyString(), any());
+        verify(jdbc, times(1)).update(contains("UPDATE knowledge_item SET text"), any(SqlParameterSource.class));
+    }
+
+    // U zadnjem krugu nema idućega da provjeri prepravljenu stavku, pa se svaki pojam stvarno prepravlja.
+    @Test
+    void lastRoundRewritesEachConceptOfTheSameItem() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća tvari", 2);
+        b.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+        when(jdbc.queryForObject(contains("SELECT text FROM knowledge_item"), any(SqlParameterSource.class), eq(String.class)))
+                .thenReturn("Gustoća homogenog tijela.");
+        when(llm.chat(any(), anyString(), anyString(), anyString(), any()))
+                .thenReturn(new OwnCourseLlm.Result("{\"tekst\":\"Gustoća tijela.\"}", java.math.BigDecimal.ZERO, 0));
+
+        step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+
+        verify(llm, times(2)).chat(any(), anyString(), anyString(), anyString(), any());
+    }
+
+    // Isti pojam: jedno pokretanje kaže da ga uči kasnija lekcija (nepotvrđeno), drugo da ga uči ranija lekcija koja
+    // nije preduvjet. Preduvjet se doda bez obzira na to koje je pokretanje prvo upisano, i nema blagoga upozorenja.
+    @Test
+    void unconfirmedLaterFindingDoesNotHideTheOtherRunsEarlierLesson() throws Exception {
+        plan();
+        when(jdbc.queryForList(contains("lo.objective_name FROM course_objective"), any(SqlParameterSource.class))).thenReturn(List.of(
+                Map.of("objective_id", 10L, "objective_name", "Masa"), Map.of("objective_id", 20L, "objective_name", "Gustoća"),
+                Map.of("objective_id", 30L, "objective_name", "Tlak")));
+        doAnswer(inv -> null).when(jdbc).query(contains("FROM objective_prerequisite"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            row(inv.getArgument(2), 300L, 30L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> later = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "masa", "taught_by", "[\"300\"]", "run", 1));
+        Map<String, Object> earlier = new java.util.HashMap<>(Map.of("objective_id", 20L, "concept", "masa", "taught_by", "[\"100\"]", "run", 2));
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(later, earlier));
+
+        String result = step.run(job("{\"repair\":" + PlanCheckRepairStep.REPAIR_ROUNDS + "}"));
+
+        assertTrue(result.startsWith("1 preduvjeta dodano"), result);
+        verify(jdbc, never()).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
+                String.valueOf(p.getValue("t")).contains("uči tek")));
     }
 }

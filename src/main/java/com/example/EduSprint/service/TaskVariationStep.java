@@ -93,7 +93,7 @@ public class TaskVariationStep implements BuildStep {
             v = in.has("draft") && job.attempts() <= 1
                     ? in.get("draft")
                     : plan.json(llm.chat(job, writerModel, prompt.system(job.courseId()), prompt.user(job.courseId(), objectiveId), options()).content());
-            problems = checks.problems(v);
+            problems = checks.problems(v, plan.catalogueOnExam(job.courseId()));
         } else {
             List<java.util.Map<String, Object>> existing = jdbc.queryForList("""
                     SELECT variation, task_text, explanation, results, sketch FROM task WHERE objective_id = :o AND variation IS NOT NULL
@@ -111,7 +111,7 @@ public class TaskVariationStep implements BuildStep {
             List<String> previous = existing.stream().skip(1).map(t -> (String) t.get("task_text")).toList();
             v = plan.json(llm.chat(job, plan.cheapModel, prompt.templateSystem(job.courseId()), prompt.templateUser(template, previous),
                     OwnCourseLlm.Options.of("xhigh", 32000)).content());
-            problems = new java.util.ArrayList<>(checks.problems(v));
+            problems = new java.util.ArrayList<>(checks.problems(v, plan.catalogueOnExam(job.courseId())));
             double ratio = (double) v.path("objasnjenje").asText("").length() / Math.max(1, ((String) first.get("explanation")).length());
             if (ratio < MIN_TEMPLATE_LENGTH) problems.add("Objašnjenje je kraće od predloška (" + Math.round(ratio * 100) + " %).");
         }

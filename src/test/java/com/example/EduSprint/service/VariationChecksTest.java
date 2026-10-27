@@ -67,4 +67,45 @@ class VariationChecksTest {
         w.put("zadatak", w.get("zadatak").asText() + "\n\n| V (cm³) | m (g) |\n|---|---|\n| 10 | 30 |\n| 20 | 60 |\n| 30 | 90 |");
         assertTrue(checks.problems(w).stream().noneMatch(p -> p.contains("Crtež znakovima")), checks.problems(w).toString());
     }
+
+    @Test
+    void latexCommandsStartingWithNInFormulasAreNotLiteralNewlines() throws Exception {
+        ObjectNode v = recorded();
+        v.put("zadatak", v.get("zadatak").asText() + " Koeficijent \\(\\nu(\\mathrm{O_2}) = 2\\), a \\(x \\neq 0\\).");
+        assertTrue(checks.problems(v).stream().noneMatch(p -> p.contains("Doslovni")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + "\\nRješenje je \\(\\nu = 2\\).");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("Doslovni")), checks.problems(w).toString());
+        ObjectNode x = recorded();
+        x.put("zadatak", x.get("zadatak").asText() + " \\(a = 2\\n\\)");
+        assertTrue(checks.problems(x).stream().anyMatch(p -> p.contains("Doslovni")), checks.problems(x).toString());
+        // prijelom retka \\ u aligned ispred varijable n
+        ObjectNode y = recorded();
+        y.put("objasnjenje", "$$\\begin{aligned} m &= 10 \\\\n &= 0{,}5\\end{aligned}$$\n\n" + y.get("objasnjenje").asText());
+        assertTrue(checks.problems(y).stream().noneMatch(p -> p.contains("Doslovni")), checks.problems(y).toString());
+    }
+
+    @Test
+    void foreignWordsAreWholeWordsOnly() throws Exception {
+        ObjectNode v = recorded();
+        v.put("zadatak", v.get("zadatak").asText() + " Učenik želi znati koliko se veli da treba.");
+        assertTrue(checks.problems(v).stream().noneMatch(p -> p.contains("Strani")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + " Brzina, eli 5 m/s.");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("Strani")));
+    }
+
+    @Test
+    void citingTheExamCatalogueIsCaught() throws Exception {
+        ObjectNode v = recorded();
+        v.put("objasnjenje", v.get("objasnjenje").asText().replaceFirst("\n", "\nKako piše u Ispitnom katalogu (str. 12), ovo treba znati.\n"));
+        assertTrue(checks.problems(v).stream().anyMatch(p -> p.contains("katalog")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + " Prema kurikulumu i ispitnim katalozima …");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("katalog")));
+        assertTrue(checks.problems(w, true).stream().noneMatch(p -> p.contains("katalog")), "katalog dostupan na ispitu smije se navesti");
+        ObjectNode x = recorded();
+        x.put("zadatak", x.get("zadatak").asText() + " Katalizator ubrzava reakciju.");
+        assertTrue(checks.problems(x).stream().noneMatch(p -> p.contains("katalog")));
+    }
 }

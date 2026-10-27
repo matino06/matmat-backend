@@ -28,15 +28,26 @@ public class PlanPointsStep implements BuildStep {
             pomak vektor od početnog do konačnog položaja; put je jednak iznosu pomaka samo ako tijelo ne mijenja smjer“.
             Ne rastavljaj definiciju, jedinicu, formulu i zamku iste veličine na zasebne stavke. Jedan ishod obično ima 10–25 stavki.
             Stavka NIJE: isti zakon u drugom kontekstu, obrat iste formule, isti zadatak s drugim brojevima.
+            Riješeni primjer ili zadatak iz materijala nije stavka: iz njega uzmi pravilo ili postupak koji pokazuje
+            (npr. „prije računanja sve veličine svedi na istu jedinicu“), a sama situacija (svjetlosna godina, zrnca pijeska,
+            slavina koja kaplje) ostaje primjer i ne ulazi u stavku kao zaseban sadržaj.
+            Sadržaj koji materijal sam označi kao dodatni (proširenje, zanimljivost, povijesna crtica, „za one koji žele znati
+            više“) nije stavka, osim ako ga traže pitanja ili zadatci u materijalu. Popis ključnih pojmova ili sažetak nije
+            zasebna stavka: njegovi pojmovi već su u stavkama. Kod pokusa ili mjerenja stavka je ono što pokus pokazuje
+            (pojava, reakcija, zaključak), a ne opis kako se izvodi.
             Predznanje (nije stavka): %s. Sve iz samog predmeta je stavka.
             Konstante i tablične vrijednosti iz materijala dostupnog na ispitu NISU stavke (učenik ih tamo pronađe),
             ali značenje veličine i kada se formula koristi jesu.
             Uzmi samo stavke koje pripadaju OVOM ishodu (ostali imaju svoje pozive). Uključi sve što traži razrada
             i sve što zadaci s ispita iz ovog područja zahtijevaju. Poredaj ih redom učenja.
-            Kad je uz ishod priloženo GRADIVO IZ MATERIJALA, stavke izvlači samo iz njega: ništa ne dodaji iz svojeg
-            znanja (pojam, formulu, primjer, popis, iznimku), čak ni kad bi to bilo korisno. Što gradivo samo spominje,
-            stavka samo spominje: ako piše „SI ima sedam osnovnih jedinica“, ne nabrajaj ih. Cilj je da učenik nauči
-            točno ono što je u materijalu, jer to dolazi na test, i ništa više.
+            Kad je uz ishod priloženo GRADIVO IZ MATERIJALA (skripta, udžbenik, bilješke), stavke izvlači samo iz njega:
+            ništa ne dodaji iz svojeg znanja (pojam, formulu, primjer, popis, iznimku), čak ni kad bi to bilo korisno. Što
+            gradivo samo spominje, stavka samo spominje: ako piše „SI ima sedam osnovnih jedinica“, ne nabrajaj ih. Cilj je
+            da učenik nauči točno ono što je u materijalu, jer to dolazi na test, i ništa više.
+            Ispitni katalog ili kurikulum nije takvo gradivo: navodi samo što učenik mora umjeti („izračunati pH otopine“),
+            a ne i formule i definicije s kojima to radi. Kad je to jedino gradivo ishoda, svaku vještinu iz razrade pretvori
+            u stavke sa svime što učenik za nju treba (formula s jedinicama, definicija, postupak, tipična zamka), na razini
+            na kojoj se uči u školi i kakvu traže zadaci s ispita; teme izvan razrade ne dodaji.
             Vrati JSON {"stavke":[{"tekst":"…","vrsta":"formula|definicija|pojava|postupak|zamka"}]}.""";
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -79,7 +90,11 @@ public class PlanPointsStep implements BuildStep {
         String pagesJson = (String) outcome.remove("page_ids");
         String user = "OVAJ ISHOD:\n" + plan.toJson(outcome);
         List<String> pages = plan.outcomePages(job.courseId(), Collections.singletonList(pagesJson));
-        if (!pages.isEmpty()) user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA:\n" + String.join("\n\n", pages);
+        if (!pages.isEmpty()) {
+            boolean curriculum = plan.onlyCurriculum(job.courseId(), Collections.singletonList(pagesJson));
+            user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA" + (curriculum ? " (samo ispitni katalog ili kurikulum)" : "") + ":\n"
+                    + String.join("\n\n", pages);
+        }
 
         JsonNode out = plan.json(llm.chat(job, plan.planModel, system, user, OwnCourseLlm.Options.of("medium", 12000)).content());
         jdbc.update("DELETE FROM knowledge_item WHERE outcome_id = :o", new MapSqlParameterSource("o", outcomeId));
@@ -93,7 +108,12 @@ public class PlanPointsStep implements BuildStep {
                     new MapSqlParameterSource(Map.of("c", job.courseId(), "o", outcomeId, "p", ++position, "t", text))
                             .addValue("k", KINDS.contains(kind) ? kind : null));
         }
-        if (position == 0) throw new IllegalStateException("Model nije vratio nijednu stavku.");
+        if (position == 0) {
+            // prazan popis je valjan odgovor kad je ishod sav dodatni sadržaj (povijesna crtica, popis pojmova);
+            // bez popisa model nije odgovorio kako treba
+            if (!out.path("stavke").isArray()) throw new IllegalStateException("Model nije vratio nijednu stavku.");
+            return "0 stavki (ishod bez gradiva za učenje)";
+        }
         return position + " stavki";
     }
 

@@ -65,15 +65,44 @@ public class PlanSupport {
     }
 
     // Stranice materijala na kojima se obrađuju ishodi (plan_outcome.page_ids, JSON popisi page_id), redom materijala.
+    // Stranica kataloga ili kurikuluma koji nije dostupan na ispitu to piše u zaglavlju: navodi što učenik mora umjeti,
+    // a učenik je nema.
     List<String> outcomePages(long courseId, Collection<String> pageIdsJson) {
-        List<Long> ids = new ArrayList<>();
-        for (String json : pageIdsJson) readJson(json).forEach(n -> ids.add(n.asLong()));
+        List<Long> ids = pageIds(pageIdsJson);
         if (ids.isEmpty()) return List.of();
         return jdbc.queryForList("""
-                SELECT '### ' || m.original_name || ', str. ' || p.page_no || E'\\n' || p.markdown
+                SELECT '### ' || m.original_name || ', str. ' || p.page_no
+                    || CASE WHEN p.kind = 'kurikulum' AND NOT m.available_on_exam THEN ' (ispitni katalog ili kurikulum, učenik ga nema)' ELSE '' END
+                    || E'\\n' || p.markdown
                 FROM material_page p JOIN course_material m ON m.material_id = p.material_id
                 WHERE p.page_id IN (:p) AND m.course_id = :c AND p.markdown IS NOT NULL ORDER BY m.material_id, p.page_no""",
                 new MapSqlParameterSource("p", ids).addValue("c", courseId), String.class);
+    }
+
+    // Je li gradivo ishoda samo katalog ili kurikulum: popis vještina („izračunati pH“) bez samog gradiva.
+    boolean onlyCurriculum(long courseId, Collection<String> pageIdsJson) {
+        List<Long> ids = pageIds(pageIdsJson);
+        if (ids.isEmpty()) return false;
+        List<String> kinds = jdbc.queryForList("""
+                SELECT DISTINCT COALESCE(p.kind, 'ostalo') FROM material_page p JOIN course_material m ON m.material_id = p.material_id
+                WHERE p.page_id IN (:p) AND m.course_id = :c AND p.markdown IS NOT NULL""",
+                new MapSqlParameterSource("p", ids).addValue("c", courseId), String.class);
+        return kinds.equals(List.of("kurikulum"));
+    }
+
+    // Učenik na ispitu ima katalog ili kurikulum (npr. katalog s popisom formula), pa ga zadatak smije navesti.
+    boolean catalogueOnExam(long courseId) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS (SELECT 1 FROM course_material m WHERE m.course_id = :c AND m.available_on_exam
+                    AND (m.original_name ILIKE '%katalog%' OR m.original_name ILIKE '%kurikul%'
+                         OR EXISTS (SELECT 1 FROM material_page p WHERE p.material_id = m.material_id AND p.kind = 'kurikulum')))""",
+                new MapSqlParameterSource("c", courseId), Boolean.class));
+    }
+
+    private List<Long> pageIds(Collection<String> pageIdsJson) {
+        List<Long> ids = new ArrayList<>();
+        for (String json : pageIdsJson) readJson(json).forEach(n -> ids.add(n.asLong()));
+        return ids;
     }
 
     // Stranice materijala koje učenik smije koristiti na ispitu (npr. knjižica formula), po stranicama.

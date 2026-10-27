@@ -92,14 +92,11 @@ public class PlanFlow {
         else add(job, PlanCheckRepairStep.KIND, "provjera " + round, "{\"recheck\":true" + (fix == null ? "" : ",\"fix\":[" + fix + "]") + "}");
     }
 
-    // Ponovna provjera nakon izmjena kreatora (runda > 0): nulta pretpostavka jednom, samo za zadane lekcije,
+    // Ponovna provjera nakon izmjena kreatora (runda > 0): nulta pretpostavka samo za zadane lekcije,
     // i pokrivenost svih zadataka s ispita. Popravak tada samo javlja upozorenja, ništa ne mijenja sam.
     void recheck(long courseId, long accountId, long round, java.util.Collection<Long> objectives) {
         MapSqlParameterSource c = new MapSqlParameterSource("c", courseId);
-        for (Long o : objectives) {
-            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " r" + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
-                    "{\"objectiveId\":" + o + ",\"run\":1,\"round\":" + round + "}");
-        }
+        for (Long o : objectives) zeroRuns(courseId, accountId, o, "r" + round, ",\"round\":" + round);
         List<Long> tasks = jdbc.queryForList("SELECT exam_task_id FROM exam_task WHERE course_id = :c ORDER BY exam_task_id", c, Long.class);
         for (int i = 0; i < tasks.size(); i += COVERAGE_BATCH) {
             queue.enqueue(courseId, accountId, PlanCoverageStep.KIND, "pokrivenost " + (i / COVERAGE_BATCH + 1) + " r" + round,
@@ -121,10 +118,7 @@ public class PlanFlow {
                     "{\"recheck\":true,\"fix\":[" + ids + "]}");
             return;
         }
-        for (Long o : lessons) {
-            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " r" + round, BuildJobQueue.PRIORITY_WAITED_ON, true,
-                    "{\"objectiveId\":" + o + ",\"run\":1,\"round\":" + round + ",\"fix\":[" + ids + "]}");
-        }
+        for (Long o : lessons) zeroRuns(courseId, accountId, o, "r" + round, ",\"round\":" + round + ",\"fix\":[" + ids + "]");
     }
 
     static String fixLessons(BuildJob job) {
@@ -135,11 +129,22 @@ public class PlanFlow {
     }
 
     // Krug popravka pri izradi plana: lekcije s neriješenim crvenim nalazom ponovno prolaze nultu pretpostavku
-    // (jednom, stari nalazi se brišu), pa popravak ide ponovno, i dalje sa samostalnim popravljanjem.
+    // (stari nalazi se brišu), pa popravak ide ponovno, i dalje sa samostalnim popravljanjem.
     void repairRound(long courseId, long accountId, int repair, java.util.Collection<Long> objectives) {
-        for (Long o : objectives) {
-            queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + o + " popravak " + repair, BuildJobQueue.PRIORITY_WAITED_ON, true,
-                    "{\"objectiveId\":" + o + ",\"run\":1,\"repair\":" + repair + "}");
+        for (Long o : objectives) zeroRuns(courseId, accountId, o, "popravak " + repair, ",\"repair\":" + repair);
+    }
+
+    // Ponovna nulta pretpostavka promijenjene lekcije, dvaput kao pri izradi: popravak mijenja plan zbog pojma iz
+    // kasnije lekcije samo kad ga nađu oba pokretanja. Stari nalazi lekcije brišu se ovdje, prije pokretanja, da
+    // drugo pokretanje ne obriše nalaze prvoga.
+    // Ako je provjera već zakazana (ponovljeni posao popravka), ništa se ne briše: nalazi su možda već od nje.
+    private void zeroRuns(long courseId, long accountId, long objectiveId, String ref, String input) {
+        for (int run = 1; run <= ZERO_RUNS; run++) {
+            Long id = queue.enqueue(courseId, accountId, PlanZeroStep.KIND, "nulta " + objectiveId + " " + ref + " " + run,
+                    BuildJobQueue.PRIORITY_WAITED_ON, true, "{\"objectiveId\":" + objectiveId + ",\"run\":" + run + input + "}");
+            if (id == null) return;
+            // posao tek čeka u redu, pa ne može već imati nalaz: brisanje odmah nakon dodavanja prvoga je sigurno
+            if (run == 1) jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o", new MapSqlParameterSource("o", objectiveId));
         }
     }
 

@@ -82,12 +82,9 @@ public class PlanZeroStep implements BuildStep {
         String user = "LEKCIJA: " + name + "\nSTAVKE LEKCIJE:\n" + String.join("\n", own);
 
         JsonNode out = plan.json(llm.chat(job, plan.cheapModel, system, user, OwnCourseLlm.Options.of("low", 4000)).content());
-        MapSqlParameterSource key = new MapSqlParameterSource("o", objectiveId).addValue("r", run);
-        if (in.path("round").asLong(0) > 0 || in.path("repair").asInt(0) > 0) {
-            jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o", key); // lekcija se promijenila: stari nalazi ne vrijede
-        } else {
-            jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND run = :r", key);
-        }
+        // stare nalaze promijenjene lekcije briše PlanFlow kad zakaže ponovnu provjeru; ovdje se zamjenjuje samo ovo pokretanje
+        jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND run = :r",
+                new MapSqlParameterSource("o", objectiveId).addValue("r", run));
         int n = 0;
         for (JsonNode f : out.path("koristi")) {
             String concept = f.path("pojam").asText("").strip();
