@@ -108,7 +108,12 @@ public class PlanPointsStep implements BuildStep {
                     new MapSqlParameterSource(Map.of("c", job.courseId(), "o", outcomeId, "p", ++position, "t", text))
                             .addValue("k", KINDS.contains(kind) ? kind : null));
         }
-        if (position == 0) throw new IllegalStateException("Model nije vratio nijednu stavku.");
+        if (position == 0) {
+            // prazan popis je valjan odgovor kad je ishod sav dodatni sadržaj (povijesna crtica, popis pojmova);
+            // bez popisa model nije odgovorio kako treba
+            if (!out.path("stavke").isArray()) throw new IllegalStateException("Model nije vratio nijednu stavku.");
+            return "0 stavki (ishod bez gradiva za učenje)";
+        }
         return position + " stavki";
     }
 

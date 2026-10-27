@@ -84,8 +84,12 @@ public class PlanFinalizeStep implements BuildStep {
             return result.lessons().size() + " lekcija: previše";
         }
 
-        Map<Long, String> areaOf = areas(job, course, outcomes);
-        transactions.executeWithoutResult(tx -> write(course, outcomes, areaOf, result));
+        // cjelina bez ijedne lekcije (ishod sav dodatni sadržaj ili samo duplikati) ne ulazi u plan
+        Set<Long> withLessons = new HashSet<>();
+        result.lessons().forEach(l -> withLessons.add(l.outcomeId()));
+        List<Map<String, Object>> used = outcomes.stream().filter(o -> withLessons.contains(num(o.get("outcome_id")))).toList();
+        Map<Long, String> areaOf = areas(job, course, used);
+        transactions.executeWithoutResult(tx -> write(course, used, areaOf, result));
         return result.lessons().size() + " lekcija";
     }
 
