@@ -197,6 +197,7 @@ public class PlanCheckRepairStep implements BuildStep {
         Set<String> seenFindings = new HashSet<>();
         int added = 0, moved = 0, rewritten = 0;
         Set<Long> movedItems = new HashSet<>();
+        Set<Long> rewrittenItems = new HashSet<>(); // prepravljene u ovom krugu: drugi naziv istog pojma ne prepravlja ponovno
         for (Map<String, Object> f : zeroFindings) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
             String concept = (String) f.get("concept");
@@ -238,8 +239,8 @@ public class PlanCheckRepairStep implements BuildStep {
                                 new MapSqlParameterSource("o", ids.get(lesson)).addValue("k", concept));
                         toVerify.add(lesson);
                         toVerify.add(j.teacher());
-                    } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)
-                            : rewriteMentions(job, course, ids.get(lesson), concept)) {
+                    } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept, rewrittenItems)
+                            : rewriteMentions(job, course, ids.get(lesson), concept, rewrittenItems)) {
                         rewritten++;
                         // nalaz je riješen: da ga kasnija provjera ne prijavi ponovno, briše se; lekcija se još jednom provjerava
                         jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
@@ -422,7 +423,8 @@ public class PlanCheckRepairStep implements BuildStep {
     }
 
     // Model nije rekao koja stavka koristi pojam: prepravljaju se stavke lekcije u kojima se pojam spominje (najviše dvije).
-    private boolean rewriteMentions(BuildJob job, PlanSupport.CourseInfo course, long objectiveId, String concept) {
+    private boolean rewriteMentions(BuildJob job, PlanSupport.CourseInfo course, long objectiveId, String concept,
+                                    Set<Long> rewrittenItems) {
         List<String> stems = Arrays.stream(conceptKey(concept).split(" ")).filter(w -> w.length() >= 4).toList();
         if (stems.isEmpty()) return false;
         int done = 0;
@@ -430,14 +432,17 @@ public class PlanCheckRepairStep implements BuildStep {
                 "SELECT item_id, text FROM knowledge_item WHERE objective_id = :o AND duplicate_of IS NULL ORDER BY position",
                 new MapSqlParameterSource("o", objectiveId))) {
             String text = String.valueOf(item.get("text")).toLowerCase(Locale.ROOT);
-            if (done < 2 && stems.stream().anyMatch(text::contains) && rewrite(job, course, ((Number) item.get("item_id")).longValue(), concept)) {
+            if (done < 2 && stems.stream().anyMatch(text::contains) && rewrite(job, course, ((Number) item.get("item_id")).longValue(), concept, rewrittenItems)) {
                 done++;
             }
         }
         return done > 0;
     }
 
-    private boolean rewrite(BuildJob job, PlanSupport.CourseInfo course, long itemId, String concept) {
+    // Stavka prepravljena u ovom krugu (drugi naziv istog pojma iz drugog pokretanja, ili drugi pojam) ne prepravlja se
+    // ponovno: lekcija ide u idući krug, koji provjeri prepravljenu stavku.
+    private boolean rewrite(BuildJob job, PlanSupport.CourseInfo course, long itemId, String concept, Set<Long> rewrittenItems) {
+        if (rewrittenItems.contains(itemId)) return true;
         try {
             String text = jdbc.queryForObject("SELECT text FROM knowledge_item WHERE item_id = :i",
                     new MapSqlParameterSource("i", itemId), String.class);
@@ -446,6 +451,7 @@ public class PlanCheckRepairStep implements BuildStep {
             if (fixed.isEmpty() || fixed.equals(text)) return false;
             jdbc.update("UPDATE knowledge_item SET text = :t WHERE item_id = :i",
                     new MapSqlParameterSource("i", itemId).addValue("t", fixed));
+            rewrittenItems.add(itemId);
             return true;
         } catch (OwnCourseLlm.GlobalLimitException e) {
             throw e;

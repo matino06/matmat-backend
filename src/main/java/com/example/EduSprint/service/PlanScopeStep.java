@@ -19,7 +19,10 @@ public class PlanScopeStep implements BuildStep {
     static final String SYSTEM = """
             Iz materijala za %s izvuci sve ISHODE (teme koje učenik mora savladati) s razradom.
             - Ako materijal ima ispitni katalog ili kurikulum, ishodi su njegovi ishodi, a razrada doslovno ono što piše uz njih.
-            - Ako ga nema, ishodi su glavne teme skripte (otprilike jedna po poglavlju), a razrada su njihove podteme.
+            - Ishod kataloga ili kurikuluma koji obuhvaća više zasebnih tema podijeli na više ishoda, po jedan za svaku temu
+              svoje razrade, s istom oznakom: ishod mora biti tema koja se uči kao cjelina, a ne cijelo područje predmeta.
+            - Ako ga nema, ishodi su glavne teme skripte, udžbenika ili bilježnice (otprilike jedna po poglavlju ili cjelini),
+              a razrada su njihove podteme.
             - Ne izmišljaj ništa čega u materijalu nema. Poredaj ishode redom kojim se uče.
             - Uz svaki ishod navedi stranice materijala na kojima se obrađuje (broj iz zaglavlja „[stranica N]“).
             Vrati JSON {"ishodi":[{"oznaka":"oznaka iz kataloga ili prazno","naslov":"…","razrada":["…"],"stranice":[N]}]}.""";

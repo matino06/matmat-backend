@@ -29,7 +29,7 @@ public class ReadPageStep implements BuildStep {
             - Ako je dan tekstni sloj PDF-a, koristi ga za točne hrvatske znakove i riječi, a sliku za formule, tablice i raspored.
             Odredi i vrstu stranice:
             kurikulum (katalog, kurikulum, popis ishoda ili gradiva), ispit (zadaci ispita, testa ili provjere znanja),
-            rjesenja (ključ ili rješenja), skripta (objašnjenje gradiva, primjeri i zadatci za vježbu iz udžbenika ili skripte),
+            rjesenja (ključ ili rješenja), skripta (objašnjenje gradiva, bilješke ili bilježnica, primjeri i zadatci za vježbu iz udžbenika ili skripte),
             ostalo (naslovnica, upute, prazna stranica).
             Vrati JSON {"markdown":"…","vrsta":"kurikulum|ispit|rjesenja|skripta|ostalo"}.""";
 

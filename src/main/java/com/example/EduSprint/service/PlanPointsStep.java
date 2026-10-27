@@ -31,6 +31,10 @@ public class PlanPointsStep implements BuildStep {
             Riješeni primjer ili zadatak iz materijala nije stavka: iz njega uzmi pravilo ili postupak koji pokazuje
             (npr. „prije računanja sve veličine svedi na istu jedinicu“), a sama situacija (svjetlosna godina, zrnca pijeska,
             slavina koja kaplje) ostaje primjer i ne ulazi u stavku kao zaseban sadržaj.
+            Sadržaj koji materijal sam označi kao dodatni (proširenje, zanimljivost, povijesna crtica, „za one koji žele znati
+            više“) nije stavka, osim ako ga traže pitanja ili zadatci u materijalu. Popis ključnih pojmova ili sažetak nije
+            zasebna stavka: njegovi pojmovi već su u stavkama. Kod pokusa ili mjerenja stavka je ono što pokus pokazuje
+            (pojava, reakcija, zaključak), a ne opis kako se izvodi.
             Predznanje (nije stavka): %s. Sve iz samog predmeta je stavka.
             Konstante i tablične vrijednosti iz materijala dostupnog na ispitu NISU stavke (učenik ih tamo pronađe),
             ali značenje veličine i kada se formula koristi jesu.

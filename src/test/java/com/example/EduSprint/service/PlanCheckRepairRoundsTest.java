@@ -24,7 +24,8 @@ class PlanCheckRepairRoundsTest {
     private final NamedParameterJdbcTemplate jdbc = mock(NamedParameterJdbcTemplate.class);
     private final PlanFlow flow = mock(PlanFlow.class);
     private final TransactionTemplate tx = mock(TransactionTemplate.class);
-    private final PlanCheckRepairStep step = new PlanCheckRepairStep(jdbc, mock(OwnCourseLlm.class), new PlanSupport(jdbc, "sol", "haiku"),
+    private final OwnCourseLlm llm = mock(OwnCourseLlm.class);
+    private final PlanCheckRepairStep step = new PlanCheckRepairStep(jdbc, llm, new PlanSupport(jdbc, "sol", "haiku"),
             tx, mock(OwnCourseMailer.class), flow);
 
     @SuppressWarnings("unchecked")
@@ -223,5 +224,34 @@ class PlanCheckRepairRoundsTest {
         verify(jdbc).update(contains("INSERT INTO plan_warning"), argThat((SqlParameterSource p) ->
                 "nulta".equals(p.getValue("k")) && Boolean.FALSE.equals(p.getValue("s"))
                         && String.valueOf(p.getValue("t")).contains("koji se uči tek u lekciji „Srednja gustoća“")));
+    }
+
+    // Dva pokretanja isti pojam nazovu drukčije („homogeno tijelo“, „homogena tvar“): stavka na kojoj se gradi
+    // prepravlja se jednom, ne dvaput.
+    @Test
+    void itemIsRewrittenOncePerRoundEvenWhenTheConceptIsNamedTwice() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            row(inv.getArgument(2), 100L, 10L);
+            row(inv.getArgument(2), 101L, 10L, "[100]");
+            row(inv.getArgument(2), 102L, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> a = finding("homogeno tijelo");
+        a.put("item_id", 100L);
+        Map<String, Object> b = finding("srednja gustoća tvari", 2);
+        b.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(a, b));
+        when(jdbc.queryForObject(contains("SELECT text FROM knowledge_item"), any(SqlParameterSource.class), eq(String.class)))
+                .thenReturn("Gustoća homogenog tijela.");
+        when(llm.chat(any(), anyString(), anyString(), anyString(), any()))
+                .thenReturn(new OwnCourseLlm.Result("{\"tekst\":\"Gustoća tijela.\"}", java.math.BigDecimal.ZERO, 0));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("2 stavki prepravljeno"), result);
+        verify(llm, times(1)).chat(any(), anyString(), anyString(), anyString(), any());
+        verify(jdbc, times(1)).update(contains("UPDATE knowledge_item SET text"), any(SqlParameterSource.class));
     }
 }
