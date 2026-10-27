@@ -81,4 +81,44 @@ class PlanCheckRepairRoundsTest {
                 String.valueOf(p.getValue("t")).contains("pojam „homogeno tijelo/tvar“, koji se uči tek u lekciji „Srednja gustoća“")));
         verify(jdbc).update(contains("UPDATE course SET status"), any(SqlParameterSource.class));
     }
+
+    // Model je rekao koja stavka (100) koristi pojam: ona seli u „Srednju gustoću“, gdje se pojam uči, i ostaje cijela.
+    @Test
+    void itemThatNeedsALaterConceptMovesToTheLessonThatTeachesIt() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L, 102L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+
+        String result = step.run(job(null));
+
+        assertTrue(result.contains("1 stavki premješteno"), result);
+        verify(jdbc).update(contains("UPDATE knowledge_item SET objective_id"), argThat((SqlParameterSource p) ->
+                Long.valueOf(100L).equals(p.getValue("i")) && Long.valueOf(20L).equals(p.getValue("t"))));
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET text"), any(SqlParameterSource.class));
+        verify(flow).repairRound(5L, 7L, 1, List.of(10L, 20L));
+    }
+
+    // Lekcija s dvije stavke ne daje nijednu: ostala bi gotovo prazna, pa se stavka prepravlja kao i prije.
+    @Test
+    void lessonWithTooFewItemsKeepsItsItem() throws Exception {
+        plan();
+        doAnswer(inv -> {
+            for (long item : new long[]{100L, 101L}) row(inv.getArgument(2), item, 10L);
+            row(inv.getArgument(2), 200L, 20L);
+            return null;
+        }).when(jdbc).query(contains("FROM knowledge_item"), any(SqlParameterSource.class), any(RowCallbackHandler.class));
+        Map<String, Object> f = finding("homogeno tijelo");
+        f.put("item_id", 100L);
+        when(jdbc.queryForList(contains("FROM zero_finding"), any(SqlParameterSource.class))).thenReturn(List.of(f));
+
+        step.run(job(null));
+
+        verify(jdbc, never()).update(contains("UPDATE knowledge_item SET objective_id"), any(SqlParameterSource.class));
+    }
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 // Pokrivenost jedne serije zadataka s ispita: koje lekcije učenik mora proći da ga riješi i nedostaje li
-// nešto što nije ni u jednoj lekciji ni u predznanju. Popis lekcija i predznanje su u system poruci (keširaju se).
+// nešto što nije ni u jednoj lekciji ni u predznanju. Popis lekcija sa stavkama i predznanje su u system poruci (keširaju se).
 @Component
 public class PlanCoverageStep implements BuildStep {
 
@@ -26,7 +26,7 @@ public class PlanCoverageStep implements BuildStep {
 
             %s
 
-            LEKCIJE:
+            LEKCIJE (id, naziv i što uči, ispod stavke znanja; lekcija pokriva sve što piše u njezinim stavkama):
             %s""";
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -53,8 +53,11 @@ public class PlanCoverageStep implements BuildStep {
         mapper.readTree(job.input()).path("taskIds").forEach(n -> taskIds.add(n.asLong()));
         PlanSupport.CourseInfo course = plan.course(job.courseId());
         MapSqlParameterSource c = new MapSqlParameterSource("c", job.courseId());
+        // naziv i koncept ne kažu sve što lekcija uči (npr. vrijeme poluraspada u lekciji o građi atoma), pa idu i stavke
         List<String> lessons = jdbc.queryForList("""
                 SELECT lo.objective_id || ' ' || lo.objective_name || COALESCE(': ' || lo.concept, '')
+                    || COALESCE((SELECT string_agg(E'\\n  - ' || k.text, '' ORDER BY k.position) FROM knowledge_item k
+                                 WHERE k.objective_id = lo.objective_id AND k.duplicate_of IS NULL), '')
                 FROM course_objective co JOIN learning_objective lo ON lo.objective_id = co.objective_id
                 WHERE co.course_id = :c ORDER BY co.position""", c, String.class);
         Set<Long> valid = new HashSet<>(jdbc.queryForList("SELECT objective_id FROM course_objective WHERE course_id = :c", c, Long.class));

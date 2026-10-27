@@ -67,4 +67,37 @@ class VariationChecksTest {
         w.put("zadatak", w.get("zadatak").asText() + "\n\n| V (cm³) | m (g) |\n|---|---|\n| 10 | 30 |\n| 20 | 60 |\n| 30 | 90 |");
         assertTrue(checks.problems(w).stream().noneMatch(p -> p.contains("Crtež znakovima")), checks.problems(w).toString());
     }
+
+    @Test
+    void latexCommandsStartingWithNInFormulasAreNotLiteralNewlines() throws Exception {
+        ObjectNode v = recorded();
+        v.put("zadatak", v.get("zadatak").asText() + " Koeficijent \\(\\nu(\\mathrm{O_2}) = 2\\), a \\(x \\neq 0\\).");
+        assertTrue(checks.problems(v).stream().noneMatch(p -> p.contains("Doslovni")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + "\\nRješenje je \\(\\nu = 2\\).");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("Doslovni")), checks.problems(w).toString());
+        ObjectNode x = recorded();
+        x.put("zadatak", x.get("zadatak").asText() + " \\(a = 2\\n\\)");
+        assertTrue(checks.problems(x).stream().anyMatch(p -> p.contains("Doslovni")), checks.problems(x).toString());
+    }
+
+    @Test
+    void foreignWordsAreWholeWordsOnly() throws Exception {
+        ObjectNode v = recorded();
+        v.put("zadatak", v.get("zadatak").asText() + " Učenik želi znati koliko se veli da treba.");
+        assertTrue(checks.problems(v).stream().noneMatch(p -> p.contains("Strani")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + " Brzina, eli 5 m/s.");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("Strani")));
+    }
+
+    @Test
+    void citingTheExamCatalogueIsCaught() throws Exception {
+        ObjectNode v = recorded();
+        v.put("objasnjenje", v.get("objasnjenje").asText().replaceFirst("\n", "\nKako piše u Ispitnom katalogu (str. 12), ovo treba znati.\n"));
+        assertTrue(checks.problems(v).stream().anyMatch(p -> p.contains("katalog")), checks.problems(v).toString());
+        ObjectNode w = recorded();
+        w.put("zadatak", w.get("zadatak").asText() + " Prema kurikulumu …");
+        assertTrue(checks.problems(w).stream().anyMatch(p -> p.contains("katalog")));
+    }
 }

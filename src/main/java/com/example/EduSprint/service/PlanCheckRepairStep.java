@@ -16,7 +16,8 @@ import java.util.*;
 //  - pojam se uči u lekciji ili njezinim preduvjetima → u redu;
 //  - uči se u RANIJOJ lekciji koja nije preduvjet → doda se preduvjet (lekcije se otključavaju po preduvjetima);
 //  - uči se u KASNIJOJ lekciji → lekcija ide iza nje (preduvjet + novi poredak), ako to ne stvara krug;
-//    inače model prepravi stavku tako da ne koristi taj pojam;
+//    inače stavka koja koristi pojam seli u tu kasniju lekciju, a tek kad ne može (lekcija bi ostala gotovo prazna,
+//    model nije rekao koja stavka) model prepravi stavku tako da ne koristi taj pojam;
 //  - „nigdje“ → upozorenje „rupa“.
 // Ostalo što se ne da popraviti postaje upozorenje; zatim plan ide kreatoru na pregled („nacrt“) uz e-mail.
 // Ozbiljno (crveno) se pri izradi ne predaje kreatoru dok se ne pokuša popraviti: lekcije s neriješenim
@@ -26,6 +27,7 @@ public class PlanCheckRepairStep implements BuildStep {
 
     public static final String KIND = "plan_check_repair";
     static final int REPAIR_ROUNDS = 2;
+    static final int MIN_ITEMS_LEFT = 2;
 
     static final String REWRITE = """
             Prepravi stavku znanja iz %s tako da više NE koristi pojam „%s“ (učenik ga u tom trenutku još ne zna),
@@ -171,7 +173,7 @@ public class PlanCheckRepairStep implements BuildStep {
         Map<String, Finding> findings = new LinkedHashMap<>();
         Set<Integer> toVerify = new TreeSet<>(); // lekcije koje se ponovno provjeravaju prije predaje kreatoru
         Set<String> seenFindings = new HashSet<>();
-        int added = 0, rewritten = 0;
+        int added = 0, moved = 0, rewritten = 0;
         for (Map<String, Object> f : jdbc.queryForList("""
                 SELECT objective_id, concept, item_id, taught_by FROM zero_finding WHERE course_id = :c ORDER BY finding_id""", c)) {
             Integer lesson = index.get(((Number) f.get("objective_id")).longValue());
@@ -196,6 +198,13 @@ public class PlanCheckRepairStep implements BuildStep {
                     } else if (!PlanRepair.createsCycle(pre, lesson, j.teacher())) {
                         pre.get(lesson).add(j.teacher());
                         added++;
+                    } else if (f.get("item_id") != null && moveItem(((Number) f.get("item_id")).longValue(), lesson, j.teacher(),
+                            ids, itemLesson, lessonItems)) {
+                        moved++;
+                        jdbc.update("DELETE FROM zero_finding WHERE objective_id = :o AND lower(concept) = lower(:k)",
+                                new MapSqlParameterSource("o", ids.get(lesson)).addValue("k", concept));
+                        toVerify.add(lesson);
+                        toVerify.add(j.teacher());
                     } else if (f.get("item_id") != null ? rewrite(job, course, ((Number) f.get("item_id")).longValue(), concept)
                             : rewriteMentions(job, course, ids.get(lesson), concept)) {
                         rewritten++;
@@ -285,11 +294,12 @@ public class PlanCheckRepairStep implements BuildStep {
         if (anotherRound) {
             List<Long> lessons = toVerify.stream().map(ids::get).toList();
             flow.repairRound(courseId, job.accountId(), repair + 1, lessons);
-            return added + " preduvjeta dodano, " + rewritten + " stavki prepravljeno, " + dropped.size()
+            return added + " preduvjeta dodano, " + moved + " stavki premješteno, " + rewritten + " stavki prepravljeno, " + dropped.size()
                     + " bridova kruga maknuto; ponovna provjera " + lessons.size() + " lekcija (krug " + (repair + 1) + ")";
         }
         if (!recheck) mailer.planReady(courseId);
-        return added + " preduvjeta dodano, " + rewritten + " stavki prepravljeno, " + warnings.size() + " upozorenja";
+        return added + " preduvjeta dodano, " + moved + " stavki premješteno, " + rewritten + " stavki prepravljeno, "
+                + warnings.size() + " upozorenja";
     }
 
     private static void collect(Map<String, Finding> findings, String kind, int lesson, int other, boolean later,
@@ -338,6 +348,23 @@ public class PlanCheckRepairStep implements BuildStep {
                     new MapSqlParameterSource("c", courseId).addValue("f", e.getKey())
                             .addValue("w", BigDecimal.valueOf(100.0 * e.getValue() / touches).setScale(1, RoundingMode.HALF_UP)));
         }
+    }
+
+    // Stavka koja koristi pojam iz kasnije lekcije seli se u tu lekciju, cijela: tamo učenik pojam već zna, a lekcija
+    // iz koje odlazi zadržava barem MIN_ITEMS_LEFT stavki. Prepravljanje bi iz stavke izbacilo sadržaj (Stockov sustav
+    // iz nazivlja, hidrolizu iz otopina soli).
+    private boolean moveItem(long itemId, int lesson, int teacher, List<Long> ids, Map<Long, Integer> itemLesson,
+                             Map<Long, Integer> lessonItems) {
+        Integer from = itemLesson.get(itemId);
+        if (from == null || from != lesson || lessonItems.getOrDefault(ids.get(lesson), 0) <= MIN_ITEMS_LEFT) return false;
+        jdbc.update("""
+                UPDATE knowledge_item SET objective_id = :t,
+                    position = (SELECT COALESCE(max(position), 0) + 1 FROM knowledge_item WHERE objective_id = :t)
+                WHERE item_id = :i""", new MapSqlParameterSource("i", itemId).addValue("t", ids.get(teacher)));
+        itemLesson.put(itemId, teacher);
+        lessonItems.merge(ids.get(lesson), -1, Integer::sum);
+        lessonItems.merge(ids.get(teacher), 1, Integer::sum);
+        return true;
     }
 
     // Model nije rekao koja stavka koristi pojam: prepravljaju se stavke lekcije u kojima se pojam spominje (najviše dvije).

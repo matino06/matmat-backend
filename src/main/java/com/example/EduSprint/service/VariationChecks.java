@@ -18,8 +18,13 @@ public class VariationChecks {
     private static final Pattern FOURTH_SUBTASK = Pattern.compile("(?m)^\\s*(\\*\\*)?d\\)");
     private static final Pattern RAW_LATEX = Pattern.compile(".{0,20}(?:\\{,\\}|\\\\text|\\\\cdot|\\\\frac).{0,10}");
     private static final Pattern FOREIGN_SCRIPT = Pattern.compile("\\S*[\\u0400-\\u04FF\\u3000-\\u9FFF\\uAC00-\\uD7AF]\\S*");
-    // riječi koje su se u mjerenjima pojavile usred hrvatskog teksta (finski)
-    private static final Pattern FOREIGN_WORDS = Pattern.compile("\\b(?:joten|olla|yhdessä|ratkaistaan|ensin|että|kuin|eli|noin)\\b");
+    // riječi koje su se u mjerenjima pojavile usred hrvatskog teksta (finski); samo cijele riječi, jer \b ne zna
+    // za č, ć, š, ž, pa bi „eli“ našao u „želi“
+    private static final Pattern FOREIGN_WORDS = Pattern.compile("(?<!\\p{L})(?:joten|olla|yhdessä|ratkaistaan|ensin|että|kuin|eli|noin)(?!\\p{L})");
+    // \n iza kojeg je slovo u formuli je LaTeX naredba (\nu, \neq, \nabla)
+    private static final Pattern LITERAL_NEWLINE_IN_MATH = Pattern.compile("\\\\n(?![a-zA-Z])");
+    // materijal iz kojeg je plan složen, a učenik ga nema
+    private static final Pattern PLAN_SOURCE = Pattern.compile("(?iu)(?<!\\p{L})(?:ispitn\\p{L}*\\s+katalog\\p{L}*|kurikul\\p{L}*)");
 
     private final KatexChecker katex;
 
@@ -46,11 +51,16 @@ public class VariationChecks {
         }
         List<String> raw = rawLatex(text);
         if (!raw.isEmpty()) out.add("LaTeX izvan formula: " + raw.subList(0, Math.min(2, raw.size())));
-        String all = text + "\n" + v.path("rezultati");
+        StringBuilder results = new StringBuilder();
+        v.path("rezultati").forEach(x -> results.append('\n').append(x.asText()));
+        String all = text + results;
         List<String> foreign = new ArrayList<>(find(FOREIGN_SCRIPT, all));
         foreign.addAll(find(FOREIGN_WORDS, all));
         if (!foreign.isEmpty()) out.add("Strani jezik ili pismo: " + foreign.subList(0, Math.min(4, foreign.size())));
-        if (all.contains("\\n")) out.add("Doslovni \\n u tekstu.");
+        if (literalNewline(all)) out.add("Doslovni \\n u tekstu.");
+        if (PLAN_SOURCE.matcher(all).find()) {
+            out.add("Poziv na ispitni katalog ili kurikulum: učenik ga nema, pa ga zadatak i objašnjenje ne spominju.");
+        }
         if (textDrawing(text)) out.add("Crtež znakovima u tekstu (graf ili shema); podatke treba zadati tablicom ili riječima.");
         return out;
     }
@@ -71,8 +81,16 @@ public class VariationChecks {
 
     // LaTeX naredbe izvan \( \), $$ $$ i $ $.
     static List<String> rawLatex(String text) {
-        String s = text.replaceAll("(?s)\\$\\$.*?\\$\\$", "").replaceAll("(?s)\\\\\\(.*?\\\\\\)", "").replaceAll("\\$[^$\\n]+\\$", "");
-        return find(RAW_LATEX, s);
+        return find(RAW_LATEX, withoutMath(text));
+    }
+
+    // Doslovni „\n“ (dvaput escapan novi red): izvan formula svaki, u formuli samo onaj koji nije LaTeX naredba.
+    static boolean literalNewline(String text) {
+        return withoutMath(text).contains("\\n") || LITERAL_NEWLINE_IN_MATH.matcher(text).find();
+    }
+
+    private static String withoutMath(String text) {
+        return text.replaceAll("(?s)\\$\\$.*?\\$\\$", "").replaceAll("(?s)\\\\\\(.*?\\\\\\)", "").replaceAll("\\$[^$\\n]+\\$", "");
     }
 
     private static List<String> find(Pattern p, String s) {

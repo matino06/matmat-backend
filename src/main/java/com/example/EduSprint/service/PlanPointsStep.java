@@ -33,10 +33,14 @@ public class PlanPointsStep implements BuildStep {
             ali značenje veličine i kada se formula koristi jesu.
             Uzmi samo stavke koje pripadaju OVOM ishodu (ostali imaju svoje pozive). Uključi sve što traži razrada
             i sve što zadaci s ispita iz ovog područja zahtijevaju. Poredaj ih redom učenja.
-            Kad je uz ishod priloženo GRADIVO IZ MATERIJALA, stavke izvlači samo iz njega: ništa ne dodaji iz svojeg
-            znanja (pojam, formulu, primjer, popis, iznimku), čak ni kad bi to bilo korisno. Što gradivo samo spominje,
-            stavka samo spominje: ako piše „SI ima sedam osnovnih jedinica“, ne nabrajaj ih. Cilj je da učenik nauči
-            točno ono što je u materijalu, jer to dolazi na test, i ništa više.
+            Kad je uz ishod priloženo GRADIVO IZ MATERIJALA (skripta, udžbenik, bilješke), stavke izvlači samo iz njega:
+            ništa ne dodaji iz svojeg znanja (pojam, formulu, primjer, popis, iznimku), čak ni kad bi to bilo korisno. Što
+            gradivo samo spominje, stavka samo spominje: ako piše „SI ima sedam osnovnih jedinica“, ne nabrajaj ih. Cilj je
+            da učenik nauči točno ono što je u materijalu, jer to dolazi na test, i ništa više.
+            Ispitni katalog ili kurikulum nije takvo gradivo: navodi samo što učenik mora umjeti („izračunati pH otopine“),
+            a ne i formule i definicije s kojima to radi. Kad je to jedino gradivo ishoda, svaku vještinu iz razrade pretvori
+            u stavke sa svime što učenik za nju treba (formula s jedinicama, definicija, postupak, tipična zamka), na razini
+            na kojoj se uči u školi i kakvu traže zadaci s ispita; teme izvan razrade ne dodaji.
             Vrati JSON {"stavke":[{"tekst":"…","vrsta":"formula|definicija|pojava|postupak|zamka"}]}.""";
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -79,7 +83,11 @@ public class PlanPointsStep implements BuildStep {
         String pagesJson = (String) outcome.remove("page_ids");
         String user = "OVAJ ISHOD:\n" + plan.toJson(outcome);
         List<String> pages = plan.outcomePages(job.courseId(), Collections.singletonList(pagesJson));
-        if (!pages.isEmpty()) user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA:\n" + String.join("\n\n", pages);
+        if (!pages.isEmpty()) {
+            boolean curriculum = plan.onlyCurriculum(job.courseId(), Collections.singletonList(pagesJson));
+            user += "\n\nGRADIVO OVOG ISHODA IZ MATERIJALA" + (curriculum ? " (samo ispitni katalog ili kurikulum)" : "") + ":\n"
+                    + String.join("\n\n", pages);
+        }
 
         JsonNode out = plan.json(llm.chat(job, plan.planModel, system, user, OwnCourseLlm.Options.of("medium", 12000)).content());
         jdbc.update("DELETE FROM knowledge_item WHERE outcome_id = :o", new MapSqlParameterSource("o", outcomeId));
