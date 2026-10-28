@@ -1447,11 +1447,273 @@ function titration(s, text) {
   return { svg: svg(body), checks };
 }
 
+// Laboratorijska aparatura: gotov crtež postupka (destilacija, filtracija, sublimacija, uparavanje, razrjeđivanje u
+// odmjernoj tikvici, vodena kupelj) s natpisima
+// dijelova, za učenika koji pribor nikad nije vidio. Model bira samo postav; natpise smije preimenovati
+// (oznake: {dio: "tekst"} ili null da se dio ne označi), sakriti (oznake: false), dijelove istaknuti (istakni)
+// i obojiti tekućinu (boja).
+const APARATURA = {
+  destilacija: {
+    termometar: "termometar", tikvica: "tikvica", kamencici: "kamenčići\nza vrenje", tronozac: "tronožac",
+    plamenik: "plamenik", hladilo: "Liebigovo hladilo", izlaz_vode: "izlaz vode", ulaz_vode: "ulaz vode",
+    destilat: "destilat", erlenmeyer: "Erlenmeyerova tikvica",
+  },
+  filtracija: {
+    lijevak: "lijevak", papir: "filtrirni papir", ostatak: "ostatak na filtru", stalak: "stalak", casa: "čaša",
+    filtrat: "filtrat",
+  },
+  sublimacija: {
+    tikvica: "tikvica s\nhladnom vodom", kristali: "kristali", pare: "pare", casa: "čaša sa smjesom",
+    tronozac: "tronožac\ns mrežicom", plamenik: "plamenik",
+  },
+  uparavanje: {
+    para: "vodena para", zdjelica: "porculanska\nzdjelica", otopina: "otopina", tronozac: "tronožac\ns mrežicom",
+    plamenik: "plamenik",
+  },  razrjedivanje: {
+    menzura: "menzura", otopina: "koncentrirana\notopina", lijevak: "lijevak", oznaka: "oznaka",
+    tikvica: "odmjerna tikvica", voda: "destilirana\nvoda",
+  },
+  vodena_kupelj: {
+    epruvete: "epruvete s\notopinama", termometar: "termometar", kupelj: "vodena\nkupelj", tronozac: "tronožac",
+    plamenik: "plamenik", smjesa: "smjesa se\nzamućuje", znak: "znak X", oko: "gledaš\nodozgo",
+  },
+};
+// dijelovi koje vodena kupelj crta samo uz "znak": true (epruveta iznad papira sa znakom X)
+const ZNAK_X = ["smjesa", "znak", "oko"];
+
+function apparatus(s, text) {
+  const parts = APARATURA[s.postav];
+  if (!parts) return { checks: [fail(`postav mora biti jedan od: ${Object.keys(APARATURA).join(", ")}`)] };
+  const checks = [];
+  const names = { ...parts };
+  if (s.oznake && typeof s.oznake === "object") {
+    for (const [k, v] of Object.entries(s.oznake)) {
+      if (!(k in parts)) checks.push(fail(`postav ${s.postav} nema dio „${k}“ (ima: ${Object.keys(parts).join(", ")})`));
+      else if (v !== null && (typeof v !== "string" || !v.trim())) checks.push(fail(`oznaka dijela ${k} mora biti tekst ili null`));
+      else names[k] = v;
+    }
+    checks.push(...numbersInText(Object.values(s.oznake).filter((v) => typeof v === "string"), text));
+  }
+  const hl = new Set(s.istakni ?? []);
+  for (const k of hl) if (!(k in parts)) checks.push(fail(`istaknuti dio „${k}“ ne postoji u postavu ${s.postav}`));
+  if (s.postav === "vodena_kupelj" && !s.znak) {
+    for (const k of ZNAK_X) if (hl.has(k) || (s.oznake && typeof s.oznake === "object" && k in s.oznake)) checks.push(fail(`dio „${k}“ crta se samo uz "znak": true`));
+  }
+  if (s.volumen !== undefined && s.postav !== "razrjedivanje") checks.push(fail("volumen ima samo postav razrjedivanje (odmjerna tikvica)"));
+  if (s.volumen !== undefined) checks.push(...numbersInText([s.volumen], text));
+  if (s.boja !== undefined && !TINT[s.boja]) checks.push(fail(`boja mora biti jedna od: ${Object.keys(TINT).join(", ")}`));
+  if (checks.some((x) => !x.ok)) return { checks };
+
+  const shown = s.oznake !== false;
+  // boja tekućine koja se odjeljuje (filtrat, otopina u tikvici ili zdjelici)
+  const liquid = s.boja ? `liquid ${TINT[s.boja]}` : "liquid";
+  const c = (id, cls) => (hl.has(id) ? `${cls} hl` : cls);
+  // natpis s crticom do dijela: at = točka na dijelu, p = sidro teksta; "\n" u natpisu lomi redak.
+  // Crtica kreće od ruba teksta koji je bliži dijelu (širina procijenjena po broju znakova).
+  const tag = (id, at, p, anchor = "start") => {
+    if (!shown || !names[id]) return "";
+    const rows = names[id].split("\n");
+    const w = Math.max(...rows.map((r) => r.length)) * 6.8;
+    const x0 = anchor === "start" ? p[0] : anchor === "end" ? p[0] - w : p[0] - w / 2;
+    const y0 = p[1] - (rows.length - 1) * 7.5;
+    if (x0 < 2 || x0 + w > W - 2) checks.push(fail(`natpis „${names[id]}“ ne stane uz crtež; skrati ga ili ga lomi s \\n`));
+    const from =
+      at[0] > x0 + w ? [x0 + w + 4, p[1]] : at[0] < x0 ? [x0 - 4, p[1]] :
+      [at[0], at[1] < p[1] ? y0 - 9 : y0 + (rows.length - 1) * 15 + 9];
+    const t = hl.has(id) ? "lbl small acc-t" : "lbl small";
+    return line(from, at, hl.has(id) ? "ln thin acc" : "leader") + rows.map((r, i) => label([p[0], y0 + i * 15], r, t, anchor)).join("");
+  };
+  const tripod = (cx, y, half, foot) =>
+    `<rect class="${c("tronozac", "metal")}" x="${cx - half}" y="${y}" width="${2 * half}" height="3" rx="1"/>` +
+    line([cx - half + 8, y + 3], [cx - half - 2, foot], c("tronozac", "ln")) +
+    line([cx + half - 8, y + 3], [cx + half + 2, foot], c("tronozac", "ln"));
+  const burner = (cx, top, base) =>
+    `<path class="flame" d="M${cx - 6},${top} Q${cx - 8},${top - 10} ${cx},${top - 20} Q${cx + 8},${top - 10} ${cx + 6},${top} Z"/>` +
+    `<rect class="${c("plamenik", "metal")}" x="${cx - 6}" y="${top}" width="12" height="${base - top}"/>` +
+    `<rect class="${c("plamenik", "metal")}" x="${cx - 18}" y="${base}" width="36" height="6" rx="2"/>`;
+  const grains = (pts, cls = "k5") => pts.map(([x, y]) => `<circle class="${cls}" cx="${x}" cy="${y}" r="2.6"/>`).join("");
+  const vapor = (x, y0, y1) => `<path class="vapor" d="M${x},${y0} Q${x - 7},${(2 * y0 + y1) / 3} ${x},${(y0 + y1) / 2} T${x},${y1}"/>`;
+  let body = "";
+  const done = (h) => (checks.some((x) => !x.ok) ? { checks } : { svg: svg(body, h), checks });
+
+  if (s.postav === "destilacija") {
+    // tikvica s grlom, termometar s kuglicom u visini bočne cijevi, kosa cijev kroz plašt hladila
+    const X = 118, R = 36, CY = 170;
+    const S = [X + 8, 94], E = [330, 192];
+    const len = Math.hypot(E[0] - S[0], E[1] - S[1]);
+    const u = [(E[0] - S[0]) / len, (E[1] - S[1]) / len];
+    const n = [-u[1], u[0]]; // okomito na cijev, prema dolje
+    const at = (t, k = 0) => [S[0] + (E[0] - S[0]) * t + n[0] * k, S[1] + (E[1] - S[1]) * t + n[1] * k];
+    const pts = (...ps) => ps.map((q) => q.map(f).join(",")).join(" ");
+    const neckY = f(CY - Math.sqrt(R * R - 64));
+    const flask = `M${X - 8},72 V${neckY} A${R},${R} 0 1 0 ${X + 8},${neckY}`;
+    body += `<path class="gf" d="${flask} V72 Z"/>`;
+    const lx = f(Math.sqrt(R * R - 100));
+    body += `<path class="${liquid}" d="M${X - lx},${CY + 10} A${R},${R} 0 0 0 ${X + lx},${CY + 10} Z"/>`;
+    body += grains([[X - 10, 200], [X + 1, 202], [X + 11, 199]], c("kamencici", "k5"));
+    body += `<path class="${c("tikvica", "ln")}" d="${flask} V${f(S[1] + 5)} M${X + 8},${f(S[1] - 5)} V72"/>`;
+    body += `<rect class="metal" x="${X - 12}" y="64" width="24" height="10" rx="2"/>`;
+    body += `<rect class="${c("termometar", "glass")}" x="${X - 3}" y="22" width="6" height="70" rx="3"/>`;
+    body += line([X, 44], [X, 92], "ln thin c4") + `<circle class="k4" cx="${X}" cy="${S[1]}" r="4"/>`;
+    // plašt hladila s vodom, pa unutarnja cijev preko njega
+    const jacket = [at(0.25, -12), at(0.85, -12), at(0.85, 12), at(0.25, 12)];
+    body += `<polygon class="liquid t-primary" points="${pts(...jacket)}"/>`;
+    body += `<polygon class="${c("hladilo", "outline")}" points="${pts(...jacket)}"/>`;
+    const side = [u[0] * 3.5, u[1] * 3.5];
+    for (const [t, k, id] of [[0.32, -1, "izlaz_vode"], [0.78, 1, "ulaz_vode"]]) {
+      const [a2, b2] = [at(t, 12 * k), at(t, 26 * k)];
+      const l = [a2[0] - side[0], a2[1] - side[1]], l2 = [b2[0] - side[0], b2[1] - side[1]];
+      const r = [a2[0] + side[0], a2[1] + side[1]], r2 = [b2[0] + side[0], b2[1] + side[1]];
+      body += `<polygon class="liquid t-primary" points="${pts(l, l2, r2, r)}"/>` + line(l, l2, c(id, "ln thin")) + line(r, r2, c(id, "ln thin"));
+    }
+    body += arrow(at(0.32, -28), at(0.32, -44), "acc") + arrow(at(0.78, 44), at(0.78, 29), "acc");
+    body += `<polygon class="tube" points="${pts(at(0, -4), at(1, -4), at(1, 4), at(0, 4))}"/>`;
+    body += line(at(0, -4), at(1, -4), c("hladilo", "ln thin")) + line(at(0, 4), at(1, 4), c("hladilo", "ln thin"));
+    // kapi i Erlenmeyerova tikvica
+    const EX = E[0];
+    body += `<circle class="liquid t-primary" cx="${EX}" cy="201" r="2.4"/><circle class="liquid t-primary" cx="${EX}" cy="209" r="2.4"/>`;
+    const erl = `M${EX - 10},216 V228 L${EX - 32},272 H${EX + 32} L${EX + 10},228 V216`;
+    body += `<path class="gf" d="${erl} Z"/>`;
+    body += `<polygon class="liquid" points="${EX - 25},258 ${EX + 25},258 ${EX + 32},272 ${EX - 32},272"/>`;
+    body += `<path class="${c("erlenmeyer", "ln")}" d="${erl}"/>`;
+    body += tripod(X, 208, 42, 262) + burner(X, 234, 258);
+    const hl0 = at(0.6, -12), out = at(0.32, -44), inn = at(0.78, 44);
+    body += tag("termometar", [X - 4, 32], [8, 30]);
+    body += tag("tikvica", [X - R, 160], [8, 150]);
+    body += tag("kamencici", [X - 11, 201], [8, 204]);
+    body += tag("plamenik", [X - 7, 250], [8, 252]);
+    body += tag("tronozac", [X + 44, 240], [172, 252]);
+    body += tag("hladilo", hl0, [hl0[0] + 4, hl0[1] - 26]);
+    body += tag("izlaz_vode", out, [out[0] + 10, out[1] - 6]);
+    body += tag("ulaz_vode", inn, [inn[0], inn[1] + 18], "middle");
+    body += tag("destilat", [EX - 24, 265], [EX - 40, 266], "end");
+    body += tag("erlenmeyer", [EX + 10, 276], [376, 290], "end");
+    return done(298);
+  }
+  if (s.postav === "filtracija") {
+    body += `<rect class="${c("stalak", "metal")}" x="24" y="256" width="96" height="8" rx="2"/>`;
+    body += `<rect class="${c("stalak", "metal")}" x="48" y="26" width="5" height="230"/>`;
+    body += line([53, 80], [156, 80], c("stalak", "ln")) + `<ellipse class="${c("stalak", "outline thin")}" cx="190" cy="80" rx="33" ry="5"/>`;
+    body += `<path class="gf" d="M145,56 H235 L194,118 V200 H186 V118 Z"/>`;
+    body += `<polygon class="${c("papir", "paper")}" points="151,62 229,62 190,114"/>`;
+    body += `<polygon class="${s.boja ? liquid : "liquid t-warn"}" points="163.5,80 216.5,80 190,114"/>`;
+    body += grains([[186, 106], [193, 104], [190, 110], [181, 100], [198, 99]], c("ostatak", "k5"));
+    body += `<path class="${c("lijevak", "ln")}" d="M145,56 L186,118 V200 M235,56 L194,118 V200"/>`;
+    body += `<circle class="${liquid}" cx="190" cy="208" r="2.6"/>`;
+    body += `<rect class="gf" x="138" y="150" width="104" height="112"/>`;
+    body += `<rect class="${liquid}" x="140" y="226" width="100" height="34"/>`;
+    body += `<path class="${c("casa", "ln")}" d="M134,146 L138,150 V262 H242 V150 L246,146"/>`;
+    body += tag("lijevak", [236, 58], [250, 52]);
+    body += tag("papir", [214, 72], [250, 76]);
+    body += tag("ostatak", [199, 104], [250, 104]);
+    body += tag("casa", [243, 180], [254, 180]);
+    body += tag("filtrat", [240, 240], [254, 242]);
+    body += tag("stalak", [54, 150], [64, 150]);
+    return done(270);
+  }
+  if (s.postav === "sublimacija") {
+    body += `<rect class="gf" x="150" y="128" width="80" height="82"/>`;
+    body += grains([[160, 205], [170, 203], [180, 206], [192, 204], [203, 206], [214, 203], [222, 205], [165, 198], [186, 199], [208, 198]]);
+    body += vapor(172, 190, 158) + vapor(190, 192, 160) + vapor(208, 190, 158);
+    body += `<path class="${c("casa", "ln")}" d="M146,124 L150,128 V210 H230 V128 L234,124"/>`;
+    body += `<path class="gf" d="M182,22 V48.6 A50,50 0 1 0 198,48.6 V22 Z"/>`;
+    body += `<path class="liquid t-primary" d="M140.04,100 A50,50 0 0 0 239.96,100 Z"/>`;
+    body += `<path class="${c("tikvica", "ln")}" d="M182,22 V48.6 A50,50 0 1 0 198,48.6 V22"/>`;
+    body += [[176, 151], [186, 153], [196, 153], [206, 151], [168, 148], [214, 148]]
+      .map(([x, y]) => `<polygon class="${c("kristali", "k5")}" points="${x - 3},${y} ${x},${y - 3} ${x + 3},${y} ${x},${y + 3}"/>`)
+      .join("");
+    body += tripod(190, 212, 66, 258) + burner(190, 238, 262);
+    body += tag("tikvica", [141, 90], [8, 74]);
+    body += tag("kristali", [216, 151], [258, 146]);
+    body += tag("pare", [166, 172], [124, 172], "end");
+    body += tag("casa", [231, 192], [258, 190]);
+    body += tag("tronozac", [254, 230], [264, 236]);
+    body += tag("plamenik", [178, 264], [8, 266]);
+    return done(276);
+  }
+  if (s.postav === "razrjedivanje") {
+    // menzura s koncentriranom otopinom → lijevak u grlu odmjerne tikvice; boca štrcaljka dolijeva vodu do oznake
+    body += `<rect class="gf" x="22" y="120" width="24" height="130"/>`;
+    body += `<rect class="${liquid}" x="23" y="205" width="22" height="45"/>`;
+    for (let y = 130; y <= 240; y += 10) body += line([22, y], [y % 50 === 0 ? 32 : 28, y], "ln thin");
+    body += `<path class="${c("menzura", "ln")}" d="M18,116 L22,120 V250 M46,120 V250"/>`;
+    body += `<rect class="${c("menzura", "metal")}" x="12" y="250" width="44" height="6" rx="2"/>`;
+    body += arrow([54, 112], [156, 50], "acc");
+    const flask = "M183,70 V161.6 A44,44 0 0 0 171.7,245 H208.3 A44,44 0 0 0 197,161.6 V70";
+    body += `<path class="gf" d="${flask} Z"/>`;
+    body += `<path class="${liquid}" d="M148.6,190 A44,44 0 0 0 171.7,245 H208.3 A44,44 0 0 0 231.4,190 Z"/>`;
+    body += `<path class="${c("tikvica", "ln")}" d="${flask}"/>`;
+    body += line([183, 100], [197, 100], c("oznaka", "ln thin")) + `<ellipse class="${c("oznaka", "outline thin")}" cx="190" cy="100" rx="7" ry="2"/>`;
+    if (s.volumen) body += label([190, 222], s.volumen, "lbl small");
+    body += `<path class="gf" d="M166,40 H214 L193,64 V92 H187 V64 Z"/>`;
+    body += `<path class="${c("lijevak", "ln")}" d="M166,40 L187,64 V92 M214,40 L193,64 V92"/>`;
+    // boca štrcaljka
+    body += `<rect class="gf" x="292" y="156" width="46" height="96" rx="8"/>`;
+    body += `<rect class="liquid t-none" x="293" y="190" width="44" height="61" rx="6"/>`;
+    body += `<rect class="${c("voda", "outline")}" x="292" y="156" width="46" height="96" rx="8"/>`;
+    body += `<rect class="metal" x="307" y="146" width="16" height="10" rx="2"/>`;
+    body += `<path class="${c("voda", "ln thin")}" d="M315,146 V118 L226,36"/>`;
+    body += `<path class="vapor" d="M224,36 Q214,36 206,46"/>`;
+    body += tag("otopina", [34, 228], [54, 228]);
+    body += tag("menzura", [34, 257], [34, 274], "middle");
+    body += tag("lijevak", [170, 42], [150, 30], "end");
+    body += tag("oznaka", [198, 100], [240, 100]);
+    body += tag("tikvica", [190, 246], [190, 266], "middle");
+    body += tag("voda", [315, 253], [315, 268], "middle");
+    return done(286);
+  }
+  if (s.postav === "vodena_kupelj") {
+    // čaša vode na tronošcu, u njoj epruvete i termometar; uz "znak": epruveta sa smjesom iznad papira sa znakom X
+    body += `<rect class="gf" x="60" y="120" width="120" height="90"/>`;
+    body += `<rect class="liquid" x="61" y="140" width="118" height="69"/>`;
+    for (const x of [82, 112]) {
+      const tube = `M${x},80 V192 A8,8 0 0 0 ${x + 16},192 V80`;
+      body += `<path class="tube" d="${tube} Z"/><path class="liquid t-none" d="M${x},150 V192 A8,8 0 0 0 ${x + 16},192 V150 Z"/>`;
+      body += line([x + 2, 150], [x + 14, 150], "ln thin") + `<path class="${c("epruvete", "ln")}" d="${tube}"/>`;
+    }
+    body += `<rect class="${c("termometar", "glass")}" x="157" y="60" width="6" height="136" rx="3"/>`;
+    body += line([160, 150], [160, 194], "ln thin c4") + `<circle class="k4" cx="160" cy="196" r="4"/>`;
+    body += `<path class="${c("kupelj", "ln")}" d="M56,116 L60,120 V210 H180 V120 L184,116"/>`;
+    body += tripod(120, 212, 66, 258) + burner(120, 238, 262);
+    body += tag("epruvete", [82, 110], [8, 102]);
+    body += tag("kupelj", [60, 175], [8, 175]);
+    body += tag("termometar", [163, 66], [174, 64]);
+    body += tag("tronozac", [181, 226], [192, 226]);
+    body += tag("plamenik", [102, 264], [8, 264]);
+    if (s.znak) {
+      body += `<polygon class="paper" points="240,256 330,256 350,244 260,244"/>`;
+      body += line([286, 246], [300, 254], "ln thin") + line([300, 246], [286, 254], "ln thin");
+      const tube = "M285,130 V228 A8,8 0 0 0 301,228 V130";
+      body += `<path class="tube" d="${tube} Z"/><path class="liquid t-warn" d="M285,176 V228 A8,8 0 0 0 301,228 V176 Z"/>`;
+      body += grains([[290, 190], [296, 202], [289, 214], [296, 224]], "k2 light");
+      body += `<path class="${c("smjesa", "ln")}" d="${tube}"/>`;
+      body += `<ellipse class="${c("oko", "outline thin")}" cx="293" cy="100" rx="11" ry="6"/><circle class="pt" cx="293" cy="100" r="3"/>`;
+      body += line([293, 108], [293, 242], "ln thin dash");
+      body += tag("smjesa", [302, 196], [312, 196]);
+      body += tag("oko", [305, 98], [312, 92]);
+      body += tag("znak", [304, 250], [312, 268], "start");
+    }
+    return done(278);
+  }
+  // uparavanje
+  body += vapor(170, 112, 52) + vapor(190, 108, 44) + vapor(210, 112, 52);
+  body += `<path class="gf" d="M129.8,120 A85,85 0 0 0 250.2,120 Z"/>`;
+  body += `<path class="${liquid}" d="M141.8,130 A85,85 0 0 0 238.2,130 Z"/>`;
+  body += `<path class="${c("zdjelica", "ln")}" d="M122,116 L129.8,120 A85,85 0 0 0 250.2,120 L258,116"/>`;
+  body += tripod(190, 147, 66, 206) + burner(190, 182, 206);
+  body += tag("para", [214, 70], [250, 64]);
+  body += tag("zdjelica", [131, 124], [8, 116]);
+  body += tag("otopina", [228, 134], [262, 130]);
+  body += tag("tronozac", [254, 172], [264, 178]);
+  body += tag("plamenik", [178, 208], [8, 210]);
+  return done(220);
+}
+
 const RENDERERS = {
   trokut: triangle, kruznica: circle, graf: graph, koordinatni: coords, pravokutnik: rectangle,
   kvadar: cuboid, ljestvica: scale, sile: forces, strujni_krug: circuit,
   energijski_dijagram: energyDiagram, strukturna_formula: structure, elektrokemijski_clanak: cell, ljuske: shells,
-  cestice: particles, kromatogram: chromatogram, titracija: titration,
+  cestice: particles, kromatogram: chromatogram, titracija: titration, aparatura: apparatus,
 };
 export const SKETCH_TYPES = Object.keys(RENDERERS);
 

@@ -170,7 +170,7 @@ public class VariationPrompt {
     static final String CHEMISTRY_SKETCHES = """
 
               U kemiji crtež često uči više od riječi: entalpijski dijagram, Lewisova ili strukturna formula, članak ili
-              elektroliza, ljuske atoma, čestice prije i poslije reakcije, kromatogram, titracijska krivulja.
+              elektroliza, ljuske atoma, čestice prije i poslije reakcije, kromatogram, titracijska krivulja, aparatura.
               energijski_dijagram: {"tip":"energijski_dijagram","os":"H","razine":[{"oznaka":"CH₄(g) + 2 O₂(g)","vrijednost":-75},
                 {"oznaka":"CO₂(g) + 2 H₂O(ℓ)","vrijednost":-966}],"prijelazi":[{"od":0,"do":1,"oznaka":"ΔᵣH = −891 kJ/mol"}]}
                 (razine slijeva nadesno, na visini svoje vrijednosti; prijelaz je strelica od razine do razine, a broj u oznaci
@@ -205,6 +205,12 @@ public class VariationPrompt {
                 "luzina":{"formula":"NaOH","c":0.1},"indikator":"fenolftalein"} (krivulju pH aplikacija sama izračuna; slaba
                 kiselina: Ka; dvije kiseline za usporedbu: "kiselina":[…]; indikator: fenolftalein, metiloranž ili bromtimolplavo;
                 volumen lužine u točki ekvivalencije mora pisati u tekstu)
+              aparatura: {"tip":"aparatura","postav":"destilacija"} (gotov crtež pribora s natpisima dijelova, za učenika koji
+                ga nije vidio; postav: destilacija, filtracija, sublimacija, uparavanje, razrjedivanje (menzura, lijevak,
+                odmjerna tikvica, "volumen":"500 mL" piše na tikvici) ili vodena_kupelj ("znak":true dodaje epruvetu iznad
+                papira sa znakom X); "oznake":{"ostatak":"pijesak"}
+                preimenuje dio ("\n" lomi redak, null ga ne označi), "oznake":false skriva sve natpise, "istakni":["hladilo"]
+                ističe dio, "boja" boji tekućinu koja se odjeljuje)
             """.stripTrailing();
     static final String PHYSICS_MISTAKES = """
 
