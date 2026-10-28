@@ -70,4 +70,18 @@ class SketchCheckerTest {
         assertEquals(List.of(), checker.problems("""
                 {"tip":"titracija","kiselina":{"formula":"HCl","c":0.1,"V":20},"luzina":{"c":0.1},"indikator":"fenolftalein"}""", "utrošeno 20 mL"));
     }
+
+    @Test
+    void apparatusDrawsKnownSetupsOnly() {
+        assertEquals(List.of(), checker.problems("""
+                {"tip":"aparatura","postav":"destilacija","istakni":["hladilo"]}""", ""));
+        assertEquals(List.of(), checker.problems("""
+                {"tip":"aparatura","postav":"filtracija","boja":"zelena","oznake":{"ostatak":"komadići lišća","filtrat":null}}""", ""));
+        assertFalse(checker.problems("""
+                {"tip":"aparatura","postav":"centrifuga"}""", "").isEmpty());
+        assertFalse(checker.problems("""
+                {"tip":"aparatura","postav":"filtracija","oznake":{"hladilo":"x"}}""", "").isEmpty());
+        assertFalse(checker.problems("""
+                {"tip":"aparatura","postav":"sublimacija","oznake":{"kristali":"kristali amonijeva klorida"}}""", "").isEmpty());
+    }
 }
