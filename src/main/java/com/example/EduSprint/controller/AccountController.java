@@ -4,6 +4,7 @@ import com.example.EduSprint.dto.AccountDeleteRequest;
 import com.example.EduSprint.dto.AiConsentDTO;
 import com.example.EduSprint.dto.AiConsentRequest;
 import com.example.EduSprint.dto.ChosenCoursesRequest;
+import com.example.EduSprint.dto.OfferedCourseDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.UserCourseGoal;
@@ -215,12 +216,24 @@ public class AccountController {
         return chosenCoursesService.get(accountService.getAccount(principal.getEmail()).getAccountId());
     }
 
+    /**
+     * The official courses the apps offer, in menu order, with how to show them: published ones, and for an admin
+     * unpublished ones too. Publishing a course is an UPDATE (sql/2026-10-28-predmeti-iz-baze.sql), no app release.
+     */
+    @GetMapping("/offered-courses")
+    public List<OfferedCourseDTO> offeredCourses(Authentication authentication) {
+        AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
+        return chosenCoursesService.offered(Boolean.TRUE.equals(accountService.getAccount(principal.getEmail()).getIsAdmin()));
+    }
+
     /** {"courseIds": [1, 4]}: replaces the choice. The current course is set separately (POST /current-course). */
     @PutMapping("/courses")
     public List<Long> setChosenCourses(Authentication authentication, @RequestBody ChosenCoursesRequest request) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
-        long accountId = accountService.getAccount(principal.getEmail()).getAccountId();
-        List<Long> chosen = chosenCoursesService.set(accountId, request == null ? null : request.courseIds());
+        Account account = accountService.getAccount(principal.getEmail());
+        long accountId = account.getAccountId();
+        List<Long> chosen = chosenCoursesService.set(accountId, request == null ? null : request.courseIds(),
+                Boolean.TRUE.equals(account.getIsAdmin()));
         accountObjectiveService.addCourseObjectives(accountId, chosen);
         return chosen;
     }
@@ -277,6 +290,12 @@ public class AccountController {
         Course course = courseService.getCourseById(courseId);
         // Vlastiti predmet smije otvoriti samo njegov vlasnik.
         if (course.getOwnerAccountId() != null && !course.isOwnedBy(account.getAccountId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        // Neobjavljeni službeni predmet (npr. Kemija dok se izrađuje) samo admin; trenutni ostaje kakav je bio.
+        boolean admin = Boolean.TRUE.equals(account.getIsAdmin());
+        boolean stays = account.getCurrentCourse() != null && courseId.equals(account.getCurrentCourse().getCourseId());
+        if (course.getOwnerAccountId() == null && !stays && !chosenCoursesService.isOffered(courseId, admin)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         account.setCurrentCourse(course);

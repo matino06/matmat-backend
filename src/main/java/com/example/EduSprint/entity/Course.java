@@ -45,6 +45,36 @@ public class Course {
     @Column(name = "exam_date")
     private LocalDate examDate;
 
+    // Službeni predmet koji aplikacije nude (sql/2026-10-28-predmeti-iz-baze.sql); neobjavljene vidi samo admin.
+    @Column(name = "published", nullable = false)
+    private boolean published;
+
+    // Kako ga aplikacije prikazuju: redoslijed u izborniku, oznaka i boja (hsl nijansa), predmet bez razine
+    // („Matematika“), razina mature (A | B) s opisom, podnaslov i PDF formula na webu. Za vlastite predmete null.
+    @Column(name = "position")
+    private Integer position;
+
+    @Column(name = "badge", length = 8)
+    private String badge;
+
+    @Column(name = "hue")
+    private Integer hue;
+
+    @Column(name = "short_name", length = 60)
+    private String shortName;
+
+    @Column(name = "matura_level", length = 5)
+    private String maturaLevel;
+
+    @Column(name = "level_hint", length = 200)
+    private String levelHint;
+
+    @Column(name = "tagline", length = 120)
+    private String tagline;
+
+    @Column(name = "formula_pdf", length = 200)
+    private String formulaPdf;
+
     public Course(String courseName, String courseDescription) {
         this.courseName = courseName;
         this.courseDescription = courseDescription;
@@ -131,6 +161,46 @@ public class Course {
 
     public void setExamDate(LocalDate examDate) {
         this.examDate = examDate;
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
+    public void setPublished(boolean published) {
+        this.published = published;
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public String getBadge() {
+        return badge;
+    }
+
+    public Integer getHue() {
+        return hue;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public String getMaturaLevel() {
+        return maturaLevel;
+    }
+
+    public String getLevelHint() {
+        return levelHint;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public String getFormulaPdf() {
+        return formulaPdf;
     }
 
     public boolean isOwnedBy(Long accountId) {
