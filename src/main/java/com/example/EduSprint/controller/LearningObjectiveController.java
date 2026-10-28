@@ -54,7 +54,7 @@ public class LearningObjectiveController {
         Account account = accountService.getAccount(authPrincipal.getEmail());
         Course currentCourse = account.getCurrentCourse();
 
-        List<Object[]> objectivesWithUnlockStatus = learningObjectiveRepository.findObjectivesWithUnlockStatus(account.getAccountId(), currentCourse.getCourseId(), account.getTempo());
+        List<Object[]> objectivesWithUnlockStatus = learningObjectiveRepository.findObjectivesWithUnlockStatus(account.getAccountId(), currentCourse.getCourseId());
         List<ObjectiveWithStatusDTO> results = objectivesWithUnlockStatus.stream()
                 .map(arr -> new ObjectiveWithStatusDTO((String) arr[0], (String) arr[1], (Long) arr[2], (String) arr[3], (Boolean) arr[4], (Boolean) arr[5]))
                 .collect(Collectors.toList());

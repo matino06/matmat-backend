@@ -83,6 +83,8 @@ public class AccountController {
         return ResponseEntity.ok(Boolean.TRUE.equals(account.getIsCreator()));
     }
 
+    // Tempo (1 ubrzani, 2 temeljiti) više ne utječe na otključavanje lekcija, nego ocjena (LearningObjectiveRepository).
+    // Ostaje za starije iOS verzije koje ga još čitaju i mijenjaju.
     @GetMapping("/tempo")
     public ResponseEntity<Short> getTempo(Authentication authentication) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();

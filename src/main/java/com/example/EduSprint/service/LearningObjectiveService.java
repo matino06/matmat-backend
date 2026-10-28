@@ -33,8 +33,8 @@ public class LearningObjectiveService {
         return learningObjectiveRepository.findById(id).orElse(null);
     }
 
-    public final LearningObjective findNextLearningObjective(Long accountId, Long courseId, Short tempo) {
-        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId, courseId, tempo);
+    public final LearningObjective findNextLearningObjective(Long accountId, Long courseId) {
+        LearningObjective learningObjective = learningObjectiveRepository.findNextLearningObjective(accountId, courseId);
 
         if (learningObjective == null) {
             return null;
@@ -43,17 +43,16 @@ public class LearningObjectiveService {
         return learningObjective;
     }
 
-    public final LearningObjective findNextLearningObjectiveInField(Long accountId, Long courseId, Short tempo, Long fieldId) {
-        return learningObjectiveRepository.findNextLearningObjectiveInField(accountId, courseId, tempo, fieldId);
+    public final LearningObjective findNextLearningObjectiveInField(Long accountId, Long courseId, Long fieldId) {
+        return learningObjectiveRepository.findNextLearningObjectiveInField(accountId, courseId, fieldId);
     }
 
     public final List<ObjectiveDTO> findObjectivesForToday(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
         LocalDate today = LocalDate.now();
-        List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId, tempo);
+        List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId);
         List<ObjectiveDTO> objectiveDTOS = results.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
@@ -85,9 +84,8 @@ public class LearningObjectiveService {
     public List<ObjectiveDTO> findScheduledObjectives(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
-        List<Object[]> results = learningObjectiveRepository.findScheduledObjectives(accountId, courseId, tempo);
+        List<Object[]> results = learningObjectiveRepository.findScheduledObjectives(accountId, courseId);
         List<ObjectiveDTO> objectiveDTOS = results.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
@@ -102,9 +100,8 @@ public class LearningObjectiveService {
     public List<StudyMapFieldDTO> getStudyMap(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
-        List<Object[]> rows = learningObjectiveRepository.findStudyMapObjectives(accountId, courseId, tempo);
+        List<Object[]> rows = learningObjectiveRepository.findStudyMapObjectives(accountId, courseId);
 
         List<StudyMapFieldDTO> fields = new ArrayList<>();
         StudyMapFieldDTO currentField = null;
@@ -146,7 +143,6 @@ public class LearningObjectiveService {
     public Short calculateExamProgress(Account account, LearningObjective objective, short lastGrade) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
         // Share of exam points per field, taken from the official exam catalogue.
         // A course without a catalogue (e.g. EFZG) has nothing to score against, so it reports 0.
@@ -157,7 +153,7 @@ public class LearningObjectiveService {
         }
 
         List<ObjectiveWithStatusDTO> objectivesWithStatus = learningObjectiveRepository
-                .findObjectivesWithUnlockStatus(accountId, courseId, tempo)
+                .findObjectivesWithUnlockStatus(accountId, courseId)
                 .stream()
                 .map(arr -> new ObjectiveWithStatusDTO(
                         (String) arr[0], (String) arr[1], (Long) arr[2],

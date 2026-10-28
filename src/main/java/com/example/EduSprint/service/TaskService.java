@@ -33,9 +33,8 @@ public class TaskService {
     public Task getNewTask(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
-        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId, tempo);
+        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjective(accountId, courseId);
 
         LearningObjective weakObjective = learningObjectiveService.getWeakObjectivesForAccountAndCurrentCourse(account);
         if (nextLearningObjective == null && weakObjective == null) {
@@ -51,9 +50,8 @@ public class TaskService {
     public Task getNewTaskFromField(Account account, Long fieldId) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
-        Short tempo = account.getTempo();
 
-        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjectiveInField(accountId, courseId, tempo, fieldId);
+        LearningObjective nextLearningObjective = learningObjectiveService.findNextLearningObjectiveInField(accountId, courseId, fieldId);
         if (nextLearningObjective == null) {
             return null;
         }

@@ -57,7 +57,6 @@ public class SolvedTaskController {
             String startTimeString = (String) taskData.get("startTime");
             String endTimeString = (String) taskData.get("endTime");
             String device = (String) taskData.get("device");
-            Short tempo = ((Number) taskData.get("tempo")).shortValue();
 
             if (grade < 1 || grade > 4) {
                 return ResponseEntity.badRequest()
@@ -67,6 +66,8 @@ public class SolvedTaskController {
             // Craeting new Solved Task and Saving it
             Account account = accountService.getAccount(authPrincipal.getEmail());
             Course course = account.getCurrentCourse();
+            // Tempo više ne utječe na otključavanje; starije aplikacije ga još šalju, a stupac ga samo bilježi.
+            Short tempo = taskData.get("tempo") instanceof Number t ? t.shortValue() : account.getTempo();
             Task task = taskService.getTaskById(taskId);
             Instant startTime = Instant.parse(startTimeString);
             Instant endTime = Instant.parse(endTimeString);
