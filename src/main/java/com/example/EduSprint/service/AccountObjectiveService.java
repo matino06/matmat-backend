@@ -142,8 +142,8 @@ public class AccountObjectiveService {
     }
 
     /**
-     * Uzastopna uspješna rješavanja (n): lekcija otključava one koje se na nju nadovezuju kad je n barem tempo
-     * učenika. Prva ocjena „lako“ odmah vrijedi kao dva.
+     * Uzastopna uspješna rješavanja (n): uz „s mukom“ lekcija otključava one koje se na nju nadovezuju tek kad je n
+     * barem 2 (pravilo je u LearningObjectiveRepository). Prva ocjena „lako“ odmah vrijedi kao dva.
      */
     static short nextStreak(Fsrs.Memory before, short n, int grade) {
         if (grade == Fsrs.AGAIN) return 0;

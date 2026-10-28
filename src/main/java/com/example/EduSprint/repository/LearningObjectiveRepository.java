@@ -13,6 +13,9 @@ import java.util.List;
 @Repository
 // Vlastiti predmet ima redoslijed lekcija iz plana (course_objective.position); službeni predmeti ga nemaju
 // (NULL), pa „co.position NULLS LAST“ u poretku njima ništa ne mijenja.
+// Lekcija otključava one koje se na nju nadovezuju kad joj je zadnja ocjena „dobro“ ili „lako“ (last_grade >= 3)
+// ili kad je riješena dvaput zaredom bez „nisam riješio“ (n >= 2), pa i „s mukom“ otključava nakon još jednog
+// rješavanja. Isto pravilo je u DailyTaskCountService.
 public interface LearningObjectiveRepository extends JpaRepository<LearningObjective, Long> {
     List<LearningObjective> findAllBySubfield(SubfieldOfStudy subfield);
 
@@ -30,7 +33,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
+                        AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                     )
                     UNION
                     SELECT op.objective_id
@@ -56,7 +59,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                          (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
                          lo.objective_id
             """, nativeQuery = true)
-    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+    List<Object[]> findObjectivesWithUnlockStatus(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     // Study map: same unlock logic as findObjectivesWithUnlockStatus, but returns field_id
     // and keeps a stable curriculum order (field -> subfield -> topological prerequisite depth) for grouping into blocks.
@@ -70,7 +73,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
+                        AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                     )
                     UNION
                     SELECT op.objective_id
@@ -112,7 +115,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                          COALESCE((SELECT MAX(depth) FROM objective_depth od WHERE od.objective_id = lo.objective_id), 0),
                          lo.objective_id
             """, nativeQuery = true)
-    List<Object[]> findStudyMapObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+    List<Object[]> findStudyMapObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = """
                 WITH RECURSIVE blocked AS (
@@ -123,7 +126,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
+                        AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                     )
                     UNION
                     SELECT op.objective_id
@@ -141,7 +144,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
-    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+    LearningObjective findNextLearningObjective(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     // Field-study variant of findNextLearningObjective: restricts selection to objectives inside :fieldId
     // and treats cross-field prerequisites as mastered. The prerequisite graph is restricted to edges
@@ -163,7 +166,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                           FROM account_objective ao_prereq
                           WHERE ao_prereq.account_id = :accountId
                           AND ao_prereq.objective_id = op.prerequisite_id
-                          AND ao_prereq.n >= :tempo
+                          AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                       )
                     UNION
                     SELECT op.objective_id
@@ -184,7 +187,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
                 LIMIT 1
             """, nativeQuery = true)
-    LearningObjective findNextLearningObjectiveInField(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo, @Param("fieldId") Long fieldId);
+    LearningObjective findNextLearningObjectiveInField(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("fieldId") Long fieldId);
 
     @Query(value = """
                 WITH RECURSIVE blocked AS (
@@ -195,7 +198,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
+                        AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                     )
                     UNION
                     SELECT op.objective_id
@@ -212,7 +215,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
-    List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+    List<Object[]> findObjectivesForToday(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = """
                 WITH RECURSIVE blocked AS (
@@ -223,7 +226,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                         FROM account_objective ao_prereq
                         WHERE ao_prereq.account_id = :accountId
                         AND ao_prereq.objective_id = op.prerequisite_id
-                        AND ao_prereq.n >= :tempo
+                        AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                     )
                     UNION
                     SELECT op.objective_id
@@ -246,7 +249,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 )
                 ORDER BY (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE ASC, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
-    List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId, @Param("tempo") Short tempo);
+    List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     @Query(value = "SELECT COUNT(lo.*) FROM learning_objective lo " +
                    "INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId " +

@@ -19,7 +19,7 @@ public class DailyTaskCountService {
      * Runs every day at 3:00 AM (Zagreb time).
      * Counts how many objectives are due today for each account and course, with the same rules
      * findNextLearningObjective uses to serve them (has a task, due, not blocked by a prerequisite
-     * below the account's tempo), and stores the count in user_daily_tasks when it is below 10.
+     * not yet learnt, see LearningObjectiveRepository), and stores the count in user_daily_tasks when it is below 10.
      * Courses with nothing due get a row with 0. Today's rows are replaced, so a rerun is safe.
      */
     @Transactional
@@ -42,7 +42,7 @@ public class DailyTaskCountService {
                     FROM account_objective ao_prereq
                     WHERE ao_prereq.account_id = a.account_id
                     AND ao_prereq.objective_id = op.prerequisite_id
-                    AND ao_prereq.n >= a.tempo
+                    AND (ao_prereq.last_grade >= 3 OR ao_prereq.n >= 2)
                 )
                 UNION
                 SELECT b.account_id, op.objective_id
