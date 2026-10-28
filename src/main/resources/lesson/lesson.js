@@ -1363,8 +1363,27 @@ var MatMatLesson = (() => {
       otopina: "otopina",
       tronozac: "tronožac\ns mrežicom",
       plamenik: "plamenik"
+    },
+    razrjedivanje: {
+      menzura: "menzura",
+      otopina: "koncentrirana\notopina",
+      lijevak: "lijevak",
+      oznaka: "oznaka",
+      tikvica: "odmjerna tikvica",
+      voda: "destilirana\nvoda"
+    },
+    vodena_kupelj: {
+      epruvete: "epruvete s\notopinama",
+      termometar: "termometar",
+      kupelj: "vodena\nkupelj",
+      tronozac: "tronožac",
+      plamenik: "plamenik",
+      smjesa: "smjesa se\nzamućuje",
+      znak: "znak X",
+      oko: "gledaš\nodozgo"
     }
   };
+  var ZNAK_X = ["smjesa", "znak", "oko"];
   function apparatus(s, text) {
     const parts = APARATURA[s.postav];
     if (!parts) return { checks: [fail(`postav mora biti jedan od: ${Object.keys(APARATURA).join(", ")}`)] };
@@ -1380,6 +1399,11 @@ var MatMatLesson = (() => {
     }
     const hl = new Set(s.istakni ?? []);
     for (const k of hl) if (!(k in parts)) checks.push(fail(`istaknuti dio „${k}“ ne postoji u postavu ${s.postav}`));
+    if (s.postav === "vodena_kupelj" && !s.znak) {
+      for (const k of ZNAK_X) if (hl.has(k) || s.oznake && typeof s.oznake === "object" && k in s.oznake) checks.push(fail(`dio „${k}“ crta se samo uz "znak": true`));
+    }
+    if (s.volumen !== void 0 && s.postav !== "razrjedivanje") checks.push(fail("volumen ima samo postav razrjedivanje (odmjerna tikvica)"));
+    if (s.volumen !== void 0) checks.push(...numbersInText([s.volumen], text));
     if (s.boja !== void 0 && !TINT[s.boja]) checks.push(fail(`boja mora biti jedna od: ${Object.keys(TINT).join(", ")}`));
     if (checks.some((x) => !x.ok)) return { checks };
     const shown = s.oznake !== false;
@@ -1491,6 +1515,67 @@ var MatMatLesson = (() => {
       body += tag("tronozac", [254, 230], [264, 236]);
       body += tag("plamenik", [178, 264], [8, 266]);
       return done(276);
+    }
+    if (s.postav === "razrjedivanje") {
+      body += `<rect class="gf" x="22" y="120" width="24" height="130"/>`;
+      body += `<rect class="${liquid}" x="23" y="205" width="22" height="45"/>`;
+      for (let y = 130; y <= 240; y += 10) body += line([22, y], [y % 50 === 0 ? 32 : 28, y], "ln thin");
+      body += `<path class="${c("menzura", "ln")}" d="M18,116 L22,120 V250 M46,120 V250"/>`;
+      body += `<rect class="${c("menzura", "metal")}" x="12" y="250" width="44" height="6" rx="2"/>`;
+      body += arrow([54, 112], [156, 50], "acc");
+      const flask = "M183,70 V161.6 A44,44 0 0 0 171.7,245 H208.3 A44,44 0 0 0 197,161.6 V70";
+      body += `<path class="gf" d="${flask} Z"/>`;
+      body += `<path class="${liquid}" d="M148.6,190 A44,44 0 0 0 171.7,245 H208.3 A44,44 0 0 0 231.4,190 Z"/>`;
+      body += `<path class="${c("tikvica", "ln")}" d="${flask}"/>`;
+      body += line([183, 100], [197, 100], c("oznaka", "ln thin")) + `<ellipse class="${c("oznaka", "outline thin")}" cx="190" cy="100" rx="7" ry="2"/>`;
+      if (s.volumen) body += label([190, 222], s.volumen, "lbl small");
+      body += `<path class="gf" d="M166,40 H214 L193,64 V92 H187 V64 Z"/>`;
+      body += `<path class="${c("lijevak", "ln")}" d="M166,40 L187,64 V92 M214,40 L193,64 V92"/>`;
+      body += `<rect class="gf" x="292" y="156" width="46" height="96" rx="8"/>`;
+      body += `<rect class="liquid t-none" x="293" y="190" width="44" height="61" rx="6"/>`;
+      body += `<rect class="${c("voda", "outline")}" x="292" y="156" width="46" height="96" rx="8"/>`;
+      body += `<rect class="metal" x="307" y="146" width="16" height="10" rx="2"/>`;
+      body += `<path class="${c("voda", "ln thin")}" d="M315,146 V118 L226,36"/>`;
+      body += `<path class="vapor" d="M224,36 Q214,36 206,46"/>`;
+      body += tag("otopina", [34, 228], [54, 228]);
+      body += tag("menzura", [34, 257], [34, 274], "middle");
+      body += tag("lijevak", [170, 42], [150, 30], "end");
+      body += tag("oznaka", [198, 100], [240, 100]);
+      body += tag("tikvica", [190, 246], [190, 266], "middle");
+      body += tag("voda", [315, 253], [315, 268], "middle");
+      return done(286);
+    }
+    if (s.postav === "vodena_kupelj") {
+      body += `<rect class="gf" x="60" y="120" width="120" height="90"/>`;
+      body += `<rect class="liquid" x="61" y="140" width="118" height="69"/>`;
+      for (const x of [82, 112]) {
+        const tube = `M${x},80 V192 A8,8 0 0 0 ${x + 16},192 V80`;
+        body += `<path class="tube" d="${tube} Z"/><path class="liquid t-none" d="M${x},150 V192 A8,8 0 0 0 ${x + 16},192 V150 Z"/>`;
+        body += line([x + 2, 150], [x + 14, 150], "ln thin") + `<path class="${c("epruvete", "ln")}" d="${tube}"/>`;
+      }
+      body += `<rect class="${c("termometar", "glass")}" x="157" y="60" width="6" height="136" rx="3"/>`;
+      body += line([160, 150], [160, 194], "ln thin c4") + `<circle class="k4" cx="160" cy="196" r="4"/>`;
+      body += `<path class="${c("kupelj", "ln")}" d="M56,116 L60,120 V210 H180 V120 L184,116"/>`;
+      body += tripod(120, 212, 66, 258) + burner(120, 238, 262);
+      body += tag("epruvete", [82, 110], [8, 102]);
+      body += tag("kupelj", [60, 175], [8, 175]);
+      body += tag("termometar", [163, 66], [174, 64]);
+      body += tag("tronozac", [181, 226], [192, 226]);
+      body += tag("plamenik", [102, 264], [8, 264]);
+      if (s.znak) {
+        body += `<polygon class="paper" points="240,256 330,256 350,244 260,244"/>`;
+        body += line([286, 246], [300, 254], "ln thin") + line([300, 246], [286, 254], "ln thin");
+        const tube = "M285,130 V228 A8,8 0 0 0 301,228 V130";
+        body += `<path class="tube" d="${tube} Z"/><path class="liquid t-warn" d="M285,176 V228 A8,8 0 0 0 301,228 V176 Z"/>`;
+        body += grains([[290, 190], [296, 202], [289, 214], [296, 224]], "k2 light");
+        body += `<path class="${c("smjesa", "ln")}" d="${tube}"/>`;
+        body += `<ellipse class="${c("oko", "outline thin")}" cx="293" cy="100" rx="11" ry="6"/><circle class="pt" cx="293" cy="100" r="3"/>`;
+        body += line([293, 108], [293, 242], "ln thin dash");
+        body += tag("smjesa", [302, 196], [312, 196]);
+        body += tag("oko", [305, 98], [312, 92]);
+        body += tag("znak", [304, 250], [312, 268], "start");
+      }
+      return done(278);
     }
     body += vapor(170, 112, 52) + vapor(190, 108, 44) + vapor(210, 112, 52);
     body += `<path class="gf" d="M129.8,120 A85,85 0 0 0 250.2,120 Z"/>`;

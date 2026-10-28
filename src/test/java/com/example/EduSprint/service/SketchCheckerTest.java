@@ -77,6 +77,12 @@ class SketchCheckerTest {
                 {"tip":"aparatura","postav":"destilacija","istakni":["hladilo"]}""", ""));
         assertEquals(List.of(), checker.problems("""
                 {"tip":"aparatura","postav":"filtracija","boja":"zelena","oznake":{"ostatak":"komadići lišća","filtrat":null}}""", ""));
+        assertEquals(List.of(), checker.problems("""
+                {"tip":"aparatura","postav":"razrjedivanje","volumen":"500 mL"}""", "odmjerna tikvica od 500 mL"));
+        assertFalse(checker.problems("""
+                {"tip":"aparatura","postav":"razrjedivanje","volumen":"750 mL"}""", "odmjerna tikvica od 500 mL").isEmpty());
+        assertEquals(List.of(), checker.problems("""
+                {"tip":"aparatura","postav":"vodena_kupelj","znak":true}""", ""));
         assertFalse(checker.problems("""
                 {"tip":"aparatura","postav":"centrifuga"}""", "").isEmpty());
         assertFalse(checker.problems("""

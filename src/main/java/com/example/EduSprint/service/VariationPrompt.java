@@ -206,7 +206,9 @@ public class VariationPrompt {
                 kiselina: Ka; dvije kiseline za usporedbu: "kiselina":[…]; indikator: fenolftalein, metiloranž ili bromtimolplavo;
                 volumen lužine u točki ekvivalencije mora pisati u tekstu)
               aparatura: {"tip":"aparatura","postav":"destilacija"} (gotov crtež pribora s natpisima dijelova, za učenika koji
-                ga nije vidio; postav: destilacija, filtracija, sublimacija ili uparavanje; "oznake":{"ostatak":"pijesak"}
+                ga nije vidio; postav: destilacija, filtracija, sublimacija, uparavanje, razrjedivanje (menzura, lijevak,
+                odmjerna tikvica, "volumen":"500 mL" piše na tikvici) ili vodena_kupelj ("znak":true dodaje epruvetu iznad
+                papira sa znakom X); "oznake":{"ostatak":"pijesak"}
                 preimenuje dio ("\n" lomi redak, null ga ne označi), "oznake":false skriva sve natpise, "istakni":["hladilo"]
                 ističe dio, "boja" boji tekućinu koja se odjeljuje)
             """.stripTrailing();
