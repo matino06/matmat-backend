@@ -69,8 +69,15 @@ public class ChosenCoursesService {
         }
     }
 
-    /** Replaces the choice: at least one course, each an official course offered to the account, no repeats. */
-    public List<Long> set(long accountId, List<Long> courseIds, boolean admin) {
+    /**
+     * Replaces the choice: official courses offered to the account, no repeats. At least one, except for a creator
+     * with an own course: someone in 7th grade studies only their own courses and takes no matura subject.
+     */
+    public List<Long> set(long accountId, List<Long> courseIds, boolean admin, boolean creator) {
+        if (courseIds != null && courseIds.isEmpty() && creator && hasOwnCourse(accountId)) {
+            save(accountId, courseIds);
+            return List.of();
+        }
         if (courseIds == null || courseIds.isEmpty() || courseIds.size() > MAX_COURSES
                 || courseIds.stream().anyMatch(Objects::isNull) || courseIds.stream().distinct().count() != courseIds.size()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Neispravan popis predmeta");
@@ -81,10 +88,20 @@ public class ChosenCoursesService {
         if (official == null || official != courseIds.size()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nepoznat predmet");
         }
+        save(accountId, courseIds);
+        return List.copyOf(courseIds);
+    }
+
+    private boolean hasOwnCourse(long accountId) {
+        return Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT EXISTS (SELECT 1 FROM course WHERE owner_account_id = :id)",
+                new MapSqlParameterSource("id", accountId), Boolean.class));
+    }
+
+    private void save(long accountId, List<Long> courseIds) {
         jdbc.update("UPDATE account SET chosen_courses = :ids WHERE account_id = :id",
                 new MapSqlParameterSource()
                         .addValue("ids", courseIds.toArray(Long[]::new))
                         .addValue("id", accountId));
-        return List.copyOf(courseIds);
     }
 }

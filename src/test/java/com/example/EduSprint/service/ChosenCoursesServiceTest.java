@@ -33,7 +33,7 @@ class ChosenCoursesServiceTest {
     void savesTheChoiceInOrder() {
         officialCount(2);
 
-        assertEquals(List.of(4L, 1L), service.set(7L, List.of(4L, 1L), false));
+        assertEquals(List.of(4L, 1L), service.set(7L, List.of(4L, 1L), false, false));
 
         verify(jdbc).update(anyString(), argThat((MapSqlParameterSource p) ->
                 Arrays.equals((Long[]) p.getValue("ids"), new Long[]{4L, 1L}) && p.getValue("id").equals(7L)));
@@ -60,14 +60,33 @@ class ChosenCoursesServiceTest {
     @Test
     void anUnpublishedCourseIsCountedOnlyForAnAdmin() {
         officialCount(1);
-        service.set(7L, List.of(13L), true);
+        service.set(7L, List.of(13L), true, false);
 
         verify(jdbc).queryForObject(anyString(), argThat((MapSqlParameterSource p) ->
                 Boolean.TRUE.equals(p.getValue("admin"))), eq(Integer.class));
     }
 
+    @Test
+    void aCreatorWithAnOwnCourseMayChooseNone() {
+        when(jdbc.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class))).thenReturn(true);
+
+        assertEquals(List.of(), service.set(7L, List.of(), false, true));
+
+        verify(jdbc).update(anyString(), argThat((MapSqlParameterSource p) ->
+                ((Long[]) p.getValue("ids")).length == 0 && p.getValue("id").equals(7L)));
+    }
+
+    @Test
+    void aCreatorWithoutAnOwnCourseMustChooseOne() {
+        when(jdbc.queryForObject(anyString(), any(MapSqlParameterSource.class), eq(Boolean.class))).thenReturn(false);
+
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.set(7L, List.of(), false, true));
+        assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+        verify(jdbc, never()).update(anyString(), any(MapSqlParameterSource.class));
+    }
+
     private void assertBadRequest(List<Long> ids) {
-        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.set(7L, ids, false));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.set(7L, ids, false, false));
         assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         verify(jdbc, never()).update(anyString(), any(MapSqlParameterSource.class));
     }

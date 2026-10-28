@@ -226,14 +226,17 @@ public class AccountController {
         return chosenCoursesService.offered(Boolean.TRUE.equals(accountService.getAccount(principal.getEmail()).getIsAdmin()));
     }
 
-    /** {"courseIds": [1, 4]}: replaces the choice. The current course is set separately (POST /current-course). */
+    /**
+     * {"courseIds": [1, 4]}: replaces the choice; [] for a creator with an own course (no matura subject). The current
+     * course is set separately (POST /current-course).
+     */
     @PutMapping("/courses")
     public List<Long> setChosenCourses(Authentication authentication, @RequestBody ChosenCoursesRequest request) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();
         Account account = accountService.getAccount(principal.getEmail());
         long accountId = account.getAccountId();
         List<Long> chosen = chosenCoursesService.set(accountId, request == null ? null : request.courseIds(),
-                Boolean.TRUE.equals(account.getIsAdmin()));
+                Boolean.TRUE.equals(account.getIsAdmin()), Boolean.TRUE.equals(account.getIsCreator()));
         accountObjectiveService.addCourseObjectives(accountId, chosen);
         return chosen;
     }
