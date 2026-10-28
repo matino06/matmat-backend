@@ -33,7 +33,7 @@ class ChosenCoursesServiceTest {
     void savesTheChoiceInOrder() {
         officialCount(2);
 
-        assertEquals(List.of(4L, 1L), service.set(7L, List.of(4L, 1L)));
+        assertEquals(List.of(4L, 1L), service.set(7L, List.of(4L, 1L), false));
 
         verify(jdbc).update(anyString(), argThat((MapSqlParameterSource p) ->
                 Arrays.equals((Long[]) p.getValue("ids"), new Long[]{4L, 1L}) && p.getValue("id").equals(7L)));
@@ -57,8 +57,17 @@ class ChosenCoursesServiceTest {
         assertBadRequest(List.of(1L, 99L));
     }
 
+    @Test
+    void anUnpublishedCourseIsCountedOnlyForAnAdmin() {
+        officialCount(1);
+        service.set(7L, List.of(13L), true);
+
+        verify(jdbc).queryForObject(anyString(), argThat((MapSqlParameterSource p) ->
+                Boolean.TRUE.equals(p.getValue("admin"))), eq(Integer.class));
+    }
+
     private void assertBadRequest(List<Long> ids) {
-        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.set(7L, ids));
+        ResponseStatusException e = assertThrows(ResponseStatusException.class, () -> service.set(7L, ids, false));
         assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         verify(jdbc, never()).update(anyString(), any(MapSqlParameterSource.class));
     }
