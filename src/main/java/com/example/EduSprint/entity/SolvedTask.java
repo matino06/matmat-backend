@@ -47,6 +47,26 @@ public class SolvedTask {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    // Stanje lekcije (account_objective) prije ove ocjene, da se ocjena smije promijeniti: vrati se ovo stanje pa
+    // se ocjena primijeni ponovno. Starije ocjene ga nemaju (prevN null).
+    @Column(name = "prev_i")
+    private Short prevI;
+
+    @Column(name = "prev_n")
+    private Short prevN;
+
+    @Column(name = "prev_stability")
+    private Float prevStability;
+
+    @Column(name = "prev_difficulty")
+    private Float prevDifficulty;
+
+    @Column(name = "prev_last_grade")
+    private Short prevLastGrade;
+
+    @Column(name = "prev_last_solved_date")
+    private Instant prevLastSolvedDate;
+
     public SolvedTask(Account account, Task task, Short grade, Instant startTime, Instant endTime, Course course, Short progress, String device, Short tempo) {
         this.account = account;
         this.task = task;
@@ -136,6 +156,31 @@ public class SolvedTask {
 
     public void setTempo(Short tempo) {
         this.tempo = tempo;
+    }
+
+    /** Zapamti stanje lekcije prije ove ocjene. */
+    public void rememberBefore(AccountObjective state) {
+        this.prevI = state.getI();
+        this.prevN = state.getN();
+        this.prevStability = state.getStability();
+        this.prevDifficulty = state.getDifficulty();
+        this.prevLastGrade = state.getLastGrade();
+        this.prevLastSolvedDate = state.getLastSolvedDate();
+    }
+
+    /** Ima li ocjena zapamćeno stanje prije sebe, pa se smije promijeniti. */
+    public boolean remembersBefore() {
+        return prevN != null;
+    }
+
+    /** Vrati lekciji stanje prije ove ocjene. */
+    public void restoreBefore(AccountObjective state) {
+        state.setI(prevI);
+        state.setN(prevN);
+        state.setStability(prevStability);
+        state.setDifficulty(prevDifficulty);
+        state.setLastGrade(prevLastGrade);
+        state.setLastSolvedDate(prevLastSolvedDate);
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.example.EduSprint.entity.Task;
 import com.example.EduSprint.repository.AccountObjectiveRepository;
 import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -17,7 +18,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -56,10 +59,24 @@ class AccountObjectiveServiceTest {
     }
 
     /** Ocjena kakvu sprema kontroler: najprije u povijest, zatim u stanje lekcije. */
-    private void rate(int grade, Instant at) {
+    private SolvedTask rate(int grade, Instant at) {
         SolvedTask solved = solved(grade, at);
+        ReflectionTestUtils.setField(solved, "id", (long) history.size() + 1);
         history.add(solved);
         service.updateAccountObjective(solved);
+        return solved;
+    }
+
+    /** Promjena ocjene kakvu radi kontroler: stanje prije ocjene, pa nova ocjena. */
+    private void changeGrade(SolvedTask solved, int grade) {
+        service.restoreBefore(solved);
+        solved.setGrade((short) grade);
+        service.updateAccountObjective(solved);
+    }
+
+    private List<Object> stateValues() {
+        return List.of(state.getI(), state.getN(), state.getStability(), state.getDifficulty(), state.getLastGrade(),
+                state.getLastSolvedDate());
     }
 
     @Test
@@ -138,6 +155,50 @@ class AccountObjectiveServiceTest {
     @Test
     void replayOfNoHistoryIsANewLesson() {
         assertNull(AccountObjectiveService.replay(List.of()));
+    }
+
+    @Test
+    void changedGradeLeavesTheLessonAsIfItHadBeenChosenFirst() {
+        rate(Fsrs.GOOD, DAY0);
+        rate(Fsrs.GOOD, day(2));
+        List<Object> expected = stateValues();
+
+        // isti put, ali prvo spremljena predložena ocjena „nisam riješio“, pa je učenik promijeni u „dobro“
+        state.setI((short) 0);
+        state.setN((short) 0);
+        state.setStability(null);
+        state.setDifficulty(null);
+        state.setLastGrade(null);
+        state.setLastSolvedDate(DAY0);
+        history.clear();
+        rate(Fsrs.GOOD, DAY0);
+        SolvedTask suggested = rate(Fsrs.AGAIN, day(2));
+        assertEquals((short) 0, state.getN());
+        changeGrade(suggested, Fsrs.GOOD);
+
+        assertEquals(expected, stateValues());
+    }
+
+    @Test
+    void firstRatingCanBeChangedBackToANewLesson() {
+        SolvedTask first = rate(Fsrs.AGAIN, DAY0);
+        changeGrade(first, Fsrs.EASY);
+        assertEquals((short) 8, state.getI());
+        assertEquals((short) 2, state.getN());
+    }
+
+    @Test
+    void onlyTheLatestRecentRememberedRatingCanBeChanged() {
+        SolvedTask older = rate(Fsrs.GOOD, DAY0);
+        SolvedTask latest = rate(Fsrs.GOOD, day(2));
+        assertTrue(service.canChangeGrade(latest, day(2).plusSeconds(60)));
+        assertFalse(service.canChangeGrade(older, day(2).plusSeconds(60)), "a later rating builds on it");
+        assertFalse(service.canChangeGrade(latest, day(4)), "too old");
+
+        SolvedTask beforeThisChange = solved(Fsrs.GOOD, day(5));
+        ReflectionTestUtils.setField(beforeThisChange, "id", 99L);
+        history.add(beforeThisChange);
+        assertFalse(service.canChangeGrade(beforeThisChange, day(5)), "saved without the state before it");
     }
 
     @Test

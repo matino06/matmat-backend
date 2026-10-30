@@ -8,11 +8,13 @@ import com.example.EduSprint.repository.SolvedTaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -53,6 +55,7 @@ public class AccountObjectiveService {
         }
 
         AccountObjective accountObjective = accountObjectiveOptional.get();
+        newSolvedTask.rememberBefore(accountObjective);
         short grade = newSolvedTask.getGrade();
         Instant solvedAt = newSolvedTask.getEndTime();
         Fsrs.Memory before = memoryBefore(accountObjective, solvedAt);
@@ -81,21 +84,53 @@ public class AccountObjectiveService {
      * interval instead of a guess. Returns null if the account has no state for the objective.
      */
     public short[] previewIntervals(Account account, LearningObjective objective) {
+        return previewIntervals(account, objective, Instant.now(), account.getCurrentCourse());
+    }
+
+    /** Isto kao {@link #previewIntervals(Account, LearningObjective)}, za ocjenu u trenutku {@code at}. */
+    public short[] previewIntervals(Account account, LearningObjective objective, Instant at, Course course) {
         Optional<AccountObjective> accountObjective = accountObjectiveRepository.findByAccountAndObjective(account, objective);
         if (accountObjective.isEmpty()) {
             return null;
         }
 
-        Instant now = Instant.now();
-        Course course = account.getCurrentCourse();
-        Fsrs.Memory before = memoryBefore(accountObjective.get(), now);
+        Fsrs.Memory before = memoryBefore(accountObjective.get(), at);
         short[] intervals = new short[4];
         for (int grade = Fsrs.AGAIN; grade <= Fsrs.EASY; grade++) {
-            Fsrs.Memory after = next(before, grade, accountObjective.get().getLastSolvedDate(), now);
-            intervals[grade - 1] = capToExam(Fsrs.interval(after.stability()), after.stability(), now,
+            Fsrs.Memory after = next(before, grade, accountObjective.get().getLastSolvedDate(), at);
+            intervals[grade - 1] = capToExam(Fsrs.interval(after.stability()), after.stability(), at,
                     course == null ? null : course.getExamDate());
         }
         return intervals;
+    }
+
+    /** Koliko se dugo nakon ocjene ona još smije promijeniti. */
+    static final Duration REGRADE_WINDOW = Duration.ofDays(1);
+
+    /**
+     * Smije li se ocjena promijeniti: zapamtila je stanje lekcije prije sebe, nije starija od
+     * {@link #REGRADE_WINDOW} i zadnja je ocjena te lekcije (na kasniju se ocjenu već nadovezalo njezino stanje).
+     */
+    public boolean canChangeGrade(SolvedTask solved, Instant now) {
+        if (!solved.remembersBefore() || solved.getEndTime().isBefore(now.minus(REGRADE_WINDOW))) {
+            return false;
+        }
+        List<SolvedTask> history = solvedTaskRepository.findObjectiveHistory(
+                solved.getAccount().getAccountId(), solved.getTask().getObjective().getObjectiveId());
+        return !history.isEmpty() && Objects.equals(history.get(history.size() - 1).getId(), solved.getId());
+    }
+
+    /**
+     * Vrati lekciji stanje prije ove ocjene, kao da je još nije ocijenio. Nakon toga {@link #updateAccountObjective}
+     * primijeni novu ocjenu kao da je ona bila prva.
+     */
+    @Transactional
+    public void restoreBefore(SolvedTask solved) {
+        accountObjectiveRepository.findByAccountAndObjective(solved.getAccount(), solved.getTask().getObjective())
+                .ifPresent(accountObjective -> {
+                    solved.restoreBefore(accountObjective);
+                    accountObjectiveRepository.saveAndFlush(accountObjective);
+                });
     }
 
     /**
