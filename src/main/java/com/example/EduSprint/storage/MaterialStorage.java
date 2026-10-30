@@ -89,6 +89,13 @@ public class MaterialStorage {
         s3.putObject(bucket, key, new ByteArrayInputStream(content), meta);
     }
 
+    public void putFile(String key, File file, String contentType) {
+        ObjectMetadata meta = new ObjectMetadata();
+        meta.setContentLength(file.length());
+        meta.setContentType(contentType);
+        s3.putObject(new com.amazonaws.services.s3.model.PutObjectRequest(bucket, key, file).withMetadata(meta));
+    }
+
     public void delete(String key) {
         s3.deleteObject(bucket, key);
     }

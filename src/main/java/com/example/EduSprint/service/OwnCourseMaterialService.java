@@ -34,7 +34,14 @@ public class OwnCourseMaterialService {
     static final long MAX_FILE_BYTES = 100L * 1024 * 1024;
     static final long MAX_TOTAL_BYTES = 300L * 1024 * 1024;
     static final int MAX_PAGES = 300;
-    static final Map<String, String> TYPES = Map.of("application/pdf", "pdf", "image/jpeg", "jpg", "image/png", "png");
+    static final Map<String, String> TYPES = Map.of("application/pdf", "pdf", "image/jpeg", "jpg", "image/png", "png",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", "pptx",
+            "application/msword", "doc", "application/vnd.ms-powerpoint", "ppt",
+            "application/vnd.oasis.opendocument.text", "odt", "application/vnd.oasis.opendocument.presentation", "odp");
+    // Ovi se pri spremanju pretvaraju u PDF; dalje se s njima radi kao s PDF-om.
+    static final java.util.Set<String> OFFICE = java.util.Set.of("docx", "pptx", "doc", "ppt", "odt", "odp");
+    static final String NOT_ALLOWED = "Dopušteni su PDF, Word, PowerPoint, JPG i PNG.";
     // Procjena troška izrade po stranici materijala (čitanje + plan + provjere), iz prototipa fizike:
     // ~4 $ za 252 stranice. Služi samo za upozorenje prije pokretanja.
     static final BigDecimal ESTIMATED_USD_PER_PAGE = new BigDecimal("0.016");
@@ -46,21 +53,24 @@ public class OwnCourseMaterialService {
     private final MaterialStorage storage;
     private final BuildJobQueue queue;
     private final BuildQuotaService quota;
+    private final OfficeConverter converter;
 
     public OwnCourseMaterialService(CourseRepository courseRepository, NamedParameterJdbcTemplate jdbc,
-                                    MaterialStorage storage, BuildJobQueue queue, BuildQuotaService quota) {
+                                    MaterialStorage storage, BuildJobQueue queue, BuildQuotaService quota,
+                                    OfficeConverter converter) {
         this.courseRepository = courseRepository;
         this.jdbc = jdbc;
         this.storage = storage;
         this.queue = queue;
         this.quota = quota;
+        this.converter = converter;
     }
 
     public MaterialUploadUrlDTO uploadUrl(Account account, long courseId, MaterialUploadRequest request) {
         Course course = editable(account, courseId);
         String type = request == null ? null : request.contentType();
         if (type == null || !TYPES.containsKey(type)) {
-            throw bad("Dopušteni su samo PDF, JPG i PNG.");
+            throw bad(NOT_ALLOWED);
         }
         long size = request.sizeBytes() == null ? 0 : request.sizeBytes();
         checkFileSize(size);
@@ -80,17 +90,33 @@ public class OwnCourseMaterialService {
         }
         String extension = key.substring(key.lastIndexOf('.') + 1);
         String type = TYPES.entrySet().stream().filter(e -> e.getValue().equals(extension))
-                .map(Map.Entry::getKey).findFirst().orElseThrow(() -> bad("Dopušteni su samo PDF, JPG i PNG."));
+                .map(Map.Entry::getKey).findFirst().orElseThrow(() -> bad(NOT_ALLOWED));
         long size = storage.size(key);
+        File pdf = null;
         try {
             checkFileSize(size);
+            int pages;
+            if (OFFICE.contains(extension)) {
+                pdf = convertToPdf(key, extension);
+                size = pdf.length();
+                type = "application/pdf";
+                pages = pdfPages(pdf);
+            } else {
+                pages = "application/pdf".equals(type) ? pdfPages(key) : 1;
+            }
             if (totalBytes(courseId) + size > MAX_TOTAL_BYTES) {
                 throw bad("Materijali predmeta mogu imati najviše 300 MB ukupno.");
             }
-            int pages = "application/pdf".equals(type) ? pdfPages(key) : 1;
             int total = totalPages(courseId) + pages;
             if (total > MAX_PAGES) {
                 throw bad(tooManyPages(pages, total));
+            }
+            if (pdf != null) {
+                // Dalje se čuva samo PDF: čitanje, izrada i „Dostupan na ispitu“ rade s njim kao s učitanim PDF-om.
+                String pdfKey = key.substring(0, key.lastIndexOf('.')) + ".pdf";
+                storage.putFile(pdfKey, pdf, type);
+                storage.delete(key);
+                key = pdfKey;
             }
             String name = request.originalName() == null || request.originalName().isBlank()
                     ? "materijal." + extension : request.originalName().strip();
@@ -105,6 +131,8 @@ public class OwnCourseMaterialService {
         } catch (ResponseStatusException e) {
             storage.delete(key); // odbijeni upload ne ostaje na S3
             throw e;
+        } finally {
+            if (pdf != null) pdf.delete();
         }
     }
 
@@ -312,13 +340,31 @@ public class OwnCourseMaterialService {
         File file = null;
         try {
             file = storage.download(key);
-            try (PDDocument pdf = Loader.loadPDF(file)) {
-                return pdf.getNumberOfPages();
-            }
-        } catch (Exception e) {
+            return pdfPages(file);
+        } catch (java.io.IOException e) {
             throw bad("PDF se ne može otvoriti. Je li datoteka ispravna i bez lozinke?");
         } finally {
             if (file != null) file.delete();
+        }
+    }
+
+    private static int pdfPages(File file) {
+        try (PDDocument pdf = Loader.loadPDF(file)) {
+            return pdf.getNumberOfPages();
+        } catch (Exception e) {
+            throw bad("PDF se ne može otvoriti. Je li datoteka ispravna i bez lozinke?");
+        }
+    }
+
+    private File convertToPdf(String key, String extension) {
+        File source = null;
+        try {
+            source = storage.download(key);
+            return converter.toPdf(source, extension);
+        } catch (java.io.IOException e) {
+            throw bad("Datoteka nije uploadana.");
+        } finally {
+            if (source != null) source.delete();
         }
     }
 
