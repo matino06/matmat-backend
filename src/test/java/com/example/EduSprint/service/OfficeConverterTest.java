@@ -3,6 +3,7 @@ package com.example.EduSprint.service;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.File;
@@ -48,6 +49,14 @@ class OfficeConverterTest {
     void stop() {
         if (server != null) server.stop(0);
         files.forEach(File::delete);
+    }
+
+    // Spring mora sam napraviti bean (bez baze); s dva konstruktora bez @Autowired backend se nije podigao.
+    @Test
+    void springCanCreateIt() {
+        try (var context = new AnnotationConfigApplicationContext(OfficeConverter.class)) {
+            assertNotNull(context.getBean(OfficeConverter.class));
+        }
     }
 
     @Test
