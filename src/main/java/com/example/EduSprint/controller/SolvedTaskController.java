@@ -1,5 +1,6 @@
 package com.example.EduSprint.controller;
 
+import com.example.EduSprint.dto.SavedRatingDTO;
 import com.example.EduSprint.entity.Account;
 import com.example.EduSprint.entity.Course;
 import com.example.EduSprint.entity.SolvedTask;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,7 +51,7 @@ public class SolvedTaskController {
 
     @Transactional
     @PostMapping("/set-new")
-    public ResponseEntity<String> saveNewSolvedTask(Authentication authentication, @RequestBody Map<String, Object> taskData) {
+    public ResponseEntity<?> saveNewSolvedTask(Authentication authentication, @RequestBody Map<String, Object> taskData) {
         try {
             AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
             Long taskId = ((Number) taskData.get("taskId")).longValue();
@@ -76,6 +78,7 @@ public class SolvedTaskController {
             SolvedTask solvedTask = new SolvedTask(account, task, grade, startTime, endTime, course, currentProgress, device, tempo);
             solvedTaskRepository.save(solvedTask);
 
+            SavedRatingDTO saved = savedRating(solvedTask);
             accountObjectiveService.updateAccountObjective(solvedTask);
             try {
                 variations.onSolved(taskId); // vlastiti predmet: izradi sljedeću varijaciju zadatka
@@ -86,7 +89,7 @@ public class SolvedTaskController {
             account.setCurrentTask(null);
 
             if (accountService.saveAccount(account)) {
-                return new ResponseEntity<>("New Solved Task Successfully Saved!", HttpStatus.OK);
+                return ResponseEntity.ok(saved);
             } else {
                 return new ResponseEntity<>("Something went wrong!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -97,6 +100,50 @@ public class SolvedTaskController {
             return ResponseEntity.internalServerError()
                     .body("An unexpected error occurred on the server");
         }
+    }
+
+    // Učenik mijenja ocjenu koju je upravo spremio (interaktivna lekcija sprema predloženu ocjenu čim je gotova).
+    // Lekcija se vrati u stanje prije te ocjene pa se primijeni nova, kao da je odmah odabrao nju. 409 ako se ocjena
+    // više ne smije mijenjati (vidi AccountObjectiveService.canChangeGrade).
+    @Transactional
+    @PutMapping("/{solvedTaskId}/grade")
+    public ResponseEntity<?> changeGrade(Authentication authentication, @PathVariable Long solvedTaskId, @RequestBody Map<String, Object> body) {
+        AuthPrincipal authPrincipal = (AuthPrincipal) authentication.getPrincipal();
+        Account account = accountService.getAccount(authPrincipal.getEmail());
+        if (account == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!(body.get("grade") instanceof Number number) || number.intValue() < 1 || number.intValue() > 4) {
+            return ResponseEntity.badRequest().body("Grade has to be between 1 and 4");
+        }
+        short grade = number.shortValue();
+
+        SolvedTask solved = solvedTaskRepository.findById(solvedTaskId)
+                .filter(s -> s.getAccount().getAccountId().equals(account.getAccountId()))
+                .orElse(null);
+        if (solved == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!accountObjectiveService.canChangeGrade(solved, Instant.now())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("This rating can no longer be changed");
+        }
+
+        accountObjectiveService.restoreBefore(solved);
+        if (solved.getGrade() != grade) {
+            solved.setGrade(grade);
+            solved.setProgress(learningObjectiveService.calculateExamProgress(account, solved.getTask().getObjective(), grade));
+            solvedTaskRepository.save(solved);
+        }
+        SavedRatingDTO saved = savedRating(solved);
+        accountObjectiveService.updateAccountObjective(solved);
+        return ResponseEntity.ok(saved);
+    }
+
+    // Prije nego se ocjena primijeni na lekciju: dani za svaku ocjenu računaju se od stanja prije nje.
+    private SavedRatingDTO savedRating(SolvedTask solved) {
+        short[] days = accountObjectiveService.previewIntervals(solved.getAccount(), solved.getTask().getObjective(),
+                solved.getEndTime(), solved.getCourse());
+        return new SavedRatingDTO(solved.getId(), solved.getGrade(), days);
     }
 
     // Days until the task's objective comes back for each grade 1..4 (index grade - 1), so the rating
