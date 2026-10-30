@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/turnstile/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/image/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
+                        // Which app versions may still be used: asked before sign-in
+                        .requestMatchers(HttpMethod.GET, "/app-version/**").permitAll()
                         // Unsubscribe link from reminder emails, signed per account
                         .requestMatchers("/email/unsubscribe/**").permitAll()
                         .anyRequest().authenticated()
