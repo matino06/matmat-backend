@@ -32,7 +32,7 @@ class MockExamNoConsentTest {
     private final AiGradingService ai = mock(AiGradingService.class);
     private final MockExamGradingService service = new MockExamGradingService(exams, questions, attempts, answers,
             mock(MockExamScoringCriterionRepository.class), mock(MockExamCriterionScoreRepository.class),
-            mock(StorageService.class), ai, null);
+            mock(StorageService.class), ai, mock(PushService.class), null);
 
     private MockExamQuestion question(long id, String type, short points, String correct) {
         MockExamQuestion q = new MockExamQuestion();

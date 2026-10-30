@@ -36,7 +36,10 @@ public class EmailService {
                 <p style="margin: 0; font-size: 12px; color: #a1a1aa;"><a href="UNSUBSCRIBE_URL" style="color: #a1a1aa; text-decoration: underline;">Odjavi se od podsjetnika</a></p>
 """;
 
-    public EmailService(AccountService accountService, LearningObjectiveService learningObjectiveService, SolvedTaskService solvedTaskService, EmailLogService emailLogService, EmailUnsubscribeService emailUnsubscribeService) {
+    private final PushService pushService;
+
+    public EmailService(AccountService accountService, LearningObjectiveService learningObjectiveService, SolvedTaskService solvedTaskService, EmailLogService emailLogService, EmailUnsubscribeService emailUnsubscribeService, PushService pushService) {
+        this.pushService = pushService;
         this.accountService = accountService;
         this.learningObjectiveService = learningObjectiveService;
         this.solvedTaskService = solvedTaskService;
@@ -132,6 +135,10 @@ public class EmailService {
                 lastActivity,
                 () -> solvedTaskService.streak(account));
         if (type.isEmpty()) {
+            return;
+        }
+        // The iOS app reminds by push at the student's own time; the email would be a second reminder.
+        if (type.get() == EngagementEmailPlan.Type.DAILY_REMINDER && pushService.sendsDailyReminder(account.getAccountId())) {
             return;
         }
 
