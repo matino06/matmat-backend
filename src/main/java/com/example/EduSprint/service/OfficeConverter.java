@@ -1,5 +1,6 @@
 package com.example.EduSprint.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class OfficeConverter {
     private final String authorization;
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
 
+    @Autowired
     public OfficeConverter(@Value("${gotenberg.url:http://gotenberg.railway.internal:3000}") String url,
                            @Value("${gotenberg.username:matmat}") String username,
                            @Value("${gotenberg.password:}") String password) {
