@@ -49,6 +49,7 @@ public class MockExamGradingService {
 
     private static final String STATUS_NOT_REQUIRED = "not_needed";
     private static final String STATUS_PENDING = "pending";
+    private final PushService push;
     private static final String STATUS_DONE = "graded";
     private static final String STATUS_FAILED = "error";
     static final String STATUS_NO_CONSENT = "no_consent";
@@ -78,6 +79,7 @@ public class MockExamGradingService {
                                   MockExamCriterionScoreRepository mockExamCriterionScoreRepository,
                                   StorageService storageService,
                                   AiGradingService aiGradingService,
+                                  PushService push,
                                   @Lazy MockExamGradingService self) {
         this.mockExamRepository = mockExamRepository;
         this.mockExamQuestionRepository = mockExamQuestionRepository;
@@ -87,6 +89,7 @@ public class MockExamGradingService {
         this.mockExamCriterionScoreRepository = mockExamCriterionScoreRepository;
         this.storageService = storageService;
         this.aiGradingService = aiGradingService;
+        this.push = push;
         this.self = self;
     }
 
@@ -305,6 +308,10 @@ public class MockExamGradingService {
         if (attempt != null) {
             attempt.setTotalScore((short) total);
             mockExamAttemptRepository.save(attempt);
+            // The last answer graded by AI: the student hears the result is in.
+            if (all.stream().noneMatch(a -> STATUS_PENDING.equals(a.getAiGradingStatus()))) {
+                push.examGraded(attempt.getAccount().getAccountId(), attemptId, attempt.getExam().getTitle());
+            }
         }
     }
 
