@@ -19,6 +19,8 @@ import java.util.Map;
 // na novi zadatak (oko 0,01 $ umjesto 0,04 $), a tek ako ni nakon popravka ne prođe, lekciju piše model za pisanje.
 // Ne prođe li ni nakon jednog popravka, zadatak ostaje samo tekstualan: posao završava bez greške, jer tekst i
 // dalje vrijedi, a ponavljanje posla samo bi trošilo. Ne troši kvotu kreatora, kao ni izrada zadataka.
+// Učenik zadatak dobiva tek kad je ovaj korak gotov (task.lesson_ui_pending_since, pogled shown_task): s interaktivnom
+// verzijom, ili kao tekst ako je nema ili je izrada pala.
 @Component
 public class LessonUiStep implements BuildStep {
 
@@ -55,19 +57,50 @@ public class LessonUiStep implements BuildStep {
 
     // Poziva TaskVariationStep kad je varijacija spremljena: interaktivna verzija samo za predmete koji je imaju.
     // Red ne dodaje isti (predmet, vrsta, ref) dvaput, pa ponovno izrađen tekst (replaced) dobiva novu oznaku posla.
-    // Varijacije 2–4 nastaju dok predmet netko već uči (nakon riješenog zadatka), pa idu ispred izrade predmeta.
+    // Zadatak čeka svoju interaktivnu verziju, pa ona ide ispred ostalih koraka izrade: lekcija postaje dostupna
+    // čim je gotova, a ne tek kad su napisani svi zadaci predmeta.
     public void enqueueIfInteractive(BuildJob job, long objectiveId, int variation, boolean replaced) {
         String format = jdbc.queryForObject("SELECT lesson_format FROM course WHERE course_id = :c",
                 new MapSqlParameterSource("c", job.courseId()), String.class);
         if (!FORMAT_INTERACTIVE.equals(format)) return;
         String ref = "ui" + variation + " " + objectiveId + (replaced ? " #" + job.jobId() : "");
-        int priority = variation > 1 ? BuildJobQueue.PRIORITY_WAITED_ON : BuildJobQueue.PRIORITY_BACKGROUND;
-        queue.enqueue(job.courseId(), job.accountId(), KIND, ref, priority, false, input(objectiveId, variation));
+        Long id = queue.enqueue(job.courseId(), job.accountId(), KIND, ref, BuildJobQueue.PRIORITY_WAITED_ON, false,
+                input(objectiveId, variation));
+        if (id == null && finished(job.courseId(), ref)) show(objectiveId, variation); // posao je već odrađen: nema što čekati
     }
 
+    private boolean finished(long courseId, String ref) {
+        List<String> status = jdbc.queryForList("SELECT status FROM build_job WHERE course_id = :c AND kind = :k AND ref = :r",
+                new MapSqlParameterSource("c", courseId).addValue("k", KIND).addValue("r", ref), String.class);
+        return status.isEmpty() || BuildJobQueue.DONE.equals(status.get(0)) || BuildJobQueue.FAILED.equals(status.get(0));
+    }
+
+    // Izrada je pala i nakon svih pokušaja: zadatak ide učeniku kao tekst.
+    @Override
+    public void afterFailed(BuildJob job) {
+        try {
+            JsonNode in = mapper.readTree(job.input());
+            show(in.path("objectiveId").asLong(), in.path("variation").asInt(1));
+        } catch (Exception e) {
+            // shown_task ga ionako prikaže nakon 10 minuta
+        }
+    }
+
+    private void show(long objectiveId, int variation) {
+        jdbc.update("UPDATE task SET lesson_ui_pending_since = NULL WHERE objective_id = :o AND variation = :v",
+                new MapSqlParameterSource("o", objectiveId).addValue("v", variation));
+    }
+
+    // Kako god završi (lekcija spremljena, nema je, već postoji), zadatak je sada spreman za učenika.
     @Override
     public String run(BuildJob job) throws Exception {
         JsonNode in = mapper.readTree(job.input());
+        String output = build(job, in);
+        show(in.path("objectiveId").asLong(), in.path("variation").asInt(1));
+        return output;
+    }
+
+    private String build(BuildJob job, JsonNode in) throws Exception {
         MapSqlParameterSource p = new MapSqlParameterSource("o", in.path("objectiveId").asLong())
                 .addValue("v", in.path("variation").asInt(1)).addValue("c", job.courseId());
         List<Map<String, Object>> rows = jdbc.queryForList("""

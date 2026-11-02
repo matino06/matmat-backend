@@ -40,6 +40,8 @@ class TaskVariationStepTest {
         verify(llm).chat(eq(job), eq("haiku"), any(), any(), argThat(o -> "xhigh".equals(o.reasoning())));
         verify(prompt).templateUser(contains("Auto 36 km/h"), eq(List.of()));
         verify(jdbc).update(contains("INSERT INTO task"), argThat((SqlParameterSource p) -> Integer.valueOf(2).equals(p.getValue("v"))));
+        // interaktivni predmet: zadatak čeka svoju interaktivnu verziju
+        verify(jdbc).update(contains("lesson_ui_pending_since) VALUES"), argThat((SqlParameterSource p) -> LessonUiStep.FORMAT_INTERACTIVE.equals(p.getValue("interactive"))));
         verifyNoInteractions(tooClose); // provjera „preblizu“ samo za 1. varijaciju
     }
 

@@ -53,7 +53,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
                      AND ao_o.account_id = :accountId
                 WHERE EXISTS (
-                    SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
+                    SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id
                 )
                 ORDER BY s.subfield_id, is_unlocked DESC, co.position NULLS LAST,
                          (SELECT COUNT(*) FROM objective_prerequisite op WHERE op.objective_id = lo.objective_id),
@@ -109,7 +109,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
                      AND ao_o.account_id = :accountId
                 WHERE EXISTS (
-                    SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id
+                    SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id
                 )
                 ORDER BY fo.field_id, s.subfield_id, co.position NULLS LAST,
                          COALESCE((SELECT MAX(depth) FROM objective_depth od WHERE od.objective_id = lo.objective_id), 0),
@@ -138,7 +138,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 WHERE ao.account_id = :accountId
-                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
@@ -181,7 +181,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
                 WHERE ao.account_id = :accountId
                 AND s.field_id = :fieldId
-                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
@@ -210,7 +210,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 WHERE ao.account_id = :accountId
-                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 ORDER BY EXTRACT(EPOCH FROM (LOCALTIMESTAMP - ao.last_solved_date)) / NULLIF(ao.i, 0) DESC NULLS LAST, co.position ASC NULLS LAST, lo.subfield_id ASC, ao.objective_id ASC
@@ -238,7 +238,7 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 JOIN learning_objective lo ON ao.objective_id = lo.objective_id
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 WHERE ao.account_id = :accountId
-                AND EXISTS (SELECT 1 FROM task t WHERE t.objective_id = lo.objective_id)
+                AND EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) > (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
                 AND NOT EXISTS(

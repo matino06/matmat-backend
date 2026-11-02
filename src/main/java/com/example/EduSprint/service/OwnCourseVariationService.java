@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 // Varijacije 2–4 vlastitog predmeta nastaju postupno: kad učenik riješi zadatak lekcije, izrađuje se sljedeća
-// varijacija (posao s prioritetom, ne troši kvotu). Učenik nikad ne ostaje bez zadatka: dok nova nije gotova,
-// rotacija (findTaskFromObjective) daje neku od postojećih.
+// varijacija (posao s prioritetom, ne troši kvotu). Učenik nikad ne ostaje bez zadatka: dok nova nije gotova (u
+// interaktivnom predmetu i njezina interaktivna verzija, vidi LessonUiStep), rotacija (findTaskFromObjective) daje
+// neku od postojećih.
 // U transakciji: zahtjev je račun već dohvatio preko JPA-a (open-in-view drži tu vezu do kraja zahtjeva),
 // pa JdbcTemplate mora koristiti istu vezu; bez transakcije bi tražio drugu i zahtjevi bi se pod opterećenjem
 // međusobno blokirali čekajući slobodnu vezu.
@@ -65,9 +66,14 @@ public class OwnCourseVariationService {
         Integer solvedThis = jdbc.queryForObject("SELECT count(*) FROM solved_task WHERE account_id = :a AND task_id = :t", p, Integer.class);
         if (solvedThis == null || solvedThis == 0) return NONE; // novi zadatak za učenika, nema što čekati
         Integer unsolved = jdbc.queryForObject("""
-                SELECT count(*) FROM task t WHERE t.objective_id = :o AND t.variation IS NOT NULL
+                SELECT count(*) FROM shown_task t WHERE t.objective_id = :o AND t.variation IS NOT NULL
                   AND NOT EXISTS (SELECT 1 FROM solved_task s WHERE s.task_id = t.task_id AND s.account_id = :a)""", p, Integer.class);
         if (unsolved != null && unsolved > 0) return READY;
+        // nova varijacija je napisana, ali još čeka interaktivnu verziju (shown_task je ne daje)
+        Integer waiting = jdbc.queryForObject("""
+                SELECT count(*) FROM task t WHERE t.objective_id = :o AND t.variation IS NOT NULL
+                  AND NOT EXISTS (SELECT 1 FROM solved_task s WHERE s.task_id = t.task_id AND s.account_id = :a)""", p, Integer.class);
+        if (waiting != null && waiting > 0) return PENDING;
         String status = nextJobStatus(l);
         if (status == null) return NONE;
         return BuildJobQueue.FAILED.equals(status) ? FAILED : PENDING;

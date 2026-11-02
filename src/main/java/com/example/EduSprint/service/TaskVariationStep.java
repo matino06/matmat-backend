@@ -126,13 +126,18 @@ public class TaskVariationStep implements BuildStep {
         o.addValue("t", v.path("zadatak").asText()).addValue("e", explanation.explanation())
                 .addValue("r", mapper.writeValueAsString(v.path("rezultati"))).addValue("s", sketch);
         String withSketch = (sketch == null ? "" : " sa skicom") + explanation.summary();
+        // interaktivni predmet: zadatak se učeniku ne prikazuje dok mu interaktivna verzija nije gotova (LessonUiStep)
+        o.addValue("c", job.courseId()).addValue("interactive", LessonUiStep.FORMAT_INTERACTIVE);
+        String pending = "CASE WHEN (SELECT lesson_format FROM course WHERE course_id = :c) = :interactive THEN now() END";
         if (replace && exists != null && exists > 0) {
             // isti zadatak (task_id) ostaje, pa riješeni zadaci i ponavljanje ostaju vezani uz njega; stara interaktivna
             // verzija ne odgovara novom tekstu, pa se briše i (za interaktivne predmete) izrađuje iznova
-            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s, lesson_ui = NULL WHERE objective_id = :o AND variation = :v", o);
+            jdbc.update("UPDATE task SET task_text = :t, explanation = :e, results = :r, sketch = :s, lesson_ui = NULL, lesson_ui_pending_since = "
+                    + pending + " WHERE objective_id = :o AND variation = :v", o);
             return "zamijenjeno" + withSketch;
         }
-        jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results, sketch) VALUES (:o, :t, :e, :v, :r, :s)", o);
+        jdbc.update("INSERT INTO task (objective_id, task_text, explanation, variation, results, sketch, lesson_ui_pending_since) VALUES (:o, :t, :e, :v, :r, :s, "
+                + pending + ")", o);
         return "spremljeno" + withSketch;
     }
 
@@ -159,7 +164,7 @@ public class TaskVariationStep implements BuildStep {
     }
 
     // Kad sve lekcije imaju 1. varijaciju, predmet je spreman; ako je izrada išla preko batcha, kreator dobije e-mail.
-    // Interaktivni predmet uz svaku varijaciju dobiva i njezinu interaktivnu verziju (ne čeka je: tekst je dovoljan za učenje).
+    // Interaktivni predmet uz svaku varijaciju dobiva i njezinu interaktivnu verziju; učenik zadatak dobiva tek s njom.
     @Override
     public void afterComplete(BuildJob job) {
         interactiveVersion(job);

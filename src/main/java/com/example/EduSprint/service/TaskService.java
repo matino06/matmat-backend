@@ -43,7 +43,7 @@ public class TaskService {
             nextLearningObjective = weakObjective;
         }
 
-        Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;
+        Long taskLimit = Math.max(0, taskRepository.countShownByObjective(nextLearningObjective.getObjectiveId()) - 1);
         return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
     }
 
@@ -56,7 +56,7 @@ public class TaskService {
             return null;
         }
 
-        Long taskLimit = taskRepository.countByObjective(nextLearningObjective) - 1;
+        Long taskLimit = Math.max(0, taskRepository.countShownByObjective(nextLearningObjective.getObjectiveId()) - 1);
         return taskRepository.findTaskFromObjective(nextLearningObjective.getObjectiveId(), taskLimit, accountId);
     }
 
@@ -66,7 +66,7 @@ public class TaskService {
             return null;
         }
 
-        long taskCount = taskRepository.countByObjective(objective);
+        long taskCount = taskRepository.countShownByObjective(objectiveId);
         if (taskCount == 0) {
             return null;
         }

@@ -23,9 +23,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             """, nativeQuery = true)
     Task findRandomTaskFromObjective(@Param("objectiveId") Long objectiveId);
 
+    // Zadaci koje učenik smije dobiti (shown_task: bez varijacija koje još čekaju interaktivnu verziju), u rotaciji:
+    // ne jedan od zadnjih taskLimit riješenih. taskLimit je countShownByObjective - 1.
     @Query(value = """
                 SELECT t.*
-                FROM task t
+                FROM task t JOIN shown_task shown ON shown.task_id = t.task_id
                 WHERE t.objective_id = :objectiveId
                     AND t.task_id NOT IN (
                         SELECT t2.task_id
@@ -42,4 +44,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Task findTaskFromObjective(@Param("objectiveId") Long objectiveId, @Param("taskLimit") Long taskLimit, @Param("accountId") Long accountId);
 
     long countByObjective(LearningObjective objective);
+
+    @Query(value = "SELECT count(*) FROM shown_task t WHERE t.objective_id = :objectiveId", nativeQuery = true)
+    long countShownByObjective(@Param("objectiveId") Long objectiveId);
 }

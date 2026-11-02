@@ -54,7 +54,7 @@ public class DailyTaskCountService {
                     ao.account_id,
                     co.course_id,
                     COUNT(*) FILTER (
-                        WHERE EXISTS (SELECT 1 FROM task t WHERE t.objective_id = ao.objective_id)
+                        WHERE EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = ao.objective_id)
                         AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i))
                             <= (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                         AND NOT EXISTS (
