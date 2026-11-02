@@ -75,6 +75,15 @@ class OwnCourseVariationServiceTest {
     }
 
     @Test
+    void newVariationWaitingForItsInteractiveVersionIsPending() {
+        ownTask(1);
+        counts(2, 1, 1, BuildJobQueue.DONE);
+        when(jdbc.queryForObject(contains("FROM shown_task"), any(SqlParameterSource.class), eq(Integer.class))).thenReturn(0);
+        assertEquals(OwnCourseVariationService.PENDING, service.nextVariation(student, 3));
+        verifyNoInteractions(queue); // 2. varijacija postoji: ne izrađuje se 3.
+    }
+
+    @Test
     void failedGenerationIsRestartedAndStudentGetsThePreviousVariation() {
         ownTask(1);
         counts(1, 1, 0, BuildJobQueue.FAILED);

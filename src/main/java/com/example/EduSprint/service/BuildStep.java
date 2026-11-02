@@ -13,4 +13,8 @@ public interface BuildStep {
     // Nakon što je posao označen gotovim: ovdje korak pokreće iduću fazu kad je cijela trenutna faza gotova.
     default void afterComplete(BuildJob job) {
     }
+
+    // Nakon što je posao pao i nakon zadnjeg pokušaja (status „neuspjelo“).
+    default void afterFailed(BuildJob job) {
+    }
 }

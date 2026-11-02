@@ -110,6 +110,7 @@ public class BuildJobRunner {
         } catch (Exception e) {
             log.warn("Korak {} posla {} nije uspio (pokušaj {}): {}", job.kind(), job.jobId(), job.attempts(), e.getMessage());
             queue.fail(job, e.getMessage());
+            if (BuildJobQueue.FAILED.equals(BuildJobQueue.statusAfterFailure(job.attempts()))) step.afterFailed(job);
         }
     }
 

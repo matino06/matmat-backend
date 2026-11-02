@@ -51,11 +51,50 @@ class LessonUiStepTest {
         when(jdbc.queryForObject(contains("lesson_format"), any(SqlParameterSource.class), eq(String.class))).thenReturn("interaktivno");
         step.enqueueIfInteractive(job, 11, 1, false);
         step.enqueueIfInteractive(job, 11, 1, true);
-        verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui1 11"), eq(BuildJobQueue.PRIORITY_BACKGROUND), eq(false), contains("\"objectiveId\":11"));
+        // zadatak čeka svoju interaktivnu verziju, pa ona ide ispred ostale izrade predmeta
+        verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui1 11"), eq(BuildJobQueue.PRIORITY_WAITED_ON), eq(false), contains("\"objectiveId\":11"));
         verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui1 11 #1"), anyInt(), eq(false), anyString());
-        // varijacije 2–4 nastaju dok netko predmet već uči, pa idu ispred izrade predmeta
         step.enqueueIfInteractive(job, 11, 2, false);
         verify(queue).enqueue(eq(5L), eq(7L), eq(LessonUiStep.KIND), eq("ui2 11"), eq(BuildJobQueue.PRIORITY_WAITED_ON), eq(false), contains("\"variation\":2"));
+    }
+
+    private void verifyShown(int times) {
+        verify(jdbc, times(times)).update(contains("lesson_ui_pending_since = NULL"),
+                argThat((SqlParameterSource p) -> Long.valueOf(11).equals(p.getValue("o")) && Integer.valueOf(1).equals(p.getValue("v"))));
+    }
+
+    @Test
+    void taskWhoseJobAlreadyExistsHasNothingToWaitFor() {
+        when(jdbc.queryForObject(contains("lesson_format"), any(SqlParameterSource.class), eq(String.class))).thenReturn("interaktivno");
+        when(queue.enqueue(anyLong(), anyLong(), anyString(), anyString(), anyInt(), anyBoolean(), anyString())).thenReturn(40L);
+        step.enqueueIfInteractive(job, 11, 1, false);
+        verifyShown(0);
+        when(queue.enqueue(anyLong(), anyLong(), anyString(), anyString(), anyInt(), anyBoolean(), anyString())).thenReturn(null);
+        step.enqueueIfInteractive(job, 11, 1, false);
+        verifyShown(1);
+    }
+
+    @Test
+    void taskIsShownHoweverTheStepEnds() throws Exception {
+        task(null);
+        answers("Evo lekcije:\n" + LessonUiTest.VALID);
+        step.run(job);
+        verifyShown(1);
+
+        answers("nije json", "{\"verzija\":1}");
+        step.run(job);
+        verifyShown(2);
+
+        step.afterFailed(job);
+        verifyShown(3);
+    }
+
+    @Test
+    void failedAttemptThatWillBeRetriedKeepsTheTaskWaiting() {
+        task(null);
+        when(llm.chat(any(), anyString(), any(), any(), any())).thenThrow(new RuntimeException("timeout"));
+        assertThrows(RuntimeException.class, () -> step.run(job));
+        verifyShown(0);
     }
 
     @Test
@@ -92,7 +131,7 @@ class LessonUiStepTest {
         answers("Evo lekcije:\n" + LessonUiTest.VALID);
         assertEquals("spremljeno", step.run(job));
         verify(llm).chat(eq(job), eq("sol"), contains("KATALOG WIDGETA"), contains("Mjerenje volumena"), argThat(o -> "medium".equals(o.reasoning())));
-        verify(jdbc).update(contains("SET lesson_ui"), argThat((SqlParameterSource p) -> String.valueOf(p.getValue("u")).contains("\"verzija\":1")));
+        verify(jdbc).update(contains("SET lesson_ui = :u"), argThat((SqlParameterSource p) -> String.valueOf(p.getValue("u")).contains("\"verzija\":1")));
     }
 
     @Test
@@ -108,7 +147,7 @@ class LessonUiStepTest {
         task(null);
         answers("nije json", "{\"verzija\":1}");
         assertTrue(step.run(job).startsWith("bez interaktivne verzije"));
-        verify(jdbc, never()).update(contains("SET lesson_ui"), any(SqlParameterSource.class));
+        verify(jdbc, never()).update(contains("SET lesson_ui = :u"), any(SqlParameterSource.class));
     }
 
     @Test

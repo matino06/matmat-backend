@@ -50,6 +50,16 @@ class BuildJobRunnerTest {
     }
 
     @Test
+    void onlyTheLastFailedAttemptTellsTheStep() {
+        BuildStep step = spy(step("read_page", null, new RuntimeException("boom")));
+        runner(step).run(new BuildJob(1, 2, 3, "read_page", null, 1, true, 1, null));
+        verify(step, never()).afterFailed(any());
+        BuildJob last = new BuildJob(1, 2, 3, "read_page", null, 1, true, 3, null);
+        runner(step).run(last);
+        verify(step).afterFailed(last);
+    }
+
+    @Test
     void unknownKindFails() {
         BuildJob j = job("nepoznato", true);
         runner(step("read_page", "OUT", null)).run(j);
