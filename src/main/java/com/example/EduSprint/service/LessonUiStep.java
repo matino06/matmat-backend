@@ -66,7 +66,13 @@ public class LessonUiStep implements BuildStep {
         String ref = "ui" + variation + " " + objectiveId + (replaced ? " #" + job.jobId() : "");
         Long id = queue.enqueue(job.courseId(), job.accountId(), KIND, ref, BuildJobQueue.PRIORITY_WAITED_ON, false,
                 input(objectiveId, variation));
-        if (id == null) show(objectiveId, variation); // posao već postoji (i odradio se): zadatak nema što čekati
+        if (id == null && finished(job.courseId(), ref)) show(objectiveId, variation); // posao je već odrađen: nema što čekati
+    }
+
+    private boolean finished(long courseId, String ref) {
+        List<String> status = jdbc.queryForList("SELECT status FROM build_job WHERE course_id = :c AND kind = :k AND ref = :r",
+                new MapSqlParameterSource("c", courseId).addValue("k", KIND).addValue("r", ref), String.class);
+        return status.isEmpty() || BuildJobQueue.DONE.equals(status.get(0)) || BuildJobQueue.FAILED.equals(status.get(0));
     }
 
     // Izrada je pala i nakon svih pokušaja: zadatak ide učeniku kao tekst.

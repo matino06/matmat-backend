@@ -3,13 +3,14 @@
 -- izrada interaktivne verzije, zadatak se odmah prikazuje kao tekst; zapne li (pauza, pad instance), prikazuje se
 -- nakon 10 minuta.
 -- task.lesson_ui_pending_since: kad je zadatak počeo čekati interaktivnu verziju; NULL = ne čeka.
--- shown_task: zadaci koje učenik smije dobiti; upiti koji biraju zadatak ili lekciju čitaju nju umjesto task.
+-- shown_task: zadaci koje učenik smije dobiti; upiti koji biraju zadatak ili lekciju čitaju nju umjesto task. Ima samo
+-- ključeve (ostalo se čita iz task), pa ne treba mijenjati kad task dobije novi stupac.
 -- Idempotentno i samo dodaje: novi stupac (NULL, pa su svi postojeći zadaci vidljivi) i pogled. Pokreni prije
 -- deploya backenda koji ih koristi.
 BEGIN;
 ALTER TABLE task ADD COLUMN IF NOT EXISTS lesson_ui_pending_since timestamptz;
 
 CREATE OR REPLACE VIEW shown_task AS
-SELECT * FROM task
+SELECT task_id, objective_id, variation FROM task
 WHERE lesson_ui_pending_since IS NULL OR lesson_ui_pending_since < now() - interval '10 minutes';
 COMMIT;

@@ -70,6 +70,10 @@ class LessonUiStepTest {
         step.enqueueIfInteractive(job, 11, 1, false);
         verifyShown(0);
         when(queue.enqueue(anyLong(), anyLong(), anyString(), anyString(), anyInt(), anyBoolean(), anyString())).thenReturn(null);
+        when(jdbc.queryForList(contains("FROM build_job"), any(SqlParameterSource.class), eq(String.class))).thenReturn(List.of("running"));
+        step.enqueueIfInteractive(job, 11, 1, false);
+        verifyShown(0); // posao još radi: zadatak i dalje čeka
+        when(jdbc.queryForList(contains("FROM build_job"), any(SqlParameterSource.class), eq(String.class))).thenReturn(List.of("done"));
         step.enqueueIfInteractive(job, 11, 1, false);
         verifyShown(1);
     }

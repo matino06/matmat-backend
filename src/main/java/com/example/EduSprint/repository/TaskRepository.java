@@ -27,7 +27,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // ne jedan od zadnjih taskLimit riješenih. taskLimit je countShownByObjective - 1.
     @Query(value = """
                 SELECT t.*
-                FROM shown_task t
+                FROM task t JOIN shown_task shown ON shown.task_id = t.task_id
                 WHERE t.objective_id = :objectiveId
                     AND t.task_id NOT IN (
                         SELECT t2.task_id
