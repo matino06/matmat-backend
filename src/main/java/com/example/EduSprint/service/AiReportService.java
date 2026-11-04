@@ -123,7 +123,7 @@ public class AiReportService {
                 .addValue("accountId", accountId)
                 .addValue("reason", validReason(reason))
                 .addValue("note", cleanNote(note))
-                .addValue("source", "ios".equals(source) ? "ios" : "web");
+                .addValue("source", source != null && AiConsentService.APPS.contains(source) ? source : "web");
     }
 
     static String validReason(String reason) {

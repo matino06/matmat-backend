@@ -203,7 +203,7 @@ public class AccountController {
         return aiConsentService.get(accountService.getAccount(principal.getEmail()).getAccountId());
     }
 
-    /** {"granted": true|false, "version": "2026-10-15", "source": "ios"|"web"}; records the text version and time. */
+    /** {"granted": true|false, "version": "2026-10-15", "source": "ios"|"android"|"web"}; records the text version and time. */
     @PostMapping("/ai-consent")
     public AiConsentDTO setAiConsent(Authentication authentication, @RequestBody AiConsentRequest request) {
         AuthPrincipal principal = (AuthPrincipal) authentication.getPrincipal();

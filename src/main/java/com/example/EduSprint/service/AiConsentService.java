@@ -19,11 +19,14 @@ import java.util.Set;
 @Service
 public class AiConsentService {
 
-    /** Where the student turns AI on: Profil in the app, Postavke on the web. */
+    /** The apps that send {@code X-MatMat-Client} and a consent's or report's {@code source}; anything else is the web. */
+    public static final Set<String> APPS = Set.of("ios", "android");
+
+    /** Where the student turns AI on: Profil in the apps, Postavke on the web. */
     public static String missingMessage(String client) {
-        return "ios".equalsIgnoreCase(client) ? "Za AI uključi dozvolu u Profilu." : "Za AI uključi dozvolu u Postavkama.";
+        return client != null && APPS.contains(client.toLowerCase()) ? "Za AI uključi dozvolu u Profilu." : "Za AI uključi dozvolu u Postavkama.";
     }
-    private static final Set<String> SOURCES = Set.of("ios", "web");
+    private static final Set<String> SOURCES = Set.of("ios", "android", "web");
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -51,7 +54,7 @@ public class AiConsentService {
     }
 
     public AiConsentDTO set(long accountId, Boolean granted, String version, String source) {
-        if (granted == null || version == null || version.isBlank() || version.length() > 20 || !SOURCES.contains(source)) {
+        if (granted == null || version == null || version.isBlank() || version.length() > 20 || source == null || !SOURCES.contains(source)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Neispravna dozvola");
         }
         jdbc.update("""

@@ -94,4 +94,16 @@ class AiReportServiceTest {
         assertEquals(AiReportService.MAX_NOTE_CHARS, AiReportService.cleanNote("a".repeat(5000)).length());
         assertTrue(AiReportService.REASONS.contains(AiReportService.validReason("inappropriate")));
     }
+
+    @Test
+    void androidIsKeptAsTheReportsSource() {
+        when(jdbc.queryForObject(contains("FROM ai_message"), any(MapSqlParameterSource.class), eq(Integer.class)))
+                .thenReturn(1);
+
+        service.reportMessage(7, 42, "incorrect", null, "android");
+
+        ArgumentCaptor<MapSqlParameterSource> params = ArgumentCaptor.forClass(MapSqlParameterSource.class);
+        verify(jdbc).update(contains("INSERT INTO ai_report"), params.capture());
+        assertEquals("android", params.getValue().getValue("source"));
+    }
 }
