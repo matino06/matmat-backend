@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-/** The iOS app's device token and push settings (PushService). */
+/** The apps' device tokens (APNs on iOS, FCM on Android) and push settings (PushService). */
 @RestController
 @RequestMapping("/push")
 public class PushController {
@@ -20,12 +20,14 @@ public class PushController {
         this.accounts = accounts;
     }
 
-    public record DeviceRequest(String token, Boolean sandbox) {}
+    /** {@code platform}: "ios" (the default, as the iOS app sends none) or "android". */
+    public record DeviceRequest(String token, Boolean sandbox, String platform) {}
 
     @PutMapping("/device")
     public ResponseEntity<Void> register(Authentication authentication, @RequestBody DeviceRequest request) {
-        if (!validToken(request.token())) return ResponseEntity.badRequest().build();
-        push.registerDevice(accountId(authentication), request.token(), Boolean.TRUE.equals(request.sandbox()));
+        String platform = request.platform() == null ? "ios" : request.platform();
+        if (!validToken(request.token(), platform)) return ResponseEntity.badRequest().build();
+        push.registerDevice(accountId(authentication), request.token(), Boolean.TRUE.equals(request.sandbox()), platform);
         return ResponseEntity.noContent().build();
     }
 
@@ -48,9 +50,17 @@ public class PushController {
         return ResponseEntity.noContent().build();
     }
 
-    /** APNs device tokens are hex, 64 characters today; a little room for longer ones. */
-    static boolean validToken(String token) {
-        return token != null && token.matches("[0-9a-fA-F]{64,200}");
+    /**
+     * APNs device tokens are hex, 64 characters today; FCM registration tokens about 160 characters of letters, digits,
+     * "_", "-" and ":". A little room for longer ones; a token goes into the path of DELETE /device/{token}.
+     */
+    static boolean validToken(String token, String platform) {
+        if (token == null) return false;
+        return switch (platform) {
+            case "ios" -> token.matches("[0-9a-fA-F]{64,200}");
+            case "android" -> token.matches("[A-Za-z0-9_:\\-]{100,400}");
+            default -> false;
+        };
     }
 
     private long accountId(Authentication authentication) {

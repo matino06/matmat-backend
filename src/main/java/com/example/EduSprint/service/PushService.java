@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Push notifications to the iOS app: the devices an account registered, what it wants (daily reminder time, evening
+ * Push notifications to the iOS app (APNs) and the Android app (FCM): the devices an account registered, what it wants (daily reminder time, evening
  * streak warning, mock exam results), and sending them. Each push goes out at most once per account and day,
  * recorded in email_log like the emails.
  */
@@ -33,19 +33,21 @@ public class PushService {
 
     public record Settings(Integer reminderMinute, boolean streakWarning, boolean examResults) {}
 
-    private record Device(String token, boolean sandbox) {}
+    private record Device(String token, boolean sandbox, String platform) {}
 
     private final NamedParameterJdbcTemplate jdbc;
     private final ApnsClient apns;
+    private final FcmClient fcm;
     private final EmailLogService sent;
     private final SolvedTaskService solvedTasks;
     private final AccountRepository accounts;
     private final LearningObjectiveRepository objectives;
 
-    public PushService(NamedParameterJdbcTemplate jdbc, ApnsClient apns, EmailLogService sent, SolvedTaskService solvedTasks,
+    public PushService(NamedParameterJdbcTemplate jdbc, ApnsClient apns, FcmClient fcm, EmailLogService sent, SolvedTaskService solvedTasks,
                        AccountRepository accounts, LearningObjectiveRepository objectives) {
         this.jdbc = jdbc;
         this.apns = apns;
+        this.fcm = fcm;
         this.sent = sent;
         this.solvedTasks = solvedTasks;
         this.accounts = accounts;
@@ -54,12 +56,16 @@ public class PushService {
 
     // ---- Devices and settings
 
-    /** A device token from the app; a token that moved to another account (sign-in on a shared phone) moves along. */
-    public void registerDevice(long accountId, String token, boolean sandbox) {
+    /**
+     * A device token from an app ({@code platform} "ios": APNs, "android": FCM); a token that moved to another account
+     * (sign-in on a shared phone) moves along.
+     */
+    public void registerDevice(long accountId, String token, boolean sandbox, String platform) {
         jdbc.update("""
-                INSERT INTO push_device (token, account_id, sandbox) VALUES (:token, :accountId, :sandbox)
-                ON CONFLICT (token) DO UPDATE SET account_id = :accountId, sandbox = :sandbox, last_seen_at = now()
-                """, Map.of("token", token, "accountId", accountId, "sandbox", sandbox));
+                INSERT INTO push_device (token, account_id, sandbox, platform) VALUES (:token, :accountId, :sandbox, :platform)
+                ON CONFLICT (token) DO UPDATE SET account_id = :accountId, sandbox = :sandbox, platform = :platform,
+                last_seen_at = now()
+                """, Map.of("token", token, "accountId", accountId, "sandbox", sandbox, "platform", platform));
     }
 
     /** Signing out: this device gets nothing more for the account. */
@@ -171,10 +177,13 @@ public class PushService {
     }
 
     private void send(long accountId, PushPlan.Message message, Map<String, Object> data) {
-        List<Device> devices = jdbc.query("SELECT token, sandbox FROM push_device WHERE account_id = :a", Map.of("a", accountId),
-                (rs, i) -> new Device(rs.getString("token"), rs.getBoolean("sandbox")));
+        List<Device> devices = jdbc.query("SELECT token, sandbox, platform FROM push_device WHERE account_id = :a", Map.of("a", accountId),
+                (rs, i) -> new Device(rs.getString("token"), rs.getBoolean("sandbox"), rs.getString("platform")));
         for (Device device : devices) {
-            if (apns.send(device.token(), device.sandbox(), message.title(), message.body(), data) == ApnsClient.Result.GONE) {
+            ApnsClient.Result result = "android".equals(device.platform())
+                    ? fcm.send(device.token(), message.title(), message.body(), data)
+                    : apns.send(device.token(), device.sandbox(), message.title(), message.body(), data);
+            if (result == ApnsClient.Result.GONE) {
                 jdbc.update("DELETE FROM push_device WHERE token = :t", Map.of("t", device.token()));
             }
         }
