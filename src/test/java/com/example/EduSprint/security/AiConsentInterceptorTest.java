@@ -69,6 +69,14 @@ class AiConsentInterceptorTest {
     }
 
     @Test
+    void androidWithoutConsentIsToldToUseProfil() throws Exception {
+        when(consents.isGranted(43L)).thenReturn(false);
+        mvc.perform(post("/ai/chat").header(AiConsentInterceptor.CLIENT_HEADER, "android"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Za AI uključi dozvolu u Profilu."));
+    }
+
+    @Test
     void iosWithConsentGoesThrough() throws Exception {
         when(consents.isGranted(43L)).thenReturn(true);
         mvc.perform(post("/ai/chat").header(AiConsentInterceptor.CLIENT_HEADER, "ios")).andExpect(status().isOk());

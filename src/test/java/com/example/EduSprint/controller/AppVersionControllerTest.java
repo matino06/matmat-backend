@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AppVersionControllerTest {
 
     private MockMvc mvc(String minimum, String latest) {
-        return MockMvcBuilders.standaloneSetup(new AppVersionController(minimum, latest)).build();
+        return MockMvcBuilders.standaloneSetup(new AppVersionController(minimum, latest, "", "")).build();
     }
 
     @Test
@@ -28,5 +28,16 @@ class AppVersionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.minimum").doesNotExist())
                 .andExpect(jsonPath("$.latest").doesNotExist());
+    }
+
+    @Test
+    void androidHasItsOwnVersions() throws Exception {
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(new AppVersionController("1.2", "1.3", "1.0.0", "1.0.1")).build();
+        mvc.perform(get("/app-version/android"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.minimum").value("1.0.0"))
+                .andExpect(jsonPath("$.latest").value("1.0.1"));
+        mvc.perform(get("/app-version/ios"))
+                .andExpect(jsonPath("$.minimum").value("1.2"));
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
  * Rejects AI requests (chat, own-course building, re-grading with AI) without AI consent: 403 {"message": …}, which
- * says where to turn it on ({@code X-MatMat-Client: ios}: Profil; the web: Postavke).
+ * says where to turn it on ({@code X-MatMat-Client: ios} or {@code android}: Profil; the web: Postavke).
  */
 @Component
 public class AiConsentInterceptor implements HandlerInterceptor {
