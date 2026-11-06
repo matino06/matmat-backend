@@ -92,6 +92,10 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                     SELECT op.objective_id, d.depth + 1
                     FROM objective_prerequisite op
                     JOIN objective_depth d ON op.prerequisite_id = d.objective_id
+                ),
+                -- one row per objective; a correlated MAX per objective rescanned the whole path set for every row
+                depth_max AS (
+                    SELECT objective_id, MAX(depth) AS depth FROM objective_depth GROUP BY objective_id
                 )
                 SELECT fo.field_id,
                        fo.field_name,
@@ -106,13 +110,14 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 INNER JOIN course_objective co ON lo.objective_id = co.objective_id AND co.course_id = :courseId
                 LEFT JOIN subfield_of_study s ON lo.subfield_id = s.subfield_id
                 NATURAL JOIN field_of_study fo
+                LEFT JOIN depth_max dm ON dm.objective_id = lo.objective_id
                 LEFT JOIN account_objective ao_o ON ao_o.objective_id = lo.objective_id
                      AND ao_o.account_id = :accountId
                 WHERE EXISTS (
                     SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id
                 )
                 ORDER BY fo.field_id, s.subfield_id, co.position NULLS LAST,
-                         COALESCE((SELECT MAX(depth) FROM objective_depth od WHERE od.objective_id = lo.objective_id), 0),
+                         COALESCE(dm.depth, 0),
                          lo.objective_id
             """, nativeQuery = true)
     List<Object[]> findStudyMapObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
