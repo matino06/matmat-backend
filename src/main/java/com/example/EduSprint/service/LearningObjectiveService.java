@@ -10,7 +10,6 @@ import com.example.EduSprint.repository.CourseRepository;
 import com.example.EduSprint.repository.LearningObjectiveRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,38 +46,21 @@ public class LearningObjectiveService {
         return learningObjectiveRepository.findNextLearningObjectiveInField(accountId, courseId, fieldId);
     }
 
+    // Lekcije na redu danas, s datumom kad su došle na red. Slaba lekcija (ocijenjena „nisam riješio“ ili „s mukom“)
+    // nije ovdje samo zato što je slaba: Napredak joj pokazuje pravi termin ponavljanja (findScheduledObjectives),
+    // a Zadaci je ionako daju na kraju dana, kad ništa drugo nije na redu (TaskService.getNewTask).
     public final List<ObjectiveDTO> findObjectivesForToday(Account account) {
         Long accountId = account.getAccountId();
         Long courseId = account.getCurrentCourse().getCourseId();
 
-        LocalDate today = LocalDate.now();
         List<Object[]> results = learningObjectiveRepository.findObjectivesForToday(accountId, courseId);
-        List<ObjectiveDTO> objectiveDTOS = results.stream()
+        return results.stream()
                 .map(r -> new ObjectiveDTO(
                         (String) r[0],
                         ((java.sql.Date) r[1]).toLocalDate(),
                         (Short) r[2]
                 ))
                 .collect(Collectors.toList());
-
-        Set<String> existingNames = objectiveDTOS.stream()
-                .map(ObjectiveDTO::getTitle)
-                .collect(Collectors.toSet());
-
-        List<Object[]> weakObjectives = learningObjectiveRepository.findWeakObjectivesWithLastGrade(accountId, courseId);
-        List<ObjectiveDTO> weakObjectiveDTOS = weakObjectives.stream()
-                .map(r -> new ObjectiveDTO(
-                        (String) r[0],
-                        today,
-                        (Short) r[1]
-                ))
-                .collect(Collectors.toList());
-
-        weakObjectiveDTOS.stream()
-                .filter(dto -> !existingNames.contains(dto.getTitle()))
-                .forEach(objectiveDTOS::add);
-
-        return objectiveDTOS;
     }
 
     public List<ObjectiveDTO> findScheduledObjectives(Account account) {

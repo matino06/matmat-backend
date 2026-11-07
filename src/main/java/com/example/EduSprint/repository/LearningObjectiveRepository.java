@@ -246,12 +246,6 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                 AND EXISTS (SELECT 1 FROM shown_task t WHERE t.objective_id = lo.objective_id)
                 AND (ao.last_solved_date + (INTERVAL '1 day' * ao.i)) > (CURRENT_DATE + INTERVAL '23 hours 59 minutes 59 seconds')
                 AND NOT EXISTS (SELECT 1 FROM blocked b WHERE b.objective_id = lo.objective_id)
-                AND NOT EXISTS(
-                    SELECT 1
-                    FROM weak_objectives wo
-                    WHERE wo.objective_id = lo.objective_id
-                        AND wo.account_id = :accountId
-                )
                 ORDER BY (ao.last_solved_date + (INTERVAL '1 day' * ao.i))::DATE ASC, lo.subfield_id ASC, ao.objective_id ASC
             """, nativeQuery = true)
     List<Object[]> findScheduledObjectives(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
@@ -261,23 +255,6 @@ public interface LearningObjectiveRepository extends JpaRepository<LearningObjec
                    "WHERE lo.objective_id IN (SELECT wo.objective_id FROM weak_objectives wo WHERE wo.account_id = :accountId)",
             nativeQuery = true)
     short findWeakObjectivesByAccountAndCourse(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
-
-    @Query(value = """
-                    SELECT lo.objective_name, ao.last_grade
-                    FROM learning_objective lo
-                    INNER JOIN course_objective co 
-                        ON lo.objective_id = co.objective_id 
-                        AND co.course_id = :courseId
-                    JOIN account_objective ao 
-                        ON ao.objective_id = lo.objective_id
-                            AND ao.account_id = :accountId
-                    WHERE lo.objective_id IN (
-                        SELECT wo.objective_id 
-                        FROM weak_objectives wo 
-                        WHERE wo.account_id = :accountId
-                    )
-                """, nativeQuery = true)
-    List<Object[]> findWeakObjectivesWithLastGrade(@Param("accountId") Long accountId, @Param("courseId") Long courseId);
 
     // Weak objective (rated again or hard today) to practise once nothing is due: the one solved longest ago first.
     @Query(value = """
